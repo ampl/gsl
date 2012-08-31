@@ -1,0 +1,4 @@
+# -*- org -*-
+#+CATEGORY: const
+
+could add RADIATION_DENSITY_CONSTANT (7.56591e-16) /* J m-3 K-4 */

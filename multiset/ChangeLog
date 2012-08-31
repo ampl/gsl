@@ -1,0 +1,3 @@
+2009-09-21  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* added multiset support to GSL based on combinations

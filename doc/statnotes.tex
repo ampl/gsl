@@ -1,0 +1,93 @@
+\documentclass[fleqn,12pt]{article}
+\newcommand{\expectation}[1]{\langle #1 \rangle}
+\begin{document}
+\title{Statistical Function Notes}
+\author{Brian Gough}
+\date{November 2008}
+\maketitle
+
+\section{Weighted mean and variance}
+We have $N$ samples $x_i$ drawn from a Gaussian distribution
+$G(\mu,\sigma)$ (or any distribution with finite first and second
+moments).  Each sample has a weight $w_i$ which represents the
+relative value we place on it.  Given the estimate of the mean
+%
+\begin{eqnarray}
+\bar{x} &=& {1 \over W} \sum_i w_i x_i \\
+W       &=& \sum_i w_i
+\end{eqnarray}
+%
+\noindent
+we want an unbiased estimator of the variance of the underlying
+distribution $\sigma^2$.  
+
+We start with the standard definition of the sample variance $V$ and
+compute the bias correction factor.
+%
+\begin{eqnarray}
+V &=& {1\over W} \sum_i w_i (x_i - \bar{x})^2 \\
+  &=& {1\over W} \sum_i w_i \left(x_i - {1\over W}\sum_j w_j x_j\right)^2 \\
+  &=& {1\over W} \sum_i w_i \left(x_i^2 - {2 \over W} x_i \sum_j w_j x_j 
+       + {1 \over W^2} (\sum_j w_j x_j)^2\right) \\
+  &=& {1\over W} \left( \sum_i w_i x_i^2 
+       - {2 \over W} \sum_i w_i x_i \sum_j w_j x_j
+       + {1 \over W} (\sum_j w_j x_j)^2\right)\\
+  &=& {1\over W} \left( \sum_i w_i x_i^2 
+       - {1 \over W} \sum_i w_i x_i \sum_j w_j x_j\right)\\
+  &=& {1\over W} \left( \sum_i w_i x_i^2 
+       - {1 \over W} \sum_{ij} w_i w_j x_i x_j\right)
+\end{eqnarray}
+%
+We find the expectation value $\expectation{V}$ using the Gaussian
+formulas $\expectation{x_i} = \mu$, $\expectation{x_i x_j} = \mu^2 +
+\delta_{ij} \sigma^2$.  We assume that any random contribution
+dependent on the weights themselves is zero or can be
+neglected in comparison to $\sigma$.
+
+%
+\begin{eqnarray}
+\expectation{V}   &=& {1\over W} \left( \sum_i w_i \expectation{x_i^2}
+       - {1 \over W} \sum_{ij} w_i w_j \expectation{x_i x_j}\right)\\
+      &=& {1\over W} \left( \sum_i w_i (\mu^2 + \sigma^2)
+       - {1 \over W} \sum_{ij} w_i w_j (\mu^2 + \delta_{ij} \sigma^2)\right)\\
+      &=& {1\over W} \left( W (\mu^2 + \sigma^2)
+       - {1 \over W} ( W^2 \mu^2 +( \sum_i w_i^2) \sigma^2)\right)\\
+      &=& {1\over W} \left(W \sigma^2 - {1 \over W} ( \sum_i w_i^2)\sigma^2\right)\\
+      &=& \left({{W^2 - \sum_i w_i^2} \over W^2}\right) \sigma^2
+\end{eqnarray}
+%
+Therefore an unbiased estimator $U$ of $\sigma^2$ is
+%
+\begin{eqnarray}
+U &=& {W^2 \over {(W^2 - \sum_i w_i^2)}} \expectation{V}\\
+  &=& {W^2 \over {(W^2 - \sum_i w_i^2)}} {1\over W} \sum_i w_i (x_i - \bar{x})^2 \\
+  &=& {W \over {(W^2 - \sum_i w_i^2)}} \sum_i w_i (x_i - \bar{x})^2
+\end{eqnarray}
+%
+And this is the formula used in GSL.
+\subsection{Notes}
+Note the following properties:
+
+\begin{itemize}
+\item
+The formula is invariant under rescaling of the weights.
+
+\item 
+For equal weights $w_i = w$ the factor reduces to $N/(N^2-N) =
+1/(N-1)$, which is the familiar factor of the unbiased estimator of
+the variance for data without weights.
+
+\item
+When $\sum_i (w_i/W)^2 \ll 1$ the commonly-used weighted variance
+formula $V = (1/W)\sum_i w_i (x_i - \bar{x})^2$ is a good
+approximation.
+\end{itemize}
+
+If we assume that the ``experimental errors'' arising from the weights
+contribute, the underlying variance $\sigma^2$ is overestimated by
+this formula (e.g. consider the case $\sigma = 0$---all the variation
+will come from the Gaussian fluctuations represented by the
+$w_i$). The appropriate expectation in this case is $\expectation{x_i
+  x_j} = \mu^2 + \delta_{ij} (\sigma^2 + 1/w_i)$
+\end{document}
+

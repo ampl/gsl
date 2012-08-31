@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+# skip test if we have no pkg-config
+pkg-config --version >/dev/null 2>&1 || exit 77
+PKG_CONFIG_PATH=.
+export PKG_CONFIG_PATH 
+pkg-config --define-variable=GSL_CBLAS_LIB=-lfoo --libs gsl | grep 'lfoo' > /dev/null 2>&1
+exit 0

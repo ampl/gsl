@@ -1,0 +1,1153 @@
+The GSL Bugs Database is at http://savannah.gnu.org/bugs/?group=gsl
+
+This file was generated from it at Fri Apr  1 16:38:49 2011
+
+------------------------------------------------------------------------
+BUG-ID:   28267   
+STATUS:   Open/Postponed  
+CATEGORY: Accuracy problem
+SUMMARY:  poor convergence region for gsl_sf_hyperg_1F1
+
+The magnitude of the error is greater than the value itself for
+a<<0, b>0, x>>0 
+
+gsl_sf_hyperg1F1(-3.78e+01, 2, 1.035e+02) =>  -7.00055e+18 +/- 3.77654e+19
+
+-----------------------------------------------
+From: Weibin Li <weibinli@mpipks-dresden.mpg.de>
+To: bug-gsl@gnu.org
+Subject: [Bug-gsl] gsl_sf_hyperg_1F1
+Date: Mon, 30 Nov 2009 15:26:11 +0100
+
+Hi, guys
+
+I experienced bugs with gsl_sf_hyperg_1F1. The version  is gsl_1.12, but
+the testing is also done with gsl_1.13, using a  mac with version 10.5.8
+and hp-workstation with gnome_2.24.1.
+
+#include<stdlib.h>
+#include<stdio.h>
+#include<math.h>
+#include "gsl/gsl_sf_hyperg.h"
+
+int main(int argc, char **argv)
+{
+ int ii;
+ double Ri;
+ double v0;
+
+ gsl_sf_result r;
+ for(ii = 10; ii< 140;ii++)
+{
+     Ri = 2013;
+     v0 =38.86871 +ii*2.5e-10;
+
+    gsl_sf_hyperg_1F1_e(1.0-v0,2,2.0*Ri/v0,&r);
+    printf("%lg\t%14.13g\t%14.13g\n",v0,r.val,r.err);
+
+ }
+return 0;
+}
+
+The output of above code shows an extremely large error. by increasing
+Ri, the relative error decreases. Is there any idea to fix this?
+
+Thank you very much.
+
+Best
+
+Weibin
+
+-It's inherently difficult to compute the value in this region either way as there is massive cancellation in both the series and the Kummer transformed series.I cannot find any algorithm which handles this case.Confirmed
+
+------------------------------------------------------------------------
+BUG-ID:   21828   
+STATUS:   Open/Confirmed  
+CATEGORY: Performance
+SUMMARY:  suboptimal performance of gsl_fdfsolver_lmsder
+
+From: "Alexander Usov" <a.s.usov@gmail.com>
+To: help-gsl@gnu.org
+Subject: [Help-gsl] Strange performance of gsl_fdfsolver_lmsder
+Date: Wed, 24 Oct 2007 20:45:01 +0200
+
+Hi all,
+
+I am currently working on the problem involving source extraction from
+astronomical images, which essentially boils down to fitting a number of
+2d gaussians to the image.
+
+One of the traditionally used fitters in this field is a Levenberg-Marquardt,
+which gsl_fdfsolver_lmsder is and implementation of.
+
+At some moment I have notices that for the bigger images (about 550
+pixels, 20-30 parameters) gsl's lmsder algorithm spends a large fraction
+of the run-time (about 50%) doing household transform.
+
+While looking around for are different minimization algorithms I have made
+a surprising finding that original netlib/minpack/lmder is almost twice faster
+that that of gsl.
+
+Could anyone explain such a big difference in performace?
+
+-- 
+Best regards,
+  Alexander.
+
+_______________________________________________
+Help-gsl mailing list
+Help-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/help-gsl
+
+Reply-To: help-gsl@gnu.org
+From: Brian Gough <bjg@network-theory.co.uk>
+To: "Alexander Usov" <a.s.usov@gmail.com>
+Cc: help-gsl@gnu.org
+Subject: Re: [Help-gsl] Strange performance of gsl_fdfsolver_lmsder
+Date: Thu, 25 Oct 2007 21:57:08 +0100
+
+At Wed, 24 Oct 2007 20:45:01 +0200,
+Alexander Usov wrote:
+> At some moment I have notices that for the bigger images (about 550
+> pixels, 20-30 parameters) gsl's lmsder algorithm spends a large fraction
+> of the run-time (about 50%) doing household transform.
+> 
+> While looking around for are different minimization algorithms I have made
+> a surprising finding that original netlib/minpack/lmder is almost twice faster
+> that that of gsl.
+> 
+> Could anyone explain such a big difference in performace?
+
+I have a vague memory that there was some quantity (Jacobian?) that
+MINPACK only computes fully at the end, but in GSL it is accessible to
+the user at each step so I felt I had to update it on each iteration
+in the absence of some alternate scheme.  Sorry this is not a great
+answer but I am not able to look at it in detail now.
+
+-- 
+Brian Gough
+
+_______________________________________________
+Help-gsl mailing list
+Help-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/help-gsl
+
+1824
+
+------------------------------------------------------------------------
+BUG-ID:   21831   
+STATUS:   Open            
+CATEGORY: Accuracy problem
+SUMMARY:  Levý random number generator for alpha < 1
+
+From: rafael@fis.unb.br
+To: bug-gsl@gnu.org
+Subject: [Bug-gsl] Levý random number generator
+Date: Mon, 26 Mar 2007 19:48:01 -0300
+
+The Levý skew random number generator (gsl_ran_levy_skew) does not  
+procuce a Levý random number when beta=0 (symmetric case), and the  
+gsl_ran_levy function does not work as stated in the docs. I made some  
+histograms from 10^6 samples to check the accuracy of the algorithms,  
+by comparison agaisnt the numerical integration of the equation of  
+Levý's PDF. For the gsl_ran_levy function there is a good precison for  
+alpha [1,2], for alpha (0.3,1) you must sum a series of random numbers  
+to get the same precision (tipicaly 100 or more gsl_ran_levy numbers).  
+For alpha<=0.3 the algorithm does not work properly, even worse, the  
+error increases as you add more random numbers. This contradicts the  
+manual that says "the algoritm only works for alpha (0,2]". The  
+function gsl_ran_levy_skew does not produce levy random numbers when  
+beta=0, instead the pdf of the random numbers is a linear (?!?!) one.
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
+_______________________________________________
+Bug-gsl mailing list
+Bug-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/bug-gsl
+
+From: rafael@fis.unb.br
+To: Brian Gough <bjg@network-theory.co.uk>
+Cc: 
+Subject: Re: [Bug-gsl] Lev? random number generator
+Date: Tue, 27 Mar 2007 09:35:15 -0300
+
+Thanks for your quick answer, and sorry about my poor english, it is  
+not my natural language.
+
+The code below generates 10^6 random numbers, and makes a normalized  
+histogram wich is compared to the levy pdf. To get the levy pdf, it  
+numericaly integrates the characteristic function for levy process  
+(the function f in the code). The n parameter just adds a series of  
+levy numbers to get better precision. The code saves 2 files:  
+lhist-$alpha-$n (the normalized histogram) and lpdf-$alpha (the pdf  
+for the levy process). It also prints to the stdout the absolute error  
+(square of the difference) between the histogram and the pdf.
+
+The function levy skew shows problems for alpha<1.
+
+With this code, you can also check the problems related to the  
+gsl_ran_levy function (just change gsl_ran_levy_skew by gsl_ran_levy,  
+cutting the last paramenter).
+
+I am using the pre-compiled gsl that comes with debian etch (gsl  
+version 1.8.2).
+
+If you are interested, I also encoded a routine to generate levy skew  
+random numbers, it is not fully tested, but it works for beta=0 and  
+alpha<1 (it suffers from the same precision problem as gsl_ran_levy  
+function for small alpha)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <string.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_histogram.h>
+#include <gsl/gsl_integration.h>
+
+double f (double x, void *params)
+{
+	double alpha = *(double *) params;
+	double f = exp(-pow(x,alpha))/M_PI;
+	return f;
+}
+
+double *levy_pdf(double alpha,int hist_size,double a,double b)
+{
+	double abserr,*lpdf,dx;
+	gsl_function F;
+	int i;
+	gsl_integration_workspace *w=gsl_integration_workspace_alloc(1000);
+	gsl_integration_workspace *cw=gsl_integration_workspace_alloc(1000);
+	gsl_integration_qawo_table  
+*wf=gsl_integration_qawo_table_alloc(0.0,1.0,GSL_INTEG_COSINE,200);
+	lpdf=(double*)calloc(hist_size,sizeof(double));
+	F.function=&f;
+	F.params=&alpha;
+	dx=(double)(b-a)/(double)hist_size;
+	for (i=0;i<hist_size;i++)
+	{
+		gsl_integration_qawo_table_set(wf,i*dx+a,1.0,GSL_INTEG_COSINE);
+		gsl_integration_qawf (&F,0.0,1e-10,1000,w,cw,wf,&lpdf[i],&abserr);
+	}
+	gsl_integration_qawo_table_free(wf);
+	gsl_integration_workspace_free(w);
+	gsl_integration_workspace_free(cw);
+	return (lpdf);
+}
+
+int main (int argc,char *argv[])
+{
+	double *l,*lpdf,a=-20,b=20,alpha,dx,n,errabs=0.0;
+	unsigned long int rnd_seed;
+	int i,j,rand_numbers=1e6,hist_size=400;
+	gsl_histogram *h;
+	gsl_rng *r;
+	struct timeval *tv;
+	struct timezone *tz;
+	char filename[50];
+	FILE *f1,*f2;
+	if(argc!=3)
+	{
+		printf("\nThe program must be called with 2 parameters: alpha and n\n \n");
+		exit(1);
+	}
+	dx=(double)(b-a)/(double)hist_size;
+	h=gsl_histogram_alloc(hist_size);
+	alpha=atof(argv[1]);
+	n=atof(argv[2]);
+	strcpy(filename,"lhist-");
+	strcat(filename,argv[1]);
+	strcat(filename,"-");
+	strcat(filename,argv[2]);
+	f1=fopen(filename,"w+");
+	strcpy(filename,"lpdf-");
+	strcat(filename,argv[1]);
+	f2=fopen(filename,"w+");
+	l=(double*)calloc(rand_numbers,sizeof(double));
+	lpdf=(double*)calloc(hist_size,sizeof(double));
+	r=gsl_rng_alloc (gsl_rng_mt19937);
+	gettimeofday(tv,tz);
+	rnd_seed=(unsigned long int)tv->tv_usec;
+	gsl_rng_set(r,rnd_seed);
+	i=0;
+	do
+	{
+		l[i]=0.0;
+		for (j=1;j<n;j++) l[i]+=gsl_ran_levy_skew(r,1.0,alpha,0.0);
+		l[i]=l[i]/pow(n,1.0/alpha);
+		if (abs(l[i])<=20) i++;//picks only random numbers in the interval  
+[a,b] to get good precision in the histogram
+	}while(i<rand_numbers);
+	gsl_histogram_set_ranges_uniform(h,a,b);
+	for(i=0;i<rand_numbers;i++) gsl_histogram_increment(h,l[i]);
+	gsl_histogram_scale(h,(double)hist_size/((b-a)*gsl_histogram_sum(h)));
+	gsl_histogram_fprintf(f1,h,"%g","%g");
+	lpdf=levy_pdf(alpha,hist_size,a,b);
+	for (i=0;i<hist_size;i++) fprintf(f2,"%e\t%e\n",i*dx+a,lpdf[i]);
+	for (i=0;i<hist_size;i++) errabs+=pow((gsl_histogram_get(h,i)-lpdf[i]),2.0);
+	printf("%e\n",errabs/(double)hist_size);
+	gsl_histogram_free(h);
+	gsl_rng_free(r);
+	fclose(f1);
+	exit (0);
+}
+
+> At Mon, 26 Mar 2007 19:48:01 -0300,
+> rafael@fis.unb.br wrote:
+>>
+>> The Lev? skew random number generator (gsl_ran_levy_skew) does not
+>> procuce a Lev? random number when beta=0 (symmetric case), and the
+>> gsl_ran_levy function does not work as stated in the docs. I made some
+>> histograms from 10^6 samples to check the accuracy of the algorithms,
+>> by comparison agaisnt the numerical integration of the equation of
+>> Lev?'s PDF. For the gsl_ran_levy function there is a good precison for
+>> alpha [1,2], for alpha (0.3,1) you must sum a series of random numbers
+>> to get the same precision (tipicaly 100 or more gsl_ran_levy numbers).
+>> For alpha<=0.3 the algorithm does not work properly, even worse, the
+>> error increases as you add more random numbers. This contradicts the
+>> manual that says "the algoritm only works for alpha (0,2]". The
+>> function gsl_ran_levy_skew does not produce levy random numbers when
+>> beta=0, instead the pdf of the random numbers is a linear (?!?!) one.
+>
+> Thanks for your email.  Please can you send a small example program
+> which demonstrates the problem.
+>
+> Note that the Levy skew generator is tested in the GSL test suite for
+> several cases where beta=0 -- if you have not done so, can you run
+> "make check" and confirm that it works for these cases.
+>
+> --
+> Brian Gough
+> (GSL Maintainer)
+>
+> Network Theory Ltd,
+> Publishing the GSL Manual - http://www.network-theory.co.uk/gsl/manual/
+>
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
+_______________________________________________
+Bug-gsl mailing list
+Bug-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/bug-gsl
+
+-
+
+------------------------------------------------------------------------
+BUG-ID:   21833   
+STATUS:   Open            
+CATEGORY: Performance
+SUMMARY:  suboptimal performance of gsl permutation?
+
+From: "djamel anonymous" <djam8193ah@hotmail.com>
+To: bjg@network-theory.co.uk
+Subject: gsl permutation
+Date: Wed, 24 Jan 2007 07:42:06 +0000
+
+Hi.
+i am sending you this email about a possible issue in glibc permutation 
+algorithm.i think it has qudratic worst case running time.for example if we 
+have the permutation
+1,2,3,4,,,,,n,0
+we will permute all elements in first iteration then for each iteration we 
+will traverse on average half the cycle (which is of size n) before we know 
+that the elements of cycle have already been permuted.there is two possible 
+solutions to make the algorithm linear:
+1-at each step we traverse the full cycle and permute all elements in the 
+cycle.for each permuted element i  we assign p[i]=i.the disavantage of this 
+is that it will destroy the original permutation.
+2-use a bit array of size n bits.each time we permute an element we set the 
+relevant bit.if at iteration i we find that bit i is already set we skip to 
+next iteration.the disavantage of this is that it equires additional storage 
+allocation.
+best regards.
+
+_________________________________________________________________
+MSN Hotmail sur i-mode? : envoyez et recevez des e-mails depuis votre 
+téléphone portable ! http://www.msn.fr/hotmailimode/
+
+3 - Normal
+
+------------------------------------------------------------------------
+BUG-ID:   21835   
+STATUS:   Open            
+CATEGORY: Accuracy problem
+SUMMARY:  gsl_sf_hyperg_2F1 problematic arguments
+
+BUG#1 -- gsl_sf_hyperg_2F1_e fails for some arguments 
+
+From: keith.briggs@bt.com
+Subject: gsl_sf_hyperg_2F1 bug report
+Date: Thu, 31 Jan 2002 12:30:04 -0000
+
+gsl_sf_hyperg_2F1_e fails with arguments (1,13,14,0.999227196008978,&r).
+It should return 53.4645... .
+
+#include <gsl/gsl_sf.h>
+#include <stdio.h>
+
+int main (void)
+{
+  gsl_sf_result r;
+  gsl_sf_hyperg_2F1_e (1,13,14,0.999227196008978,&r);
+  printf("r = %g %g\n", r.val, r.err);
+}
+
+NOTES: The program overflows the maximum number of iterations in
+gsl_sf_hyperg_2F1, due to the presence of a nearby singularity at
+(c=a+b,x=1) so the sum is slowly convergent.
+
+The exact result is 53.46451441879150950530608621 as calculated by
+gp-pari using sumpos(k=0,gamma(a+k)*gamma(b+k)*gamma(c)*gamma(1)/
+(gamma(c+k)*gamma(1+k)*gamma(a)*gamma(b))*x^k)
+
+The code needs to be extended to handle the case c=a+b. This is the
+main problem. The case c=a+b is special and needs to be computed
+differently.  There is a special formula given for it in Abramowitz &
+Stegun 15.3.10
+
+As reported by Lee Warren <warren@atom.chem.utk.edu> another set of
+arguments which fail are:
+
+#include <gsl/gsl_sf.h>
+#include <stdio.h>
+
+int main (void)
+{
+  gsl_sf_result r;
+  gsl_sf_hyperg_2F1_e (-1, -1, -0.5, 1.5, &r);
+  printf("r = %g %g\n", r.val, r.err);
+}
+
+The correct value is -2.
+
+See also, 
+
+From: Olaf Wucknitz <wucknitz@jive.nl>
+To: bug-gsl@gnu.org
+Subject: [Bug-gsl] gsl_sf_hyperg_2F1
+
+Hi,
+
+I am having a problem with gsl_sf_hyperg_2F1.
+With the parameters (-0.5, 0.5, 1, x) the returned values show a jump at 
+x=0.5. For x<0.5 the results seem to be correct, while for x>0.5 they 
+aren't.
+The function gsl_sf_hyperg_2F1_e calls hyperg_2F1_series for x<0.5, but
+hyperg_2F1_reflect for x>0.5. The latter function checks for c-a-b being 
+an integer (which it is in my case). If I change one of the parameters 
+a,b,c by a small amount, the other branch of the function is taken and the 
+results are correct again.
+Unfortunately I know too little about the numerics of 2F1 to suggest a 
+patch at the moment.
+
+Regards,
+Olaf Wucknitz
+-- 
+Joint Institute for VLBI in Europe                wucknitz@jive.nl
+
+------------------------------------------------------------------------
+BUG-ID:   21836   
+STATUS:   Open/Confirmed  
+CATEGORY: Accuracy problem
+SUMMARY:  gamma_inc_P and gamma_inc_Q only satisfy P+Q=1 within errors
+
+BUG#44 -- gamma_inc_P and gamma_inc_Q only satisfy P+Q=1 within errors
+
+The sum of gamma_inc_P and gamma_inc_Q doesn't always satisfy the
+identity P+Q=1 exactly (although it is correct within errors), due the
+slightly different branch conditions for the series and continued
+fraction expansions.  These could be made identical so that P+Q=1 exactly.
+
+#include <stdio.h>
+#include <gsl/gsl_sf_gamma.h>
+
+int
+main (void)
+{
+  gsl_sf_result r1, r2;
+  double a = 0.3, x = 1.0;
+  gsl_sf_gamma_inc_P_e (a, x, &r1);
+  gsl_sf_gamma_inc_Q_e (a, x, &r2);
+  printf("%.18e\n", r1.val);
+  printf("%.18e\n", r2.val);
+  printf("%.18e\n", r1.val + r2.val);
+}
+
+$ ./a.out
+9.156741562411074842e-01
+8.432584375889111417e-02
+9.999999999999985567e-01
+
+3 - NormalNone
+
+------------------------------------------------------------------------
+BUG-ID:   21837   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  gsl_linalg_solve_symm_tridiag requires positive definite matrix
+
+A zero on the diagonal will cause NaNs even though a reasonable
+solution could be computed in principle. 
+
+#include <gsl/gsl_linalg.h>
+
+int main (void)
+{
+  double d[] = { 0.00, 1.21, 0.80, 1.55, 0.76 } ;
+  double e[] = { 0.82, 0.39, 0.09, 0.68 } ;
+  double b[] = { 0.07, 0.62, 0.81, 0.11, 0.65} ;
+  double x[] = { 0.00, 0.00, 0.00, 0.00, 0.00} ;
+
+  gsl_vector_view dv = gsl_vector_view_array(d, 5);
+  gsl_vector_view ev = gsl_vector_view_array(e, 4);
+  gsl_vector_view bv = gsl_vector_view_array(b, 5);
+  gsl_vector_view xv = gsl_vector_view_array(x, 5);
+
+  gsl_linalg_solve_symm_tridiag(&dv.vector, &ev.vector, &bv.vector, &xv.vector);
+  gsl_vector_fprintf(stdout, &xv.vector, "% .5f");
+
+  d[0] += 1e-5;
+  gsl_linalg_solve_symm_tridiag(&dv.vector, &ev.vector, &bv.vector, &xv.vector);
+  gsl_vector_fprintf(stdout, &xv.vector, "% .5f");
+}
+
+$ ./a.out
+ nan
+ nan
+ nan
+ nan
+ nan
+ 0.13626
+ 0.08536
+ 1.03840
+-0.60009
+ 1.39219
+
+AUG 2007: We now return an error code for this case.  To return a solution
+we would need to do a permutation, see slatec/dgtsl.f
+
+3 - NormalNone
+
+------------------------------------------------------------------------
+BUG-ID:   24252   
+STATUS:   Open/Confirmed  
+CATEGORY: None
+SUMMARY:  suggestion: add gamma tail distribution
+
+From: Laedermann Jean-Pascal <Jean-Pascal.Laedermann@chuv.ch>
+To: Brian Gough <bjg@gnu.org>
+Subject: RE : RE : tail gamma
+Date: Thu, 11 Sep 2008 08:45:41 +0200
+
+Hello,
+
+It's only a piece of C code I attach here.
+The source is the excellent book of Devroye (chapter nine p 420), see attachments.
+
+Hoping this will be useful.
+
+Jean-Pascal Laedermann, PhD
+ing. phys. EPFL, math. UNIL
+
+--Noneadd the function, with suitable name
+add to gsl_randist.h header file
+add corresponding _pdf distribution function
+add test functions in test.c
+add documentation in doc/randist.texi 
+
+------------------------------------------------------------------------
+BUG-ID:   24871   
+STATUS:   Open/Confirmed  
+CATEGORY: None
+SUMMARY:  suggestion, add support for E_n
+
+Dear GSL group,
+
+Thank you very much for your work on GSL. I use it much in Octave.
+
+I think it would be great if you could improve the GSL routines
+for computations of exponential integrals so that they can accept complex arguments too. A good algorithm for this was published in
+
+ACM Transactions on Mathematical Software
+Donald E. Amos, Computation of Exponential Integrals of a Complex Argument, vol.16, no. 2, p.169--177, 1990,
+http://doi.acm.org/10.1145/78928.78933
+
+ACM Transactions on Mathematical Software
+Donald E. Amos, Algorithm 683: A Portable FORTRAN Subroutine for Exponential Integrals of a Complex Argument, vol.16, no. 2,
+p.178--182, 1990,
+http://doi.acm.org/10.1145/78928.78934
+
+The fortran code is available at
+http://www.netlib.org/toms/683
+http://www.netlib.no/netlib/toms/683
+http://www.mirrorservice.org/sites/netlib.bell-labs.com/netlib/toms/683.gz
+http://scicomp.ewha.ac.kr/netlib/toms/683
+
+With best wishes,
+Oleg
+
+---
+D.Sc. Oleg V. Motygin,
+Institute of Problems in Mech Engineering
+Russian Academy of Sciences
+V.O., Bol'shoj pr. 61
+199178 St.Petersburg
+Russia
+email: o.v.motygin@gmail.com, mov222@yandex.ru
+
+_______________________________________________
+Bug-gsl mailing list
+Bug-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/bug-gsl
+
+------------------------------------------------------------------------
+BUG-ID:   25320   
+STATUS:   Open            
+CATEGORY: Accuracy problem
+SUMMARY:  Import fresnel, bugs on GSL Extension Fresnel
+
+The fresnel extension should be imported for the next release, with the following bug report checked.
+
+From: "Toshiro Ohsaki" <t.ohsaki@ipb.co.jp>
+To: <bug-gsl@gnu.org>
+Subject: [Bug-gsl] Bugs on GSL Extension Fresnel
+Date: Wed, 26 Nov 2008 21:07:02 +0900
+
+Dear staff of GNU
+
+  I found bugs on GSL Extensions/Applications Fresnel by Andrew Steiner.
+ This program does not return a correct value, if x is negative.
+
+The original function fresnel_c is coded as,
+
+double fresnel_c(double x)
+{
+  double xx = x*x*pi_2;
+  double ret_val;
+  if(xx<=8.0)
+   ret_val = fresnel_cos_0_8(xx);
+  else
+   ret_val = fresnel_cos_8_inf(xx);
+  return (x<0.0) ? -ret_val : ret_val;
+}
+.
+
+ I think it should be coded as,
+
+double fresnel_c(double x)
+{
+  double xx = x*x*pi_2;
+  double ret_val;
+  double sign;
+
+  if(xx < 0.0){
+    xx*=-1.0;
+    sign=-1.0;
+  }
+  else{
+    sign=1.0;
+  }
+
+  if(xx<=8.0)
+   ret_val = fresnel_cos_0_8(xx);
+  else
+   ret_val = fresnel_cos_8_inf(xx);
+
+  ret_val*=sign;
+
+  return(ret_val);
+}
+.
+
+The same correction should be done on the function fresnel_s.
+
+Sincerely yours,
+Toshiro Ohsaki
+from Tokyo Japan.
+_______________________________________________
+Bug-gsl mailing list
+Bug-gsl@gnu.org
+http://lists.gnu.org/mailman/listinfo/bug-gsl
+
+------------------------------------------------------------------------
+BUG-ID:   29606   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  insufficient argument checks in gsl_sf_coupling_6j 
+
+From: "Hergert, Heiko" <hergert@nscl.msu.edu>
+To: <bug-gsl@gnu.org>
+Subject: [Bug-gsl] Error in 6j symbol routine (gsl_sf_coupling_6j)
+Date: Thu, 15 Apr 2010 15:11:24 -0400
+
+Hi,
+
+I just came about this bug in gsl_sf_coupling_6j() in GSL 1.13 (haven't
+checked newer builds).
+
+The check of the triangle conditions (via the routine
+triangle_selection_fails) doesn't properly rule out all unphysical
+combinations of angular momenta. For instance
+
+gsl_sf_coupling(0, 2, 2, 44, 43, 43) = 0.087039
+
+but the routine should return 0 since this symbol is unphysical:
+jb=1 and jc=21 cannot be coupled to jf=43/2=21.5 although the triangle
+tests are nominally satisfied
+
+abs(1-21.5)=20.5 <= 21 <= 22.5.
+
+A possible fix would be to check if
+
+(two_ja + two_jb + two_jc)%2 == 0
+
+ja+jb+jc is always integer in physically allowed couplings (i.e.,
+2*(ja+jb+jc) must be even).
+
+The routine for the 3j symbol is not similarly affected due to the
+additional m_selection_fails() test.
+
+-- 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+<< Heiko Hergert
+<< National Superconducting Cyclotron Laboratory
+<< Michigan State University
+<<
+<< phone: +1 517 908 7472
+<< mail: hergert@nscl.msu.edu
+<< www : http://www.nscl.msu.edu
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+None100
+
+------------------------------------------------------------------------
+BUG-ID:   29834   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  insufficient argument checking in blas wrapper
+
+the blas wrapper does not do full checking of its arguments
+furthermore, the checking could be shared with the cblas routines via macros, to ensure consistency.
+
+From: José Luis García Pallero <jgpallero@gmail.com>
+To: help-gsl@gnu.org
+Subject: Re: [Help-gsl] About invalid parameters in cblas implementation
+Date: Fri, 24 Jul 2009 19:01:37 +0200
+
+[1  <text/plain; ISO-8859-1 (quoted-printable)>]
+Hi,
+Attached I send the second version (partial, only for level 2 routines with
+standard 4 prefixes (S, D, C, Z)). I have used submacros as we discussed in
+recent mails. I think that we must pass to submacros the variable 'pos' for
+"return" the result and the position 'posIfError' as the "returned" value if
+an error occurs.
+But we need some trick for check with macros the parameter 'lda', because
+the check is different depending on 'order' parameter and involves other
+arguments like 'M' and 'N'. Probably, this check must be done explicitly.
+
+-- 
+*****************************************
+José Luis García Pallero
+jgpallero@gmail.com
+(o<
+/ / \
+V_/_
+Use Debian GNU/Linux and enjoy!
+*****************************************
+-
+
+------------------------------------------------------------------------
+BUG-ID:   30324   
+STATUS:   Open/Confirmed  
+CATEGORY: Accuracy problem
+SUMMARY:  improve range of 2F1
+
+From: Heiko Bauke <heiko.bauke@snafu.de>
+To: help-gsl@gnu.org
+Subject: [Help-gsl] Gauss hypergeometric
+Date: Thu, 24 Jun 2010 21:11:53 +0200
+
+Dear GSL developers,
+
+I would like to point out that the GSL functions gsl_sf_hyperg_2F1_e and
+gsl_sf_hyperg_2F1 which compute the Gauss hypergeometric function for
+-1<=x<1 may be extended with little effort to arguments in the interval
+-oo<x<1 by using relations (32) and/or (33) in [1] by something like
+this:
+
+double hyperg_2F1(double a, double b, double c, double x) {
+  if (-1.<=x and x<1.)
+    return gsl_sf_hyperg_2F1(a, b, c, x);
+  if (x<-1.) {
+    // gsl_sf_hyperg_2F1 may have problems with negative arguments
+    if (c-a<0)
+      return pow(1.-x, -a)*
+        gsl_sf_hyperg_2F1(a, c-b, c, x/(x-1.));
+    if (c-b<0)
+      return pow(1.-x, -b)*
+        gsl_sf_hyperg_2F1(c-a, c, c, x/(x-1.));
+    // choose one of two equivalent formulas which is expected to be
+    // more accurate
+    if (a*(c-b)<(c-a)*b)
+      return pow(1.-x, -a)*
+        gsl_sf_hyperg_2F1(a, c-b, c, x/(x-1.));
+    else
+      return pow(1.-x, -b)*
+        gsl_sf_hyperg_2F1(c-a, b, c, x/(x-1.));
+  }                                                                                                                  
+  // insert some error handling for x>=1
+  return 0;
+}                                                                                                                    
+
+I cannot say much about the accuracy and the stability of this approach.
+I think, however, it is reasonable to extend gsl_sf_hyperg_2F1_e and
+gsl_sf_hyperg_2F1 in this way. It would make these functions more
+general and useful.
+
+        Regards,
+
+        Heiko
+
+[1] http://mathworld.wolfram.com/HypergeometricFunction.html
+
+------------------------------------------------------------------------
+BUG-ID:   30510   
+STATUS:   Open            
+CATEGORY: Runtime error
+SUMMARY:  problems with hyperg_U(a,b,x) for x<0
+
+Reply-To: rrogers@plaidheron.com
+From: Raymond Rogers <raymond.rogers72@gmail.com>
+To: bug-gsl@gnu.org
+Subject: Re: [Bug-gsl] hyperg_U(a,b,x) Questions about x<0 and values
+Date: Thu, 08 Jul 2010 11:49:15 -0500
+
+Brian Gough <bjg@gnu.org>
+Subject: Re: [Bug-gsl] hyperg_U(a,b,x) Questions about x<0 and values
+        of a
+To: rrogers@plaidheron.com
+Cc: bug-gsl@gnu.org
+Message-ID: <43wrt61fkt.wl%bjg@gnu.org>
+Content-Type: text/plain; charset=US-ASCII
+
+At Wed, 07 Jul 2010 10:14:34 -0500,                                                                                            
+Raymond Rogers wrote:                                                                                                          
+
+> >                                                                                                                            
+> > 1) I was unable to find the valid domain of  the argument a when x<0.                                                      
+> > Experimenting yields what seem to be erratic results.  Apparently                                                          
+> > correct answers occur when {x<0&a<0& a  integer}.  References would be                                                     
+> > sufficient.   Unfortunately {x<0,a<0} is exactly the wrong range for my                                                    
+> > problem; but the recursion relations can be used to stretch to a>0.  If                                                    
+> > I can find a range of correct operation for the domain of "a" of width >1.                                                 
+>                                                                                                                              
+
+| Brian Gough                                                                                                                  
+| Thanks for the email.  There are some comments about the domain for                                                          
+| the hyperg_U_negx function in specfunc/hyperg_U.c -- do they help?                                                           
+
+They explain some things, but I believe the section
+
+  if (b_int && b >= 2 && !(a_int && a <= (b - 2))){}
+  else {}
+
+is implemented incorrectly; and probably the preceding section as well.  Some restructuring of the code would make things clea\
+rer; but things like that should probably done in a different forum: email, blog, etc...
+I think the switches might be wrong.  In any case it seems that b=1 has a hole.  Is there a source for this code?
+
+Note: the new NIST Mathematical handbook might have better algorithms.  I am certainly no expert on implementing mathematical \
+functions (except for finding ways to make them fail).
+
+Ray
+
+Reply-To: rrogers@plaidheron.com
+From: Raymond Rogers <raymond.rogers72@gmail.com>
+To: bug-gsl@gnu.org
+Subject: [Bug-gsl]      Re: hyperg_U(a, b, x) Questions about x<0 and values of a,
+Date: Sun, 11 Jul 2010 14:43:43 -0500
+
+hyperg_U basically fails with b=1, a non-integer; because
+gsl_sf_poch_e(1+a-b,-a,&r1); is throwing a domain error when given
+gamma(0)/gamma(a).
+Checking on and using b=1 after a-integer is checked is illustrated
+below in Octave.   I also put in recursion to evaluate b>=2.
+I checked the b=1 expression against Maple; for a few values x<0,a<0,b=1
+and x<0,a<0,b>=2 integer.
+--------------
+Unfortunately the routine in Octave to call hyperg_U  is only set up for
+real returns, which was okay for versions <1.14 .  Sad to say I am the
+one who implemented the hyperg_U interface, and will probably have to go
+back :-( .  Integrating these functions into Octave was not pleasant;
+but perhaps somebody made it easier.  I did translate the active parts
+of hyperg_U into octave though; so it can be used in that way.
+
+Ray
+
+#
+#
+# Test function to evaluate b=1 for gsl 1.14 hyperg_U x<0
+#
+function anss=hyperg_U_negx_1(a,b,x)
+    int_a=(floor(a)==a);
+    int_b=(floor(b)==b);
+#neg, int, a is already taken care of so use it
+    if (int_a && a<=0)
+        anss=hyperg_U(a,b,x);
+    elseif (int_b && (b==1))
+#from the new NIST DLMF 13.2.41
+
+anss=gamma(1-a)*exp(x)*(hyperg_U(1-a,1,-x)/gamma(a)-hyperg_1F1(1-a,1,-x)*exp((1-a)*pi*I));
+    elseif (b>=2)
+#DLMF 13.3.10
+        anss=((b-1-a)*hyperg_U_negx_1(a,b-1,x) +
+hyperg_U_negx_1(a-1,b-1,x))/x;
+    else
+        anss=hyperg_U(a,b,x);
+    endif
+#
+endfunction
+
+-
+
+------------------------------------------------------------------------
+BUG-ID:   30540   
+STATUS:   Open/Ready For Test
+CATEGORY: Accuracy problem
+SUMMARY:  please, add convergence checks in rk4imp/rk2imp
+
+Quote from http://lists.gnu.org/archive/html/help-gsl/2009-12/msg00047.html
+
+--->8---
+It seems, for example, the 2 stages Gauss points are only iterate 3 steps, without checking whether it is converged or not.
+
+The reason I care about this is, Implicit Gauss RK4 is symplectic, which for Hamiltonian Dynamics simulation is a very important property, it has better conservation of the first integral.
+--->8---
+
+Attached example code (bug.c) for Henon-Heiles problem shows the linear error grow in the Hamiltonian.  Compare with correct behavior for patched solvers (rk2imp.png/rk4imp.png).
+
+Please, review attached patch, targeted to solve the problem.
+
+----NoneThanks for the bug report.
+
+I'm merging a completely new and upgraded version of the ode solvers "ode-initval2" written by Tuomo Keskitalo in the next release.  It includes the new solver ode-initval2/imprk4.c for implicit RK4.
+
+You can get the branch with
+
+bzr checkout http://bzr.savannah.gnu.org/r/gsl/ode-initval2/
+
+To compile it use
+
+  autoreconf -i -f; ./configure --enable-maintainer-mode ; make 
+
+Please try it and let us know if it solves this problem.-I can't figure out how to use this code for fixed step size.  imprk2/imprk4 seems to be not working at all for this case:
+$ ./bug
+Segmentation fault
+
+Other steppers works (e.g. rk2) just fine.  See bug-ode2.c.
+
+Second, Newton-type iterations could be inefficient in general.  See: Ernst Hairer, Christian Lubich, Gerhard Wanner, Geometric Numerical Integration.  Structure-Preserving Algorithms for Ordinary Differential Equations. Springer Series in Comput. Mathematics, Vol. 31, Springer-Verlag 2002. pp. 330-332.
+
+(file #21314)
+
+------------------------------------------------------------------------
+BUG-ID:   30583   
+STATUS:   Open/Confirmed  
+CATEGORY: Documentation
+SUMMARY:  improve documentation for Elliptic functions
+
+the relationship between the Carlson Forms and the standard A&S forms of the elliptic functions should be included in the manual.  
+
+In particular, the identities for negative k should be included, showing how to calculate those cases straightforwardly from the Carlson forms.
+
+See the post "Wolfram EllipticK vs gsl_sf_ellint_Kcomp" on help-gsl.
+
+------------------------------------------------------------------------
+BUG-ID:   30885   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  nans from gsl_sf_coulomb_wave_FG_e(1.2693881947287221e-07, 0.0, lam_F=37, lam_G=36)
+
+From: "Alexey A. Illarionov" <alexey.illarionov@gmail.com>
+To: bug-gsl@gnu.org
+Subject: [Bug-gsl] bug in gsl_sf_coulomb_wave_FG_e (gsl 1.14 compiled with     \
+ gcc 4.5.0)
+Date: Wed, 25 Aug 2010 23:41:14 -0400
+
+[1  <text/plain; UTF-8 (7bit)>]                                                 
+Hi guys,
+
+It seems that I find a bug in gsl_sf_coulomb_wave_FG_e. For large values
+of lambda and small values of x, with eta = 0 it produces nan values
+without raising of the flag.
+
+Here the sample cases (see attachment with example)
+  gsl_sf_coulomb_wave_FG_e(0.,1.2693881947287221e-07, 37, 1, ...)
+  gsl_sf_coulomb_wave_FG_e(0.,5.911135077240691e-07, 39, 1, ...)
+  gsl_sf_coulomb_wave_FG_e(0.,6.118185507743884e-07, 40, 1, ...)
+and lots of others.
+
+It seems that the origin of the problem is at
+coulomb_F_recur
+function (call at coulomb.c:970), that return garbage-like big numbers
+but the error flag is not raised.
+
+Here since we are interested only in unnormalized values  we can makes a
+workaround like checking if values greater than some number, renormalize
+them to 1 for some value. But if this function is used elsewhere with
+the need of normalized values, this workaround will produce problems there.
+
+Unfortunately I don't have time right now to dig in more, I'll try look
+at it at the weekend if the issue is not solved by that date.
+
+P.S. I'm not sure, but for me at this values of arguments (x <<
+x_{turning_point}) using series approximation directly is more adequate
+(if we do not consider G and Gp which I'm not sure how to deal).
+
+------------------------------------------------------------------------
+BUG-ID:   30947   
+STATUS:   Open            
+CATEGORY: None
+SUMMARY:  Please, include fixed step size control object for ode suite
+
+For now fixed step size and adaptive iterations uses different routines (low level gsl_odeiv_step_apply for fixed step size vs gsl_odeiv_evolve_apply).
+
+Attached patch add the control object for the first case.
+
+-Hi,
+
+one important reason for the evolve level functions is to allow for variable step size. If you really require a fixed step size for the stepper level, then you can use the for loop around step_apply function shown in the manual. 
+
+Also, I'm afraid that using your cfxd may not guarantee the use of a fixed step size; also evolve_apply can change the step length, so you might have to have a function something like "evolve_apply_fixed_step_size" to do the job.
+
+BR,
+Tuomo
+
+------------------------------------------------------------------------
+BUG-ID:   31109   
+STATUS:   Open/Confirmed  
+CATEGORY: Performance
+SUMMARY:  ode-initval/bsimp is always high order
+
+The bsimp_alloc() routine uses a very small EPSILON to set the order of
+the integrator, and there seems to be no interface to change this.
+
+The result is that even for small steps and large error tolerances, a
+minimum of 140 function evaluations are taken per timestep.  For my
+application, this is more than an order of magnitude more than are
+necessary.
+
+Tom Quinn       Astronomy, University of Washington
+Internet:       trq@astro.washington.edu
+Phone:          206-685-9009
+
+-
+
+------------------------------------------------------------------------
+BUG-ID:   31362   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  The Complete Elliptic Integrals (gsl_sf_ellint_Ecomp and _Kcomp) Loop Forever with NaN Argument
+
+Feeding a NaN to the complete elliptic integrals causes these functions to loop forever.  Compile and execute the following program:
+
+-------------------
+#include<gsl/gsl_sf.h>
+
+int main() {
+  double nan = 0.0/0.0;
+
+  printf("Elliptic integral of nan = %g\n", gsl_sf_ellint_Ecomp(nan, GSL_PREC_DOUBLE));
+  printf("Elliptic integral of nan = %g\n", gsl_sf_ellint_Kcomp(nan, GSL_PREC_DOUBLE));
+
+  return 0;
+}
+--------------------
+
+Nothing will ever be printed.  I haven't checked any of the other elliptic integral special functions.  Probably these functions should return NaN with NaN arguments, but they could also call gsl_error(...) I suppose.  In any case, the should not loop forever.
+NoneThanks for the bug report.  I've confirmed the problem and added a couple of test cases for it.
+
+------------------------------------------------------------------------
+BUG-ID:   31426   
+STATUS:   Open/Confirmed  
+CATEGORY: Runtime error
+SUMMARY:  infinite loop in gsl_eigen_symm
+
+Jens Jarolowski wrote:
+>
+> 1)
+> I get an infinite loop in gsl_eigen_symm for a 1024 x 1024 Matrix .
+>
+> This matrix is contained in the file mat.bin in mat.zip, the program eigenval\
+s.cpp reads a matrix from file and executes gsl_eigen_symm .
+>
+> I use gsl 1.14 .
+>
+> Kernel :
+> Linux 2.6.18.2-34-default x86_64
+>
+> Distribution:
+> openSUSE 10.2 (X86-64)
+>
+> 2)
+> for gsl 1.8 on windows xp I get no loop but NaN-values !
+>
+
+---There was a previous report of the same thing
+
+https://savannah.gnu.org/bugs/?28096
+
+It should have been fixed by the change at
+http://git.savannah.gnu.org/gitweb/?p=gsl.git;a=commitdiff;h=f3e5b699128dd487c8f9442ced9dfc6cf5422923
+
+but apparently that didn't fix all the causes.
+
+------------------------------------------------------------------------
+BUG-ID:   32257   
+STATUS:   Open            
+CATEGORY: None
+SUMMARY:  RFE: Import integration routines from quadrule
+
+I think you might want to have a look at quadrule
+
+http://people.sc.fsu.edu/~jburkardt/c_src/quadrule/quadrule.html
+
+which is LGPL licensed and thus could be integrated straight away in GSL. For instance Lobatto quadrature would be a good candidate for inclusion...
+
+------------------------------------------------------------------------
+BUG-ID:   32306   
+STATUS:   Open/Confirmed  
+CATEGORY: Accuracy problem
+SUMMARY:  sign error in gsl_sf_hyperg_2F1
+
+There's a sign error discontinuity in gsl_sf_hyperg_2F1(-0.5,1.5,1,x) for x~=~0.5
+
+bjg@nc:~/tmp$ ./a.out 
+0.5 -0.539352 8.64471e-15
+0.5 0.539353 6.22896e-14
+
+--
+
+------------------------------------------------------------------------
+BUG-ID:   32776   
+STATUS:   Open            
+CATEGORY: None
+SUMMARY:  RFE: Add brute-force quadratic numerical multidimensional minimizer
+
+Hi,
+
+currently there is no multidimensional minimizer that uses numerical derivatives. In many cases the Nelder and Mead routines aren't good enough and one would like to use brute-force numerics.
+
+Attached is a simple quadratic routine that could be added (suitably cleaned up) to provide this capability.
+-
+
+------------------------------------------------------------------------

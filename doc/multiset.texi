@@ -1,0 +1,201 @@
+@cindex multisets
+
+This chapter describes functions for creating and manipulating multisets. A
+multiset @math{c} is represented by an array of @math{k} integers in the range
+0 to @math{n-1}, where each value @math{c_i} may occur more than once.  The
+multiset @math{c} corresponds to indices of @math{k} elements chosen from an
+@math{n} element vector with replacement.  In mathematical terms, @math{n} is
+the cardinality of the multiset while @math{k} is the maximum multiplicity of
+any value.  Multisets are useful, for example, when iterating over the indices
+of a @math{k}-th order symmetric tensor in @math{n}-space.
+
+The functions described in this chapter are defined in the header file
+@file{gsl_multiset.h}.
+
+@menu
+* The Multiset struct::
+* Multiset allocation::
+* Accessing multiset elements::
+* Multiset properties::
+* Multiset functions::
+* Reading and writing multisets::
+* Multiset Examples::
+@end menu
+
+@node The Multiset struct
+@section The Multiset struct
+@tpindex gsl_multiset
+A multiset is defined by a structure containing three components, the
+values of @math{n} and @math{k}, and a pointer to the multiset array.
+The elements of the multiset array are all of type @code{size_t}, and
+are stored in increasing order.  The @code{gsl_multiset} structure
+looks like this,
+
+@example
+typedef struct
+@{
+  size_t n;
+  size_t k;
+  size_t *data;
+@} gsl_multiset;
+@end example
+@comment
+
+@noindent
+
+@node Multiset allocation
+@section Multiset allocation
+
+@deftypefun {gsl_multiset *} gsl_multiset_alloc (size_t @var{n}, size_t @var{k})
+This function allocates memory for a new multiset with parameters @var{n},
+@var{k}.  The multiset is not initialized and its elements are undefined.  Use
+the function @code{gsl_multiset_calloc} if you want to create a multiset which
+is initialized to the lexicographically first multiset element. A null pointer
+is returned if insufficient memory is available to create the multiset.
+@end deftypefun
+
+@deftypefun {gsl_multiset *} gsl_multiset_calloc (size_t @var{n}, size_t @var{k})
+This function allocates memory for a new multiset with parameters @var{n},
+@var{k} and initializes it to the lexicographically first multiset element. A
+null pointer is returned if insufficient memory is available to create the
+multiset.
+@end deftypefun
+
+@deftypefun void gsl_multiset_init_first (gsl_multiset * @var{c})
+This function initializes the multiset @var{c} to the lexicographically first
+multiset element, i.e. @math{0} repeated @math{k} times.
+@end deftypefun
+
+@deftypefun void gsl_multiset_init_last (gsl_multiset * @var{c})
+This function initializes the multiset @var{c} to the lexicographically last
+multiset element, i.e. @math{n-1} repeated @math{k} times.
+@end deftypefun
+
+@deftypefun void gsl_multiset_free (gsl_multiset * @var{c})
+This function frees all the memory used by the multiset @var{c}.
+@end deftypefun
+
+@deftypefun int gsl_multiset_memcpy (gsl_multiset * @var{dest}, const gsl_multiset * @var{src})
+This function copies the elements of the multiset @var{src} into the
+multiset @var{dest}.  The two multisets must have the same size.
+@end deftypefun
+
+
+@node Accessing multiset elements
+@section Accessing multiset elements
+
+The following function can be used to access the elements of a multiset.
+
+@deftypefun size_t gsl_multiset_get (const gsl_multiset * @var{c}, const size_t @var{i})
+This function returns the value of the @var{i}-th element of the
+multiset @var{c}.  If @var{i} lies outside the allowed range of 0 to
+@math{@var{k}-1} then the error handler is invoked and 0 is returned.  @inlinefn{}
+@end deftypefun
+
+@node Multiset properties
+@section Multiset properties
+
+@deftypefun size_t gsl_multiset_n (const gsl_multiset * @var{c})
+This function returns the range (@math{n}) of the multiset @var{c}.
+@end deftypefun
+
+@deftypefun size_t gsl_multiset_k (const gsl_multiset * @var{c})
+This function returns the number of elements (@math{k}) in the multiset @var{c}.
+@end deftypefun
+
+@deftypefun {size_t *} gsl_multiset_data (const gsl_multiset * @var{c})
+This function returns a pointer to the array of elements in the
+multiset @var{c}.
+@end deftypefun
+
+@deftypefun int gsl_multiset_valid (gsl_multiset * @var{c})
+@cindex checking multiset for validity
+@cindex testing multiset for validity
+This function checks that the multiset @var{c} is valid.  The @var{k}
+elements should lie in the range 0 to @math{@var{n}-1}, with each
+value occurring in nondecreasing order.
+@end deftypefun
+
+@node Multiset functions
+@section Multiset functions
+
+@deftypefun int gsl_multiset_next (gsl_multiset * @var{c})
+@cindex iterating through multisets
+This function advances the multiset @var{c} to the next multiset element in
+lexicographic order and returns @code{GSL_SUCCESS}.  If no further multisets
+elements are available it returns @code{GSL_FAILURE} and leaves @var{c}
+unmodified.  Starting with the first multiset and repeatedly applying this
+function will iterate through all possible multisets of a given order.
+@end deftypefun
+
+@deftypefun int gsl_multiset_prev (gsl_multiset * @var{c})
+This function steps backwards from the multiset @var{c} to the previous
+multiset element in lexicographic order, returning @code{GSL_SUCCESS}.  If no
+previous multiset is available it returns @code{GSL_FAILURE} and leaves @var{c}
+unmodified.
+@end deftypefun
+
+@node Reading and writing multisets
+@section Reading and writing multisets
+
+The library provides functions for reading and writing multisets to a
+file as binary data or formatted text.
+
+@deftypefun int gsl_multiset_fwrite (FILE * @var{stream}, const gsl_multiset * @var{c})
+This function writes the elements of the multiset @var{c} to the
+stream @var{stream} in binary format.  The function returns
+@code{GSL_EFAILED} if there was a problem writing to the file.  Since the
+data is written in the native binary format it may not be portable
+between different architectures.
+@end deftypefun
+
+@deftypefun int gsl_multiset_fread (FILE * @var{stream}, gsl_multiset * @var{c})
+This function reads elements from the open stream @var{stream} into the
+multiset @var{c} in binary format.  The multiset @var{c} must be
+preallocated with correct values of @math{n} and @math{k} since the
+function uses the size of @var{c} to determine how many bytes to read.
+The function returns @code{GSL_EFAILED} if there was a problem reading
+from the file.  The data is assumed to have been written in the native
+binary format on the same architecture.
+@end deftypefun
+
+@deftypefun int gsl_multiset_fprintf (FILE * @var{stream}, const gsl_multiset * @var{c}, const char * @var{format})
+This function writes the elements of the multiset @var{c}
+line-by-line to the stream @var{stream} using the format specifier
+@var{format}, which should be suitable for a type of @var{size_t}.
+In ISO C99 the type modifier @code{z} represents @code{size_t}, so
+@code{"%zu\n"} is a suitable format.@footnote{In versions of the
+GNU C library prior to the ISO C99 standard,
+the type modifier @code{Z} was used instead.}  The function returns
+@code{GSL_EFAILED} if there was a problem writing to the file.
+@end deftypefun
+
+@deftypefun int gsl_multiset_fscanf (FILE * @var{stream}, gsl_multiset * @var{c})
+This function reads formatted data from the stream @var{stream} into the
+multiset @var{c}.  The multiset @var{c} must be preallocated with
+correct values of @math{n} and @math{k} since the function uses the size of @var{c} to
+determine how many numbers to read.  The function returns
+@code{GSL_EFAILED} if there was a problem reading from the file.
+@end deftypefun
+
+
+@node Multiset Examples
+@section Examples
+The example program below prints all multisets elements containing the values
+@math{@{0,1,2,3@}} ordered by size.  Multiset elements of the same size are
+ordered lexicographically.
+
+@example
+@verbatiminclude examples/multiset.c
+@end example
+
+@noindent
+Here is the output from the program,
+
+@example
+$ ./a.out
+@verbatiminclude examples/multiset.out
+@end example
+
+@noindent
+All 70 multisets are generated and sorted lexicographically.

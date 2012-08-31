@@ -1,0 +1,4 @@
+# -*- org -*-
+#+CATEGORY: combination
+
+* The module has a lot of overlap with multiset/ some of the functions could be abstracted out.

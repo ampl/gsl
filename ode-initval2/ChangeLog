@@ -1,0 +1,265 @@
+2011-05-02  Brian Gough  <bjg@network-theory.co.uk>
+
+	* gsl_odeiv2.h: fix header guard to __GSL_ODEIV2_H__
+
+2011-05-01  Tuomo Keskitalo  <Tuomo.Keskitalo@iki.fi>
+
+	* Replaced ChangeLog with contents of ode-initval2 development log
+	file (ChangeLog-odeiv2_development) and reformatted the log file.
+
+2010-10-16  Tuomo Keskitalo  <Tuomo.Keskitalo@iki.fi>
+
+	* Modified evolve and driver so that when user function returns
+	GSL_EBADFUNC, then ode-initval2 functions return immediately with
+	that same return value.
+
+	* Corrected bug in msadams for saving ordm1coeff to state. Thanks
+	to Andrew Benson for pointing out this bug!
+
+2010-10-10  Tuomo Keskitalo  <Tuomo.Keskitalo@iki.fi>
+
+	* driver.c: Corrected error in driver_evolve_apply, integration to
+	negative direction should work now.
+
+	* Added evolve_apply_fixed_step and driver_apply_fixed_step for
+	users who want to use a constant step size to evolve the system.
+
+	* test.c: added test cases for driver (negative evolution,
+	apply_fixed_step).
+
+	* gsl_odeiv2.h: cleaning and add apply_fixed_step functions.
+
+	* doc/ode-initval.texi: Replaced derivative apostrophe with \prime
+	(because my new system fails to make ps otherwise). Added new
+	documentation about apply_fixed_step functions.
+
+2010-10-09  Tuomo Keskitalo  <Tuomo.Keskitalo@iki.fi>
+
+	* ode-initval2 bzr development branch now at savannah:
+	http://bzr.savannah.gnu.org/r/gsl/ode-initval2/
+
+2010-01-02  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* Changes from ode-initval2-0.9 to ode-initval2-1.0:
+
+	* Removed set_control member from step object and added a
+	set_driver member to evolve, control and step objects, so that the
+	driver object and consequently evolve, control and step objects
+	are all accessible from another. Currently only some steppers
+	utilize this. They access the control_errlevel function via
+	state->driver->c instead of state->control. This modification to
+	the framework enables implementation of more efficient ODE
+	solvers, which utilize communication among evolve, control and
+	stepper objects. This also means that some steppers now require a
+	driver object, and it is best to use those stepper methods through
+	driver object functions.
+
+	* cstd.c and cscal.c: Added a sanity check for errlev <= 0
+
+	* run indent -gnu -nut for *.c *.h
+
+	* driver.c: added function odeiv2_driver_alloc_standard_new and
+	odeiv2_driver_alloc_yp_new
+
+	* driver.c: changed n and nmax in driver struct to unsigned long
+	int
+
+	* modified documentation accordingly with small nomenclature
+	changes and made year updates to source files
+
+2009-11-01  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* Merged with master and modified source to be published as a
+	package for gsl-1.13.
+
+2009-05-09  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* Agreed with Brian Gough that the modification I've made cannot
+	be incorporated to GSL until a major version number change, due to
+	changes in API.
+
+	* Replated rk2imp with imprk2 and rk4imp with imprk4. Also renamed
+	impeuler to rk1imp for consistency.
+
+	* Deleted steppers that are deprecated considering new major
+	release: gear1, gear2, and rk2simp. Modified test.c accordingly.
+
+2009-05-01  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* Merged with master (evolve.c and test.c needed some manual
+	work).
+
+	* driver.c: Modified alloc-functions to minimal interface, added
+	set_hmax, set_nmax and set_hmin functions.
+
+	* test.c: Added test for minimum allowed step size.
+	Applied indent -gnu -nut.
+
+	* doc/ode-initval.texi: Updated documentation, added Driver
+	section, updated examples.
+
+2009-04-05  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* Several uninitialized variable corrections from Brian Gough
+	added
+
+	* modnewton1, impeuler, imprk2, imprk4: removed unneeded arguments
+	from solve and init
+
+	* msadams and msbdf modifications:
+
+	* added ordprevbackup, ordwaitbackup (backups) and failcount (to
+	detect repeated steps rejections).
+
+	* added checks to make sure order is not changed by more than one
+	order. Added sanity check to catch it.
+
+	* corrected failure and rejection handling for first step
+
+	* Added a heuristic stability enhancement for msbdf. This is yet
+	to be tested in practice.
+
+	* test.c: Added more benchmark test cases. The results seem
+	sensible.
+
+	* test.c: Note for benchmark_precision: msbdf performs badly in
+	rhs_func_exp. Newton iteration starts to fail to converge at some
+	point, and this forces very small step sizes to be used. I
+	currently think that this is not a bug, but that msbdf is just not
+	suitable for this problem. I think that msbdf's prediction step
+	does not give a good initial guess for Newton iteration in this
+	case.
+
+	* I tried to increase max_iter in msbdf from 3 to 7 (value used in
+	modnewton1), and as a result, the performance was better for this
+	case (Newton iteration convergence was better). However, I would
+	not increase max_iter, because the default value of 3 is the value
+	used by the authors in the references, and because it would
+	decrease the efficiency of msbdf (method would use more function
+	evaluations per step, and convergence might still not be
+	achieved). It is best to useanother stepper in this kind of a
+	case.
+
+2009-02-28  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* new stepper: msbdf. This is a variable-coefficient linear
+	multistep backward differentiation formula (BDF) method in
+	Nordsieck form. It appears to handle stiff cases well and it is
+	efficient!
+
+	* test.c: Ordered functions in file. Added extreme test case.
+
+	* modnewton1: Convergence test now takes the desired error level
+	via control object into account. Modified steppers that use
+	modnewton1 accordingly.
+
+	* modnewton1: Removed reuse_decomp. The variable was useless since
+	iteration matrix is reconstructed at each stepper call.
+
+	* modnewton1: Dropped max_iter from 10 to 7. Hairer and Wanner
+	suggests a "relatively high number", but many iterations per step
+	is costly.
+
+	* steppers that use step doubling for error estimates: Introduced
+	constant GSL_ODEIV_ERR_SAFETY in gsl_odeiv.h that is used to
+	multiply the error estimates (yerr). This way user can modify this
+	coefficient in one place if a change is wanted.
+
+	* driver.c: This is a high level wrapper for ode-initval, which
+	was wished for in TODO. Added test_driver to test.c to test it. Is
+	this functionality enough?
+
+	* ode-initval.texi: Added documentation for new steppers. Moved
+	note about user error codes to system definition.
+
+	* Some finetuning / code cleanup.
+
+2009-01-21  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* New explicit stepper: msadams (An explicit variable-coefficient
+	linear multistep Adams method in Nordsieck form). Functional
+	iteration is used to solve the non-linear equation system. The
+	algorithms described in the references (see msadams.c) have been
+	adapted to fit GSL odeiv framework. Currently this is beta, but
+	the stepper now passes the odeiv test suite.
+
+	* control.c, cstd.c, cscal.c: Added errlev function which
+	calculates desired error level. This is used in masadams (and can
+	be used in imp* steppers, too) to control accuracy of functional
+	iteration. User must call gsl_odeiv_step_set_control after
+	allocating step and control objects to pass the information about
+	control object to stepper. This change (or something similar) is
+	needed to pass tolerance for the stepper routines that need
+	it. Modified stepper routines accordingly.
+
+	* evolve.c: Changed the step length scaling coefficient for
+	stepper failure from 0.1 to 0.5, because msadams seems to cope
+	much better with this change in stiff[0,1] test case.
+
+	* gsl_odeiv.h: gsl_odeiv_control and control_type introduced
+	earlier because gsl_odeiv_step_type now refers to it.
+
+2008-11-01  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* New implicit solvers: imprk4 (replaces imprk42 in previous test
+	package), imprk2 (replaces imprk21 in previous test package) and
+	impeuler, which use modified Newton iteration to solve the
+	implicit equations. I decided to dump imprk42 and imprk21 because
+	I was unsure how to calculate the error estimates for them. I
+	think that these new implicit methods could be used instead of
+	rk4imp, rk2imp, gear2 and gear1, which use functional
+	iteration (which is inefficient for stiff problems.) However, even
+	these new solvers can not be used efficiently for truly nasty
+	stiff problems, and better solvers are still needed.
+
+	* modnewton1.c: a modified Newton solver for solution of
+	non-linear equations of implicit solvers. Jacobian evaluation has
+	been moved from modnewton1 to imprk2, imprk4 and impeuler.
+
+	* evolve.c: modification to decrease step size if stepper fails,
+	instead of giving up immediately.
+
+	* evolve.c: A bug fix: Exit with GSL_FAILURE if step size reaches
+	machine precision instead of continuing with old step size.
+
+	* test.c: added Robertson stiff test
+
+	* test.c: embedded test_oregonator to test_compare_stiff_probelms
+	to test several stiff problems. Note: the tested integration
+	interval is rather short due to inefficiency of solvers other than
+	bsimp in these problems.
+
+	* test.c: modified test_compare_vanderpol and
+	test_compare_stiff_problems to check against results from first
+	ode-solver. Changed rk4 or bsimp to first place.
+
+	* test.c: modified stepfn and stepfn2 and expanded these to be
+	tested with all explicit solvers
+
+	* test.c: removed stepfn3 and added test_broken and
+	test_stepsize_fail to check that evolve decreases step size below
+	machine precision and exits with a failure code in the end if user
+	functions fail continuously.
+
+	* Changes in ode-initval.texi:
+
+	* removed untrue sentence concerning stepping functions: "The
+	step-size @var{h} will be set to the step-size which caused the
+	error."
+
+	* Changed gsl_odeiv_system variable name from dydt to sys for
+	clarity
+
+	* added "explicit" or "implicit" to stepper introductions for
+	clarity
+
+	* reformulated description of evolve_apply and step_apply and made
+	changes to reflect the modifications to the code.
+
+	* clarified the point on integrating over discontinuities. It is
+	best to integrate in sequences.
+
+	* removed the text suggesting the user to force a step size to
+	integrate over the edge of a discontinuity. The applicability of
+	this kind of a numerical tweak depends on the case, and should in
+	my opinion not to be included in a reference book.

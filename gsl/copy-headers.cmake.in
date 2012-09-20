@@ -1,0 +1,3 @@
+foreach (path @GSL_HEADER_PATHS@)
+  configure_file(${path} "@GSL_BINARY_DIR@/gsl" COPY_ONLY)
+endforeach ()

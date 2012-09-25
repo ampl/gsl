@@ -18,7 +18,5 @@ add_executable(gslspecfunc-test
   test_dilog.c test_gamma.c test_hyperg.c test_legendre.c test_mathieu.c)
 target_link_libraries(gslspecfunc-test
   gslspecfunc gsleigen gsllinalg gslsort gslmatrix gslvector gslblas
-  gslcblas gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils)
-if (NOT WIN32)
-  target_link_libraries(gslspecfunc-test m)
-endif ()
+  gslcblas gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils
+  ${CMAKE_REQUIRED_LIBRARIES})

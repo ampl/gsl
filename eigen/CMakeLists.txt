@@ -6,7 +6,4 @@ add_executable(gsleigen-test test.c)
 target_link_libraries(gsleigen-test
   gsleigen gsltest gsllinalg gslpermutation gslblas gslcblas gslmatrix
   gslvector gslblock gslcomplex gslieeeutils gslsys gslerr utils gslrng
-  gslsort)
-if (NOT WIN32)
-  target_link_libraries(gsleigen-test m)
-endif ()
+  gslsort ${CMAKE_REQUIRED_LIBRARIES})

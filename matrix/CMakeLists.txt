@@ -4,14 +4,10 @@ add_library(gslmatrix
 
 add_executable(gslmatrix-test test.c)
 target_link_libraries(gslmatrix-test
-  gslmatrix gslvector gslblock gslieeeutils gslerr gsltest gslsys utils)
-if (NOT WIN32)
-  target_link_libraries(gslmatrix-test m)
-endif ()
+  gslmatrix gslvector gslblock gslieeeutils gslerr gsltest gslsys utils
+  ${CMAKE_REQUIRED_LIBRARIES})
 
 add_executable(gslmatrix-test-static test_static.c)
 target_link_libraries(gslmatrix-test-static
-  gslmatrix gslvector gslblock gslieeeutils gslerr gsltest gslsys utils)
-if (NOT WIN32)
-  target_link_libraries(gslmatrix-test-static m)
-endif ()
+  gslmatrix gslvector gslblock gslieeeutils gslerr gsltest gslsys utils
+  ${CMAKE_REQUIRED_LIBRARIES})

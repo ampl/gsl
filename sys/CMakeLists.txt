@@ -4,7 +4,4 @@ add_library(gslsys
 
 add_executable(gslsys-test test.c)
 target_link_libraries(gslsys-test
-  gslsys gslieeeutils gslerr gsltest gslsys utils)
-if (NOT WIN32)
-  target_link_libraries(gslsys-test m)
-endif ()
+  gslsys gslieeeutils gslerr gsltest gslsys utils ${CMAKE_REQUIRED_LIBRARIES})

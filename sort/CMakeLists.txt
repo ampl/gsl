@@ -3,7 +3,5 @@ add_library(gslsort
 
 add_executable(gslsort-test test.c)
 target_link_libraries(gslsort-test
-  gslsort gslpermutation gslvector gslblock gslieeeutils gslerr gsltest gslsys)
-if (NOT WIN32)
-  target_link_libraries(gslsort-test m)
-endif ()
+  gslsort gslpermutation gslvector gslblock gslieeeutils gslerr gsltest gslsys
+  ${CMAKE_REQUIRED_LIBRARIES})

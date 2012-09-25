@@ -6,7 +6,5 @@ add_library(gsllinalg
 add_executable(gsllinalg-test test.c)
 target_link_libraries(gsllinalg-test
   gsllinalg gslblas gslcblas gslpermutation gslmatrix gslvector
-  gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils)
-if (NOT WIN32)
-  target_link_libraries(gsllinalg-test m)
-endif ()
+  gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils
+  ${CMAKE_REQUIRED_LIBRARIES})

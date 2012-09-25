@@ -27,7 +27,4 @@ add_executable(gslcblas-test
   test_syrk.c test_tbmv.c test_tbsv.c test_tpmv.c test_tpsv.c test_trmm.c
   test_trmv.c test_trsm.c test_trsv.c)
 target_link_libraries(gslcblas-test
-  gslcblas gslieeeutils gslerr gsltest gslsys)
-if (NOT WIN32)
-  target_link_libraries(gslcblas-test m)
-endif ()
+  gslcblas gslieeeutils gslerr gsltest gslsys ${CMAKE_REQUIRED_LIBRARIES})

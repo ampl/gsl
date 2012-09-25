@@ -13,10 +13,8 @@ add_library(gslspecfunc
   mathieu_radfunc.c mathieu_workspace.c poch.c pow_int.c psi.c recurse.h
   result.c shint.c sinint.c synchrotron.c transport.c trig.c zeta.c)
 
-add_executable(gslspecfunc-test
+add_gsl_test(gslspecfunc-test
   test_sf.c test_sf.h test_airy.c test_bessel.c test_coulomb.c
-  test_dilog.c test_gamma.c test_hyperg.c test_legendre.c test_mathieu.c)
-target_link_libraries(gslspecfunc-test
-  gslspecfunc gsleigen gsllinalg gslsort gslmatrix gslvector gslblas
-  gslcblas gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils
-  ${CMAKE_REQUIRED_LIBRARIES})
+  test_dilog.c test_gamma.c test_hyperg.c test_legendre.c test_mathieu.c
+  LIBS gslspecfunc gsleigen gsllinalg gslsort gslmatrix gslvector gslblas
+  gslcblas gslblock gslcomplex gslieeeutils gslerr gsltest gslsys utils)

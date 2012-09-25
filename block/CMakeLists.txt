@@ -1,6 +1,4 @@
 add_library(gslblock init.c file.c block.c)
 
-add_executable(gslblock-test test.c)
-target_link_libraries(gslblock-test
-  gslblock gslieeeutils gslerr gsltest gslsys utils
-  ${CMAKE_REQUIRED_LIBRARIES})
+add_gsl_test(gslblock-test test.c
+  LIBS gslblock gslieeeutils gslerr gsltest gslsys utils)

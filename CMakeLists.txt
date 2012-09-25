@@ -270,6 +270,25 @@ file(WRITE ${GSL_BINARY_DIR}/config.h
 ${CONFIG_OUT}")
 
 include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})
+add_definitions(-DHAVE_CONFIG_H)
+
+enable_testing()
+
+# Adds a GSL test. Usage:
+#   add_gsl_test(<exename> <source> ... [LIBS <library> ...])
+function(add_gsl_test exename)
+  set(var sources)
+  foreach (arg ${ARGN})
+    if ("${arg}" STREQUAL LIBS)
+      set(var libs)
+    else ()
+      set(${var} ${${var}} ${arg})
+    endif ()
+  endforeach ()
+  add_executable(${exename} ${sources})
+  target_link_libraries(${exename} ${libs} ${CMAKE_REQUIRED_LIBRARIES})
+  add_test(${exename} ${exename})
+endfunction()
 
 add_subdirectory(gsl)
 add_subdirectory(utils)

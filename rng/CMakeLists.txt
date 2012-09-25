@@ -6,6 +6,5 @@ add_library(gslrng
   taus.c taus113.c transputer.c tt.c types.c uni32.c uni.c vax.c waterman14.c
   zuf.c inline.c)
 
-add_executable(gslrng-test test.c)
-target_link_libraries(gslrng-test
-  gslrng gslieeeutils gslerr gsltest gslsys utils ${CMAKE_REQUIRED_LIBRARIES})
+add_gsl_test(gslrng-test test.c
+  LIBS gslrng gslieeeutils gslerr gsltest gslsys utils)

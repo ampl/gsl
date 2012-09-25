@@ -24,12 +24,11 @@ foreach (line ${CONFIG})
   endif ()
 endforeach ()
 set(PACKAGE_VERSION ${VERSION})
+set(PACKAGE_STRING "${PACKAGE} ${VERSION}")
 
 if (NOT (VERSION MATCHES "\\+"))
   set(RELEASED /**/)
 endif ()
-
-set(PACKAGE_STRING "${PACKAGE} ${VERSION}")
 
 include(CheckCSourceCompiles)
 
@@ -70,19 +69,12 @@ endif ()
 include(CheckIncludeFiles)
 
 # Checks for header files.
-macro(check_headers headers)
-  foreach (header ${headers})
-    string(TOUPPER HAVE_${header} var)
-    string(REGEX REPLACE "\\.|/" "_" var ${var})
-    check_include_files(${header} ${var})
-    set(HEADER_VARS ${HEADER_VARS} ${var})
-  endforeach ()
-endmacro()
-
-set(HEADERS
-  ieeefp.h dlfcn.h inttypes.h memory.h stdint.h stdlib.h
-  strings.h string.h sys/stat.h sys/types.h unistd.h)
-check_headers("${HEADERS}")
+foreach (header ieeefp.h dlfcn.h inttypes.h memory.h stdint.h stdlib.h
+                strings.h string.h sys/stat.h sys/types.h unistd.h)
+  string(TOUPPER HAVE_${header} var)
+  string(REGEX REPLACE "\\.|/" "_" var ${var})
+  check_include_files(${header} ${var})
+endforeach ()
 
 check_include_files(stdio.h STDC_HEADERS)
 
@@ -145,9 +137,20 @@ if (HAVE_LIBM)
   set(CMAKE_REQUIRED_LIBRARIES m)
 endif ()
 
+# Compiles the source code, runs the program and sets ${VAR} to 1 if the
+# return value is equal to ${RESULT}.
+macro(check_run_result SRC RESULT VAR)
+  set(SRC_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c)
+  file(WRITE ${SRC_FILE} "${SRC}")
+  try_run(RUN_RESULT COMPILE_RESULT ${CMAKE_BINARY_DIR} ${SRC_FILE}
+          CMAKE_FLAGS -DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES})
+  if (RUN_RESULT EQUAL ${RESULT})
+    set(${VAR} 1)
+  endif ()
+endmacro()
+
 # Check IEEE comparisons, whether "x != x" is true for NaNs.
-set(TEST_SRC ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.c)
-file(WRITE ${TEST_SRC} "
+check_run_result("
   #include <math.h>
   int main (void)
   {
@@ -156,15 +159,10 @@ file(WRITE ${TEST_SRC} "
      nan = inf / inf ;
      status = (nan == nan);
      exit (status);
-  }")
-try_run(RUN_RESULT COMPILE_RESULT ${CMAKE_BINARY_DIR} ${TEST_SRC}
-      CMAKE_FLAGS -DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES})
-if (RUN_RESULT EQUAL 0)
-  set(HAVE_IEEE_COMPARISONS 1)
-endif ()
+  }" 0 HAVE_IEEE_COMPARISONS)
 
 # Check for IEEE denormalized arithmetic.
-file(WRITE ${TEST_SRC} "
+check_run_result("
   #include <math.h>
   int main (void)
   {
@@ -174,78 +172,25 @@ file(WRITE ${TEST_SRC} "
      for (i = 0; i < 5; i++) { z = z * 10.0 ; };
      status = (z == 0.0);
      exit (status);
-  }")
-try_run(RUN_RESULT COMPILE_RESULT ${CMAKE_BINARY_DIR} ${TEST_SRC}
-      CMAKE_FLAGS -DLINK_LIBRARIES:STRING=${CMAKE_REQUIRED_LIBRARIES})
-if (RUN_RESULT EQUAL 0)
-  set(HAVE_IEEE_DENORMALS 1)
-endif ()
+  }" 0 HAVE_IEEE_DENORMALS)
 
 # Check for long double stdio.
-file(WRITE ${TEST_SRC} "
+check_run_result("
   #include <stdlib.h>
   #include <stdio.h>
   int main (void)
   {
-    const char * s = "5678.25"; long double x = 1.234 ;
-    fprintf(stderr,"%Lg\n",x) ;
-    sscanf(s, "%Lg", &x);
+    const char * s = \"5678.25\"; long double x = 1.234 ;
+    fprintf(stderr,\"%Lg\n\",x) ;
+    sscanf(s, \"%Lg\", &x);
     if (x == 5678.25) {exit (0);} else {exit(1); }
-  }")
-try_run(RUN_RESULT COMPILE_RESULT ${CMAKE_BINARY_DIR} ${TEST_SRC})
-if (RUN_RESULT EQUAL 0)
-  set(HAVE_PRINTF_LONGDOUBLE 1)
-endif ()
+  }" 0 HAVE_PRINTF_LONGDOUBLE)
 
 if (NOT CMAKE_COMPILER_IS_GNUCC)
-  file(WRITE ${TEST_SRC} "
+  check_run_result("
     #include <limits.h>
-    int main (void) { return CHAR_MIN == 0; }")
-  try_run(RUN_RESULT COMPILE_RESULT ${CMAKE_BINARY_DIR} ${TEST_SRC})
-  if (RUN_RESULT EQUAL 1)
-    set(__CHAR_UNSIGNED__ 1)
-  endif ()
+    int main (void) { return CHAR_MIN == 0; }" 1 __CHAR_UNSIGNED__)
 endif ()
-
-file(READ ${GSL_SOURCE_DIR}/config.h.in CONFIG)
-
-# HAVE_DOPRNT is not defined because all current systems have vprintf
-# (http://bit.ly/ROIckb).
-foreach (var inline HAVE_INLINE HAVE_C99_INLINE HIDE_INLINE_STATIC
-             size_t volatile
-             RELEASED
-             ${HEADER_VARS} STDC_HEADERS
-             HAVE_DOPRNT
-             HAVE_GNUSPARC_IEEE_INTERFACE
-             HAVE_GNUM68K_IEEE_INTERFACE
-             HAVE_GNUPPC_IEEE_INTERFACE
-             HAVE_GNUX86_IEEE_INTERFACE
-             HAVE_SUNOS4_IEEE_INTERFACE
-             HAVE_SOLARIS_IEEE_INTERFACE
-             HAVE_HPUX11_IEEE_INTERFACE
-             HAVE_HPUX_IEEE_INTERFACE
-             HAVE_TRU64_IEEE_INTERFACE
-             HAVE_IRIX_IEEE_INTERFACE
-             HAVE_AIX_IEEE_INTERFACE
-             HAVE_FREEBSD_IEEE_INTERFACE
-             HAVE_OS2EMX_IEEE_INTERFACE
-             HAVE_NETBSD_IEEE_INTERFACE
-             HAVE_OPENBSD_IEEE_INTERFACE
-             HAVE_DARWIN_IEEE_INTERFACE
-             HAVE_DARWIN86_IEEE_INTERFACE
-             HAVE_FPU_X86_SSE
-             HAVE_IEEE_COMPARISONS
-             HAVE_IEEE_DENORMALS
-             HAVE_PRINTF_LONGDOUBLE
-             __CHAR_UNSIGNED__)
-  if (${var})
-    string(REGEX REPLACE "#( *)undef ${var}"
-      "#\\1define ${var} ${${var}}" CONFIG "${CONFIG}")
-  else ()
-    string(REGEX REPLACE "#( *)undef ${var}"
-      "/* #\\1undef ${var} */" CONFIG "${CONFIG}")
-  endif ()
-endforeach ()
 
 # Remember to put a definition in config.h.in for each of these.
 include(CheckSymbolExists)
@@ -293,33 +238,36 @@ check_symbol_exists(strtol stdlib.h HAVE_STRTOL)
 check_symbol_exists(strtoul stdlib.h HAVE_STRTOUL)
 check_symbol_exists(vprintf stdio.h HAVE_VPRINTF)
 
-foreach (var PACKAGE PACKAGE_NAME PACKAGE_TARNAME VERSION PACKAGE_VERSION
-             PACKAGE_BUGREPORT PACKAGE_URL PACKAGE_STRING LT_OBJDIR
-             HAVE_LIBM
-             HAVE_EXIT_SUCCESS_AND_FAILURE
-             HAVE_DECL_FEENABLEEXCEPT HAVE_DECL_FESETTRAPENABLE
-             HAVE_DECL_HYPOT HAVE_DECL_EXPM1 HAVE_DECL_ACOSH
-             HAVE_DECL_ASINH HAVE_DECL_ATANH HAVE_DECL_LDEXP
-             HAVE_DECL_FREXP HAVE_DECL_FPRND_T HAVE_DECL_ISINF
-             HAVE_DECL_ISFINITE HAVE_DECL_FINITE HAVE_DECL_ISNAN
-             HAVE_DECL_LOG1P
-             HAVE_EXTENDED_PRECISION_REGISTERS
-             HAVE_MEMCPY HAVE_MEMMOVE HAVE_STRDUP HAVE_STRTOL HAVE_STRTOUL
-             HAVE_VPRINTF)
-  if (NOT (var MATCHES ^HAVE))
-    set(value \"${${var}}\")
-  elseif (${var})
-    set(value 1)
-  else ()
-    set(value 0)
+# Process config.h using autoconf rules.
+file(STRINGS ${GSL_SOURCE_DIR}/config.h.in CONFIG)
+list(LENGTH CONFIG length)
+math(EXPR length "${length} - 1")
+foreach (i RANGE ${length})
+  list(GET CONFIG ${i} line)
+  if (line MATCHES "^# *undef ")
+    string(REGEX REPLACE "# *undef (.*)" "\\1" var ${line})
+    if (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*_H" AND NOT ${var}))
+      string(REGEX REPLACE "#( *)undef ${var}"
+             "/* #\\1undef ${var} */" line "${line}")
+    else ()
+      if (${var} MATCHES "^/\\*\\*/$")
+        set(value ${${var}})
+      elseif (NOT (var MATCHES ^HAVE OR ${var} EQUAL 0 OR ${var} EQUAL 1))
+        set(value \"${${var}}\")
+      elseif (${var})
+        set(value 1)
+      else ()
+        set(value 0)
+      endif ()
+      string(REGEX REPLACE "#( *)undef ${var}"
+             "#\\1define ${var} ${value}" line "${line}")
+    endif ()
   endif ()
-  string(REGEX REPLACE "#undef ${var}([\r\n])"
-    "#define ${var} ${value}\\1" CONFIG "${CONFIG}")
+  set(CONFIG_OUT "${CONFIG_OUT}${line}\n")
 endforeach ()
-
 file(WRITE ${GSL_BINARY_DIR}/config.h
 "/* config.h.  Generated from config.h.in by configure.  */
-${CONFIG}")
+${CONFIG_OUT}")
 
 include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})
 

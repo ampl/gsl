@@ -249,7 +249,7 @@ foreach (i RANGE ${length})
       string(REGEX REPLACE "#( *)undef ${var}"
              "/* #\\1undef ${var} */" line "${line}")
     else ()
-      if (${var} MATCHES "^/\\*\\*/$")
+      if ("${${var}}" STREQUAL "/**/" OR "${var}" STREQUAL "inline")
         set(value ${${var}})
       elseif (NOT (var MATCHES ^HAVE OR ${var} EQUAL 0 OR ${var} EQUAL 1))
         set(value \"${${var}}\")

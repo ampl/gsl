@@ -281,7 +281,23 @@ function(add_gsl_test exename)
   add_test(${exename} ${exename})
 endfunction()
 
-add_subdirectory(gsl)
+file(GLOB GSL_HEADER_PATHS "${CMAKE_SOURCE_DIR}/gsl*.h"
+  "${CMAKE_SOURCE_DIR}/*/gsl*.h")
+
+foreach (path ${GSL_HEADER_PATHS})
+  get_filename_component(name ${path} NAME)
+  set(GSL_HEADERS ${GSL_HEADERS} ${name})
+endforeach ()
+
+file(WRITE ${CMAKE_BINARY_DIR}/copy-headers.cmake "
+  file(MAKE_DIRECTORY gsl)
+  foreach (path ${GSL_HEADER_PATHS})
+    configure_file(\${path} ${GSL_BINARY_DIR}/gsl COPY_ONLY)
+  endforeach ()")
+
+add_custom_command(OUTPUT ${GSL_HEADERS}
+  COMMAND ${CMAKE_COMMAND} -P copy-headers.cmake)
+add_custom_target(copy-headers DEPENDS ${GSL_HEADERS})
 
 macro(get_sources dir line source_var)
   set(${source_var})

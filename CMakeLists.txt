@@ -281,12 +281,12 @@ function(add_gsl_test exename)
   add_test(${exename} ${exename})
 endfunction()
 
-file(GLOB GSL_HEADER_PATHS "${CMAKE_SOURCE_DIR}/gsl*.h"
-  "${CMAKE_SOURCE_DIR}/*/gsl*.h")
+file(GLOB GSL_HEADER_PATHS "${GSL_SOURCE_DIR}/gsl*.h"
+  "${GSL_SOURCE_DIR}/*/gsl*.h")
 
 foreach (path ${GSL_HEADER_PATHS})
   get_filename_component(name ${path} NAME)
-  set(GSL_HEADERS ${GSL_HEADERS} ${name})
+  set(GSL_HEADERS ${GSL_HEADERS} gsl/${name})
 endforeach ()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake "

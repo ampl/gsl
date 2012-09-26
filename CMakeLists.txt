@@ -41,7 +41,6 @@ foreach (keyword inline __inline__ __inline)
     break ()
   endif ()
 endforeach ()
-add_definitions("-Dinline=${C_INLINE}")
 if (C_INLINE)
   # Check for GNU-style extern inline.
   check_c_source_compiles("

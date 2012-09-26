@@ -31,8 +31,15 @@ if (NOT (VERSION MATCHES "\\+"))
   set(RELEASED /**/)
 endif ()
 
+include(CheckLibraryExists)
+check_library_exists(m cos "" HAVE_LIBM)
+if (HAVE_LIBM)
+  set(CMAKE_REQUIRED_LIBRARIES m)
+endif ()
+
 include(CheckCSourceCompiles)
 
+# Check for inline.
 foreach (keyword inline __inline__ __inline)
   check_c_source_compiles("
     static ${keyword} void foo() { return 0; }
@@ -66,16 +73,14 @@ if (C_INLINE AND NOT C_HAS_inline)
   set(inline ${C_INLINE})
 endif ()
 
-include(CheckIncludeFiles)
-
 # Checks for header files.
+include(CheckIncludeFiles)
 foreach (header ieeefp.h dlfcn.h inttypes.h memory.h stdint.h stdlib.h
                 strings.h string.h sys/stat.h sys/types.h unistd.h)
   string(TOUPPER HAVE_${header} var)
   string(REGEX REPLACE "\\.|/" "_" var ${var})
   check_include_files(${header} ${var})
 endforeach ()
-
 check_include_files(stdio.h STDC_HEADERS)
 
 # Check for IEEE arithmetic interface type.
@@ -118,7 +123,7 @@ if (HAVE_GNUX86_IEEE_INTERFACE)
     int main() { unsigned short mode = 0 ; _FPU_SETCW(mode); }"
     HAVE_FPU_SETCW)
   if (NOT HAVE_FPU_SETCW)
-    set(HAVE_GNUX86_IEEE_INTERFACE FALSE)
+    set(HAVE_GNUX86_IEEE_INTERFACE 0)
   endif ()
 endif ()
 
@@ -129,12 +134,6 @@ if (HAVE_GNUX86_IEEE_INTERFACE)
     #define _FPU_SETMXCSR(cw) asm volatile (\"ldmxcsr %0\" : : \"m\" (*&cw))
     int main() { unsigned int mode = 0x1f80 ; _FPU_SETMXCSR(mode); exit(0); }"
     HAVE_FPU_X86_SSE)
-endif ()
-
-include(CheckLibraryExists)
-check_library_exists(m cos "" HAVE_LIBM)
-if (HAVE_LIBM)
-  set(CMAKE_REQUIRED_LIBRARIES m)
 endif ()
 
 # Compiles the source code, runs the program and sets ${VAR} to 1 if the
@@ -194,8 +193,8 @@ endif ()
 
 # Remember to put a definition in config.h.in for each of these.
 include(CheckSymbolExists)
-check_symbol_exists(EXIT_SUCCESS "stdlib.h" HAVE_EXIT_SUCCESS)
-check_symbol_exists(EXIT_FAILURE "stdlib.h" HAVE_EXIT_FAILURE)
+check_symbol_exists(EXIT_SUCCESS stdlib.h HAVE_EXIT_SUCCESS)
+check_symbol_exists(EXIT_FAILURE stdlib.h HAVE_EXIT_FAILURE)
 if (HAVE_EXIT_SUCCESS AND HAVE_EXIT_FAILURE)
   set(HAVE_EXIT_SUCCESS_AND_FAILURE 1)
 endif ()
@@ -220,7 +219,7 @@ check_symbol_exists(finite math.h;${IEEEFP_H} HAVE_DECL_FINITE)
 check_symbol_exists(isnan math.h HAVE_DECL_ISNAN)
 
 # OpenBSD has a broken implementation of log1p.
-if (${CMAKE_SYSTEM_NAME} MATCHES "OpenBSD")
+if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
   message("avoiding OpenBSD system log1p - using gsl version")
 else ()
   check_symbol_exists(log1p math.h HAVE_DECL_LOG1P)
@@ -290,7 +289,7 @@ foreach (path ${GSL_HEADER_PATHS})
   set(GSL_HEADERS ${GSL_HEADERS} ${name})
 endforeach ()
 
-file(WRITE ${CMAKE_BINARY_DIR}/copy-headers.cmake "
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake "
   file(MAKE_DIRECTORY gsl)
   foreach (path ${GSL_HEADER_PATHS})
     configure_file(\${path} ${GSL_BINARY_DIR}/gsl COPY_ONLY)

@@ -11,15 +11,15 @@ set(PACKAGE_URL "")
 set(LT_OBJDIR ".libs/")
 
 # Get version numbers from configure.ac.
-file(STRINGS configure.ac CONFIG REGEX
-  "^(AC_INIT|(GSL|CBLAS)_(CURRENT|REVISION|AGE)=)")
-foreach (line ${CONFIG})
-  if (line MATCHES AC_INIT)
-    string(REGEX REPLACE "AC_INIT\\(\\[gsl\\],\\[(.*)\\]\\)" "\\1"
-      VERSION ${line})
-  else ()
+file(STRINGS configure.ac LINES)
+foreach (line ${LINES})
+  if (line MATCHES "AC_INIT")
+    string(REGEX REPLACE "AC_INIT[^,]*,\\[(.*)\\].*" "\\1" VERSION ${line})
+    message("Got VERSION=${VERSION} from configure.ac")
+  elseif (line MATCHES "(GSL|CBLAS)_(CURRENT|REVISION|AGE)=")
     string(REGEX REPLACE "(.*)=.*" "\\1" name ${line})
     string(REGEX REPLACE ".*=(.*)" "\\1" value ${line})
+    message("Got ${name}=${value} from configure.ac")
     set(${name} ${value})
   endif ()
 endforeach ()
@@ -27,6 +27,7 @@ set(PACKAGE_VERSION ${VERSION})
 set(PACKAGE_STRING "${PACKAGE} ${VERSION}")
 
 if (NOT (VERSION MATCHES "\\+"))
+  # Defined if this is an official release.
   set(RELEASED /**/)
 endif ()
 

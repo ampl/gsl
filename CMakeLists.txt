@@ -10,17 +10,249 @@ set(PACKAGE_BUGREPORT "")
 set(PACKAGE_URL "")
 set(LT_OBJDIR ".libs/")
 
-# Get version numbers from configure.ac.
-file(STRINGS configure.ac LINES)
-foreach (line ${LINES})
-  if (line MATCHES "AC_INIT")
-    string(REGEX REPLACE "AC_INIT[^,]*,\\[(.*)\\].*" "\\1" VERSION ${line})
+# The following part of config.h is hard to derive from configure.ac.
+string(REGEX MATCHALL "[^\n]*\n" CONFIG
+"/* Define if you have inline with C99 behavior */
+#undef HAVE_C99_INLINE
+
+/* Define to 1 if you have the declaration of `acosh', and to 0 if you don't.
+   */
+#undef HAVE_DECL_ACOSH
+
+/* Define to 1 if you have the declaration of `asinh', and to 0 if you don't.
+   */
+#undef HAVE_DECL_ASINH
+
+/* Define to 1 if you have the declaration of `atanh', and to 0 if you don't.
+   */
+#undef HAVE_DECL_ATANH
+
+/* Define to 1 if you have the declaration of `expm1', and to 0 if you don't.
+   */
+#undef HAVE_DECL_EXPM1
+
+/* Define to 1 if you have the declaration of `feenableexcept', and to 0 if
+   you don't. */
+#undef HAVE_DECL_FEENABLEEXCEPT
+
+/* Define to 1 if you have the declaration of `fesettrapenable', and to 0 if
+   you don't. */
+#undef HAVE_DECL_FESETTRAPENABLE
+
+/* Define to 1 if you have the declaration of `finite', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FINITE
+
+/* Define to 1 if you have the declaration of `fprnd_t', and to 0 if you
+   don't. */
+#undef HAVE_DECL_FPRND_T
+
+/* Define to 1 if you have the declaration of `frexp', and to 0 if you don't.
+   */
+#undef HAVE_DECL_FREXP
+
+/* Define to 1 if you have the declaration of `hypot', and to 0 if you don't.
+   */
+#undef HAVE_DECL_HYPOT
+
+/* Define to 1 if you have the declaration of `isfinite', and to 0 if you
+   don't. */
+#undef HAVE_DECL_ISFINITE
+
+/* Define to 1 if you have the declaration of `isinf', and to 0 if you don't.
+   */
+#undef HAVE_DECL_ISINF
+
+/* Define to 1 if you have the declaration of `isnan', and to 0 if you don't.
+   */
+#undef HAVE_DECL_ISNAN
+
+/* Define to 1 if you have the declaration of `ldexp', and to 0 if you don't.
+   */
+#undef HAVE_DECL_LDEXP
+
+/* Define to 1 if you have the declaration of `log1p', and to 0 if you don't.
+   */
+#undef HAVE_DECL_LOG1P
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
+#undef HAVE_DOPRNT
+
+/* Defined if you have ansi EXIT_SUCCESS and EXIT_FAILURE in stdlib.h */
+#undef HAVE_EXIT_SUCCESS_AND_FAILURE
+
+/* Defined on architectures with excess floating-point precision */
+#undef HAVE_EXTENDED_PRECISION_REGISTERS
+
+/* Define if x86 processor has sse extensions. */
+#undef HAVE_FPU_X86_SSE
+
+/* Define to 1 if you have the <ieeefp.h> header file. */
+#undef HAVE_IEEEFP_H
+
+/* Define this if IEEE comparisons work correctly (e.g. NaN != NaN) */
+#undef HAVE_IEEE_COMPARISONS
+
+/* Define this if IEEE denormalized numbers are available */
+#undef HAVE_IEEE_DENORMALS
+
+/* Define if you have inline */
+#undef HAVE_INLINE
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define to 1 if you have the `memcpy' function. */
+#undef HAVE_MEMCPY
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define this if printf can handle %Lf for long double */
+#undef HAVE_PRINTF_LONGDOUBLE
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strtol' function. */
+#undef HAVE_STRTOL
+
+/* Define to 1 if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `vprintf' function. */
+#undef HAVE_VPRINTF
+
+/* Define if you need to hide the static definitions of inline functions */
+#undef HIDE_INLINE_STATIC
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Defined if this is an official release */
+#undef RELEASED
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+# undef __CHAR_UNSIGNED__
+#endif
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define to empty if the keyword `volatile' does not work. Warning: valid
+   code using `volatile' can become incorrect without. Disable with care. */
+#undef volatile
+")
+
+# Get version numbers and parts of config.h from configure.ac.
+file(READ configure.ac LINES)
+# Replace semicolons with "<semi>" to avoid CMake messing with them.
+string(REPLACE ";" "<semi>" LINES "${LINES}")
+# Split into lines keeping newlines to avoid foreach skipping empty ones.
+string(REGEX MATCHALL "[^\n]*\n" LINES "${LINES}")
+set(ah_command FALSE)
+foreach (line "${EXTRA_CONFIG}" ${LINES})
+  string(REPLACE ";" "" line "${line}")
+  if (ah_command)
+    # Do nothing.
+  elseif (line MATCHES "AC_INIT[^,]*,\\[(.*)\\].*")
+    set(VERSION ${CMAKE_MATCH_1})
     message("Got VERSION=${VERSION} from configure.ac")
-  elseif (line MATCHES "(GSL|CBLAS)_(CURRENT|REVISION|AGE)=")
-    string(REGEX REPLACE "(.*)=.*" "\\1" name ${line})
-    string(REGEX REPLACE ".*=(.*)" "\\1" value ${line})
-    message("Got ${name}=${value} from configure.ac")
-    set(${name} ${value})
+  elseif (line MATCHES "((GSL|CBLAS)_(CURRENT|REVISION|AGE))=(.*)\n")
+    set(${CMAKE_MATCH_1} ${CMAKE_MATCH_4})
+    message("Got ${CMAKE_MATCH_1}=${CMAKE_MATCH_4} from configure.ac")
+  elseif (line MATCHES "AH_BOTTOM\\(\\[(.*)")
+    set(ah_command bottom)
+    set(line "${CMAKE_MATCH_1}")
+  elseif (line MATCHES "AH_VERBATIM[^,]+,(.*)")
+    set(ah_command verbatim)
+    set(line "${CMAKE_MATCH_1}")
+  endif ()
+  if (ah_command)
+    set(saved_ah_command ${ah_command})
+    if (line MATCHES "^\\[(.*)")
+      set(line "${CMAKE_MATCH_1}")
+    endif ()
+    if (line MATCHES "\\]\\)")
+      set(ah_command FALSE)
+      string(REPLACE "])" "" line "${line}")
+    endif ()
+    # For some reason CMake may bundle several lines together. Split them too.
+    string(REGEX MATCHALL "[^\n]*\n" sublines "${line}")
+    set(config_add "")
+    foreach (subline ${sublines})
+      set(config_add ${config_add} "${subline}")
+    endforeach ()
+    if (saved_ah_command STREQUAL "verbatim")
+      set(CONFIG ${config_add} ${CONFIG})
+    else ()
+      set(CONFIG ${CONFIG} "\n" ${config_add})
+    endif ()
   endif ()
 endforeach ()
 set(PACKAGE_VERSION ${VERSION})
@@ -238,16 +470,16 @@ check_symbol_exists(strtoul stdlib.h HAVE_STRTOUL)
 check_symbol_exists(vprintf stdio.h HAVE_VPRINTF)
 
 # Process config.h using autoconf rules.
-file(STRINGS ${GSL_SOURCE_DIR}/config.h.in CONFIG)
+#file(STRINGS ${GSL_SOURCE_DIR}/config.h.in CONFIG)
 list(LENGTH CONFIG length)
 math(EXPR length "${length} - 1")
 foreach (i RANGE ${length})
   list(GET CONFIG ${i} line)
-  if (line MATCHES "^# *undef ")
-    string(REGEX REPLACE "# *undef (.*)" "\\1" var ${line})
+  if (line MATCHES "^#( *)undef (.*)\n")
+    set(space "${CMAKE_MATCH_1}")
+    set(var ${CMAKE_MATCH_2})
     if (NOT DEFINED ${var} OR (var MATCHES "HAVE_.*_H" AND NOT ${var}))
-      string(REGEX REPLACE "#( *)undef ${var}"
-             "/* #\\1undef ${var} */" line "${line}")
+      set(line "/* #${space}undef ${var} */\n")
     else ()
       if ("${${var}}" STREQUAL "/**/" OR "${var}" STREQUAL "inline")
         set(value ${${var}})
@@ -258,14 +490,16 @@ foreach (i RANGE ${length})
       else ()
         set(value 0)
       endif ()
-      string(REGEX REPLACE "#( *)undef ${var}"
-             "#\\1define ${var} ${value}" line "${line}")
+      set(line "#${space}define ${var} ${value}\n")
     endif ()
   endif ()
-  set(CONFIG_OUT "${CONFIG_OUT}${line}\n")
+  string(REPLACE "<semi>" ";" line "${line}")
+  set(CONFIG_OUT "${CONFIG_OUT}${line}")
 endforeach ()
 file(WRITE ${GSL_BINARY_DIR}/config.h
 "/* config.h.  Generated from config.h.in by configure.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
 ${CONFIG_OUT}")
 
 include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})

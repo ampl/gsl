@@ -515,8 +515,15 @@ function(add_gsl_test exename)
   add_test(${exename} ${exename})
 endfunction()
 
-file(GLOB GSL_HEADER_PATHS "${GSL_SOURCE_DIR}/gsl*.h"
-  "${GSL_SOURCE_DIR}/*/gsl*.h")
+file(GLOB GSL_HEADER_PATHS "${GSL_SOURCE_DIR}/gsl*.h")
+file(GLOB dirs "${GSL_SOURCE_DIR}/*")
+foreach (dir ${dirs})
+  if (NOT (dir MATCHES "gsl$"))
+    file(GLOB headers "${dir}/gsl*.h")
+    set(GSL_HEADER_PATHS ${GSL_HEADER_PATHS} ${headers})
+  endif ()
+endforeach()
+message("${GSL_HEADER_PATHS}")
 
 foreach (path ${GSL_HEADER_PATHS})
   get_filename_component(name ${path} NAME)

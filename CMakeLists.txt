@@ -523,7 +523,6 @@ foreach (dir ${dirs})
     set(GSL_HEADER_PATHS ${GSL_HEADER_PATHS} ${headers})
   endif ()
 endforeach()
-message("${GSL_HEADER_PATHS}")
 
 foreach (path ${GSL_HEADER_PATHS})
   get_filename_component(name ${path} NAME)

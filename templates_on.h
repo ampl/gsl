@@ -20,7 +20,6 @@
 #define BASE_EPSILON GSL_DBL_EPSILON
 
 #elif defined(BASE_GSL_COMPLEX)
-#undef complex
 #define BASE gsl_complex
 #define SHORT complex
 #define SHORT_REAL

@@ -505,6 +505,15 @@ ${CONFIG_OUT}")
 include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 
+include(CheckCCompilerFlag)
+if (GSL_DISABLE_WARNINGS)
+  # Disable all warnings.
+  check_c_compiler_flag(-w HAVE_W_FLAG)
+  if (HAVE_W_FLAG)
+    add_definitions(-w)
+  endif ()
+endif ()
+
 enable_testing()
 
 # Adds a GSL test. Usage:

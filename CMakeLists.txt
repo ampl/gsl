@@ -508,9 +508,17 @@ add_definitions(-DHAVE_CONFIG_H)
 include(CheckCCompilerFlag)
 if (GSL_DISABLE_WARNINGS)
   # Disable all warnings.
-  check_c_compiler_flag(-w HAVE_W_FLAG)
-  if (HAVE_W_FLAG)
-    add_definitions(-w)
+  if (MSVC)
+    foreach (flag_var
+             CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+             CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REPLACE "/W3" "/w" ${flag_var} "${${flag_var}}")
+    endforeach()
+  else ()
+    check_c_compiler_flag(-w HAVE_W_FLAG)
+    if (HAVE_W_FLAG)
+      add_definitions(-w)
+    endif ()
   endif ()
 endif ()
 

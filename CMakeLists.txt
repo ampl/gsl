@@ -573,7 +573,7 @@ foreach (line ${lines})
 endforeach ()
 
 # Extract sources from automake files and add tests.
-foreach (dir ${dirs})
+foreach (dir "." ${dirs})
   file(STRINGS ${dir}/Makefile.am lines)
   foreach (line ${lines})
     if (line MATCHES "_la_SOURCES[ \t]*=")

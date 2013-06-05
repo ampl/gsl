@@ -549,7 +549,8 @@ endforeach ()
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake "
   file(MAKE_DIRECTORY gsl)
   foreach (path ${GSL_HEADER_PATHS})
-    configure_file(\${path} ${GSL_BINARY_DIR}/gsl COPY_ONLY)
+    get_filename_component(filename \${path} NAME)
+    configure_file(\${path} ${GSL_BINARY_DIR}/gsl/\${filename} COPY_ONLY)
   endforeach ()")
 
 add_custom_command(OUTPUT ${GSL_HEADERS}

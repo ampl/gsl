@@ -529,7 +529,7 @@ enable_testing()
 function(add_gsl_test exename)
   add_executable(${exename} ${ARGN})
   target_link_libraries(${exename} gsl gslcblas ${CMAKE_REQUIRED_LIBRARIES})
-  add_test(${exename} ${exename})
+  add_test(${exename} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${exename})
 endfunction()
 
 file(GLOB GSL_HEADER_PATHS "${GSL_SOURCE_DIR}/gsl*.h")

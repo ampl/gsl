@@ -30,123 +30,115 @@ double filip_y[] = { 0.8116, 0.9072, 0.9052, 0.9039, 0.8053, 0.8377,
 0.7702, 0.7761, 0.7809, 0.7961, 0.8253, 0.8602, 0.8809, 0.8301,
 0.8664, 0.8834, 0.8898, 0.8964, 0.8963, 0.9074, 0.9119, 0.9228 } ;
 
+static int
+test_filip_results(const char *str,
+                   const gsl_vector *c, const gsl_vector *expected_c,
+                   const gsl_vector *cov_diag, const gsl_vector *expected_sd,
+                   const double chisq, const double chisq_res,
+                   const double expected_chisq)
+{
+  size_t i;
+
+  /* test coefficient vector */
+  for (i = 0; i < filip_p; ++i)
+    {
+      gsl_test_rel (gsl_vector_get(c,i),
+                    gsl_vector_get(expected_c, i),
+                    1.0e-7,
+                    "%s c[%zu]", str, i) ;
+
+      if (cov_diag && expected_sd)
+        {
+          gsl_test_rel (sqrt(gsl_vector_get(cov_diag, i)),
+                        gsl_vector_get(expected_sd, i),
+                        1e-7,
+                        "%s cov[%zu,%zu]", str, i, i);
+        }
+    }
+
+  gsl_test_rel (chisq, expected_chisq, 1.0e-7, "%s chisq", str);
+  gsl_test_rel (chisq_res, expected_chisq, 1.0e-7, "%s chisq residuals", str);
+
+  return GSL_SUCCESS;
+}
 
 void
 test_filip ()
 {
   size_t i, j;
+  gsl_multifit_linear_workspace * work = 
+    gsl_multifit_linear_alloc (filip_n, filip_p);
+
+  gsl_multifit_robust_workspace * work_rob =
+    gsl_multifit_robust_alloc (gsl_multifit_robust_ols, filip_n, filip_p);
+
+  gsl_matrix * X = gsl_matrix_alloc (filip_n, filip_p);
+  gsl_vector_view y = gsl_vector_view_array (filip_y, filip_n);
+  gsl_vector * c = gsl_vector_alloc (filip_p);
+  gsl_matrix * cov = gsl_matrix_alloc (filip_p, filip_p);
+  gsl_vector * r = gsl_vector_alloc(filip_n);
+
+  double chisq, chisq_res;
+
+  double expected_c[11] = { -1467.48961422980,      
+                            -2772.17959193342,      
+                            -2316.37108160893,      
+                            -1127.97394098372,      
+                            -354.478233703349,      
+                            -75.1242017393757,      
+                            -10.8753180355343,      
+                            -1.06221498588947,      
+                            -0.670191154593408E-01, 
+                            -0.246781078275479E-02, 
+                            -0.402962525080404E-04 };
+
+  double expected_sd[11]  = { 298.084530995537,     
+                             559.779865474950,     
+                             466.477572127796,     
+                             227.204274477751,     
+                             71.6478660875927,     
+                             15.2897178747400,     
+                             2.23691159816033,     
+                             0.221624321934227,    
+                             0.142363763154724E-01,
+                             0.535617408889821E-03,
+                             0.896632837373868E-05 };
+
+  double expected_chisq = 0.795851382172941E-03;
+
+  gsl_vector_view diag = gsl_matrix_diagonal (cov);
+  gsl_vector_view exp_c = gsl_vector_view_array(expected_c, filip_p);
+  gsl_vector_view exp_sd = gsl_vector_view_array(expected_sd, filip_p);
+
+  for (i = 0 ; i < filip_n; i++) 
+    {
+      for (j = 0; j < filip_p; j++) 
+        {
+          gsl_matrix_set(X, i, j, pow(filip_x[i], j));
+        }
+    }
+
+  /* test unweighted least squares */
+  gsl_multifit_linear (X, &y.vector, c, cov, &chisq, work);
+  gsl_multifit_linear_residuals(X, &y.vector, c, r);
+  gsl_blas_ddot(r, r, &chisq_res);
+
+  test_filip_results("filip gsl_multifit_linear",
+                     c, &exp_c.vector,
+                     &diag.vector, &exp_sd.vector,
+                     chisq, chisq_res, expected_chisq);
+
+  /* test robust least squares */
+  gsl_multifit_robust (X, &y.vector, c, cov, work_rob);
+
+  test_filip_results("filip gsl_multifit_robust",
+                     c, &exp_c.vector,
+                     &diag.vector, &exp_sd.vector,
+                     1.0, 1.0, 1.0);
+
+  /* test weighted least squares */
   {
-    gsl_multifit_linear_workspace * work = 
-      gsl_multifit_linear_alloc (filip_n, filip_p);
-
-    gsl_matrix * X = gsl_matrix_alloc (filip_n, filip_p);
-    gsl_vector_view y = gsl_vector_view_array (filip_y, filip_n);
-    gsl_vector * c = gsl_vector_alloc (filip_p);
-    gsl_matrix * cov = gsl_matrix_alloc (filip_p, filip_p);
-    gsl_vector * r = gsl_vector_alloc(filip_n);
-    gsl_vector_view diag;
-
-    double chisq;
-
-    double expected_c[11] = { -1467.48961422980,      
-                              -2772.17959193342,      
-                              -2316.37108160893,      
-                              -1127.97394098372,      
-                              -354.478233703349,      
-                              -75.1242017393757,      
-                              -10.8753180355343,      
-                              -1.06221498588947,      
-                              -0.670191154593408E-01, 
-                              -0.246781078275479E-02, 
-                              -0.402962525080404E-04 };
-
-    double expected_sd[11]  = { 298.084530995537,     
-                               559.779865474950,     
-                               466.477572127796,     
-                               227.204274477751,     
-                               71.6478660875927,     
-                               15.2897178747400,     
-                               2.23691159816033,     
-                               0.221624321934227,    
-                               0.142363763154724E-01,
-                               0.535617408889821E-03,
-                               0.896632837373868E-05 };
-
-    double expected_chisq = 0.795851382172941E-03;
-
-    for (i = 0 ; i < filip_n; i++) 
-      {
-        for (j = 0; j < filip_p; j++) 
-          {
-            gsl_matrix_set(X, i, j, pow(filip_x[i], j));
-          }
-      }
-
-    gsl_multifit_linear (X, &y.vector, c, cov, &chisq, work);
-
-    gsl_test_rel (gsl_vector_get(c,0), expected_c[0], 1e-7, "filip gsl_fit_multilinear c0") ;
-    gsl_test_rel (gsl_vector_get(c,1), expected_c[1], 1e-7, "filip gsl_fit_multilinear c1") ;
-    gsl_test_rel (gsl_vector_get(c,2), expected_c[2], 1e-7, "filip gsl_fit_multilinear c2") ;
-    gsl_test_rel (gsl_vector_get(c,3), expected_c[3], 1e-7, "filip gsl_fit_multilinear c3") ;
-    gsl_test_rel (gsl_vector_get(c,4), expected_c[4], 1e-7, "filip gsl_fit_multilinear c4") ;
-    gsl_test_rel (gsl_vector_get(c,5), expected_c[5], 1e-7, "filip gsl_fit_multilinear c5") ;
-    gsl_test_rel (gsl_vector_get(c,6), expected_c[6], 1e-7, "filip gsl_fit_multilinear c6") ;
-    gsl_test_rel (gsl_vector_get(c,7), expected_c[7], 1e-7, "filip gsl_fit_multilinear c7") ;
-    gsl_test_rel (gsl_vector_get(c,8), expected_c[8], 1e-7, "filip gsl_fit_multilinear c8") ;
-    gsl_test_rel (gsl_vector_get(c,9), expected_c[9], 1e-7, "filip gsl_fit_multilinear c9") ;
-    gsl_test_rel (gsl_vector_get(c,10), expected_c[10], 1e-7, "filip gsl_fit_multilinear c10") ;
-
-    diag = gsl_matrix_diagonal (cov);
-
-    gsl_test_rel (gsl_vector_get(&diag.vector,0), pow(expected_sd[0],2.0), 1e-6, "filip gsl_fit_multilinear cov00") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,1), pow(expected_sd[1],2.0), 1e-6, "filip gsl_fit_multilinear cov11") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,2), pow(expected_sd[2],2.0), 1e-6, "filip gsl_fit_multilinear cov22") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,3), pow(expected_sd[3],2.0), 1e-6, "filip gsl_fit_multilinear cov33") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,4), pow(expected_sd[4],2.0), 1e-6, "filip gsl_fit_multilinear cov44") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,5), pow(expected_sd[5],2.0), 1e-6, "filip gsl_fit_multilinear cov55") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,6), pow(expected_sd[6],2.0), 1e-6, "filip gsl_fit_multilinear cov66") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,7), pow(expected_sd[7],2.0), 1e-6, "filip gsl_fit_multilinear cov77") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,8), pow(expected_sd[8],2.0), 1e-6, "filip gsl_fit_multilinear cov88") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,9), pow(expected_sd[9],2.0), 1e-6, "filip gsl_fit_multilinear cov99") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,10), pow(expected_sd[10],2.0), 1e-6, "filip gsl_fit_multilinear cov1010") ;
-
-    gsl_test_rel (chisq, expected_chisq, 1e-7, "filip gsl_fit_multilinear chisq") ;
-
-    gsl_multifit_linear_residuals(X, &y.vector, c, r);
-    gsl_blas_ddot(r, r, &chisq);
-    gsl_test_rel (chisq, expected_chisq, 1e-7, "filip gsl_fit_multilinear residuals") ;
-
-    gsl_vector_free(c);
-    gsl_matrix_free(cov);
-    gsl_matrix_free(X);
-    gsl_vector_free(r);
-    gsl_multifit_linear_free (work);
-  }
-
-  {
-    gsl_multifit_linear_workspace * work = 
-      gsl_multifit_linear_alloc (filip_n, filip_p);
-
-    gsl_matrix * X = gsl_matrix_alloc (filip_n, filip_p);
-    gsl_vector_view y = gsl_vector_view_array (filip_y, filip_n);
     gsl_vector * w = gsl_vector_alloc (filip_n);
-    gsl_vector * c = gsl_vector_alloc (filip_p);
-    gsl_vector * r = gsl_vector_alloc (filip_n);
-    gsl_matrix * cov = gsl_matrix_alloc (filip_p, filip_p);
-
-    double chisq;
-
-    double expected_c[11] = { -1467.48961422980,      
-                              -2772.17959193342,      
-                              -2316.37108160893,      
-                              -1127.97394098372,      
-                              -354.478233703349,      
-                              -75.1242017393757,      
-                              -10.8753180355343,      
-                              -1.06221498588947,      
-                              -0.670191154593408E-01, 
-                              -0.246781078275479E-02, 
-                              -0.402962525080404E-04 };
 
     /* computed using GNU Calc */
 
@@ -162,53 +154,33 @@ test_filip ()
       { 1.3834818802741350562839757244708e4,   2.614309177534959709397445440919e4,  2.1905933113294737352721470167247e4,  1.0720394998549386558251721913182e4, 3.3941067837648523632905604575131e3, 7.2662989867560016909534954790835e2, 1.0656694507620102282337905013451e2, 1.0576188138416671871337685672492e1,  6.8005074291434681828743281967838e-1, 2.5593857187900736057022477529078e-2, 4.2831487599116264442963102045936e-4 },
       { 2.3017585787132192669801658674163e2,  4.3523386330348588381716460685124e2,  3.6493161325305557094116270974735e2,  1.7870937745661967246233792737255e2, 5.6617406468519495180024059284629e1, 1.2129002231061036433003571679329e1, 1.7799982046359973135014027410646e0, 1.7676976288918294983059118597214e-1, 1.137358155774964353146460100337e-2,  4.283148759911626442000316269063e-4,  7.172253875245080423800933453952e-6  } };
 
-    double expected_chisq = 0.795851382172941E-03;
-
-    for (i = 0 ; i < filip_n; i++) 
-      {
-        for (j = 0; j < filip_p; j++) 
-          {
-            gsl_matrix_set(X, i, j, pow(filip_x[i], j));
-          }
-      }
-
     gsl_vector_set_all (w, 1.0);
 
     gsl_multifit_wlinear (X, w, &y.vector, c, cov, &chisq, work);
+    gsl_multifit_linear_residuals(X, &y.vector, c, r);
+    gsl_blas_ddot(r, r, &chisq_res);
 
-    gsl_test_rel (gsl_vector_get(c,0), expected_c[0], 1e-7, "filip gsl_fit_multilinear c0") ;
-    gsl_test_rel (gsl_vector_get(c,1), expected_c[1], 1e-7, "filip gsl_fit_multilinear c1") ;
-    gsl_test_rel (gsl_vector_get(c,2), expected_c[2], 1e-7, "filip gsl_fit_multilinear c2") ;
-    gsl_test_rel (gsl_vector_get(c,3), expected_c[3], 1e-7, "filip gsl_fit_multilinear c3") ;
-    gsl_test_rel (gsl_vector_get(c,4), expected_c[4], 1e-7, "filip gsl_fit_multilinear c4") ;
-    gsl_test_rel (gsl_vector_get(c,5), expected_c[5], 1e-7, "filip gsl_fit_multilinear c5") ;
-    gsl_test_rel (gsl_vector_get(c,6), expected_c[6], 1e-7, "filip gsl_fit_multilinear c6") ;
-    gsl_test_rel (gsl_vector_get(c,7), expected_c[7], 1e-7, "filip gsl_fit_multilinear c7") ;
-    gsl_test_rel (gsl_vector_get(c,8), expected_c[8], 1e-7, "filip gsl_fit_multilinear c8") ;
-    gsl_test_rel (gsl_vector_get(c,9), expected_c[9], 1e-7, "filip gsl_fit_multilinear c9") ;
-    gsl_test_rel (gsl_vector_get(c,10), expected_c[10], 1e-7, "filip gsl_fit_multilinear c10") ;
-
+    test_filip_results("filip gsl_multifit_wlinear",
+                       c, &exp_c.vector,
+                       NULL, NULL,
+                       chisq, chisq_res, expected_chisq);
 
     for (i = 0; i < filip_p; i++) 
       {
         for (j = 0; j < filip_p; j++)
           {
             gsl_test_rel (gsl_matrix_get(cov,i,j), expected_cov[i][j], 1e-6,
-                          "filip gsl_fit_wmultilinear cov(%d,%d)", i, j) ;
+                          "filip gsl_multifit_wlinear cov(%d,%d)", i, j) ;
           }
       }
 
-    gsl_test_rel (chisq, expected_chisq, 1e-7, "filip gsl_fit_wmultilinear chisq") ;
-
-    gsl_multifit_linear_residuals(X, &y.vector, c, r);
-    gsl_blas_ddot(r, r, &chisq);
-    gsl_test_rel (chisq, expected_chisq, 1e-7, "filip gsl_fit_wmultilinear residuals") ;
-
     gsl_vector_free(w);
-    gsl_vector_free(c);
-    gsl_vector_free(r);
-    gsl_matrix_free(cov);
-    gsl_matrix_free(X);
-    gsl_multifit_linear_free (work);
   }
+
+  gsl_vector_free(c);
+  gsl_matrix_free(cov);
+  gsl_matrix_free(X);
+  gsl_vector_free(r);
+  gsl_multifit_linear_free (work);
+  gsl_multifit_robust_free (work_rob);
 }

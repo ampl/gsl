@@ -184,6 +184,32 @@ main (void)
 
   gsl_multiset_free (c);
 
+  /* Check k = 3 strictly greater than n = 2 gives results */
+  /* {0, 0, 0}, {0, 0, 1}, {0, 1, 1,}, and {1, 1, 1}.      */
+  c = gsl_multiset_calloc(2, 3);
+  status |= (c->data[0] != 0);
+  status |= (c->data[1] != 0);
+  status |= (c->data[2] != 0);
+  status |= (gsl_multiset_valid(c) != GSL_SUCCESS);
+  status |= (gsl_multiset_next(c) == GSL_FAILURE);
+  status |= (c->data[0] != 0);
+  status |= (c->data[1] != 0);
+  status |= (c->data[2] != 1);
+  status |= (gsl_multiset_valid(c) != GSL_SUCCESS);
+  status |= (gsl_multiset_next(c) == GSL_FAILURE);
+  status |= (c->data[0] != 0);
+  status |= (c->data[1] != 1);
+  status |= (c->data[2] != 1);
+  status |= (gsl_multiset_valid(c) != GSL_SUCCESS);
+  status |= (gsl_multiset_next(c) == GSL_FAILURE);
+  status |= (c->data[0] != 1);
+  status |= (c->data[1] != 1);
+  status |= (c->data[2] != 1);
+  status |= (gsl_multiset_valid(c) != GSL_SUCCESS);
+  status |= (gsl_multiset_next(c) != GSL_FAILURE);
+  gsl_test(status, "gsl_multiset 2 choose 3");
+  gsl_multiset_free (c);
+
   c = gsl_multiset_calloc(7, 0);
   /* should return GSL_FAILURE every time */
   status |= (gsl_multiset_next(c) != GSL_FAILURE);

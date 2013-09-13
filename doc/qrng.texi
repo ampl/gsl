@@ -166,6 +166,7 @@ The implementations of the quasi-random sequence routines are based on
 the algorithms described in the following paper,
 
 @itemize @w{}
+@item
 P. Bratley and B.L. Fox and H. Niederreiter, ``Algorithm 738: Programs
 to Generate Niederreiter's Low-discrepancy Sequences'', @cite{ACM
 Transactions on Mathematical Software}, Vol.@: 20, No.@: 4, December, 1994,

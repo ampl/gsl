@@ -35,18 +35,10 @@
 
 __BEGIN_DECLS
 
-#ifndef GSL_DISABLE_DEPRECATED
-typedef enum {
-  forward = 1, backward = -1,
-  gsl_wavelet_forward = 1, gsl_wavelet_backward = -1
-} 
-gsl_wavelet_direction;
-#else
 typedef enum {
   gsl_wavelet_forward = 1, gsl_wavelet_backward = -1
 } 
 gsl_wavelet_direction;
-#endif
 
 typedef struct
 {

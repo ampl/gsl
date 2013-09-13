@@ -244,7 +244,7 @@ struct powell_params @{ double A; @};
 int
 powell (gsl_vector * x, void * p, gsl_vector * f) @{
    struct powell_params * params 
-     = *(struct powell_params *)p;
+     = (struct powell_params *)p;
    const double A = (params->A);
    const double x0 = gsl_vector_get(x,0);
    const double x1 = gsl_vector_get(x,1);
@@ -306,7 +306,7 @@ int
 powell_df (gsl_vector * x, void * p, gsl_matrix * J) 
 @{
    struct powell_params * params 
-     = *(struct powell_params *)p;
+     = (struct powell_params *)p;
    const double A = (params->A);
    const double x0 = gsl_vector_get(x,0);
    const double x1 = gsl_vector_get(x,1);
@@ -321,7 +321,7 @@ int
 powell_fdf (gsl_vector * x, void * p, 
             gsl_matrix * f, gsl_matrix * J) @{
    struct powell_params * params 
-     = *(struct powell_params *)p;
+     = (struct powell_params *)p;
    const double A = (params->A);
    const double x0 = gsl_vector_get(x,0);
    const double x1 = gsl_vector_get(x,1);

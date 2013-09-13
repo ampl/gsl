@@ -13,8 +13,8 @@
  * General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA.
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
 #include <config.h>
@@ -1248,6 +1248,11 @@ void test_chisqinv (void) {
   /* Test cases for bug 24704 */
   TEST (gsl_cdf_chisq_Pinv, (0.05, 1263131.0), 1260517.771133388726131469059, TEST_TOL6);
   TEST (gsl_cdf_chisq_Pinv, (0.05, 2526262.0), 2522565.864973351096735720202, TEST_TOL6);
+
+#if 0 /* XXX - bug #39057 */
+  /* Test case reported by Yan Zhou <zhouyan@me.com> */
+  TEST (gsl_cdf_chisq_Pinv, (0.5, 0.01), 0.99477710813146, TEST_TOL6);
+#endif
 
   TEST (gsl_cdf_chisq_Qinv, (0.0, 13.0), GSL_POSINF, TEST_TOL6);
   TEST (gsl_cdf_chisq_Qinv, (1.65902608070858809e-15, 13.0), 100.0, TEST_TOL6);

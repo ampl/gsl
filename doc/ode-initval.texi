@@ -451,7 +451,7 @@ would print something like @code{control method is 'standard'}
 @end deftypefun
 
 @deftypefun int gsl_odeiv2_control_errlevel (gsl_odeiv2_control * @var{c}, const double @var{y}, const double @var{dydt}, const double @var{h}, const size_t @var{ind}, double * @var{errlev})
-This function calculates the desired error level of the @var{ind}th component to @var{errlev}. It requires the value (@var{y}) and value of the derivative (@var{dydt}) of the component, and the current step size @var{h}.
+This function calculates the desired error level of the @var{ind}-th component to @var{errlev}. It requires the value (@var{y}) and value of the derivative (@var{dydt}) of the component, and the current step size @var{h}.
 @end deftypefun
 
 @deftypefun int gsl_odeiv2_control_set_driver (gsl_odeiv2_control * @var{c}, const gsl_odeiv2_driver * @var{d})
@@ -563,17 +563,17 @@ semantics of the control functions with same name
 (@code{gsl_odeiv2_control_*_new}).
 @end deftypefun
 
-@deftypefun {int} gsl_odeiv2_driver_set_hmin (gsl_odeiv2_driver * d, const double hmin)
+@deftypefun {int} gsl_odeiv2_driver_set_hmin (gsl_odeiv2_driver * @var{d}, const double @var{hmin})
 The function sets a minimum for allowed step size @var{hmin} for
 driver @var{d}. Default value is 0.
 @end deftypefun
 
-@deftypefun {int} gsl_odeiv2_driver_set_hmax (gsl_odeiv2_driver * d, const double hmax)
+@deftypefun {int} gsl_odeiv2_driver_set_hmax (gsl_odeiv2_driver * @var{d}, const double @var{hmax})
 The function sets a maximum for allowed step size @var{hmax} for
 driver @var{d}. Default value is @code{GSL_DBL_MAX}.
 @end deftypefun
 
-@deftypefun {int} gsl_odeiv2_driver_set_nmax (gsl_odeiv2_driver * d, const unsigned long int nmax)
+@deftypefun {int} gsl_odeiv2_driver_set_nmax (gsl_odeiv2_driver * @var{d}, const unsigned long int @var{nmax})
 The function sets a maximum for allowed number of steps @var{nmax} for
 driver @var{d}. Default value of 0 sets no limit for steps.
 @end deftypefun
@@ -603,11 +603,17 @@ the calculation, an error code from
 @var{y} contain the values from last successful step.
 @end deftypefun
 
-@deftypefun {int} gsl_odeiv2_driver_reset (gsl_odeiv2_driver * d)
+@deftypefun {int} gsl_odeiv2_driver_reset (gsl_odeiv2_driver * @var{d})
 This function resets the evolution and stepper objects.
 @end deftypefun
 
-@deftypefun {int} gsl_odeiv2_driver_free (gsl_odeiv2_driver * d)
+@deftypefun {int} gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * @var{d}, const double @var{hstart})
+The routine resets the evolution and stepper objects and sets new
+initial step size to @var{hstart}. This function can be used e.g. to
+change the direction of integration.
+@end deftypefun
+
+@deftypefun {int} gsl_odeiv2_driver_free (gsl_odeiv2_driver * @var{d})
 This function frees the driver object, and the related evolution,
 stepper and control objects.
 @end deftypefun
@@ -620,27 +626,27 @@ oscillator equation,
 @tex
 \beforedisplay
 $$
-x\prime\prime(t) + \mu x\prime(t) (x(t)^2 - 1) + x(t) = 0
+u''(t) + \mu u'(t) (u(t)^2 - 1) + u(t) = 0
 $$
 \afterdisplay
 @end tex
 @ifinfo
 
 @example
-x\prime\prime(t) + \mu x\prime(t) (x(t)^2 - 1) + x(t) = 0
+u''(t) + \mu u'(t) (u(t)^2 - 1) + u(t) = 0
 @end example
 
 @end ifinfo
 @noindent
 This can be converted into a first order system suitable for use with
 the routines described in this chapter by introducing a separate
-variable for the velocity, @math{y = x'(t)},
+variable for the velocity, @math{v = u'(t)},
 @tex
 \beforedisplay
 $$
 \eqalign{
-x\prime &= y\cr
-y\prime &= -x + \mu y (1-x^2)
+u' &= v\cr
+v' &= -u + \mu v (1-u^2)
 }
 $$
 \afterdisplay
@@ -648,20 +654,20 @@ $$
 @ifinfo
 
 @example
-x\prime = y
-y\prime = -x + \mu y (1-x^2)
+u' = v
+v' = -u + \mu v (1-u^2)
 @end example
 
 @end ifinfo
 @noindent
 The program begins by defining functions for these derivatives and
 their Jacobian. The main function uses driver level functions to solve
-the problem. The program evolves the solution from @math{(y, y\prime) = (1,
+the problem. The program evolves the solution from @math{(u, v) = (1,
 0)} at @math{t=0} to @math{t=100}.  The step-size @math{h} is
 automatically adjusted by the controller to maintain an absolute
 accuracy of @c{$10^{-6}$} 
-@math{10^@{-6@}} in the function values
-@var{y}.  The loop in the example prints the solution at the points
+@math{10^@{-6@}} in the function values @math{(u, v)}.  
+The loop in the example prints the solution at the points
 @math{t_i = 1, 2, \dots, 100}.
 
 @example

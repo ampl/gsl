@@ -49,6 +49,7 @@ double gsl_stats_long_double_lag1_autocorrelation (const long double data[], con
 
 double gsl_stats_long_double_covariance (const long double data1[], const size_t stride1,const long double data2[], const size_t stride2, const size_t n);
 double gsl_stats_long_double_correlation (const long double data1[], const size_t stride1,const long double data2[], const size_t stride2, const size_t n);
+double gsl_stats_long_double_spearman (const long double data1[], const size_t stride1, const long double data2[], const size_t stride2, const size_t n, double work[]);
 
 double gsl_stats_long_double_variance_m (const long double data[], const size_t stride, const size_t n, const double mean);
 double gsl_stats_long_double_sd_m (const long double data[], const size_t stride, const size_t n, const double mean);

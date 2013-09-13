@@ -49,6 +49,7 @@ double gsl_stats_float_lag1_autocorrelation (const float data[], const size_t st
 
 double gsl_stats_float_covariance (const float data1[], const size_t stride1,const float data2[], const size_t stride2, const size_t n);
 double gsl_stats_float_correlation (const float data1[], const size_t stride1,const float data2[], const size_t stride2, const size_t n);
+double gsl_stats_float_spearman (const float data1[], const size_t stride1, const float data2[], const size_t stride2, const size_t n, double work[]);
 
 double gsl_stats_float_variance_m (const float data[], const size_t stride, const size_t n, const double mean);
 double gsl_stats_float_sd_m (const float data[], const size_t stride, const size_t n, const double mean);

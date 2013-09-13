@@ -50,10 +50,6 @@ gsl_multiset_valid (gsl_multiset * c)
 
   size_t i, j ;
 
-  if( k > n )
-    {
-      GSL_ERROR("multiset has k greater than n", GSL_FAILURE) ;
-    }
   for (i = 0; i < k; i++)
     {
       const size_t ci = c->data[i];

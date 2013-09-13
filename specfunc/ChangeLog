@@ -1,3 +1,36 @@
+2011-10-10  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* hyperg_U.c (gsl_sf_hyperg_U_int_e,gsl_sf_hyperg_U_e):
+	Always initialize the gsl_sf_result_e10 instances.
+	Thanks to Victor Zverovich for the bug report and patch.
+
+2011-10-10  Brian Gough  <bjg@network-theory.co.uk>
+
+	* coupling.c (gsl_sf_coupling_3j_e): compute 3j factors using logs
+	to allow larger range
+
+2011-09-20  Brian Gough  <bjg@network-theory.co.uk>
+
+	* coupling.c (triangle_selection_fails): extend triangle selection
+	to handle all permutations
+	(gsl_sf_coupling_3j_e): special case for (ja jb jc; 0 0 0) = 0
+	when ja+jb+jc=odd
+
+2011-08-10  Brian Gough  <bjg@network-theory.co.uk>
+
+	* mathieu_radfunc.c (gsl_sf_mathieu_Mc): set odd functions to zero
+	for order=0, initialise fn to zero before use
+
+2011-07-21  Brian Gough  <bjg@gnu.org>
+
+	* mathieu_angfunc.c (gsl_sf_mathieu_se_array): handle the case
+	where q=0
+
+2011-07-15  Brian Gough  <bjg@network-theory.co.uk>
+
+	* trig.c (gsl_sf_lncosh_e): handle x symmetrically for middle
+	region
+
 2010-11-11  Brian Gough  <bjg@gnu.org>
 
 	* ellint.c (gsl_sf_ellint_RC_e, gsl_sf_ellint_RD_e)

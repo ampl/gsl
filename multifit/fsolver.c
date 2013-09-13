@@ -132,6 +132,29 @@ gsl_multifit_fsolver_iterate (gsl_multifit_fsolver * s)
   return (s->type->iterate) (s->state, s->function, s->x, s->f, s->dx);
 }
 
+int
+gsl_multifit_fsolver_driver (gsl_multifit_fsolver * s,
+                             const size_t maxiter,
+                             const double epsabs,
+                             const double epsrel)
+{
+  int status;
+  size_t iter = 0;
+
+  do  
+    {   
+      status = gsl_multifit_fsolver_iterate (s);
+      if (status) 
+        break;
+
+      /* test for convergence */
+      status = gsl_multifit_test_delta (s->dx, s->x, epsabs, epsrel);
+    }   
+  while (status == GSL_CONTINUE && ++iter < maxiter);
+
+  return status;
+} /* gsl_multifit_fdfsolver_driver() */
+
 void
 gsl_multifit_fsolver_free (gsl_multifit_fsolver * s)
 {

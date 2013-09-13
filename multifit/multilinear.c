@@ -1,6 +1,7 @@
 /* multifit/multilinear.c
  * 
  * Copyright (C) 2000, 2007, 2010 Brian Gough
+ * Copyright (C) 2013 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,8 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_multifit.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
 
 /* Fit
@@ -370,26 +373,6 @@ multifit_wlinear_svd (const gsl_matrix * X,
 
       gsl_vector_div (c, D);
 
-      /* Form covariance matrix cov = (Q S^-1) (Q S^-1)^T */
-
-      for (i = 0; i < p; i++)
-        {
-          gsl_vector_view row_i = gsl_matrix_row (QSI, i);
-          double d_i = gsl_vector_get (D, i);
-
-          for (j = i; j < p; j++)
-            {
-              gsl_vector_view row_j = gsl_matrix_row (QSI, j);
-              double d_j = gsl_vector_get (D, j);
-              double s;
-
-              gsl_blas_ddot (&row_i.vector, &row_j.vector, &s);
-
-              gsl_matrix_set (cov, i, j, s / (d_i * d_j));
-              gsl_matrix_set (cov, j, i, s / (d_i * d_j));
-            }
-        }
-
       /* Compute chisq, from residual r = y - X c */
 
       {
@@ -407,6 +390,26 @@ multifit_wlinear_svd (const gsl_matrix * X,
           }
 
         *chisq = r2;
+
+        /* Form covariance matrix cov = (X^T W X)^-1 = (Q S^-1) (Q S^-1)^T */
+
+        for (i = 0; i < p; i++)
+          {
+            gsl_vector_view row_i = gsl_matrix_row (QSI, i);
+            double d_i = gsl_vector_get (D, i);
+
+            for (j = i; j < p; j++)
+              {
+                gsl_vector_view row_j = gsl_matrix_row (QSI, j);
+                double d_j = gsl_vector_get (D, j);
+                double s;
+
+                gsl_blas_ddot (&row_i.vector, &row_j.vector, &s);
+
+                gsl_matrix_set (cov, i, j, s / (d_i * d_j));
+                gsl_matrix_set (cov, j, i, s / (d_i * d_j));
+              }
+          }
       }
 
       return GSL_SUCCESS;
@@ -541,19 +544,9 @@ gsl_multifit_linear_residuals (const gsl_matrix *X, const gsl_vector *y,
     }
   else
     {
-      size_t i;
-
-      for (i = 0; i < y->size; ++i)
-        {
-          double yi = gsl_vector_get(y, i);
-          gsl_vector_const_view row = gsl_matrix_const_row(X, i);
-          double y_est, ri;
-
-          gsl_blas_ddot(&row.vector, c, &y_est);
-          ri = yi - y_est;
-
-          gsl_vector_set(r, i, ri);
-        }
+      /* r = y - X c */
+      gsl_vector_memcpy(r, y);
+      gsl_blas_dgemv(CblasNoTrans, -1.0, X, c, 1.0, r);
 
       return GSL_SUCCESS;
     }

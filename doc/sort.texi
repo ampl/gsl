@@ -119,14 +119,26 @@ index gives the appropriate ordering of the original complex vector.
 
 @cindex sorting vector elements
 @cindex vector, sorting elements of
-@deftypefun void gsl_sort (double * @var{data}, size_t @var{stride}, size_t @var{n})
+@deftypefun void gsl_sort (double * @var{data}, const size_t @var{stride}, size_t @var{n})
 This function sorts the @var{n} elements of the array @var{data} with
 stride @var{stride} into ascending numerical order.
+@end deftypefun
+
+@deftypefun void gsl_sort2 (double * @var{data1}, const size_t @var{stride1}, double * @var{data2}, const size_t @var{stride2}, size_t @var{n})
+This function sorts the @var{n} elements of the array @var{data1} with
+stride @var{stride1} into ascending numerical order, while making the
+same rearrangement of the array @var{data2} with stride @var{stride2},
+also of size @var{n}.
 @end deftypefun
 
 @deftypefun void gsl_sort_vector (gsl_vector * @var{v})
 This function sorts the elements of the vector @var{v} into ascending
 numerical order.
+@end deftypefun
+
+@deftypefun void gsl_sort_vector2 (gsl_vector * @var{v1}, gsl_vector * @var{v2})
+This function sorts the elements of the vector @var{v1} into ascending
+numerical order, while making the same rearrangement of the vector @var{v2}.
 @end deftypefun
 
 @cindex indirect sorting, of vector elements

@@ -138,16 +138,24 @@ gsl_odeiv2_evolve_apply (gsl_odeiv2_evolve * e,
 
   DBL_MEMCPY (e->y0, y, e->dimension);
 
-  /* Calculate initial dydt once if the method can benefit. */
-
+  /* Calculate initial dydt once or reuse previous value if the method
+     can benefit. */
+  
   if (step->type->can_use_dydt_in)
     {
-      int status = GSL_ODEIV_FN_EVAL (dydt, t0, y, e->dydt_in);
+      if (e->count == 0)
+	{
+	  int status = GSL_ODEIV_FN_EVAL (dydt, t0, y, e->dydt_in);
 
-      if (status)
-        {
-          return status;
-        }
+	  if (status)
+	    {
+	      return status;
+	    }
+	}
+      else
+	{
+	  DBL_MEMCPY (e->dydt_in, e->dydt_out, e->dimension);
+	}
     }
 
 try_step:

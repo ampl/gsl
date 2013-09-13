@@ -1,3 +1,60 @@
+2012-10-25  Rhys Ulerich <rhys.ulerich@gmail.com>
+
+	* templates_on.h: undef complex for MSVC
+	Thank you to Victor Zverovich <victor.zverovich@gmail.com>
+	for reporting the problem and providing the patch
+
+2012-06-04  Rhys Ulerich <rhys.ulerich@gmail.com>
+
+	* cdf/beta.c: Update FSF address
+	* cdf/betainv.c: Update FSF address
+	* cdf/chisq.c: Update FSF address
+	* cdf/chisqinv.c: Update FSF address
+	* cdf/fdist.c: Update FSF address
+	* cdf/fdistinv.c: Update FSF address
+	* cdf/gamma.c: Update FSF address
+	* cdf/gammainv.c: Update FSF address
+	* cdf/gauss.c: Update FSF address
+	* cdf/gaussinv.c: Update FSF address
+	* cdf/geometric.c: Update FSF address
+	* cdf/gsl_cdf.h: Update FSF address
+	* cdf/hypergeometric.c: Update FSF address
+	* cdf/nbinomial.c: Update FSF address
+	* cdf/poisson.c: Update FSF address
+	* cdf/tdist.c: Update FSF address
+	* cdf/tdistinv.c: Update FSF address
+	* cdf/test.c: Update FSF address
+	* contrib/wigner.c: Update FSF address
+	* contrib/wigner.h: Update FSF address
+	* histogram/calloc_range.c: Update FSF address
+	* histogram/calloc_range2d.c: Update FSF address
+	* histogram/copy.c: Update FSF address
+	* histogram/copy2d.c: Update FSF address
+	* histogram/maxval.c: Update FSF address
+	* histogram/maxval2d.c: Update FSF address
+	* histogram/oper.c: Update FSF address
+	* histogram/oper2d.c: Update FSF address
+	* histogram/stat.c: Update FSF address
+	* histogram/stat2d.c: Update FSF address
+	* mdate-sh: Update FSF address
+	* randist/discrete.c: Update FSF address
+	* randist/gausszig.c: Update FSF address
+	* rng/gfsr4.c: Update FSF address
+	* rng/mt.c: Update FSF address
+	* utils/getopt.c: Update FSF address
+	* utils/getopt.h: Update FSF address
+	* utils/getopt1.c: Update FSF address
+	* utils/strerror.c: Update FSF address
+	* utils/system.h: Update FSF address
+	* utils/xmalloc.c: Update FSF address
+	* utils/xstrdup.c: Update FSF address
+
+2011-12-01  Rhys Ulerich <rhys.ulerich@gmail.com>
+
+	* doc/integration.texi: Clarify that integration workspaces may be
+	reused multiple times following discussion on gsl-help mailing
+	list.  Documentation ambiguity raised by Denes Molnar.
+
 2011-04-13  Brian Gough  <bjg@network-theory.co.uk>
 
 	* gsl_nan.h (GSL_NEGZERO): define negative zero as explicitly

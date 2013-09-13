@@ -1,6 +1,7 @@
 /* interpolation/interp_poly.c
  * 
  * Copyright (C) 2001 DAN, HO-JIN
+ * Copyright (C) 2013 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,4 +83,58 @@ gsl_poly_dd_taylor (double c[], double xp,
     }
 
   return GSL_SUCCESS;
-}  
+}
+
+/*
+gsl_poly_dd_hermite_init()
+  Compute divided difference representation of data
+for Hermite polynomial interpolation
+
+Inputs: dd   - (output) array of size 2*size containing
+               divided differences, dd[k] = f[z_0,z_1,...,z_k]
+        za   - (output) array of size 2*size containing
+               z values
+        xa   - x data
+        ya   - y data
+        dya  - dy/dx data
+        size - size of xa,ya,dya arrays
+
+Return: success
+*/
+
+int
+gsl_poly_dd_hermite_init (double dd[], double za[], const double xa[], const double ya[],
+                          const double dya[], const size_t size)
+{
+  const size_t N = 2 * size;
+  size_t i, j;
+
+  /* Hermite divided differences */
+
+  dd[0] = ya[0];
+
+  /* compute: dd[j] = f[z_{j-1},z_j] for j \in [1,N-1] */
+  for (j = 0; j < size; ++j)
+    {
+      za[2*j] = xa[j];
+      za[2*j + 1] = xa[j];
+
+      if (j != 0)
+        {
+          dd[2*j] = (ya[j] - ya[j - 1]) / (xa[j] - xa[j - 1]);
+          dd[2*j - 1] = dya[j - 1];
+        }
+    }
+
+  dd[N - 1] = dya[size - 1];
+
+  for (i = 2; i < N; i++)
+    {
+      for (j = N - 1; j >= i; j--)
+        {
+          dd[j] = (dd[j] - dd[j - 1]) / (za[j] - za[j - i]);
+        }
+    }
+
+  return GSL_SUCCESS;
+} /* gsl_poly_dd_hermite_init() */

@@ -38,6 +38,7 @@
 __BEGIN_DECLS
 
 void gsl_sort_vector_uchar (gsl_vector_uchar * v);
+void gsl_sort_vector2_uchar (gsl_vector_uchar * v1, gsl_vector_uchar * v2);
 int gsl_sort_vector_uchar_index (gsl_permutation * p, const gsl_vector_uchar * v);
 
 int gsl_sort_vector_uchar_smallest (unsigned char * dest, const size_t k, const gsl_vector_uchar * v);

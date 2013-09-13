@@ -37,6 +37,7 @@
 __BEGIN_DECLS
 
 void gsl_sort_ulong (unsigned long * data, const size_t stride, const size_t n);
+void gsl_sort2_ulong (unsigned long * data1, const size_t stride1, unsigned long * data2, const size_t stride2, const size_t n);
 void gsl_sort_ulong_index (size_t * p, const unsigned long * data, const size_t stride, const size_t n);
 
 int gsl_sort_ulong_smallest (unsigned long * dest, const size_t k, const unsigned long * src, const size_t stride, const size_t n);

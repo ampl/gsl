@@ -21,6 +21,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sys.h>
 
 /* This is the CRAY RANF generator. The generator returns the
    upper 32 bits from each term of the sequence,

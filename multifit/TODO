@@ -8,3 +8,12 @@ The following would also be nice additions to the multifit function suite
 2. Allow fit variable weighting (not observation weighting).
 3. Allow for principal factor computations.
 
+The following features should be added to the nonlinear least squares routines:
+
+1. More information reporting to the user (see levmar code for examples) such as:
+   - number of function evaluations
+   - number of Jacobian evaluations
+
+2. Support for constraints
+
+3. robust fitting

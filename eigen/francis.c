@@ -206,7 +206,9 @@ gsl_eigen_francis (gsl_matrix * H, gsl_vector_complex * eval,
       francis_schur_decomp(H, eval, w);
 
       if (w->n_evals != N)
-        return GSL_EMAXITER;
+        {
+          GSL_ERROR ("maximum iterations reached without finding all eigenvalues", GSL_EMAXITER);
+        }
 
       return GSL_SUCCESS;
     }

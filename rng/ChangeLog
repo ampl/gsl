@@ -1,3 +1,8 @@
+2012-09-10  Rhys Ulerich <rhys.ulerich@gmail.com>
+
+	* ranf.c Add include for gsl_sys.h to fix MSVC build.
+	Thanks to Brian Gladman for the suggestion.
+
 2011-04-28  Brian Gough  <bjg@network-theory.co.uk>
 
 	* ranlxs.c (ranlxs_set_lux): enforce maximum seed of

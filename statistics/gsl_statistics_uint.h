@@ -49,6 +49,7 @@ double gsl_stats_uint_lag1_autocorrelation (const unsigned int data[], const siz
 
 double gsl_stats_uint_covariance (const unsigned int data1[], const size_t stride1,const unsigned int data2[], const size_t stride2, const size_t n);
 double gsl_stats_uint_correlation (const unsigned int data1[], const size_t stride1,const unsigned int data2[], const size_t stride2, const size_t n);
+double gsl_stats_uint_spearman (const unsigned int data1[], const size_t stride1, const unsigned int data2[], const size_t stride2, const size_t n, double work[]);
 
 double gsl_stats_uint_variance_m (const unsigned int data[], const size_t stride, const size_t n, const double mean);
 double gsl_stats_uint_sd_m (const unsigned int data[], const size_t stride, const size_t n, const double mean);

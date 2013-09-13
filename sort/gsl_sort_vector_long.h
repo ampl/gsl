@@ -38,6 +38,7 @@
 __BEGIN_DECLS
 
 void gsl_sort_vector_long (gsl_vector_long * v);
+void gsl_sort_vector2_long (gsl_vector_long * v1, gsl_vector_long * v2);
 int gsl_sort_vector_long_index (gsl_permutation * p, const gsl_vector_long * v);
 
 int gsl_sort_vector_long_smallest (long * dest, const size_t k, const gsl_vector_long * v);

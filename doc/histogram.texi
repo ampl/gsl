@@ -867,7 +867,7 @@ The following functions are used by the access and update routines to
 locate the bin which corresponds to a given @math{(x,y)} coordinate.
 
 @deftypefun int gsl_histogram2d_find (const gsl_histogram2d * @var{h}, double @var{x}, double @var{y}, size_t * @var{i}, size_t * @var{j})
-This function finds and sets the indices @var{i} and @var{j} to the to
+This function finds and sets the indices @var{i} and @var{j} to
 the bin which covers the coordinates (@var{x},@var{y}). The bin is
 located using a binary search.  The search includes an optimization for
 histograms with uniform ranges, and will return the correct bin immediately

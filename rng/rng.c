@@ -36,7 +36,7 @@ gsl_rng_alloc (const gsl_rng_type * T)
                         GSL_ENOMEM, 0);
     };
 
-  r->state = malloc (T->size);
+  r->state = calloc (1, T->size);
 
   if (r->state == 0)
     {

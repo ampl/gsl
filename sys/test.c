@@ -114,6 +114,64 @@ main (void)
   y_expected = 1.414213562373095048801688e307;
   gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(1e307, 1e307)");
 
+  /* Test +-Inf, finite */
+  
+  y = gsl_hypot (GSL_POSINF, 1.2);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_POSINF, 1.2)");
+
+  y = gsl_hypot (GSL_NEGINF, 1.2);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NEGINF, 1.2)");
+
+  y = gsl_hypot (1.2, GSL_POSINF);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(1.2, GSL_POSINF)");
+
+  y = gsl_hypot (1.2, GSL_NEGINF);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(1.2, GSL_NEGINF)");
+
+  /* Test NaN, finite */
+  
+  y = gsl_hypot (GSL_NAN, 1.2);
+  y_expected = GSL_NAN;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NAN, 1.2)");
+
+  y = gsl_hypot (1.2, GSL_NAN);
+  y_expected = GSL_NAN;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(1.2, GSL_NAN)");
+
+  /* Test NaN, NaN */
+
+  y = gsl_hypot (GSL_NAN, GSL_NAN);
+  y_expected = GSL_NAN;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NAN, GSL_NAN)");
+
+  /* Test +Inf, NaN */
+
+  y = gsl_hypot (GSL_POSINF, GSL_NAN);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_POSINF, GSL_NAN)");
+
+  /* Test -Inf, NaN */
+
+  y = gsl_hypot (GSL_NEGINF, GSL_NAN);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NEGINF, GSL_NAN)");
+
+  /* Test NaN, +Inf */
+
+  y = gsl_hypot (GSL_NAN, GSL_POSINF);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NAN, GSL_POSINF)");
+
+  /* Test NaN, -Inf */
+
+  y = gsl_hypot (GSL_NAN, GSL_NEGINF);
+  y_expected = GSL_POSINF;
+  gsl_test_rel (y, y_expected, 1e-15, "gsl_hypot(GSL_NAN, GSL_NEGINF)");
+
   /* Test for gsl_hypot3 */
 
   y = gsl_hypot3 (0.0, 0.0, 0.0);

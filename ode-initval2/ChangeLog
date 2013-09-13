@@ -1,3 +1,60 @@
+2013-06-08  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* driver.c: Removed redundant if clause. Thanks to
+	David Binderman for the report!
+	
+2013-01-27  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* msbdf.c: Corrected bug which enabled order to be changed 
+	by two (first by stability enhancement, then by order evaluation
+	after a rejected step). Thanks for Frantisek Kluknavsky and
+	Andreas Schwab for bug reports!
+	
+	* msbdf.c: Added more state variables explicitly to be reset in 
+	msbdf_reset. 
+
+	*msbdf.c: Added abscorscaled to remove division of abscor for 
+	use in msbdf_eval_order and subsequent backwards multiplication.
+	
+	*test.c: test_extreme_problems: Increased ringmod case tolerances 
+	from 1e-7 to 1e-12 to increase precision. Because that
+	increases computational burden, I also decreased end time 
+	from 1e-3 to 1e-5. That decreased the acidity of the test 
+	significantly, but the test case is now more appropriate 
+	for normal "make check". Thanks for Frantisek Kluknavsky
+	for pointing out bad design of the test case.
+
+2012-09-10  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* test.c: Correct two out-of-order declarations.
+	Thanks to Brian Gladman for spotting the problem.
+
+2012-03-10  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* driver.c: Added function gsl_odeiv2_driver_reset_hstart to
+	allow resetting step size, possibly change its sign, too.
+	Check for non-zero hstart in initializations.
+
+	* test.c: Modified test_driver to carry out tests with all
+	steppers. Small printout changes.
+
+2012-01-21  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* rkf45.c: Bug correction: Set gives_exact_dydt_out to 1 in
+	rkf45_type
+
+2012-01-14  Tuomo Keskitalo  <tuomo.keskitalo@iki.fi>
+
+	* evolve.c: Modified initial derivative evaluation in evolve_apply
+	to reuse previously calculated values. This saves calls to the
+	user function. Thanks for Illes Farkas for pointing out redundant
+	function calls!
+
+2011-06-28  Brian Gough  <bjg@network-theory.co.uk>
+
+	* rk4imp.c (rk4imp_apply): use M_SQRT3 instead of sqrt(3) in array
+	initialiser.
+
 2011-05-02  Brian Gough  <bjg@network-theory.co.uk>
 
 	* gsl_odeiv2.h: fix header guard to __GSL_ODEIV2_H__

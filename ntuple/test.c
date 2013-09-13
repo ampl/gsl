@@ -1,5 +1,6 @@
 #include <config.h>
 #include <stdlib.h>
+#include <string.h>
 #include <gsl/gsl_ntuple.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_ieee_utils.h>
@@ -28,6 +29,9 @@ main (void)
   double scale = 1.5;
   
   gsl_ieee_env_setup ();
+
+  /* zero struct including padding bytes to avoid valgrind errors */
+  memset(&ntuple_row, 0, sizeof(struct data));
 
   S.function = &sel_func;
   S.params = &scale;

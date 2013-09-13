@@ -125,19 +125,13 @@ Inline versions of these functions are used when @code{HAVE_INLINE} is defined.
 @set GSL @i{GNU Scientific Library}
 
 @copying
-Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 The GSL Team.
+Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'' and ``Free Software
-Needs Free Documentation'', the Front-Cover text being ``A GNU Manual'',
-and with the Back-Cover Text being (a) (see below).  A copy of the
-license is included in the section entitled ``GNU Free Documentation
-License''.
-
-(a) The Back-Cover Text is: ``You have the freedom to copy and modify this
-GNU Manual.''
+any later version published by the Free Software Foundation; with no
+Invariant Sections and no cover texts.  A copy of the license is
+included in the section entitled ``GNU Free Documentation License''.
 @end copying
 
 @titlepage
@@ -178,7 +172,7 @@ Theoretical Astrophysics Group, Los Alamos National Laboratory
 @sp 1
 
 @author Patrick Alken
-Department of Physics, University of Colorado at Boulder
+University of Colorado at Boulder
 @sp 1
 
 @author Michael Booth
@@ -189,6 +183,10 @@ Department of Physics and Astronomy, The Johns Hopkins University
 @author Fabrice Rossi
 University of Paris-Dauphine
 @comment @email{rossi@@ufrmd.dauphine.fr}
+@sp 1
+
+@author Rhys Ulerich
+@comment @email{rhys.ulerich@gmail.com}
 @sp 1
 @page
 @vskip 0pt plus 1filll
@@ -242,7 +240,7 @@ project homepage thanks to Daisuke Tominaga.
 * Vectors and Matrices::        
 * Permutations::                
 * Combinations::                
-* Multisets::
+* Multisets::                   
 * Sorting::                     
 * BLAS Support::                
 * Linear Algebra::              
@@ -270,14 +268,13 @@ project homepage thanks to Daisuke Tominaga.
 * Multidimensional Minimization::  
 * Least-Squares Fitting::       
 * Nonlinear Least-Squares Fitting::  
-* Basis Splines::
+* Basis Splines::               
 * Physical Constants::          
 * IEEE floating-point arithmetic::  
 * Debugging Numerical Programs::  
 * Contributors to GSL::         
 * Autoconf Macros::             
 * GSL CBLAS Library::           
-* Free Software Needs Free Documentation::  
 * GNU General Public License::  
 * GNU Free Documentation License::  
 * Function Index::              
@@ -531,7 +528,8 @@ ode-initval2 routines.
 Implementation of the Mathieu functions.
 
 @item Patrick Alken
-Implementation of non-symmetric and generalized eigensystems and B-splines.
+Implementation of nonsymmetric and generalized eigensystems, B-splines,
+and robust linear regression.
 
 @item Rhys Ulerich 
 Wrote the multiset routines.
@@ -598,7 +596,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @appendix Autoconf Macros
 @include autoconf.texi
 
-@node GSL CBLAS Library, Free Software Needs Free Documentation, Autoconf Macros, Top
+@node GSL CBLAS Library, GNU General Public License, Autoconf Macros, Top
 @appendix GSL CBLAS Library
 @include cblas.texi
 
@@ -606,11 +604,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @comment @unnumbered Copyright
 @comment @include science.texi
 
-@node  Free Software Needs Free Documentation, GNU General Public License, GSL CBLAS Library, Top
-@unnumbered Free Software Needs Free Documentation
-@include freemanuals.texi
+@comment @node  Free Software Needs Free Documentation, GNU General Public License, GSL CBLAS Library, Top
+@comment @unnumbered Free Software Needs Free Documentation
+@comment @include freemanuals.texi
 
-@node  GNU General Public License, GNU Free Documentation License, Free Software Needs Free Documentation, Top
+@node  GNU General Public License, GNU Free Documentation License, GSL CBLAS Library, Top
 @unnumbered GNU General Public License
 @include gpl.texi
 

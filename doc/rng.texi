@@ -160,7 +160,7 @@ To obtain non-uniform distributions @pxref{Random Number Distributions}.
 This function returns a random integer from the generator @var{r}.  The
 minimum and maximum values depend on the algorithm used, but all
 integers in the range [@var{min},@var{max}] are equally likely.  The
-values of @var{min} and @var{max} can determined using the auxiliary
+values of @var{min} and @var{max} can be determined using the auxiliary
 functions @code{gsl_rng_max (r)} and @code{gsl_rng_min (r)}.
 @end deftypefun
 
@@ -1130,9 +1130,9 @@ generator is about
 @c{$2^{31}$}
 @math{2^31}.
 
-This generator is used in the IMSL Library (subroutine RNUN) and in
-MATLAB (the RAND function).  It is also sometimes known by the acronym
-``GGL'' (I'm not sure what that stands for).
+This generator was used in the IMSL Library (subroutine RNUN) and in
+MATLAB (the RAND function) in the past.  It is also sometimes known by
+the acronym ``GGL'' (I'm not sure what that stands for).
 
 For more information see,
 @itemize @w{}
@@ -1409,6 +1409,7 @@ Further information is available in the review paper written by Pierre
 L'Ecuyer,
 
 @itemize @w{}
+@item
 P. L'Ecuyer, ``Random Number Generation'', Chapter 4 of the
 Handbook on Simulation, Jerry Banks Ed., Wiley, 1998, 93--137.
 

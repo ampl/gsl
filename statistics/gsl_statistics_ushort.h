@@ -49,6 +49,7 @@ double gsl_stats_ushort_lag1_autocorrelation (const unsigned short data[], const
 
 double gsl_stats_ushort_covariance (const unsigned short data1[], const size_t stride1,const unsigned short data2[], const size_t stride2, const size_t n);
 double gsl_stats_ushort_correlation (const unsigned short data1[], const size_t stride1,const unsigned short data2[], const size_t stride2, const size_t n);
+double gsl_stats_ushort_spearman (const unsigned short data1[], const size_t stride1, const unsigned short data2[], const size_t stride2, const size_t n, double work[]);
 
 double gsl_stats_ushort_variance_m (const unsigned short data[], const size_t stride, const size_t n, const double mean);
 double gsl_stats_ushort_sd_m (const unsigned short data[], const size_t stride, const size_t n, const double mean);

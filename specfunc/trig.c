@@ -473,13 +473,13 @@ int gsl_sf_lncosh_e(const double x, gsl_sf_result * result)
     cosh_m1_series(x, &eps);
     return gsl_sf_log_1plusx_e(eps, result);
   }
-  else if(x < -0.5*GSL_LOG_DBL_EPSILON) {
-    result->val = x + log(0.5*(1.0 + exp(-2.0*x)));
+  else if(fabs(x) < -0.5*GSL_LOG_DBL_EPSILON) {
+    result->val = fabs(x) + log(0.5*(1.0 + exp(-2.0*fabs(x))));
     result->err = 2.0 * GSL_DBL_EPSILON * fabs(result->val);
     return GSL_SUCCESS;
   }
   else {
-    result->val = -M_LN2 + x;
+    result->val = -M_LN2 + fabs(x);
     result->err = 2.0 * GSL_DBL_EPSILON * fabs(result->val);
     return GSL_SUCCESS;
   }

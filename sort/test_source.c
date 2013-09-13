@@ -93,6 +93,16 @@ TYPE (test_sort_vector) (size_t N, size_t stride)
 
   FUNCTION (gsl_vector, memcpy) (data, orig);
   FUNCTION (gsl_vector, reverse) (data);
+  FUNCTION (gsl_vector, memcpy) (data2, data);
+
+  TYPE (gsl_sort_vector2) (data, data2);
+  status = FUNCTION (my, check) (data, orig);
+  gsl_test (status, "sorting2, " NAME (gsl_vector) ", n = %u, stride = %u, reversed data", N, stride);
+  status = FUNCTION (my, check) (data2, orig);
+  gsl_test (status, "sorting2, " NAME (gsl_vector) ", n = %u, stride = %u, reversed data2", N, stride);
+
+  FUNCTION (gsl_vector, memcpy) (data, orig);
+  FUNCTION (gsl_vector, reverse) (data);
 
   FUNCTION (gsl_sort_vector, smallest) (small, k, data);
   status = FUNCTION (my, scheck) (small, k, orig);
@@ -111,6 +121,16 @@ TYPE (test_sort_vector) (size_t N, size_t stride)
   gsl_test (status, "largest index, " NAME (gsl_vector) ", n = %u, stride = %u, reversed", N, stride);
 
   /* Perform some shuffling */
+
+  FUNCTION (gsl_vector, memcpy) (data, orig);
+  FUNCTION (my, randomize) (data);
+  FUNCTION (gsl_vector, memcpy) (data2, data);
+
+  TYPE (gsl_sort_vector2) (data, data2);
+  status = FUNCTION (my, check) (data, orig);
+  gsl_test (status, "sorting2, " NAME (gsl_vector) ", n = %u, stride = %u, randomized data", N, stride);
+  status = FUNCTION (my, check) (data2, orig);
+  gsl_test (status, "sorting2, " NAME (gsl_vector) ", n = %u, stride = %u, randomized data2", N, stride);
 
   FUNCTION (gsl_vector, memcpy) (data, orig);
   FUNCTION (my, randomize) (data);

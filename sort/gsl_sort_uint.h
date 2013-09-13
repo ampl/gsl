@@ -37,6 +37,7 @@
 __BEGIN_DECLS
 
 void gsl_sort_uint (unsigned int * data, const size_t stride, const size_t n);
+void gsl_sort2_uint (unsigned int * data1, const size_t stride1, unsigned int * data2, const size_t stride2, const size_t n);
 void gsl_sort_uint_index (size_t * p, const unsigned int * data, const size_t stride, const size_t n);
 
 int gsl_sort_uint_smallest (unsigned int * dest, const size_t k, const unsigned int * src, const size_t stride, const size_t n);

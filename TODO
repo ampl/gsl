@@ -7,6 +7,7 @@ We are looking for volunteers to do the following tasks.
 Consult the TODO files in each directory first for specific
 requirements.
 
+** Document LQ linalg functions
 ** 1st-line support on the mailing lists (e.g. checking that bugs are
 reproducible, and that all relevant information is supplied)
 

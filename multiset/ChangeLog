@@ -1,3 +1,14 @@
+2011-09-12  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* init.c (gsl_multiset_alloc): remove incorrect (k, n) constraint per
+	question from Michael Underwood <munderwood@qis.ucalgary.ca>.  k strictly
+	greater than n is permissible.  Incorrect constraint due to copy'n'pase
+	from combinations logic.
+
+	* multiset.c (gsl_multiset_valid): likewise
+
+	* test.c: add tests to verify k > n working as expected.
+
 2009-09-21  Rhys Ulerich  <rhys.ulerich@gmail.com>
 
 	* added multiset support to GSL based on combinations

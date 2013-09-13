@@ -245,7 +245,7 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
   Vinvfx (iv->fx, &(iv->c[idx[3]]), 3);
   Vinvfx (iv->fx, &(iv->c[idx[2]]), 2);
   for (i = 0; i < nnans; i++)
-    iv->fx[i] = GSL_NAN;
+    iv->fx[nans[i]] = GSL_NAN;
   iv->a = a;
   iv->b = b;
   iv->depth = 3;
@@ -334,7 +334,7 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
 	    {
 	      downdate (&(iv->c[idx[d]]), n[d], d, nans, nnans);
 	      for (i = 0; i < nnans; i++)
-		iv->fx[i] = GSL_NAN;
+		iv->fx[nans[i]] = GSL_NAN;
 	    }
 
 	  /* Compute the error estimate. */
@@ -455,7 +455,7 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
 	    {
 	      downdate (ivl->c, n[0], 0, nans, nnans);
 	      for (i = 0; i < nnans; i++)
-		ivl->fx[i] = GSL_NAN;
+		ivl->fx[nans[i]] = GSL_NAN;
 	    }
 	  for (i = 0; i <= n[d]; i++)
 	    {
@@ -521,7 +521,7 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
 	    {
 	      downdate (ivr->c, n[0], 0, nans, nnans);
 	      for (i = 0; i < nnans; i++)
-		ivr->fx[i] = GSL_NAN;
+		ivr->fx[nans[i]] = GSL_NAN;
 	    }
 	  for (i = 0; i <= n[d]; i++)
 	    {

@@ -1,6 +1,6 @@
 /* multifit/test.c
  * 
- * Copyright (C) 2007 Brian Gough
+ * Copyright (C) 2007, 2013 Brian Gough, Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,52 +49,59 @@ test_lmder (gsl_multifit_function_fdf * f, double x0[],
 void
 test_fdf (const char * name, gsl_multifit_function_fdf * f, 
           double x0[], double x[], double sumsq,
-          double sigma[]);
+          double sigma[], double epsrel, double epsrel_sigma);
 
 int
 main (void)
 {
+  double epsrel = 1.0e-5;
+  double epsrel_sigma = 1.0e-4;
+  double epsrel_fd = 1.0e-2;
+  double epsrel_sigma_fd = 1.0e-2;
+  gsl_multifit_function_fdf f;
+
   gsl_ieee_env_setup();
 
+  /* test linear regression */
   test_longley();
   test_filip();
   test_pontius();
   test_estimator();
 
   {
-    gsl_multifit_function_fdf f = make_fdf (&brown_f, &brown_df, &brown_fdf,
-                                            brown_N, brown_P, 0);
-    
+    f = make_fdf (&brown_f, &brown_df, &brown_fdf, brown_N, brown_P, 0);
     test_lmder(&f, brown_x0, &brown_X[0][0], brown_F, &brown_cov[0][0]);
   }
 
   {
-    gsl_multifit_function_fdf f = make_fdf (&enso_f, &enso_df, &enso_fdf,
-                                            enso_N, enso_P, 0);
+    f = make_fdf (&enso_f, &enso_df, &enso_fdf, enso_N, enso_P, 0);
+    test_fdf("nist-ENSO", &f, enso_x0, enso_x, enso_sumsq, enso_sigma, epsrel, epsrel_sigma);
 
-    test_fdf("nist-ENSO", &f, enso_x0, enso_x, enso_sumsq, enso_sigma);
+    f = make_fdf (&enso_f, NULL, NULL, enso_N, enso_P, 0);
+    test_fdf("nist-ENSO", &f, enso_x0, enso_x, enso_sumsq, enso_sigma, epsrel_fd, epsrel_sigma_fd);
+
   }
 
   {
-    gsl_multifit_function_fdf f = make_fdf (&kirby2_f, &kirby2_df, &kirby2_fdf,
-                                            kirby2_N, kirby2_P, 0);
+    f = make_fdf (&kirby2_f, &kirby2_df, &kirby2_fdf, kirby2_N, kirby2_P, 0);
+    test_fdf("nist-kirby2", &f, kirby2_x0, kirby2_x, kirby2_sumsq, kirby2_sigma, epsrel, epsrel_sigma);
 
-    test_fdf("nist-kirby2", &f, kirby2_x0, kirby2_x, kirby2_sumsq, kirby2_sigma);
+    f = make_fdf (&kirby2_f, NULL, NULL, kirby2_N, kirby2_P, 0);
+    test_fdf("nist-kirby2", &f, kirby2_x0, kirby2_x, kirby2_sumsq, kirby2_sigma, epsrel_fd, epsrel_sigma_fd);
   }
 
   {
-    gsl_multifit_function_fdf f = make_fdf (&hahn1_f, &hahn1_df, &hahn1_fdf,
-                                            hahn1_N, hahn1_P, 0);
+    f = make_fdf (&hahn1_f, &hahn1_df, &hahn1_fdf, hahn1_N, hahn1_P, 0);
+    test_fdf("nist-hahn1", &f, hahn1_x0, hahn1_x, hahn1_sumsq, hahn1_sigma, epsrel, epsrel_sigma);
 
-    test_fdf("nist-hahn1", &f, hahn1_x0, hahn1_x, hahn1_sumsq, hahn1_sigma);
+    f = make_fdf (&hahn1_f, NULL, NULL, hahn1_N, hahn1_P, 0);
+    test_fdf("nist-hahn1", &f, hahn1_x0, hahn1_x, hahn1_sumsq, hahn1_sigma, epsrel_fd, epsrel_sigma_fd);
   }
 
 #ifdef JUNK
   {
-    gsl_multifit_function_fdf f = make_fdf (&nelson_f, &nelson_df, &nelson_fdf,
-                                            nelson_N, nelson_P, 0);
-
-    test_fdf("nist-nelson", &f, nelson_x0, nelson_x, nelson_sumsq, nelson_sigma);
+    f = make_fdf (&nelson_f, &nelson_df, &nelson_fdf, nelson_N, nelson_P, 0);
+    test_fdf("nist-nelson", &f, nelson_x0, nelson_x, nelson_sumsq, nelson_sigma, epsrel, epsrel_sigma);
   }
 #endif
 
@@ -164,7 +171,8 @@ test_lmder (gsl_multifit_function_fdf * f, double x0[],
 void
 test_fdf (const char * name, gsl_multifit_function_fdf * f, 
           double x0[], double x_final[], 
-          double f_sumsq, double sigma[])
+          double f_sumsq, double sigma[], double epsrel,
+          double epsrel_sigma)
 {
   const gsl_multifit_fdfsolver_type *T;
   gsl_multifit_fdfsolver *s;
@@ -204,7 +212,7 @@ test_fdf (const char * name, gsl_multifit_function_fdf * f,
 
     for (i = 0 ; i < p; i++)
       {
-        gsl_test_rel (gsl_vector_get (s->x, i), x_final[i], 1e-5, 
+        gsl_test_rel (gsl_vector_get (s->x, i), x_final[i], epsrel, 
                       "%s, lmsder, x%u", name, i);
       }
 
@@ -212,17 +220,31 @@ test_fdf (const char * name, gsl_multifit_function_fdf * f,
     {
       double s2 = pow(gsl_blas_dnrm2 (s->f), 2.0);
 
-      gsl_test_rel (s2, f_sumsq, 1e-5, "%s, lmsder, |f|^2", name);
+      gsl_test_rel (s2, f_sumsq, epsrel, "%s, lmsder, |f|^2", name);
 
       for (i = 0; i < p; i++) 
         {
           double ei = sqrt(s2/(n-p))*sqrt(gsl_matrix_get(covar,i,i));
-          gsl_test_rel (ei, sigma[i], 1e-4, 
+          gsl_test_rel (ei, sigma[i], epsrel_sigma, 
                         "%s, sigma(%d)", name, i) ;
         }
     }
 
     gsl_matrix_free (covar);
+  }
+
+  /* check higher level driver routine */
+  {
+    size_t i;
+
+    gsl_multifit_fdfsolver_set (s, f, &x.vector);
+    gsl_multifit_fdfsolver_driver (s, 1000, 0.0, 1.0e-7);
+
+    for (i = 0 ; i < p; i++)
+      {
+        gsl_test_rel (gsl_vector_get (s->x, i), x_final[i], epsrel, 
+                      "%s, lmsder, x%u", name, i);
+      }
   }
 
   /* Check that there is no hidden state, restarting should 

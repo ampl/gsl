@@ -154,6 +154,14 @@ int gsl_sf_mathieu_Ms(int kind, int order, double qq, double zz,
       GSL_ERROR("kind must be 1 or 2", GSL_EINVAL);
   }
 
+  /* Handle the trivial cases where order = 0. */
+  if (order == 0)
+  {
+      result->val = 0.0;
+      result->err = 0.0;
+      return GSL_SUCCESS;
+  }
+  
   mm = 0;
   amax = 0.0;
   fn = 0.0;
@@ -271,7 +279,6 @@ int gsl_sf_mathieu_Mc_array(int kind, int nmin, int nmax, double qq,
 
   mm = 0;
   amax = 0.0;
-  fn = 0.0;
   u1 = sqrt(qq)*exp(-1.0*zz);
   u2 = sqrt(qq)*exp(zz);
   
@@ -280,6 +287,7 @@ int gsl_sf_mathieu_Mc_array(int kind, int nmin, int nmax, double qq,
   
   for (ii=0, order=nmin; order<=nmax; ii++, order++)
   {
+      fn = 0.0;
       even_odd = 0;
       if (order % 2 != 0)
           even_odd = 1;
@@ -377,7 +385,6 @@ int gsl_sf_mathieu_Ms_array(int kind, int nmin, int nmax, double qq,
 
   mm = 0;
   amax = 0.0;
-  fn = 0.0;
   u1 = sqrt(qq)*exp(-1.0*zz);
   u2 = sqrt(qq)*exp(zz);
   
@@ -386,9 +393,17 @@ int gsl_sf_mathieu_Ms_array(int kind, int nmin, int nmax, double qq,
   
   for (ii=0, order=nmin; order<=nmax; ii++, order++)
   {
+      fn = 0.0;
       even_odd = 0;
       if (order % 2 != 0)
           even_odd = 1;
+  
+      /* Handle the trivial cases where order = 0. */
+      if (order == 0)
+      {
+          result_array[ii] = 0.0;
+          continue;
+      }
   
       /* Compute the series coefficients. */
       status = gsl_sf_mathieu_b_coeff(order, qq, bb[order], coeff);

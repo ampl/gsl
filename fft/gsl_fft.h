@@ -34,20 +34,11 @@
 
 __BEGIN_DECLS
 
-#ifndef GSL_DISABLE_DEPRECATED
-typedef enum
-  {
-    forward = -1, backward = +1,
-    gsl_fft_forward = -1, gsl_fft_backward = +1      
-  }
-gsl_fft_direction;
-#else
 typedef enum
   {
     gsl_fft_forward = -1, gsl_fft_backward = +1   
   }
 gsl_fft_direction;
-#endif
 
 /* this gives the sign in the formula
 

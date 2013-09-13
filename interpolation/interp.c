@@ -80,7 +80,7 @@ gsl_interp_init (gsl_interp * interp, const double x_array[], const double y_arr
     {
       if (!(x_array[i-1] < x_array[i])) 
         {
-          GSL_ERROR ("x values must be monotonically increasing", GSL_EINVAL);
+          GSL_ERROR ("x values must be strictly increasing", GSL_EINVAL);
         }
     }
 

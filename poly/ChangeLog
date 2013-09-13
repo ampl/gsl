@@ -1,3 +1,10 @@
+2011-04-13  Brian Gough  <bjg@network-theory.co.uk>
+
+	* solve_quadratic.c (gsl_poly_solve_quadratic): simplify the case
+	where b==0 and disc>0
+	(gsl_poly_solve_quadratic): delay the evaluation of the
+	discriminant until it is needed
+
 2009-07-09  Brian Gough  <bjg@network-theory.co.uk>
 
 	* zsolve_init.c (gsl_poly_complex_workspace_free): handle NULL

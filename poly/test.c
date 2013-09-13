@@ -23,6 +23,14 @@
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_poly.h>
+#include <gsl/gsl_heapsort.h>
+
+static int
+cmp_cplx(const double *a, const double *b)
+{
+	double t = (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1]);
+	return t < 0.0 ? -1 : t > 0.0 ? 1 : 0;
+}
 
 int
 main (void)
@@ -520,6 +528,53 @@ main (void)
   }
 
   {
+    /* 15-th order polynomial y = (x + 1) * (x^10 + x^9 + 2 * x^7 + 4 * x^2 + 
+       4 * x + 8) * (x - 1)^2 * (x - 2)^2
+
+       Problem reported by Munagala Ramanath (bug #39055)
+    */
+
+    double a[16] = { 32, -48, -8, 28, -8, 16, -16, 12, -16, 6, 10, -17, 10, 2, -4, 1 };
+    double z[16*2];
+
+    double expected[16*20] = {
+	   1.0000000000000000,  0.00000000000000000,
+	   1.0000000000000000,  0.00000000000000000,
+	  -1.0000000000000000,  0.00000000000000000,
+	 -0.65893856175240950,  0.83459757287426684,
+	 -0.65893856175240950, -0.83459757287426684,
+	-0.070891117403341281,  -1.1359249087587791,
+	-0.070891117403341281,   1.1359249087587791,
+	   1.1142366961812986, -0.48083981203389980,
+	   1.1142366961812986,  0.48083981203389980,
+	  -1.3066982484920768,  0.00000000000000000,
+	  0.57284747839410854,   1.1987808988289705,
+	  0.57284747839410854,  -1.1987808988289705,
+	  -1.6078107423472359,  0.00000000000000000,
+	   2.0000000000000000,  0.00000000000000000,
+	   2.0000000000000000,  0.00000000000000000 };
+
+    int i;
+
+    gsl_poly_complex_workspace *w = gsl_poly_complex_workspace_alloc (16);
+
+    int status = gsl_poly_complex_solve (a, 16, w, z);
+
+    gsl_poly_complex_workspace_free (w);
+
+    gsl_test (status, "gsl_poly_complex_solve, 15th-order polynomial");
+    
+    gsl_heapsort(z, 15, 2 * sizeof(double), (gsl_comparison_fn_t) &cmp_cplx);
+
+    for (i = 0; i<15; i++)
+      {
+        gsl_test_abs (z[2*i], expected[2*i], 1e-7, "z%d.real, 15th-order polynomial", i);
+        gsl_test_abs (z[2*i+1], expected[2*i+1], 1e-7, "z%d.imag, 15th-order polynomial", i);
+      }
+  }
+
+
+  {
     int i;
 
     double xa[7] = {0.16, 0.97, 1.94, 2.74, 3.58, 3.73, 4.70 };
@@ -557,20 +612,55 @@ main (void)
       }
   }
 
-   {
-     double c[6] = { +1.0, -2.0, +3.0, -4.0, +5.0, -6.0 };
-     double dc[6];
-     double x;
-     x = -0.5;
-     gsl_poly_eval_derivs(c, 6, x, dc, 6);
+  {
+    size_t i;
+    double xa[3] = { 1.3, 1.6, 1.9 };
+    double ya[3] = { 0.6200860, 0.4554022, 0.2818186 };
+    double dya[3] = { -0.5220232, -0.5698959, -0.5811571 };
 
-     gsl_test_rel (dc[0], c[0] + c[1]*x + c[2]*x*x + c[3]*x*x*x + c[4]*x*x*x*x + c[5]*x*x*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6}, 3.75)");
-     gsl_test_rel (dc[1], c[1] + 2.0*c[2]*x + 3.0*c[3]*x*x + 4.0*c[4]*x*x*x + 5.0*c[5]*x*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 1, -12.375)");
-     gsl_test_rel (dc[2], 2.0*c[2] + 3.0*2.0*c[3]*x + 4.0*3.0*c[4]*x*x + 5.0*4.0*c[5]*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 2, +48.0)");
-     gsl_test_rel (dc[3], 3.0*2.0*c[3] + 4.0*3.0*2.0*c[4]*x + 5.0*4.0*3.0*c[5]*x*x , eps,"gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 3, -174.0)");
-     gsl_test_rel (dc[4], 4.0*3.0*2.0*c[4] + 5.0*4.0*3.0*2.0*c[5]*x, eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 4, +480.0)");
-     gsl_test_rel (dc[5], 5.0*4.0*3.0*2.0*c[5] , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 5, -720.0)");
-   }
+    double dd_expected[6] = {  6.200860000000e-01,
+                              -5.220232000000e-01,
+                              -8.974266666667e-02,
+                               6.636555555556e-02,
+                               2.666666666662e-03,
+                              -2.774691357989e-03 };
+
+    double dd[6], za[6], coeff[6], work[6];
+
+    gsl_poly_dd_hermite_init(dd, za, xa, ya, dya, 3);
+
+    for (i = 0; i < 6; i++)
+      {
+        gsl_test_rel (dd[i], dd_expected[i], 1e-10, "hermite divided difference dd[%d]", i);
+      }
+
+    for (i = 0; i < 3; i++)
+      {
+        double y = gsl_poly_dd_eval(dd, za, 6, xa[i]);
+        gsl_test_rel (y, ya[i], 1e-10, "hermite divided difference y[%d]", i);
+      }
+
+    for (i = 0; i < 3; i++)
+      {
+        gsl_poly_dd_taylor(coeff, xa[i], dd, za, 6, work);
+        gsl_test_rel (coeff[1], dya[i], 1e-10, "hermite divided difference dy/dx[%d]", i);
+      }
+  }
+
+  {
+    double c[6] = { +1.0, -2.0, +3.0, -4.0, +5.0, -6.0 };
+    double dc[6];
+    double x;
+    x = -0.5;
+    gsl_poly_eval_derivs(c, 6, x, dc, 6);
+
+    gsl_test_rel (dc[0], c[0] + c[1]*x + c[2]*x*x + c[3]*x*x*x + c[4]*x*x*x*x + c[5]*x*x*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6}, 3.75)");
+    gsl_test_rel (dc[1], c[1] + 2.0*c[2]*x + 3.0*c[3]*x*x + 4.0*c[4]*x*x*x + 5.0*c[5]*x*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 1, -12.375)");
+    gsl_test_rel (dc[2], 2.0*c[2] + 3.0*2.0*c[3]*x + 4.0*3.0*c[4]*x*x + 5.0*4.0*c[5]*x*x*x , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 2, +48.0)");
+    gsl_test_rel (dc[3], 3.0*2.0*c[3] + 4.0*3.0*2.0*c[4]*x + 5.0*4.0*3.0*c[5]*x*x , eps,"gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 3, -174.0)");
+    gsl_test_rel (dc[4], 4.0*3.0*2.0*c[4] + 5.0*4.0*3.0*2.0*c[5]*x, eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 4, +480.0)");
+    gsl_test_rel (dc[5], 5.0*4.0*3.0*2.0*c[5] , eps, "gsl_poly_eval_dp({+1, -2, +3, -4, +5, -6} deriv 5, -720.0)");
+  }
 
 
   /* now summarize the results */

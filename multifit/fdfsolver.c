@@ -119,8 +119,8 @@ gsl_multifit_fdfsolver_alloc (const gsl_multifit_fdfsolver_type * T,
 
 int
 gsl_multifit_fdfsolver_set (gsl_multifit_fdfsolver * s, 
-                             gsl_multifit_function_fdf * f, 
-                             const gsl_vector * x)
+                            gsl_multifit_function_fdf * f, 
+                            const gsl_vector * x)
 {
   if (s->f->size != f->n)
     {
@@ -143,6 +143,29 @@ gsl_multifit_fdfsolver_iterate (gsl_multifit_fdfsolver * s)
 {
   return (s->type->iterate) (s->state, s->fdf, s->x, s->f, s->J, s->dx);
 }
+
+int
+gsl_multifit_fdfsolver_driver (gsl_multifit_fdfsolver * s,
+                               const size_t maxiter,
+                               const double epsabs,
+                               const double epsrel)
+{
+  int status;
+  size_t iter = 0;
+
+  do  
+    {   
+      status = gsl_multifit_fdfsolver_iterate (s);
+      if (status) 
+        break;
+
+      /* test for convergence */
+      status = gsl_multifit_test_delta (s->dx, s->x, epsabs, epsrel);
+    }   
+  while (status == GSL_CONTINUE && ++iter < maxiter);
+
+  return status;
+} /* gsl_multifit_fdfsolver_driver() */
 
 void
 gsl_multifit_fdfsolver_free (gsl_multifit_fdfsolver * s)

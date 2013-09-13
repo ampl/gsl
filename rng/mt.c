@@ -3,13 +3,13 @@
    published by the Free Software Foundation; either version 3 of the
    License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.  You should have received
-   a copy of the GNU General Public License along with this program;
-   if not, write to the Free Foundation, Inc., 59 Temple Place, Suite
-   330, Boston, MA 02111-1307 USA
+   a copy of the GNU General Public License along with this library; if
+   not, write to the Free Software Foundation, Inc., 51 Franklin Street,
+   Fifth Floor, Boston, MA 02110-1301, USA.
 
    Original implementation was copyright (C) 1997 Makoto Matsumoto and
    Takuji Nishimura. Coded by Takuji Nishimura, considering the

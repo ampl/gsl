@@ -1,4 +1,53 @@
-* What is new in gsl-1.15:
+* What is new in gsl-1.16:
+
+** fixed error in gsl_rng_fwrite where uninitialized padding
+   bytes were being written (bug #39104)
+
+** fixed error in gsl_block_alloc where padding bytes were not
+   properly initialized (bugs #39101,#39102,#39103)
+
+** fixed error in ntuple/test.c where padding bytes were not
+   properly initialized (bug #39105)
+
+** fixed triangle selection bug in gsl_sf_coupling_6j_e and
+   gsl_sf_coupling_9j_e (bugs #39466 and #29606) (Håkan Johansson and
+   Alexey Illarionov)
+
+** added higher level wrapper routine gsl_multifit_fdfsolver_driver
+
+** converted gsl_multifit_linear_residuals to use dgemv to improve
+   efficiency (bug #39153)
+
+** added functions gsl_stats_spearman and gsl_sort_vector2 to compute
+   Spearman rank correlation
+
+** added function gsl_poly_dd_hermite_init for Hermite interpolation
+
+** Added support for robust linear least squares
+
+** Added function gsl_linalg_SV_leverage for computing statistical
+   leverages from SVD decomposition
+
+** Added support for approximating the Jacobian of nonlinear least
+   squares fits using forward finite differences
+
+** Extended gsl_sf_coupling_3j to allow larger range and to handle
+   the special case (ja jb jc; 0 0 0)=0 when ja+jb+jc is odd
+
+** Fixed gsl_sf_mathieu_se_array to return zero when the order is zero
+   [bug #33679].
+
+** Fixed overflow in gsl_sf_lncosh for large negative x (x<-354).
+
+** Improved gsl_ran_negative_binomial_pdf to avoid underflow/overflow
+   for large arguments.
+
+** Multisets now allow k strictly greater than n.
+
+** Fixed gsl_matrix_complex_fwrite/fread failure for noncontiguous
+   matrices (Matthias Sitte).
+
+* What was new in gsl-1.15:
 
 ** Added Tuomo Keskitalo's new ode branch ode-initval2 with a
    gsl_odeiv2 prefix. This provides proper support for implicit
@@ -58,8 +107,8 @@
    adding the first order 1/x correction term. [bug #29562]
 
 ** Fixed the gsl_rng_ranlxs generators to enforce a maximum seed value
-   of 2^31-1.  Larger seed values caused out of range values to be
-   returned.
+   of 2^31-1.  Larger seed values corrupted the random number state
+   and caused out of range values to be returned.
 
 ** Fixed gsl_ran_chisq_pdf(x,nu) to return correct result of 1/2
    instead of 0 when x=0 and nu=2, and +inf when x=0 and nu<2.

@@ -497,3 +497,14 @@ evaluation and ode improvements
 * Nikolay Simakov <nsimakov@andrew.cmu.edu> - bug report for gsl_eigen_jacobi
 
 * Jim Ward - numerous bug reports and useful suggestions
+
+* Josh Neil & Curt Hash - patch for negative binomial
+
+* Maximilian Treiber <maximilian.treiber@physik.lmu.de> - bug report for gsl_sf_lncosh
+
+* Martin Landriau <landriau@mpe.mpg.de> bug report for 3j coupling
+
+* Grigory I. Rubtsov <grisha@ms2.inr.ac.ru> - extend range of 3j
+
+* Matthias Sitte <matthias.sitte@gmail.com> - bug report and patch for
+  failing complex matrix IO routines

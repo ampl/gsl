@@ -750,7 +750,7 @@ The upper elements of the @var{complex} array, @code{complex[3]} and
 imaginary part of the zero-frequency term @code{complex[0].imag} is
 known to be zero by the symmetry.
 
-The next table shows the output for an even-length sequence, @math{n=6}
+The next table shows the output for an even-length sequence, @math{n=6}.
 In the even case there are two values which are purely real,
 
 @example

@@ -25,6 +25,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_coupling.h>
+#include <gsl/gsl_sf_exp.h>
 
 #include "error.h"
 
@@ -80,7 +81,11 @@ static
 int
 triangle_selection_fails(int two_ja, int two_jb, int two_jc)
 {
-  return ((two_jb < abs(two_ja - two_jc)) || (two_jb > two_ja + two_jc));
+  /*
+   * enough to check the triangle condition for one spin vs. the other two
+   */
+  return ( (two_jb < abs(two_ja - two_jc)) || (two_jb > two_ja + two_jc) ||
+           GSL_IS_ODD(two_ja + two_jb + two_jc) );
 }
 
 
@@ -121,6 +126,13 @@ gsl_sf_coupling_3j_e (int two_ja, int two_jb, int two_jc,
     result->err = 0.0;
     return GSL_SUCCESS;
   }
+  else if ( two_ma == 0 && two_mb == 0 && two_mc == 0
+            && ((two_ja + two_jb + two_jc) % 4 == 2) ) {
+    /* Special case for (ja jb jc; 0 0 0) = 0 when ja+jb+jc=odd */
+    result->val = 0.0;
+    result->err = 0.0;
+    return GSL_SUCCESS;
+  }
   else {
     int jca  = (-two_ja + two_jb + two_jc) / 2,
         jcb  = ( two_ja - two_jb + two_jc) / 2,
@@ -136,45 +148,47 @@ gsl_sf_coupling_3j_e (int two_ja, int two_jb, int two_jc,
         kmax = locMin3 (jcc, jmma, jpmb),
         k, sign = GSL_IS_ODD (kmin - jpma + jmmb) ? -1 : 1,
         status = 0;
-    double sum_pos = 0.0, sum_neg = 0.0, norm, term;
-    gsl_sf_result bc1, bc2, bc3, bcn1, bcn2, bcd1, bcd2, bcd3, bcd4;
+    double sum_pos = 0.0, sum_neg = 0.0, sum_err = 0.0;
+    gsl_sf_result bc1, bc2, bc3, bcn1, bcn2, bcd1, bcd2, bcd3, bcd4, term, lnorm;
 
-    status += gsl_sf_choose_e (two_ja, jcc , &bcn1);
-    status += gsl_sf_choose_e (two_jb, jcc , &bcn2);
-    status += gsl_sf_choose_e (jsum+1, jcc , &bcd1);
-    status += gsl_sf_choose_e (two_ja, jmma, &bcd2);
-    status += gsl_sf_choose_e (two_jb, jmmb, &bcd3);
-    status += gsl_sf_choose_e (two_jc, jpmc, &bcd4);
-    
-    if (status != 0) {
-      OVERFLOW_ERROR (result);
-    }
-    
-    norm = sqrt (bcn1.val * bcn2.val)
-           / sqrt (bcd1.val * bcd2.val * bcd3.val * bcd4.val * ((double) two_jc + 1.0));
+    status += gsl_sf_lnchoose_e (two_ja, jcc , &bcn1);
+    status += gsl_sf_lnchoose_e (two_jb, jcc , &bcn2);
+    status += gsl_sf_lnchoose_e (jsum+1, jcc , &bcd1);
+    status += gsl_sf_lnchoose_e (two_ja, jmma, &bcd2);
+    status += gsl_sf_lnchoose_e (two_jb, jmmb, &bcd3);
+    status += gsl_sf_lnchoose_e (two_jc, jpmc, &bcd4);
+
+    lnorm.val = 0.5 * (bcn1.val + bcn2.val - bcd1.val - bcd2.val - bcd3.val
+                       - bcd4.val - log(two_jc + 1.0));
+    lnorm.err = 0.5 * (bcn1.err + bcn2.err + bcd1.err + bcd2.err + bcd3.err
+                       + bcd4.err + GSL_DBL_EPSILON * log(two_jc + 1.0));
 
     for (k = kmin; k <= kmax; k++) {
-      status += gsl_sf_choose_e (jcc, k, &bc1);
-      status += gsl_sf_choose_e (jcb, jmma - k, &bc2);
-      status += gsl_sf_choose_e (jca, jpmb - k, &bc3);
+      status += gsl_sf_lnchoose_e (jcc, k, &bc1);
+      status += gsl_sf_lnchoose_e (jcb, jmma - k, &bc2);
+      status += gsl_sf_lnchoose_e (jca, jpmb - k, &bc3);
+      status += gsl_sf_exp_err_e(bc1.val + bc2.val + bc3.val + lnorm.val,
+                                 bc1.err + bc2.err + bc3.err + lnorm.err, 
+                                 &term);
       
       if (status != 0) {
         OVERFLOW_ERROR (result);
       }
       
-      term = bc1.val * bc2.val * bc3.val;
-      
       if (sign < 0) {
-        sum_neg += norm * term;
+        sum_neg += term.val;
       } else {
-        sum_pos += norm * term;
+        sum_pos += term.val;
       }
-      
+
+      sum_err += term.err;
+
       sign = -sign;
     }
     
     result->val  = sum_pos - sum_neg;
-    result->err  = 2.0 * GSL_DBL_EPSILON * (sum_pos + sum_neg);
+    result->err  = sum_err;
+    result->err += 2.0 * GSL_DBL_EPSILON * (sum_pos + sum_neg);
     result->err += 2.0 * GSL_DBL_EPSILON * (kmax - kmin) * fabs(result->val);
 
     return GSL_SUCCESS;

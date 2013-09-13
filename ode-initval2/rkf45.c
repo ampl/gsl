@@ -369,7 +369,7 @@ rkf45_free (void *vstate)
 
 static const gsl_odeiv2_step_type rkf45_type = { "rkf45",       /* name */
   1,                            /* can use dydt_in */
-  0,                            /* gives exact dydt_out */
+  1,                            /* gives exact dydt_out */
   &rkf45_alloc,
   &rkf45_apply,
   &stepper_set_driver_null,

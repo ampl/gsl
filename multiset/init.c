@@ -36,11 +36,6 @@ gsl_multiset_alloc (const size_t n, const size_t k)
       GSL_ERROR_VAL ("multiset parameter n must be positive integer",
                         GSL_EDOM, 0);
     }
-  if (k > n)
-    {
-      GSL_ERROR_VAL ("multiset length k must be an integer less than or equal to n",
-                        GSL_EDOM, 0);
-    }
   c = (gsl_multiset *) malloc (sizeof (gsl_multiset));
 
   if (c == 0)

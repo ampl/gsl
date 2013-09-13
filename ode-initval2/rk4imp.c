@@ -249,7 +249,7 @@ rk4imp_apply (void *vstate, size_t dim, double t, double h,
   gsl_matrix *A = state->A;
 
   const double b[] = { 0.5, 0.5 };
-  const double c[] = { (3 - sqrt (3)) / 6, (3 + sqrt (3)) / 6 };
+  const double c[] = { (3.0 - M_SQRT3) / 6.0, (3.0 + M_SQRT3) / 6.0 };
 
   gsl_matrix_set (A, 0, 0, 1.0 / 4);
   gsl_matrix_set (A, 0, 1, (3 - 2 * sqrt (3)) / 12);

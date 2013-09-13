@@ -101,7 +101,7 @@ next_iteration:
 
   /* No more roots found yet, do another iteration */
 
-  if (iterations == 60)  /* increased from 30 to 60 */
+  if (iterations == 120)  /* increased from 30 to 120 */
     {
       /* too many iterations - give up! */
 

@@ -1,3 +1,8 @@
+2013-06-10  Patrick Alken <alken@colorado.edu>
+
+  * fdfsolver.c (gsl_multifit_fdfsolver_driver): added higher level
+	wrapper routine
+
 2010-02-25  Brian Gough  <bjg@network-theory.co.uk>
 
 	* lmiterate.c (iterate): changed GSL_CONTINUE to GSL_ENOPROG for

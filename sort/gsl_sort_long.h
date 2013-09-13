@@ -37,6 +37,7 @@
 __BEGIN_DECLS
 
 void gsl_sort_long (long * data, const size_t stride, const size_t n);
+void gsl_sort2_long (long * data1, const size_t stride1, long * data2, const size_t stride2, const size_t n);
 void gsl_sort_long_index (size_t * p, const long * data, const size_t stride, const size_t n);
 
 int gsl_sort_long_smallest (long * dest, const size_t k, const long * src, const size_t stride, const size_t n);

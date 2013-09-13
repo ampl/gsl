@@ -82,6 +82,7 @@ typedef struct
   size_t *ordprevbackup;        /* backup of ordprev */
   double *errlev;               /* desired error level of y */
   gsl_vector *abscor;           /* absolute y values for correction */
+  gsl_vector *abscorscaled;     /* scaled abscor for order evaluation */
   gsl_vector *relcor;           /* relative y values for correction */
   gsl_vector *svec;             /* saved abscor & work area */
   gsl_vector *tempvec;          /* work area */
@@ -91,7 +92,6 @@ typedef struct
   gsl_matrix *M;                /* Newton iteration matrix */
   gsl_permutation *p;           /* permutation for LU decomposition of M */
   gsl_vector *rhs;              /* right hand side equations (-G) */
-
   long int ni;                  /* stepper call counter */
   size_t ord;                   /* current order of method */
   double tprev;                 /* t point of previous call */
@@ -444,6 +444,33 @@ msbdf_alloc (size_t dim)
       free (state->z);
       free (state);
       GSL_ERROR_NULL ("failed to allocate space for rhs", GSL_ENOMEM);
+    }
+
+  state->abscorscaled = gsl_vector_alloc (dim);
+
+  if (state->abscorscaled == 0)
+    {
+      gsl_vector_free (state->rhs); 
+      gsl_permutation_free (state->p);
+      gsl_matrix_free (state->M);
+      free (state->dfdt);
+      gsl_matrix_free (state->dfdy);
+      gsl_vector_free (state->tempvec);
+      gsl_vector_free (state->svec);
+      gsl_vector_free (state->relcor);
+      gsl_vector_free (state->abscor);
+      free (state->errlev);
+      free (state->ordprevbackup);
+      free (state->ordprev);
+      free (state->hprevbackup);
+      free (state->hprev);
+      free (state->l);
+      free (state->ytmp2);
+      free (state->ytmp);
+      free (state->zbackup);
+      free (state->z);
+      free (state);
+      GSL_ERROR_NULL ("failed to allocate space for abscorscaled", GSL_ENOMEM);
     }
 
   msbdf_reset ((void *) state, dim);
@@ -926,14 +953,14 @@ msbdf_corrector (void *vstate, const gsl_odeiv2_system * sys,
 }
 
 static int
-msbdf_eval_order (gsl_vector * abscor, gsl_vector * tempvec,
+msbdf_eval_order (gsl_vector * abscorscaled, gsl_vector * tempvec,
                   gsl_vector * svec, const double errcoeff,
                   const size_t dim, const double errlev[],
                   const double ordm1coeff, const double ordp1coeff,
                   const double ordp1coeffprev, const double ordp2coeff,
                   const double hprev[],
                   const double h, const double z[],
-                  size_t * ord, size_t * ordwait)
+                  size_t * ord)
 {
   /* Evaluates and executes change in method order (current, current-1
      or current+1). Order which maximizes the step length is selected.
@@ -953,7 +980,7 @@ msbdf_eval_order (gsl_vector * abscor, gsl_vector * tempvec,
 
   /* Relative step length estimate for current order */
 
-  ordest = 1.0 / (pow (bias * gsl_blas_dnrm2 (abscor) / sqrt (dim)
+  ordest = 1.0 / (pow (bias * gsl_blas_dnrm2 (abscorscaled) / sqrt (dim)
                        * errcoeff, 1.0 / (*ord + 1)) + safety);
 
   /* Relative step length estimate for order ord - 1 */
@@ -983,7 +1010,7 @@ msbdf_eval_order (gsl_vector * abscor, gsl_vector * tempvec,
       for (i = 0; i < dim; i++)
         {
           gsl_vector_set (svec, i, gsl_vector_get (svec, i) * c +
-                          gsl_vector_get (abscor, i));
+                          gsl_vector_get (abscorscaled, i));
         }
 
       ordp1est = 1.0 / (pow (bias2 * gsl_blas_dnrm2 (svec) / sqrt (dim)
@@ -1019,8 +1046,6 @@ msbdf_eval_order (gsl_vector * abscor, gsl_vector * tempvec,
       printf ("-- eval_order order INCREASED to %d\n", (int) *ord);
 #endif
     }
-
-  *ordwait = *ord + 2;
 
   return GSL_SUCCESS;
 }
@@ -1096,6 +1121,7 @@ msbdf_apply (void *vstate, size_t dim, double t, double h,
   size_t *const ordprevbackup = state->ordprevbackup;
   double *const errlev = state->errlev;
   gsl_vector *const abscor = state->abscor;
+  gsl_vector *const abscorscaled = state->abscorscaled;
   gsl_vector *const relcor = state->relcor;
   gsl_vector *const svec = state->svec;
   gsl_vector *const tempvec = state->tempvec;
@@ -1591,13 +1617,16 @@ msbdf_apply (void *vstate, size_t dim, double t, double h,
       }
   }
 
-  /* Scale abscor with errlev for later use in norm calculations */
+  /* Scale abscor with errlev for later use in norm calculations
+     in order evaluation in msbdf_eval_order
+   */
   {
     size_t i;
 
     for (i = 0; i < dim; i++)
       {
-        gsl_vector_set (abscor, i, gsl_vector_get (abscor, i) / errlev[i]);
+        gsl_vector_set (abscorscaled, i, 
+                        gsl_vector_get (abscor, i) / errlev[i]);
       }
   }
 
@@ -1613,27 +1642,28 @@ msbdf_apply (void *vstate, size_t dim, double t, double h,
 
       for (i = 0; i < dim; i++)
         {
-          gsl_vector_set (svec, i, gsl_vector_get (abscor, i));
+          gsl_vector_set (svec, i, gsl_vector_get (abscorscaled, i));
         }
     }
 
-  /* Consider and execute order change for next step */
+  /* Consider and execute order change for next step if order is unchanged. */
 
-  if (state->ordwait == 0)
-    {
-      msbdf_eval_order (abscor, tempvec, svec, errcoeff, dim, errlev,
-                        ordm1coeff, ordp1coeff,
-                        state->ordp1coeffprev, ordp2coeff,
-                        hprev, h, z, &(state->ord), &(state->ordwait));
-    }
-
-  /* Undo scaling of abscor for possible order increase on next step */
-  {
-    size_t i;
-    
-    for (i = 0; i < dim; i++)
+  if (state->ordwait == 0) 
+  { 
+    if (ord - ordprev[0] == 0)
       {
-        gsl_vector_set (abscor, i, gsl_vector_get (abscor, i) * errlev[i]);
+        msbdf_eval_order (abscorscaled, tempvec, svec, errcoeff, dim, errlev,
+                          ordm1coeff, ordp1coeff,
+                          state->ordp1coeffprev, ordp2coeff,
+                          hprev, h, z, &(state->ord));
+
+        state->ordwait = state->ord + 2;
+      }
+    else
+      {
+        /* Postpone order evaluation if order has been modified elsewhere */
+    
+        state->ordwait = 2;
       }
   }
   
@@ -1701,10 +1731,13 @@ msbdf_reset (void *vstate, size_t dim)
   state->ordwaitbackup = 2;
   state->failord = 0;
   state->failt = GSL_NAN;
+  state->tprev = GSL_NAN;  
   state->gammaprev = 1.0;
+  state->gammaprevbackup = 1.0;
   state->nJ = 0;
   state->nM = 0;
   state->failcount = 0;
+  state->ordp1coeffprev = 0.0;
 
   DBL_ZERO_MEMSET (state->hprev, MSBDF_MAX_ORD);
   DBL_ZERO_MEMSET (state->hprevbackup, MSBDF_MAX_ORD);
@@ -1746,6 +1779,7 @@ msbdf_free (void *vstate)
   gsl_vector_free (state->svec);
   gsl_vector_free (state->relcor);
   gsl_vector_free (state->abscor);
+  gsl_vector_free (state->abscorscaled);
   free (state->errlev);
   free (state->ordprevbackup);
   free (state->ordprev);

@@ -49,6 +49,7 @@ double gsl_stats_char_lag1_autocorrelation (const char data[], const size_t stri
 
 double gsl_stats_char_covariance (const char data1[], const size_t stride1,const char data2[], const size_t stride2, const size_t n);
 double gsl_stats_char_correlation (const char data1[], const size_t stride1,const char data2[], const size_t stride2, const size_t n);
+double gsl_stats_char_spearman (const char data1[], const size_t stride1, const char data2[], const size_t stride2, const size_t n, double work[]);
 
 double gsl_stats_char_variance_m (const char data[], const size_t stride, const size_t n, const double mean);
 double gsl_stats_char_sd_m (const char data[], const size_t stride, const size_t n, const double mean);

@@ -1,3 +1,7 @@
+2011-05-20  Brian Gough  <bjg@network-theory.co.uk>
+
+	* hypot.c (gsl_hypot): handle case where x or y is infinite
+
 2010-10-12  Brian Gough  <bjg@gnu.org>
 
 	* pow_int.c (gsl_pow_uint): added function gsl_pow_uint(x,n) for

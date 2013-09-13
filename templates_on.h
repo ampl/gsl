@@ -20,7 +20,7 @@
 #define BASE_EPSILON GSL_DBL_EPSILON
 
 #elif defined(BASE_GSL_COMPLEX)
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(complex)
 #undef complex
 #endif
 #define BASE gsl_complex

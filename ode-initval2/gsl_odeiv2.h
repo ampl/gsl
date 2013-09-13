@@ -326,6 +326,7 @@ int gsl_odeiv2_driver_apply_fixed_step (gsl_odeiv2_driver * d, double *t,
                                         const unsigned long int n,
                                         double y[]);
 int gsl_odeiv2_driver_reset (gsl_odeiv2_driver * d);
+int gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * d, const double hstart);
 void gsl_odeiv2_driver_free (gsl_odeiv2_driver * state);
 
 __END_DECLS

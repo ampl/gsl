@@ -1,3 +1,13 @@
+2012-09-10  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* nbinomial.c Add include for gsl_sys.h to fix MSVC.
+	Thanks to Brian Gladman for the suggestion.
+
+2011-06-05  Brian Gough  <bjg@network-theory.co.uk>
+
+	* nbinomial.c (gsl_ran_negative_binomial_pdf): avoid overflow in
+	exp
+
 2010-12-14  Brian Gough  <bjg@gnu.org>
 
 	* gamma.c (gamma_frac): avoid potential division by zero, handle

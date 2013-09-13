@@ -129,6 +129,10 @@ gsl_poly_dd_taylor (double c[], double xp,
                     const double dd[], const double x[], size_t size,
                     double w[]);
 
+int
+gsl_poly_dd_hermite_init (double dd[], double z[], const double xa[], const double ya[],
+                          const double dya[], const size_t size);
+
 /* Solve for real or complex roots of the standard quadratic equation,
  * returning the number of real roots.
  *

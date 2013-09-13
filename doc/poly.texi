@@ -53,14 +53,58 @@ contains the values of @math{d^k P/d x^k} for the specified value of
 
 The functions described here manipulate polynomials stored in Newton's
 divided-difference representation.  The use of divided-differences is
-described in Abramowitz & Stegun sections 25.1.4 and 25.2.26.
+described in Abramowitz & Stegun sections 25.1.4 and 25.2.26, and
+Burden and Faires, chapter 3, and discussed briefly below.
+
+@noindent
+Given a function @math{f(x)}, an @math{n}th degree interpolating polynomial @math{P_{n}(x)}
+can be constructed which agrees with @math{f} at @math{n+1} distinct points
+@math{x_0,x_1,...,x_{n}}. This polynomial can be written in a
+form known as Newton's divided-difference representation:
+@tex
+\beforedisplay
+$$
+P_{n}(x) = f(x_0) + \sum_{k=1}^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1) \cdots (x-x_{k-1})
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+P_n(x) = f(x_0) + \sum_(k=1)^n [x_0,x_1,...,x_k] (x-x_0)(x-x_1)...(x-x_(k-1))
+@end example
+
+@end ifinfo
+where the divided differences @math{[x_0,x_1,...,x_k]} are defined in section 25.1.4 of
+Abramowitz and Stegun. Additionally, it is possible to construct an interpolating
+polynomial of degree @math{2n+1} which also matches the first derivatives of @math{f}
+at the points @math{x_0,x_1,...,x_n}. This is called the Hermite interpolating
+polynomial and is defined as
+@tex
+\beforedisplay
+$$
+H_{2n+1}(x) = f(z_0) + \sum_{k=1}^{2n+1} [z_0,z_1,...,z_k] (x-z_0)(x-z_1) \cdots (x-z_{k-1})
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+H_(2n+1)(x) = f(z_0) + \sum_(k=1)^(2n+1) [z_0,z_1,...,z_k] (x-z_0)(x-z_1)...(x-z_(k-1))
+@end example
+
+@end ifinfo
+where the elements of @math{z = \{x_0,x_0,x_1,x_1,...,x_n,x_n\}} are defined by
+@math{z_{2k} = z_{2k+1} = x_k}. The divided-differences @math{[z_0,z_1,...,z_k]}
+are discussed in Burden and Faires, section 3.4.
 
 @deftypefun int gsl_poly_dd_init (double @var{dd}[], const double @var{xa}[], const double @var{ya}[], size_t @var{size})
 This function computes a divided-difference representation of the
-interpolating polynomial for the points (@var{xa}, @var{ya}) stored in
+interpolating polynomial for the points (@var{x}, @var{y}) stored in
 the arrays @var{xa} and @var{ya} of length @var{size}.  On output the
 divided-differences of (@var{xa},@var{ya}) are stored in the array
-@var{dd}, also of length @var{size}.
+@var{dd}, also of length @var{size}. Using the notation above,
+@math{dd[k] = [x_0,x_1,...,x_k]}.
 @end deftypefun
 
 @deftypefun double gsl_poly_dd_eval (const double @var{dd}[], const double @var{xa}[], const size_t @var{size}, const double @var{x})
@@ -77,6 +121,22 @@ On output the Taylor coefficients of the polynomial expanded about the
 point @var{xp} are stored in the array @var{c} also of length
 @var{size}.  A workspace of length @var{size} must be provided in the
 array @var{w}.
+@end deftypefun
+
+@deftypefun int gsl_poly_dd_hermite_init (double @var{dd}[], double @var{za}[], const double @var{xa}[], const double @var{ya}[], const double @var{dya}[], const size_t @var{size})
+This function computes a divided-difference representation of the
+interpolating Hermite polynomial for the points (@var{x}, @var{y}) stored in
+the arrays @var{xa} and @var{ya} of length @var{size}. Hermite interpolation
+constructs polynomials which also match first derivatives @math{dy/dx} which are
+provided in the array @var{dya} also of length @var{size}. The first derivatives can be
+incorported into the usual divided-difference algorithm by forming a new
+dataset @math{z = \{x_0,x_0,x_1,x_1,...\}}, which is stored in the array
+@var{za} of length 2*@var{size} on output. On output the
+divided-differences of the Hermite representation are stored in the array
+@var{dd}, also of length 2*@var{size}. Using the notation above,
+@math{dd[k] = [z_0,z_1,...,z_k]}. The resulting Hermite polynomial
+can be evaluated by calling @code{gsl_poly_dd_eval} and using
+@var{za} for the input argument @var{xa}.
 @end deftypefun
 
 @node  Quadratic Equations
@@ -313,10 +373,14 @@ eigenvalues'', @cite{Mathematics of Computation}, Vol.@: 64, No.@: 210
 @end itemize
 
 @noindent
-The formulas for divided differences are given in Abramowitz and Stegun,
+The formulas for divided differences are given in the following texts,
 
 @itemize @w{}
 @item
 Abramowitz and Stegun, @cite{Handbook of Mathematical Functions},
 Sections 25.1.4 and 25.2.26.
+
+@item
+R. L. Burden and J. D. Faires, @cite{Numerical Analysis}, 9th edition,
+ISBN 0-538-73351-9, 2011.
 @end itemize

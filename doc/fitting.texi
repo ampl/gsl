@@ -18,8 +18,10 @@ are declared in the header file @file{gsl_fit.h}.
 @menu
 * Fitting Overview::            
 * Linear regression::           
-* Linear fitting without a constant term::  
-* Multi-parameter fitting::     
+* Linear fitting without a constant term::
+* Multi-parameter fitting::
+* Robust linear regression::
+* Troubleshooting::
 * Fitting Examples::            
 * Fitting References and Further Reading::  
 @end menu
@@ -306,9 +308,10 @@ This function frees the memory associated with the workspace @var{w}.
 This function computes the best-fit parameters @var{c} of the model
 @math{y = X c} for the observations @var{y} and the matrix of
 predictor variables @var{X}, using the preallocated workspace provided
-in @var{work}.  The variance-covariance matrix of the model parameters
-@var{cov} is estimated from the scatter of the observations about the
-best-fit.  The sum of squares of the residuals from the best-fit,
+in @var{work}.  The @math{p}-by-@math{p} variance-covariance matrix of the model parameters
+@var{cov} is set to @math{\sigma^2 (X^T X)^{-1}}, where @math{\sigma} is
+the standard deviation of the fit residuals.
+The sum of squares of the residuals from the best-fit,
 @math{\chi^2}, is returned in @var{chisq}. If the coefficient of
 determination is desired, it can be computed from the expression
 @math{R^2 = 1 - \chi^2 / TSS}, where the total sum of squares (TSS) of
@@ -325,8 +328,8 @@ from the fit.
 This function computes the best-fit parameters @var{c} of the weighted
 model @math{y = X c} for the observations @var{y} with weights @var{w}
 and the matrix of predictor variables @var{X}, using the preallocated
-workspace provided in @var{work}.  The covariance matrix of the model
-parameters @var{cov} is computed with the given weights.  The weighted
+workspace provided in @var{work}.  The @math{p}-by-@math{p} covariance matrix of the model
+parameters @var{cov} is computed as @math{(X^T W X)^{-1}}. The weighted
 sum of squares of the residuals from the best-fit, @math{\chi^2}, is
 returned in @var{chisq}. If the coefficient of determination is
 desired, it can be computed from the expression @math{R^2 = 1 - \chi^2
@@ -359,6 +362,349 @@ This function computes the vector of residuals @math{r = y - X c} for
 the observations @var{y}, coefficients @var{c} and matrix of predictor
 variables @var{X}.
 @end deftypefun
+
+@node Robust linear regression
+@section Robust linear regression
+@cindex robust regression
+
+Ordinary least squares (OLS) models are often heavily influenced by the presence of outliers.
+Outliers are data points which do not follow the general trend of the other observations,
+although there is strictly no precise definition of an outlier. Robust linear regression
+refers to regression algorithms which are robust to outliers. The most common type of
+robust regression is M-estimation. The general M-estimator minimizes the objective function
+@tex
+\beforedisplay
+$$
+\sum_i \rho(e_i) = \sum_i \rho (y_i - Y(c, x_i))
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\sum_i \rho(e_i) = \sum_i \rho (y_i - Y(c, x_i))
+@end example
+
+@end ifinfo
+where @math{e_i = y_i - Y(c, x_i)} is the residual of the ith data point, and
+@math{\rho(e_i)} is a function which should have the following properties:
+@itemize @w{}
+@item @math{\rho(e) \ge 0}
+@item @math{\rho(0) = 0}
+@item @math{\rho(-e) = \rho(e)}
+@item @math{\rho(e_1) > \rho(e_2)} for @math{|e_1| > |e_2|}
+@end itemize
+@noindent
+The special case of ordinary least squares is given by @math{\rho(e_i) = e_i^2}.
+Letting @math{\psi = \rho'} be the derivative of @math{\rho}, differentiating
+the objective function with respect to the coefficients @math{c}
+and setting the partial derivatives to zero produces the system of equations
+@tex
+\beforedisplay
+$$
+\sum_i \psi(e_i) X_i = 0
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\sum_i \psi(e_i) X_i = 0
+@end example
+
+@end ifinfo
+where @math{X_i} is a vector containing row @math{i} of the design matrix @math{X}.
+Next, we define a weight function @math{w(e) = \psi(e)/e}, and let
+@math{w_i = w(e_i)}:
+@tex
+\beforedisplay
+$$
+\sum_i w_i e_i X_i = 0
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\sum_i w_i e_i X_i = 0
+@end example
+
+@end ifinfo
+This system of equations is equivalent to solving a weighted ordinary least squares
+problem, minimizing @math{\chi^2 = \sum_i w_i e_i^2}. The weights however, depend
+on the residuals @math{e_i}, which depend on the coefficients @math{c}, which depend
+on the weights. Therefore, an iterative solution is used, called Iteratively Reweighted
+Least Squares (IRLS).
+@enumerate
+@item Compute initial estimates of the coefficients @math{c^{(0)}} using ordinary least squares
+
+@item For iteration @math{k}, form the residuals @math{e_i^{(k)} = (y_i - X_i c^{(k-1)})/(t \sigma^{(k)} \sqrt{1 - h_i})},
+where @math{t} is a tuning constant depending on the choice of @math{\psi}, and @math{h_i} are the
+statistical leverages (diagonal elements of the matrix @math{X (X^T X)^{-1} X^T}). Including @math{t}
+and @math{h_i} in the residual calculation has been shown to improve the convergence of the method.
+The residual standard deviation is approximated as @math{\sigma^{(k)} = MAD / 0.6745}, where MAD is the
+Median-Absolute-Deviation of the @math{n-p} largest residuals from the previous iteration.
+
+@item Compute new weights @math{w_i^{(k)} = \psi(e_i^{(k)})/e_i^{(k)}}.
+
+@item Compute new coefficients @math{c^{(k)}} by solving the weighted least squares problem with
+weights @math{w_i^{(k)}}.
+
+@item Steps 2 through 4 are iterated until the coefficients converge or until some maximum iteration
+limit is reached. Coefficients are tested for convergence using the critera:
+@tex
+\beforedisplay
+$$
+|c_i^{(k)} - c_i^{(k-1)}| \le \epsilon \times \hbox{max}(|c_i^{(k)}|, |c_i^{(k-1)}|)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+|c_i^(k) - c_i^(k-1)| \le \epsilon \times max(|c_i^(k)|, |c_i^(k-1)|)
+@end example
+
+@end ifinfo
+for all @math{0 \le i < p} where @math{\epsilon} is a small tolerance factor.
+@end enumerate
+@noindent
+The key to this method lies in selecting the function @math{\psi(e_i)} to assign
+smaller weights to large residuals, and larger weights to smaller residuals. As
+the iteration proceeds, outliers are assigned smaller and smaller weights, eventually
+having very little or no effect on the fitted model.
+
+@deftypefun {gsl_multifit_robust_workspace *} gsl_multifit_robust_alloc (const gsl_multifit_robust_type * @var{T}, const size_t @var{n}, const size_t @var{p})
+@tpindex gsl_multifit_robust_workspace
+This function allocates a workspace for fitting a model to @var{n}
+observations using @var{p} parameters. The type @var{T} specifies the
+function @math{\psi} and can be selected from the following choices.
+@deffn {Robust type} gsl_multifit_robust_default
+This specifies the @code{gsl_multifit_robust_bisquare} type (see below) and is a good
+general purpose choice for robust regression.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_bisquare
+This is Tukey's biweight (bisquare) function and is a good general purpose choice for
+robust regression. The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = \left\{ \matrix{ (1 - e^2)^2, & |e| \le 1\cr
+                        0, & |e| > 1} \right.
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = (1 - e^2)^2
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 4.685}.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_cauchy
+This is Cauchy's function, also known as the Lorentzian function.
+This function does not guarantee a unique solution,
+meaning different choices of the coefficient vector @var{c}
+could minimize the objective function. Therefore this option should
+be used with care. The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = {1 \over 1 + e^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = 1 / (1 + e^2)
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 2.385}.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_fair
+This is the fair @math{\rho} function, which guarantees a unique solution and
+has continuous derivatives to three orders. The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = {1 \over 1 + |e|}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = 1 / (1 + |e|)
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 1.400}.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_huber
+This specifies Huber's @math{\rho} function, which is a parabola in the vicinity of zero and
+increases linearly for a given threshold @math{|e| > t}. This function is also considered
+an excellent general purpose robust estimator, however, occasional difficulties can
+be encountered due to the discontinuous first derivative of the @math{\psi} function.
+The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = \left\{ \matrix{ 1, & |e| \le 1\cr
+                        {1 \over |e|}, & |e| > 1} \right.
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = 1/max(1,|e|)
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 1.345}.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_ols
+This specifies the ordinary least squares solution, which can be useful for quickly
+checking the difference between the various robust and OLS solutions. The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = 1
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = 1
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 1}.
+@end deffn
+
+@deffn {Robust type} gsl_multifit_robust_welsch
+This specifies the Welsch function which can perform well in cases where the residuals have an
+exponential distribution. The weight function is given by
+@tex
+\beforedisplay
+$$
+w(e) = \exp{(-e^2)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+w(e) = \exp(-e^2)
+@end example
+
+@end ifinfo
+and the default tuning constant is @math{t = 2.985}.
+@end deffn
+@end deftypefun
+
+@deftypefun void gsl_multifit_robust_free (gsl_multifit_robust_workspace * @var{w})
+This function frees the memory associated with the workspace @var{w}.
+@end deftypefun
+
+@deftypefun {const char *} gsl_multifit_robust_name (const gsl_multifit_robust_workspace * @var{w})
+This function returns the name of the robust type @var{T} specified to @code{gsl_multifit_robust_alloc}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_robust_tune (const double @var{tune}, gsl_multifit_robust_workspace * @var{w})
+This function sets the tuning constant @math{t} used to adjust the residuals at each iteration to @var{tune}.
+Decreasing the tuning constant increases the downweight assigned to large residuals, while increasing
+the tuning constant decreases the downweight assigned to large residuals.
+@end deftypefun
+
+@deftypefun int gsl_multifit_robust (const gsl_matrix * @var{X}, const gsl_vector * @var{y}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, gsl_multifit_robust_workspace * @var{w})
+This function computes the best-fit parameters @var{c} of the model
+@math{y = X c} for the observations @var{y} and the matrix of
+predictor variables @var{X}, attemping to reduce the influence
+of outliers using the algorithm outlined above.
+The @math{p}-by-@math{p} variance-covariance matrix of the model parameters
+@var{cov} is estimated as @math{\sigma^2 (X^T X)^{-1}}, where @math{\sigma} is
+an approximation of the residual standard deviation using the theory of robust
+regression. Special care must be taken when estimating @math{\sigma} and
+other statistics such as @math{R^2}, and so these
+are computed internally and are available by calling the function
+@code{gsl_multifit_robust_statistics}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_robust_est (const gsl_vector * @var{x}, const gsl_vector * @var{c}, const gsl_matrix * @var{cov}, double * @var{y}, double * @var{y_err})
+This function uses the best-fit robust regression coefficients
+@var{c} and their covariance matrix
+@var{cov} to compute the fitted function value
+@var{y} and its standard deviation @var{y_err} for the model @math{y = x.c} 
+at the point @var{x}.
+@end deftypefun
+
+@deftypefun gsl_multifit_robust_stats gsl_multifit_robust_statistics (const gsl_multifit_robust_workspace * @var{w})
+This function returns a structure containing relevant statistics from a robust regression. The function
+@code{gsl_multifit_robust} must be called first to perform the regression and calculate these statistics.
+The returned @code{gsl_multifit_robust_stats} structure contains the following fields.
+@itemize @w{}
+@item double @code{sigma_ols} This contains the standard deviation of the residuals as computed from ordinary least squares (OLS).
+
+@item double @code{sigma_mad} This contains an estimate of the standard deviation of the final residuals using the Median-Absolute-Deviation statistic
+
+@item double @code{sigma_rob} This contains an estimate of the standard deviation of the final residuals from the theory of robust regression (see Street et al, 1988).
+
+@item double @code{sigma} This contains an estimate of the standard deviation of the final residuals by attemping to reconcile @code{sigma_rob} and @code{sigma_ols}
+in a reasonable way.
+
+@item double @code{Rsq} This contains the @math{R^2} coefficient of determination statistic using the estimate @code{sigma}.
+
+@item double @code{adj_Rsq} This contains the adjusted @math{R^2} coefficient of determination statistic using the estimate @code{sigma}.
+
+@item double @code{rmse} This contains the root mean squared error of the final residuals
+
+@item double @code{sse} This contains the residual sum of squares taking into account the robust covariance matrix.
+
+@item size_t @code{dof} This contains the number of degrees of freedom @math{n - p}
+
+@item size_t @code{numit} Upon successful convergence, this contains the number of iterations performed
+
+@item gsl_vector * @code{weights} This contains the final weight vector of length @var{n}
+
+@item gsl_vector * @code{r} This contains the final residual vector of length @var{n}, @math{r = y - X c}
+@end itemize
+@end deftypefun
+
+@node Troubleshooting
+@section Troubleshooting
+@cindex least squares troubleshooting
+
+When using models based on polynomials, care should be taken when constructing the design matrix
+@math{X}. If the @math{x} values are large, then the matrix @math{X} could be ill-conditioned
+since its columns are powers of @math{x}, leading to unstable least-squares solutions.
+In this case it can often help to center and scale the @math{x} values using the mean and standard deviation:
+@tex
+\beforedisplay
+$$
+x' = {x - \mu(x) \over \sigma(x)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+x' = (x - mu)/sigma
+@end example
+
+@end ifinfo
+@noindent
+and then construct the @math{X} matrix using the transformed values @math{x'}.
 
 @node Fitting Examples
 @section Examples
@@ -447,7 +793,7 @@ program.  It outputs a set of points with gaussian errors from the curve
 The data can be prepared by running the resulting executable program,
 
 @example
-$ ./generate > exp.dat
+$ GSL_RNG_TYPE=mt19937_1999 ./generate > exp.dat
 $ more exp.dat
 0.1 0.97935 0.110517
 0.2 1.3359 0.12214
@@ -489,6 +835,24 @@ of freedom is 1.4, indicating a reasonable fit to the data.
 @center @image{fit-wlinear2,3.0in}
 @end iftex
 
+The next program demonstrates the advantage of robust least squares on
+a dataset with outliers. The program generates linear @math{(x,y)}
+data pairs on the line @math{y = 1.45 x + 3.88}, adds some random
+noise, and inserts 3 outliers into the dataset. Both the robust
+and ordinary least squares (OLS) coefficients are computed for
+comparison.
+
+@example
+@verbatiminclude examples/robfit.c
+@end example
+
+The output from the program is shown in the following plot.
+
+@iftex
+@sp 1
+@center @image{robust,3.0in}
+@end iftex
+
 @node Fitting References and Further Reading
 @section References and Further Reading
 
@@ -515,4 +879,17 @@ available from NIST at the following website,
 
 @center @uref{http://www.nist.gov/itl/div898/strd/index.html}.
 
+@noindent
+The GSL implementation of robust linear regression closely follows the publications
 
+@itemize @w{}
+@item DuMouchel, W. and F. O'Brien (1989), "Integrating a robust
+option into a multiple regression computing environment,"
+Computer Science and Statistics:  Proceedings of the 21st
+Symposium on the Interface, American Statistical Association
+
+@item Street, J.O., R.J. Carroll, and D. Ruppert (1988), "A note on
+computing robust regression estimates via iteratively
+reweighted least squares," The American Statistician, v. 42, 
+pp. 152-154.
+@end itemize

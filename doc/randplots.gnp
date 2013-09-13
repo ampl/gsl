@@ -58,7 +58,7 @@ p(x,y)=1/sqrt(2*pi*sqrt(1-rho**2))*exp(-(x**2 + y**2 - 2*rho*x*y)/(2*(1-rho**2))
 #set cntrparam cspline
 set noclabel
 set contour
-set view 0,0
+set view map
 set nosurface
 splot rho=0.9, p(x,y) title "$\\sigma_x=1, \\sigma_y=1, \\rho=0.9$"
 set size noratio 1,1.1  # us letter

@@ -230,6 +230,8 @@ estimates.
 @tpindex gsl_integration_workspace
 This function allocates a workspace sufficient to hold @var{n} double
 precision intervals, their integration results and error estimates.
+One workspace may be used multiple times as all necessary reinitialization
+is performed automatically by the integration routines.
 @end deftypefun
 
 @deftypefun void gsl_integration_workspace_free (gsl_integration_workspace * @var{w})
@@ -805,7 +807,7 @@ This function allocates a workspace sufficient to hold the data for
 @var{n} intervals. The number @var{n} is not the maximum number of
 intervals that will be evaluated. If the workspace is full, intervals
 with smaller error estimates will be discarded. A minimum of 3
-intervals is required and or most functions, a workspace of size 100
+intervals is required and for most functions, a workspace of size 100
 is sufficient.
 @end deftypefun
 

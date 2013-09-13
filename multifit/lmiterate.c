@@ -181,7 +181,13 @@ lm_iteration:
 
       /* return immediately if evaluation raised error */
       {
-        int status = GSL_MULTIFIT_FN_EVAL_DF (fdf, x_trial, J);
+        int status;
+        
+        if (fdf->df)
+          status = GSL_MULTIFIT_FN_EVAL_DF (fdf, x_trial, J);
+        else
+          status = gsl_multifit_fdfsolver_dif_df(x_trial, fdf, f_trial, J);
+
         if (status)
           return status;
       }

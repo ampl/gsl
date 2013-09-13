@@ -22,6 +22,7 @@ void FUNCTION (test, ops) (const size_t P, const size_t Q);
 void FUNCTION (test, trap) (const size_t M, const size_t N);
 void FUNCTION (test, text) (const size_t M, const size_t N);
 void FUNCTION (test, binary) (const size_t M, const size_t N);
+void FUNCTION (test, binary_noncontiguous) (const size_t M, const size_t N);
 
 #define TEST(expr,desc) gsl_test((expr), NAME(gsl_matrix) desc " M=%d, N=%d", M, N)
 
@@ -349,6 +350,63 @@ FUNCTION (test, binary) (const size_t M, const size_t N)
   }
 
   FUNCTION (gsl_matrix, free) (m);
+}
+
+void
+FUNCTION (test, binary_noncontiguous) (const size_t M, const size_t N)
+{
+  TYPE (gsl_matrix) * l = FUNCTION (gsl_matrix, alloc) (M+1, N+1);
+  VIEW (gsl_matrix, view) m = FUNCTION (gsl_matrix, submatrix) (l, 0, 0, M, N);
+
+  size_t i, j;
+  int k = 0;
+
+  {
+    FILE *f = fopen ("test.dat", "wb");
+    k = 0;
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE z = ZERO;
+            k++;
+            GSL_REAL (z) = (ATOMIC) k;
+            GSL_IMAG (z) = (ATOMIC) (k + 1000);
+            FUNCTION (gsl_matrix, set) (&m.matrix, i, j, z);
+          }
+      }
+
+    FUNCTION (gsl_matrix, fwrite) (f, &m.matrix);
+
+    fclose (f);
+  }
+
+  {
+    FILE *f = fopen ("test.dat", "rb");
+    TYPE (gsl_matrix) * ll = FUNCTION (gsl_matrix, alloc) (M+1, N+1);
+    VIEW (gsl_matrix, view) mm = FUNCTION (gsl_matrix, submatrix) (ll, 0, 0, M, N);
+    status = 0;
+
+    FUNCTION (gsl_matrix, fread) (f, &mm.matrix);
+    k = 0;
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE z = FUNCTION (gsl_matrix, get) (&mm.matrix, i, j);
+            k++;
+            if (GSL_REAL (z) != k || GSL_IMAG (z) != k + 1000)
+              status = 1;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_write and read (noncontiguous)");
+
+    fclose (f);
+    FUNCTION (gsl_matrix, free) (ll);
+  }
+
+  FUNCTION (gsl_matrix, free) (l);
 }
 
 void

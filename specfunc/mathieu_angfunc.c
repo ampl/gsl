@@ -302,7 +302,14 @@ int gsl_sf_mathieu_se_array(int nmin, int nmax, double qq, double zz,
       if (order % 2 != 0)
           even_odd = 1;
   
-      /* Handle the trivial case where q = 0. */
+      /* Handle the trivial cases where order = 0 and/or q = 0. */
+      if (order == 0)
+      {
+          norm = 1.0;
+          result_array[ii] = 0.0;
+          continue;
+      }
+  
       if (qq == 0.0)
       {
           norm = 1.0;

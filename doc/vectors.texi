@@ -115,9 +115,7 @@ elements of the block to zero.
 
 @deftypefun void gsl_block_free (gsl_block * @var{b})
 This function frees the memory used by a block @var{b} previously
-allocated with @code{gsl_block_alloc} or @code{gsl_block_calloc}.  The
-block @var{b} must be a valid block object (a null pointer is not
-allowed).
+allocated with @code{gsl_block_alloc} or @code{gsl_block_calloc}.
 @end deftypefun
 
 @node Reading and writing blocks
@@ -268,8 +266,7 @@ This function frees a previously allocated vector @var{v}.  If the
 vector was created using @code{gsl_vector_alloc} then the block
 underlying the vector will also be deallocated.  If the vector has
 been created from another object then the memory is still owned by
-that object and will not be deallocated.  The vector @var{v} must be a
-valid vector object (a null pointer is not allowed).
+that object and will not be deallocated.
 @end deftypefun
 
 @node Accessing vector elements
@@ -951,8 +948,7 @@ This function frees a previously allocated matrix @var{m}.  If the
 matrix was created using @code{gsl_matrix_alloc} then the block
 underlying the matrix will also be deallocated.  If the matrix has
 been created from another object then the memory is still owned by
-that object and will not be deallocated.  The matrix @var{m} must be a
-valid matrix object (a null pointer is not allowed).
+that object and will not be deallocated.
 @end deftypefun
 
 @node Accessing matrix elements

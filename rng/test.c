@@ -36,6 +36,7 @@ int rng_max_test (gsl_rng * r, unsigned long int *kmax, unsigned long int ran_ma
 int rng_min_test (gsl_rng * r, unsigned long int *kmin, unsigned long int ran_min, unsigned long int ran_max) ;
 int rng_sum_test (gsl_rng * r, double *sigma);
 int rng_bin_test (gsl_rng * r, double *sigma);
+void rng_seed_test (const gsl_rng_type * T);
 
 #define N  10000
 #define N2 200000
@@ -202,6 +203,25 @@ main (void)
 
   for (r = rngs ; *r != 0; r++)
     generic_rng_test (*r);
+
+#ifdef TEST_SEEDS
+  rng_seed_test (gsl_rng_mt19937);
+  rng_seed_test (gsl_rng_ranlxs0);
+  rng_seed_test (gsl_rng_ranlxs1);
+  rng_seed_test (gsl_rng_ranlxs2);
+
+  rng_seed_test (gsl_rng_ranlxd1);
+  rng_seed_test (gsl_rng_ranlxd2);
+  rng_seed_test (gsl_rng_ranlux);
+  rng_seed_test (gsl_rng_ranlux389);
+
+  rng_seed_test (gsl_rng_cmrg);
+  rng_seed_test (gsl_rng_mrg);
+  rng_seed_test (gsl_rng_taus);
+  rng_seed_test (gsl_rng_taus2);
+
+  rng_seed_test (gsl_rng_gfsr4);
+#endif
 
   exit (gsl_test_summary ());
 }
@@ -454,7 +474,7 @@ generic_rng_test (const gsl_rng_type * T)
   gsl_rng_set (r, 1);   /* set seed to 1 */
   status |= rng_sum_test (r, &sigma);
 
-  gsl_test (status, "%s, maximum and sum tests for seed=1", name);
+  gsl_test (status, "%s, max, min and sum tests for seed=1", name);
 
   gsl_rng_set (r, 12345);       /* set seed to a "typical" value */
   status = rng_max_test (r, &kmax, ran_max);
@@ -465,7 +485,7 @@ generic_rng_test (const gsl_rng_type * T)
   gsl_rng_set (r, 12345);       /* set seed to a "typical" value */
   status |= rng_sum_test (r, &sigma);
 
-  gsl_test (status, "%s, maximum and sum tests for non-default seeds", name);
+  gsl_test (status, "%s, max, min and sum tests for non-default seeds", name);
 
   gsl_rng_free (r);
 }
@@ -600,3 +620,56 @@ rng_bin_test (gsl_rng * r, double *sigma)
   return status;
 }
 
+int
+rng_sanity_test (gsl_rng * r)
+{
+  double sum = 0, sigma;
+  int i, status = 0;
+
+  for (i = 0; i < N2; ++i)
+    {
+      double x = gsl_rng_uniform (r);
+      sum += x;
+      if (x < 0.0 || x > 1.0) {
+        fprintf(stderr,"x=%g out of range\n", x);
+        return 1;
+      }
+    }
+
+  sum /= N2;
+
+  /* expect the average to have a variance of 1/(12 n) */
+
+  sigma = (sum - 0.5)* sqrt (12.0 * N2);
+
+  /* more than 5 sigma is an error */
+  
+  status = (fabs (sigma) > 5 || fabs(sigma) < 0.0001);
+
+  if (status) {
+      fprintf(stderr,"sum=%g, sigma=%g\n",sum,sigma);
+  }
+
+  return status;
+}
+
+void
+rng_seed_test (const gsl_rng_type * T)
+{
+  gsl_rng *r = gsl_rng_alloc (T);
+  const char *name = gsl_rng_name (r);
+  unsigned long int i;
+  int j;
+  int status;
+
+  for (i = 0xFFFFFFFFUL ; i > 0; i >>= 1) {
+    for (j = 1; j >= -1 ; j--) {
+      unsigned long int seed = i + j;
+      if (j > 0 && seed < i) continue;
+      gsl_rng_set (r, seed);
+      status = rng_sanity_test (r);
+      if (status) 
+        gsl_test (status, "%s, sanity tests for seed = %#lx", name, seed);
+    }
+  }
+}

@@ -14,7 +14,13 @@ set (void *vstate, gsl_multifit_function_fdf * fdf, gsl_vector * x, gsl_vector *
   /* Evaluate function at x */
   /* return immediately if evaluation raised error */
   {
-    int status = GSL_MULTIFIT_FN_EVAL_F_DF (fdf, x, f, J);
+    int status;
+    
+    if (fdf->fdf)
+      status = GSL_MULTIFIT_FN_EVAL_F_DF (fdf, x, f, J);
+    else /* finite difference approximation */
+      status = gsl_multifit_fdfsolver_dif_fdf(x, fdf, f, J);
+
     if (status)
       return status;
   }

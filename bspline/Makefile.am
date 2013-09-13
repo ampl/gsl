@@ -4,7 +4,7 @@ pkginclude_HEADERS = gsl_bspline.h
 
 INCLUDES = -I$(top_srcdir)
 
-libgslbspline_la_SOURCES = bspline.c
+libgslbspline_la_SOURCES = bspline.c greville.c
 
 noinst_HEADERS =  bspline.h
 

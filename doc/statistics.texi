@@ -419,6 +419,16 @@ r = cov(x, y) / (\Hat\sigma_x \Hat\sigma_y)
 @end ifinfo
 @end deftypefun
 
+@deftypefun double gsl_stats_spearman (const double @var{data1}[], const size_t @var{stride1}, const double @var{data2}[], const size_t @var{stride2}, const size_t @var{n}, double @var{work}[])
+This function computes the Spearman rank correlation coefficient between
+the datasets @var{data1} and @var{data2} which must both be of the same
+length @var{n}. Additional workspace of size 2*@var{n} is required in
+@var{work}. The Spearman rank correlation between vectors @math{x} and
+@math{y} is equivalent to the Pearson correlation between the ranked
+vectors @math{x_R} and @math{y_R}, where ranks are defined to be the
+average of the positions of an element in the ascending order of the values.
+@end deftypefun
+
 @node Weighted Samples
 @section Weighted Samples
 

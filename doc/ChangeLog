@@ -1,3 +1,8 @@
+2012-07-12  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* randplots.gnp: Use "set view map" to fix orientation of
+	Bivariate Gaussian as suggested by Jorge Barros de Abreu
+
 2009-07-10  Brian Gough  <bjg@network-theory.co.uk>
 
 	* gsl-ref.texi: use the dircategory "Software libraries" as used

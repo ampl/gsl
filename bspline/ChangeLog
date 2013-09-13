@@ -1,3 +1,17 @@
+2011-09-21  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* greville.c (gsl_bspline_knots_greville) Added routine to
+	initialize breakpoints prescribed by specifying the desired
+	Greville abscissae
+
+	* test.c Add tests for the new gsl_bspline_knots_greville
+
+2011-09-20  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* bspline.c (gsl_bspline_greville_abscissa) Greville-related
+	logic moved to greville.c in preparation for upcoming
+	gsl_bspline_knots_greville_abscissae functionality.
+
 2009-08-12  Brian Gough  <bjg@network-theory.co.uk>
 
 	* bspline.c (gsl_bspline_alloc): correct free to gsl_vector_free

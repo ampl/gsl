@@ -14,6 +14,6 @@ check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)
 
 test_SOURCES = test.c test_nist.c
-test_LDADD = libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+test_LDADD = libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la ../vector/libgslvector.la
 
 

@@ -16,7 +16,7 @@ bspline functions and related declarations.
 * Constructing the knots vector::
 * Evaluation of B-spline basis functions::
 * Evaluation of B-spline basis function derivatives::
-* Obtaining Greville abscissae for B-spline basis functions::
+* Working with the Greville abscissae::
 * Example programs for B-splines::
 * References and Further Reading::
 @end menu
@@ -201,24 +201,41 @@ quantities involving linear combinations of the @math{B_i(x)} and
 their derivatives to be computed without unnecessary terms.
 @end deftypefun
 
-@node Obtaining Greville abscissae for B-spline basis functions
-@section Greville abscissae
+@node Working with the Greville abscissae
+@section Working with the Greville abscissae
 @cindex basis splines, Greville abscissae
+@cindex basis splines, Marsden-Schoenberg points
 
 The Greville abscissae are defined to be the mean location of @math{k-1}
 consecutive knots in the knot vector for each basis spline function of order
-@math{k}.  Note that the first and last knots in the knot vector are excluded
-when applying this definition; consequently there are
-@code{gsl_bspline_ncoeffs} Greville abscissa.  They are often used in B-spline
+@math{k}.  With the first and last knots in the @code{gsl_bspline_workspace}
+knot vector excluded, there are @code{gsl_bspline_ncoeffs} Greville abscissae
+for any given B-spline basis.  These values are often used in B-spline
 collocation applications and may also be called Marsden-Schoenberg points.
 
-The above definition is undefined for @math{k=1}.  The implementation chooses
-to return interval midpoints in the degenerate @math{k=1} case.
-
 @deftypefun double gsl_bspline_greville_abscissa (size_t @var{i}, gsl_bspline_workspace *@var{w});
-Returns the location of the @math{i}-th Greville abscissa for the given spline
-basis.  Here, @math{i = 0}, ..., @code{gsl_bspline_ncoeffs(w) - 1}.
+Returns the location of the @math{i}-th Greville abscissa for the given
+B-spline basis.  For the ill-defined case when @math{k=1}, the implementation
+chooses to return breakpoint interval midpoints.
 @end deftypefun
+
+@c See https://savannah.gnu.org/bugs/index.php?34361
+@c @deftypefun int gsl_bspline_knots_greville (const gsl_vector * @var{abscissae}, gsl_bspline_workspace * @var{w}, double * @var{abserr});
+@c Given target Greville abscissae values in @var{abscissae} and a workspace
+@c @var{w} where @code{abscissae->size == gsl_bspline_ncoeffs(w)}, this functions
+@c computes and stores the knots required for the workspace to best approximate
+@c the target abscissae.  The approximation is optimal in that the first and last
+@c values in @var{abscissae} are preserved exactly while the 2-norm of the error
+@c in any other abscissae is minimized.  If not-@code{NULL}, the sum of the
+@c absolute approximation errors over each abscissa is returned in @var{abserr}.
+@c
+@c The workspace order must satisfy @math{k > 1} and @var{abscissae} should be
+@c monotonically increasing.  Beware that when @code{w->nbreak} is small relative
+@c to @code{w->k} the best approximation may still be of poor quality for
+@c non-uniformly spaced @var{abscissae}.  This function has memory and runtime
+@c overhead that scales like a QR-based linear least squares solution on a
+@c @code{(abscissae->size - 2)} by @code{(w->nbreak - 2)} problem.
+@c @end deftypefun
 
 @node Example programs for B-splines
 @section Examples
@@ -253,6 +270,7 @@ Further information on the algorithms described in this section can be
 found in the following book,
 
 @itemize @w{}
+@item
 C. de Boor, @cite{A Practical Guide to Splines} (1978), Springer-Verlag,
 ISBN 0-387-90356-9.
 @end itemize
@@ -261,6 +279,7 @@ Further information of Greville abscissae and B-spline collocation
 can be found in the following paper,
 
 @itemize @w{}
+@item
 Richard W. Johnson, Higher order B-spline collocation at the Greville
 abscissae.  @cite{Applied Numerical Mathematics}. vol.@: 52, 2005, 63--75.
 @end itemize

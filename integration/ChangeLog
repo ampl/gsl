@@ -1,3 +1,8 @@
+2012-09-23  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* cquad.c Fix NaN handling using patch from author Pedro Gonnet.
+	Pedro reports bug found by Mick Pont at NAG.
+
 2011-05-02  Brian Gough  <bjg@network-theory.co.uk>
 
 	* cquad.c (gsl_integration_cquad): use finite instead of isfinite

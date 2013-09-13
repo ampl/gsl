@@ -200,6 +200,14 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
   }
 
   {
+    double *work = malloc(2 * na * sizeof(double));
+    double r = FUNCTION(gsl_stats,spearman) (groupa, stridea, groupb, strideb, nb, work);
+    double expected = -0.1604395604395604396;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_spearman");
+    free(work);
+  }
+
+  {
     double pv = FUNCTION(gsl_stats,pvariance) (groupa, stridea, na, groupb, strideb, nb);
     double expected = 0.00123775384615385;
     gsl_test_rel (pv, expected, rel, NAME(gsl_stats) "_pvariance");

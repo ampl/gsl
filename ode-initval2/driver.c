@@ -81,7 +81,7 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
       GSL_ERROR_NULL ("failed to allocate evolve object", GSL_ENOMEM);
     }
 
-  if (hstart >= 0.0 || hstart < 0.0)
+  if (hstart > 0.0 || hstart < 0.0)
     {
       state->h = hstart;
     }
@@ -111,14 +111,7 @@ gsl_odeiv2_driver_set_hmin (gsl_odeiv2_driver * d, const double hmin)
       GSL_ERROR_NULL ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
     }
 
-  if (hmin >= 0.0 || hmin < 0.0)
-    {
-      d->hmin = fabs (hmin);
-    }
-  else
-    {
-      GSL_ERROR_NULL ("invalid hmin", GSL_EINVAL);
-    }
+  d->hmin = fabs (hmin);
 
   return GSL_SUCCESS;
 }
@@ -459,6 +452,29 @@ gsl_odeiv2_driver_reset (gsl_odeiv2_driver * d)
   return GSL_SUCCESS;
 }
 
+int
+gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * d, const double hstart)
+{
+  /* Resets current driver and sets initial step size to hstart */
+
+  gsl_odeiv2_driver_reset (d);
+
+  if ((d->hmin > fabs (hstart)) || (fabs (hstart) > d->hmax))
+    {
+      GSL_ERROR_NULL ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
+    }
+
+  if (hstart > 0.0 || hstart < 0.0)
+    {
+      d->h = hstart;
+    }
+  else
+    {
+      GSL_ERROR_NULL ("invalid hstart", GSL_EINVAL);
+    }
+
+  return GSL_SUCCESS;
+}
 
 void
 gsl_odeiv2_driver_free (gsl_odeiv2_driver * state)

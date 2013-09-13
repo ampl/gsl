@@ -22,95 +22,101 @@ double longley_x [] = {
 double longley_y[] = {60323, 61122, 60171, 61187, 63221, 63639, 64989, 63761,
                        66019, 67857, 68169, 66513, 68655, 69564, 69331, 70551};
 
+static int
+test_longley_results(const char *str,
+                     const gsl_vector *c, const gsl_vector *expected_c,
+                     const gsl_vector *cov_diag, const gsl_vector *expected_sd,
+                     const double chisq, const double chisq_res,
+                     const double expected_chisq)
+{
+  size_t i;
+
+  /* test coefficient vector */
+  for (i = 0; i < longley_p; ++i)
+    {
+      gsl_test_rel (gsl_vector_get(c,i),
+                    gsl_vector_get(expected_c, i),
+                    1.0e-10,
+                    "%s c[%zu]", str, i) ;
+
+      if (cov_diag && expected_sd)
+        {
+          gsl_test_rel (sqrt(gsl_vector_get(cov_diag, i)),
+                        gsl_vector_get(expected_sd, i),
+                        1e-10,
+                        "%s cov[%zu,%zu]", str, i, i);
+        }
+    }
+
+  gsl_test_rel (chisq, expected_chisq, 1.0e-10, "%s chisq", str);
+  gsl_test_rel (chisq_res, expected_chisq, 1.0e-10, "%s chisq residuals", str);
+
+  return GSL_SUCCESS;
+}
 
 void 
 test_longley ()
 {     
-  size_t i, j;
+  gsl_multifit_linear_workspace * work = 
+    gsl_multifit_linear_alloc (longley_n, longley_p);
+
+  gsl_multifit_robust_workspace * work_rob =
+    gsl_multifit_robust_alloc (gsl_multifit_robust_ols, longley_n, longley_p);
+
+  gsl_matrix_view X = gsl_matrix_view_array (longley_x, longley_n, longley_p);
+  gsl_vector_view y = gsl_vector_view_array (longley_y, longley_n);
+  gsl_vector * c = gsl_vector_alloc (longley_p);
+  gsl_vector * r = gsl_vector_alloc (longley_n);
+  gsl_matrix * cov = gsl_matrix_alloc (longley_p, longley_p);
+
+  double chisq, chisq_res;
+
+  double expected_c[7] = {  -3482258.63459582,
+                            15.0618722713733,
+                            -0.358191792925910E-01,
+                            -2.02022980381683,
+                            -1.03322686717359,
+                            -0.511041056535807E-01,
+                            1829.15146461355 };
+
+  double expected_sd[7]  = {  890420.383607373,      
+                              84.9149257747669,      
+                              0.334910077722432E-01, 
+                              0.488399681651699,     
+                              0.214274163161675,     
+                              0.226073200069370,     
+                              455.478499142212 } ;  
+
+  double expected_chisq = 836424.055505915;
+
+  gsl_vector_view diag = gsl_matrix_diagonal (cov);
+  gsl_vector_view exp_c = gsl_vector_view_array(expected_c, longley_p);
+  gsl_vector_view exp_sd = gsl_vector_view_array(expected_sd, longley_p);
+
+  /* test unweighted least squares */
+  gsl_multifit_linear (&X.matrix, &y.vector, c, cov, &chisq, work);
+  gsl_multifit_linear_residuals(&X.matrix, &y.vector, c, r);
+  gsl_blas_ddot(r, r, &chisq_res);
+
+  test_longley_results("longley gsl_multifit_linear",
+                       c, &exp_c.vector,
+                       &diag.vector, &exp_sd.vector,
+                       chisq, chisq_res, expected_chisq);
+
+  /* test robust least squares */
+  gsl_multifit_robust (&X.matrix, &y.vector, c, cov, work_rob);
+
+  test_longley_results("longley gsl_multifit_robust",
+                       c, &exp_c.vector,
+                       &diag.vector, &exp_sd.vector,
+                       1.0, 1.0, 1.0);
+
+
+  /* test weighted least squares */
   {
-    gsl_multifit_linear_workspace * work = 
-      gsl_multifit_linear_alloc (longley_n, longley_p);
+    size_t i, j;
 
-    gsl_matrix_view X = gsl_matrix_view_array (longley_x, longley_n, longley_p);
-    gsl_vector_view y = gsl_vector_view_array (longley_y, longley_n);
-    gsl_vector * c = gsl_vector_alloc (longley_p);
-    gsl_vector * r = gsl_vector_alloc (longley_n);
-    gsl_matrix * cov = gsl_matrix_alloc (longley_p, longley_p);
-    gsl_vector_view diag;
-
-    double chisq;
-
-    double expected_c[7] = {  -3482258.63459582,
-                              15.0618722713733,
-                              -0.358191792925910E-01,
-                              -2.02022980381683,
-                              -1.03322686717359,
-                              -0.511041056535807E-01,
-                              1829.15146461355 };
-
-    double expected_sd[7]  = {  890420.383607373,      
-                                84.9149257747669,      
-                                0.334910077722432E-01, 
-                                0.488399681651699,     
-                                0.214274163161675,     
-                                0.226073200069370,     
-                                455.478499142212 } ;  
-
-    double expected_chisq = 836424.055505915;
-
-    gsl_multifit_linear (&X.matrix, &y.vector, c, cov, &chisq, work);
-
-    gsl_test_rel (gsl_vector_get(c,0), expected_c[0], 1e-10, "longley gsl_fit_multilinear c0") ;
-    gsl_test_rel (gsl_vector_get(c,1), expected_c[1], 1e-10, "longley gsl_fit_multilinear c1") ;
-    gsl_test_rel (gsl_vector_get(c,2), expected_c[2], 1e-10, "longley gsl_fit_multilinear c2") ;
-    gsl_test_rel (gsl_vector_get(c,3), expected_c[3], 1e-10, "longley gsl_fit_multilinear c3") ;
-    gsl_test_rel (gsl_vector_get(c,4), expected_c[4], 1e-10, "longley gsl_fit_multilinear c4") ;
-    gsl_test_rel (gsl_vector_get(c,5), expected_c[5], 1e-10, "longley gsl_fit_multilinear c5") ;
-    gsl_test_rel (gsl_vector_get(c,6), expected_c[6], 1e-10, "longley gsl_fit_multilinear c6") ;
-
-    diag = gsl_matrix_diagonal (cov);
-
-    gsl_test_rel (gsl_vector_get(&diag.vector,0), pow(expected_sd[0],2.0), 1e-10, "longley gsl_fit_multilinear cov00") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,1), pow(expected_sd[1],2.0), 1e-10, "longley gsl_fit_multilinear cov11") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,2), pow(expected_sd[2],2.0), 1e-10, "longley gsl_fit_multilinear cov22") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,3), pow(expected_sd[3],2.0), 1e-10, "longley gsl_fit_multilinear cov33") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,4), pow(expected_sd[4],2.0), 1e-10, "longley gsl_fit_multilinear cov44") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,5), pow(expected_sd[5],2.0), 1e-10, "longley gsl_fit_multilinear cov55") ;
-    gsl_test_rel (gsl_vector_get(&diag.vector,6), pow(expected_sd[6],2.0), 1e-10, "longley gsl_fit_multilinear cov66") ;
-
-    gsl_test_rel (chisq, expected_chisq, 1e-10, "longley gsl_fit_multilinear chisq") ;
-
-    gsl_multifit_linear_residuals(&X.matrix, &y.vector, c, r);
-    gsl_blas_ddot(r, r, &chisq);
-    gsl_test_rel (chisq, expected_chisq, 1e-10, "longley gsl_fit_multilinear residuals") ;
-
-    gsl_vector_free(c);
-    gsl_vector_free(r);
-    gsl_matrix_free(cov);
-    gsl_multifit_linear_free (work);
-  }
-
-
-  {
-    gsl_multifit_linear_workspace * work = 
-      gsl_multifit_linear_alloc (longley_n, longley_p);
-
-    gsl_matrix_view X = gsl_matrix_view_array (longley_x, longley_n, longley_p);
-    gsl_vector_view y = gsl_vector_view_array (longley_y, longley_n);
     gsl_vector * w = gsl_vector_alloc (longley_n);
-    gsl_vector * c = gsl_vector_alloc (longley_p);
-    gsl_vector * r = gsl_vector_alloc (longley_n);
-    gsl_matrix * cov = gsl_matrix_alloc (longley_p, longley_p);
-
-    double chisq;
-
-    double expected_c[7] = {  -3482258.63459582,
-                              15.0618722713733,
-                              -0.358191792925910E-01,
-                              -2.02022980381683,
-                              -1.03322686717359,
-                              -0.511041056535807E-01,
-                              1829.15146461355 };
 
     double expected_cov[7][7] = { { 8531122.56783558,
 -166.727799925578, 0.261873708176346, 3.91188317230983,
@@ -140,39 +146,32 @@ test_longley ()
 -0.00197260370663974, -0.000576921112208274, 0.000430074434198215,
 2.23229587481535 }} ;
 
-    double expected_chisq = 836424.055505915;
-
     gsl_vector_set_all (w, 1.0);
 
     gsl_multifit_wlinear (&X.matrix, w, &y.vector, c, cov, &chisq, work);
+    gsl_multifit_linear_residuals(&X.matrix, &y.vector, c, r);
+    gsl_blas_ddot(r, r, &chisq_res);
 
-    gsl_test_rel (gsl_vector_get(c,0), expected_c[0], 1e-10, "longley gsl_fit_wmultilinear c0") ;
-    gsl_test_rel (gsl_vector_get(c,1), expected_c[1], 1e-10, "longley gsl_fit_wmultilinear c1") ;
-    gsl_test_rel (gsl_vector_get(c,2), expected_c[2], 1e-10, "longley gsl_fit_wmultilinear c2") ;
-    gsl_test_rel (gsl_vector_get(c,3), expected_c[3], 1e-10, "longley gsl_fit_wmultilinear c3") ;
-    gsl_test_rel (gsl_vector_get(c,4), expected_c[4], 1e-10, "longley gsl_fit_wmultilinear c4") ;
-    gsl_test_rel (gsl_vector_get(c,5), expected_c[5], 1e-10, "longley gsl_fit_wmultilinear c5") ;
-    gsl_test_rel (gsl_vector_get(c,6), expected_c[6], 1e-10, "longley gsl_fit_wmultilinear c6") ;
+    test_longley_results("longley gsl_multifit_wlinear",
+                         c, &exp_c.vector,
+                         NULL, NULL,
+                         chisq, chisq_res, expected_chisq);
 
     for (i = 0; i < longley_p; i++) 
       {
         for (j = 0; j < longley_p; j++)
           {
             gsl_test_rel (gsl_matrix_get(cov,i,j), expected_cov[i][j], 1e-7, 
-                          "longley gsl_fit_wmultilinear cov(%d,%d)", i, j) ;
+                          "longley gsl_multifit_wlinear cov(%d,%d)", i, j) ;
           }
       }
 
-    gsl_test_rel (chisq, expected_chisq, 1e-10, "longley gsl_fit_wmultilinear chisq") ;
-
-    gsl_multifit_linear_residuals(&X.matrix, &y.vector, c, r);
-    gsl_blas_ddot(r, r, &chisq);
-    gsl_test_rel (chisq, expected_chisq, 1e-10, "longley gsl_fit_wmultilinear residuals") ;
-
     gsl_vector_free(w);
-    gsl_vector_free(c);
-    gsl_vector_free(r);
-    gsl_matrix_free(cov);
-    gsl_multifit_linear_free (work);
   }
-}
+
+  gsl_vector_free(c);
+  gsl_vector_free(r);
+  gsl_matrix_free(cov);
+  gsl_multifit_linear_free (work);
+  gsl_multifit_robust_free (work_rob);
+} /* test_longley() */

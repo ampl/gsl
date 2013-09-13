@@ -127,7 +127,8 @@ a null pointer and the error handler is invoked with an error code of
 @end deftypefun
 
 @deftypefun int gsl_multimin_fdfminimizer_set (gsl_multimin_fdfminimizer * @var{s}, gsl_multimin_function_fdf * @var{fdf}, const gsl_vector * @var{x}, double @var{step_size}, double @var{tol})
-This function initializes the minimizer @var{s} to minimize the function
+@deftypefunx int gsl_multimin_fminimizer_set (gsl_multimin_fminimizer * @var{s}, gsl_multimin_function * @var{f}, const gsl_vector * @var{x}, const gsl_vector * @var{step_size})
+The function @code{gsl_multimin_fdfminimizer_set} initializes the minimizer @var{s} to minimize the function
 @var{fdf} starting from the initial point @var{x}.  The size of the
 first trial step is given by @var{step_size}.  The accuracy of the line
 minimization is specified by @var{tol}.  The precise meaning of this
@@ -140,8 +141,7 @@ suitable for most purposes, since line minimization only needs to
 be carried out approximately.    Note that setting @var{tol} to zero will
 force the use of ``exact'' line-searches, which are extremely expensive.
 
-@deftypefunx int gsl_multimin_fminimizer_set (gsl_multimin_fminimizer * @var{s}, gsl_multimin_function * @var{f}, const gsl_vector * @var{x}, const gsl_vector * @var{step_size})
-This function initializes the minimizer @var{s} to minimize the function
+The function @code{gsl_multimin_fminimizer_set} initializes the minimizer @var{s} to minimize the function
 @var{f}, starting from the initial point
 @var{x}. The size of the initial trial steps is given in vector
 @var{step_size}. The precise meaning of this parameter depends on the

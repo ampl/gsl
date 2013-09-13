@@ -121,7 +121,7 @@ gsl_sf_ellint_RD_e(double x, double y, double z, gsl_mode_t mode, gsl_sf_result 
   const double prec   = gsl_prec_eps[goal];
   const double lolim = 2.0/pow(GSL_DBL_MAX, 2.0/3.0);
   const double uplim = pow(0.1*errtol/GSL_DBL_MIN, 2.0/3.0);
-  const nmax = 10000;
+  const int nmax = 10000;
 
   if(GSL_MIN(x,y) < 0.0 || GSL_MIN(x+y,z) < lolim) {
     DOMAIN_ERROR(result);

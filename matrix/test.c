@@ -206,6 +206,21 @@ main (void)
   test_complex_float_binary (M, N);
   test_complex_long_double_binary (M, N);
 
+  test_binary_noncontiguous (M, N);
+  test_float_binary_noncontiguous (M, N);
+  test_long_double_binary_noncontiguous (M, N);
+  test_ulong_binary_noncontiguous (M, N);
+  test_long_binary_noncontiguous (M, N);
+  test_uint_binary_noncontiguous (M, N);
+  test_int_binary_noncontiguous (M, N);
+  test_ushort_binary_noncontiguous (M, N);
+  test_short_binary_noncontiguous (M, N);
+  test_uchar_binary_noncontiguous (M, N);
+  test_char_binary_noncontiguous (M, N);
+  test_complex_binary_noncontiguous (M, N);
+  test_complex_float_binary_noncontiguous (M, N);
+  test_complex_long_double_binary_noncontiguous (M, N);
+
 #if GSL_RANGE_CHECK
   gsl_set_error_handler (&my_error_handler);
 

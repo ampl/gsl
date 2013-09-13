@@ -490,6 +490,14 @@ system is solved in the least squares sense, returning the solution
 @var{x} which minimizes @math{||A x - b||_2}.
 @end deftypefun
 
+@deftypefun int gsl_linalg_SV_leverage (const gsl_matrix * @var{U}, gsl_vector * @var{h})
+This function computes the statistical leverage values @math{h_i} of a matrix @math{A}
+using its singular value decomposition (@var{U}, @var{S}, @var{V}) previously computed
+with @code{gsl_linalg_SV_decomp}. @math{h_i} are the diagonal values of the matrix
+@math{A (A^T A)^{-1} A^T} and depend only on the matrix @var{U} which is the input to
+this function.
+@end deftypefun
+
 @node Cholesky Decomposition
 @section Cholesky Decomposition
 @cindex Cholesky decomposition

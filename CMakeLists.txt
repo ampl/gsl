@@ -595,3 +595,10 @@ endforeach ()
 
 add_library(gsl ${GSL_SOURCES})
 add_dependencies(gsl copy-headers)
+
+install(TARGETS gsl gslcblas
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib)
+
+install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)

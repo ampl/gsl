@@ -509,7 +509,8 @@ include(CheckCCompilerFlag)
 if (GSL_DISABLE_WARNINGS)
   # Disable additional warnings.
   if (MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS /Wd4018 /Wd4056 /Wd4244 /Wd4700 /Wd4756)
+    add_definitions(
+      -D_CRT_SECURE_NO_WARNINGS /wd4018 /wd4056 /wd4244 /wd4700 /wd4756)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")

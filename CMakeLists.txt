@@ -592,9 +592,21 @@ endforeach ()
 add_library(gsl ${GSL_SOURCES})
 add_dependencies(gsl copy-headers)
 
-install(TARGETS gsl gslcblas
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib)
+option(GSL_INSTALL_MULTI_CONFIG "Installs libraries in lib/<config> directory" OFF)
+
+if (MSVC AND GSL_INSTALL_MULTI_CONFIG)
+  foreach(config ${CMAKE_CONFIGURATION_TYPES})
+    install(TARGETS gsl gslcblas
+      CONFIGURATIONS ${config}
+      LIBRARY DESTINATION lib/${config}
+      RUNTIME DESTINATION bin/${config}
+      ARCHIVE DESTINATION lib/${config})
+  endforeach ()
+else ()
+  install(TARGETS gsl gslcblas
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib)
+endif ()
 
 install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)

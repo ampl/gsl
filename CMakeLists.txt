@@ -599,6 +599,7 @@ if (GSL_SHARED)
   endif ()
   set(shared SHARED)
   if (WIN32)
+    add_definitions(-DGSL_DLL)
     # Extract function names from header and generate a .def file.
     file(WRITE gsl.def "LIBRARY GSL\nEXPORTS\n")
     foreach (header ${GSL_HEADER_PATHS})
@@ -625,6 +626,7 @@ if (GSL_SHARED)
 endif ()
 
 add_library(gsl ${shared} ${GSL_SOURCES})
+set_target_properties(gsl PROPERTIES COMPILE_DEFINITIONS DLL_EXPORT)
 target_link_libraries(gsl gslcblas)
 add_dependencies(gsl copy-headers)
 

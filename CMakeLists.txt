@@ -611,7 +611,7 @@ if (GSL_SHARED)
           endif ()
         else ()
           if (NOT line MATCHES typedef AND
-              line MATCHES "^(.*[ *])?(gsl_[a-z_]+)[ ]*\\(")
+              line MATCHES "^(.*[ *])?(gsl_[a-z0-9_]+)[ ]*\\(")
             file(APPEND gsl.def "   ${CMAKE_MATCH_2}\n")
           endif ()
           if (line MATCHES "/\\*" AND NOT line MATCHES "\\*/")

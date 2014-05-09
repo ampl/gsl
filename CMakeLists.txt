@@ -589,7 +589,26 @@ foreach (dir "." ${dirs})
   endforeach ()
 endforeach ()
 
-add_library(gsl ${GSL_SOURCES})
+option(GSL_SHARED "Build shared library instead of static one" OFF)
+
+if (GSL_SHARED)
+  set(shared SHARED)
+  if (WIN32)
+    # Extract function names from header and generate a .def file.
+    file(WRITE gsl.def "LIBRARY GSL\nEXPORTS\n")
+    foreach (header ${GSL_HEADER_PATHS})
+      file(STRINGS ${header} lines)
+      foreach (line ${lines})
+        if (line MATCHES " (gsl_[a-z_]+) \\(")
+          file(APPEND gsl.def "   ${CMAKE_MATCH_1}\n")
+        endif ()
+      endforeach ()
+    endforeach ()
+    set(shared ${shared} gsl.def)
+  endif ()
+endif ()
+
+add_library(gsl ${shared} ${GSL_SOURCES})
 add_dependencies(gsl copy-headers)
 
 option(GSL_INSTALL_MULTI_CONFIG "Installs libraries in lib/<config> directory" OFF)

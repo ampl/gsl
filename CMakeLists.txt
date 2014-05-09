@@ -605,7 +605,7 @@ if (GSL_SHARED)
       file(STRINGS ${header} lines)
       foreach (line ${lines})
         if (NOT line MATCHES typedef AND
-            line MATCHES "^(.*[ *])?(gsl_[a-z_]+) \\(" AND
+            line MATCHES "^(.*[ *])?(gsl_[a-z_]+)[ ]*\\(" AND
             NOT CMAKE_MATCH_2 STREQUAL gsl_foo)
           file(APPEND gsl.def "   ${CMAKE_MATCH_2}\n")
         endif ()

@@ -599,7 +599,9 @@ if (GSL_SHARED)
     foreach (header ${GSL_HEADER_PATHS})
       file(STRINGS ${header} lines)
       foreach (line ${lines})
-        if (line MATCHES " (gsl_[a-z_]+) \\(")
+        if (NOT line MATCHES typedef AND
+            line MATCHES " (gsl_[a-z_]+) \\(" AND
+            NOT CMAKE_MATCH_1 STREQUAL gsl_foo)
           file(APPEND gsl.def "   ${CMAKE_MATCH_1}\n")
         endif ()
       endforeach ()

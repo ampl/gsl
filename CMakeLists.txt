@@ -510,7 +510,7 @@ if (GSL_DISABLE_WARNINGS)
   if (MSVC)
     add_definitions(
       -D_CRT_SECURE_NO_WARNINGS
-      /wd4018 /wd4028 /wd4056 /wd4244 /wd4267 /wd4700 /wd4723 /wd4756)
+      /wd4018 /wd4028 /wd4056 /wd4244 /wd4267 /wd4334 /wd4700 /wd4723 /wd4756)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")

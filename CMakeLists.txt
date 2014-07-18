@@ -10,6 +10,8 @@ set(PACKAGE_BUGREPORT "")
 set(PACKAGE_URL "")
 set(LT_OBJDIR ".libs/")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
 # The following part of config.h is hard to derive from configure.ac.
 string(REGEX MATCHALL "[^\n]*\n" CONFIG
 "/* Define if you have inline with C99 behavior */

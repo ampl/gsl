@@ -7,7 +7,7 @@ rem   run-cmake -G "Visual Studio 10 Win64" .
 
 set args=%*
 set args=%args:"=\"%
-for /F "delims=" %%i IN ('cmake "-DARGS=%args%" -P %~dp0/RunCMake.cmake') DO (
+for /F "delims=" %%i IN ('cmake "-DARGS=%args%" -P %~dp0/init.cmake') DO (
   call %%i
 )
 cmake %*

@@ -1,4 +1,4 @@
-# A CMake script to find SetEnv.cmd.
+# A CMake script to run CMake in a Microsoft SDK build environment.
 
 set(winsdk_key
   "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows")
@@ -12,12 +12,9 @@ if (WINSDK_SETENV AND ARGS)
   # calls SetEnv.cmd to to set up build environment and runs msbuild.
   # It is useful when building Visual Studio projects with the SDK
   # toolchain rather than Visual Studio.
-  if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(setenv_flag /x86)
-  endif()
   # Set FrameworkPathOverride to get rid of MSB3644 warnings.
   file(WRITE "${CMAKE_BINARY_DIR}/run-msbuild.bat" "
-    call \"${WINSDK_SETENV}\" ${setenv_flag}
+    call \"${WINSDK_SETENV}\" ${setenv_arg}
     msbuild -p:FrameworkPathOverride=^\"C:\\Program Files^
 \\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0^\" %*")
   execute_process(

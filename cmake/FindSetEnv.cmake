@@ -16,9 +16,9 @@ if (WINSDK_SETENV AND ARGS)
     set(setenv_flag /x86)
   endif()
   # Set FrameworkPathOverride to get rid of MSB3644 warnings.
-  file(WRITE "${CMAKE_SOURCE_DIR}/run-msbuild.bat" "
+  file(WRITE "${CMAKE_BINARY_DIR}/run-msbuild.bat" "
     call \"${WINSDK_SETENV}\" ${setenv_flag}
-    ${CMAKE_MAKE_PROGRAM} -p:FrameworkPathOverride=^\"C:\\Program Files^
+    msbuild -p:FrameworkPathOverride=^\"C:\\Program Files^
 \\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0^\" %*")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E echo "\"${WINSDK_SETENV}\" ${setenv_arg}")

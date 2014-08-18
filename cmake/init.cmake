@@ -1,7 +1,7 @@
 # CMake initialization code that should be run before the project command.
 
 if (ARGS)
-  # Runs CMake in a Microsoft SDK build environment.
+  # Run CMake in a Microsoft SDK build environment.
   set(winsdk_key
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows")
   find_program(WINSDK_SETENV NAMES SetEnv.cmd
@@ -68,7 +68,6 @@ endif ()
 
 function (override var file)
   if (EXISTS "${file}")
-    message("!!! override ${var} ${file}")
     set(${var} ${file} PARENT_SCOPE)
   endif ()
 endfunction ()

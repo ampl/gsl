@@ -1,6 +1,7 @@
 # CMake build script for the GNU Scientific Library.
 
-cmake_minimum_required(VERSION 2.6)
+# Use CMake 2.8.3 for CMakeParseArguments.
+cmake_minimum_required(VERSION 2.8.3)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(init)
@@ -591,7 +592,7 @@ foreach (dir "." ${dirs})
         if (CMAKE_COMPILER_IS_GNUCC)
           # Compiling with options other thatn -O2 causes test failures:
           # http://lists.gnu.org/archive/html/help-gsl/2014-08/msg00012.html
-          target_compile_options(gslcblas PUBLIC -O2)
+          #target_compile_options(gslcblas PUBLIC -O2)
         endif ()
       else ()
         set(GSL_SOURCES ${GSL_SOURCES} ${SOURCES})

@@ -8,6 +8,18 @@ if (WINSDK_SETENV AND ARGS)
   if (NOT ARGS MATCHES Win64)
     set(setenv_arg "/x86")
   endif ()
+  # If Microsoft SDK is installed create script run-msbuild.bat that
+  # calls SetEnv.cmd to to set up build environment and runs msbuild.
+  # It is useful when building Visual Studio projects with the SDK
+  # toolchain rather than Visual Studio.
+  if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(setenv_flag /x86)
+  endif()
+  # Set FrameworkPathOverride to get rid of MSB3644 warnings.
+  file(WRITE "${CMAKE_SOURCE_DIR}/run-msbuild.bat" "
+    call \"${WINSDK_SETENV}\" ${setenv_flag}
+    ${CMAKE_MAKE_PROGRAM} -p:FrameworkPathOverride=^\"C:\\Program Files^
+\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0^\" %*")
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E echo "\"${WINSDK_SETENV}\" ${setenv_arg}")
 endif ()

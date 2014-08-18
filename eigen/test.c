@@ -1267,8 +1267,8 @@ test_eigen_gen_pencil(const gsl_matrix * A, const gsl_matrix * B,
     }
 
   /* sort eval and evalv and test them */
-  gsl_eigen_nonsymmv_sort(w->eval, NULL, GSL_EIGEN_SORT_ABS_ASC);
-  gsl_eigen_nonsymmv_sort(w->evalv, NULL, GSL_EIGEN_SORT_ABS_ASC);
+  gsl_eigen_nonsymmv_sort(w->eval, NULL, GSL_EIGEN_SORT_VAL_ASC);
+  gsl_eigen_nonsymmv_sort(w->evalv, NULL, GSL_EIGEN_SORT_VAL_ASC);
   test_eigenvalues_complex(w->evalv, w->eval, "gen", desc);
 
   gsl_eigen_genv_sort(w->alphav, w->betav, w->evec, GSL_EIGEN_SORT_ABS_ASC);

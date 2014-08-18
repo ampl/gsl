@@ -588,6 +588,11 @@ foreach (dir "." ${dirs})
         add_library(gslcblas ${SOURCES})
         target_link_libraries(gslcblas ${CMAKE_REQUIRED_LIBRARIES})
         add_dependencies(gslcblas copy-headers)
+        if (CMAKE_COMPILER_IS_GNUCC)
+          # Compiling with options other thatn -O2 causes test failures:
+          # http://lists.gnu.org/archive/html/help-gsl/2014-08/msg00012.html
+          target_compile_options(gslcblas PUBLIC -O2)
+        endif ()
       else ()
         set(GSL_SOURCES ${GSL_SOURCES} ${SOURCES})
       endif ()

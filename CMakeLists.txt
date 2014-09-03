@@ -634,23 +634,22 @@ set_target_properties(gsl PROPERTIES COMPILE_DEFINITIONS DLL_EXPORT)
 target_link_libraries(gsl gslcblas)
 add_dependencies(gsl copy-headers)
 
-option(GSL_INSTALL_MULTI_CONFIG "Installs libraries in lib/<config> directory" OFF)
+option(GSL_INSTALL_MULTI_CONFIG "Install libraries in lib/<config> directory" OFF)
 
-if (DEFINED GSL_INSTALL AND NOT GSL_INSTALL)
-  # Do not install.
-elseif (MSVC AND GSL_INSTALL_MULTI_CONFIG)
-  foreach(config ${CMAKE_CONFIGURATION_TYPES})
+if (NOT DEFINED GSL_INSTALL OR GSL_INSTALL)
+  if (MSVC AND GSL_INSTALL_MULTI_CONFIG)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+      install(TARGETS gsl gslcblas
+        CONFIGURATIONS ${config}
+        LIBRARY DESTINATION lib/${config}
+        RUNTIME DESTINATION bin/${config}
+        ARCHIVE DESTINATION lib/${config})
+    endforeach ()
+  else ()
     install(TARGETS gsl gslcblas
-      CONFIGURATIONS ${config}
-      LIBRARY DESTINATION lib/${config}
-      RUNTIME DESTINATION bin/${config}
-      ARCHIVE DESTINATION lib/${config})
-  endforeach ()
-else ()
-  install(TARGETS gsl gslcblas
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib)
+      LIBRARY DESTINATION lib
+      RUNTIME DESTINATION bin
+      ARCHIVE DESTINATION lib)
+  endif ()
+  install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)
 endif ()
-
-install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)

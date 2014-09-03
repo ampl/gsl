@@ -636,7 +636,7 @@ add_dependencies(gsl copy-headers)
 
 option(GSL_INSTALL_MULTI_CONFIG "Install libraries in lib/<config> directory" OFF)
 
-if (NOT DEFINED GSL_INSTALL OR GSL_INSTALL)
+if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   if (MSVC AND GSL_INSTALL_MULTI_CONFIG)
     foreach(config ${CMAKE_CONFIGURATION_TYPES})
       install(TARGETS gsl gslcblas

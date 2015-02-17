@@ -8,6 +8,11 @@ include(init)
 
 project(GSL)
 
+if (POLICY CMP0054)
+  # Only interpret `if` arguments as variables or keywords when unquoted.
+  cmake_policy(SET CMP0054 NEW)
+endif ()
+
 set(PACKAGE "gsl")
 set(PACKAGE_NAME ${PACKAGE})
 set(PACKAGE_TARNAME ${PACKAGE})

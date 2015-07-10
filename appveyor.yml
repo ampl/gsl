@@ -1,0 +1,8 @@
+install: set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
+
+before_build:
+  - cmake .
+
+build_script:
+  - msbuild /m GSL.sln
+  - msbuild RUN_TESTS.vcxproj

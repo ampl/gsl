@@ -227,7 +227,7 @@ which handles the memory for the subinterval ranges, results and error
 estimates.
 
 @deftypefun {gsl_integration_workspace *} gsl_integration_workspace_alloc (size_t @var{n}) 
-@tpindex gsl_integration_workspace
+@tindex gsl_integration_workspace
 This function allocates a workspace sufficient to hold @var{n} double
 precision intervals, their integration results and error estimates.
 One workspace may be used multiple times as all necessary reinitialization
@@ -462,7 +462,7 @@ work efficiently the algorithm requires a precomputed table of
 Chebyshev moments.
 
 @deftypefun {gsl_integration_qaws_table *} gsl_integration_qaws_table_alloc (double @var{alpha}, double @var{beta}, int @var{mu}, int @var{nu})
-@tpindex gsl_integration_qaws_table
+@tindex gsl_integration_qaws_table
 This function allocates space for a @code{gsl_integration_qaws_table}
 struct describing a singular weight function
 @math{W(x)} with the parameters @math{(\alpha, \beta, \mu, \nu)},
@@ -571,7 +571,7 @@ work efficiently the algorithm requires a table of Chebyshev moments
 which must be pre-computed with calls to the functions below.
 
 @deftypefun {gsl_integration_qawo_table *} gsl_integration_qawo_table_alloc (double @var{omega}, double @var{L}, enum gsl_integration_qawo_enum @var{sine}, size_t @var{n})
-@tpindex gsl_integration_qawo_table
+@tindex gsl_integration_qawo_table
 This function allocates space for a @code{gsl_integration_qawo_table}
 struct and its associated workspace describing a sine or cosine weight
 function @math{W(x)} with the parameters @math{(\omega, L)},
@@ -802,7 +802,7 @@ interval is subdivided if the difference between two successive
 rules is too large or a rule of maximum degree has been reached.
      
 @deftypefun {gsl_integration_cquad_workspace *} gsl_integration_cquad_workspace_alloc (size_t @var{n}) 
-@tpindex gsl_integration_cquad_workspace
+@tindex gsl_integration_cquad_workspace
 This function allocates a workspace sufficient to hold the data for
 @var{n} intervals. The number @var{n} is not the maximum number of
 intervals that will be evaluated. If the workspace is full, intervals
@@ -853,7 +853,7 @@ numerical integration routines within the library, these routines do not accept
 absolute or relative error bounds.
 
 @deftypefun {gsl_integration_glfixed_table *} gsl_integration_glfixed_table_alloc (size_t @var{n})
-@tpindex gsl_integration_glfixed_table
+@tindex gsl_integration_glfixed_table
 This function determines the Gauss-Legendre abscissae and weights necessary for
 an @math{n}-point fixed order integration scheme.  If possible, high precision
 precomputed coefficients are used.  If precomputed weights are not available,
@@ -874,7 +874,7 @@ value.  A function @math{f} may be integrated on [@var{a},@var{b}] by summing
 @end deftypefun
 
 @deftypefun void gsl_integration_glfixed_table_free ({gsl_integration_glfixed_table *} @var{t})
-@tpindex gsl_integration_glfixed_table
+@tindex gsl_integration_glfixed_table
 This function frees the memory associated with the table @var{t}.
 @end deftypefun
 
@@ -932,7 +932,7 @@ subdivisions.
 
 @example
 $ ./a.out 
-@verbatiminclude examples/integration.out
+@verbatiminclude examples/integration.txt
 @end example
 
 @noindent

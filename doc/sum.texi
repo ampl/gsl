@@ -42,7 +42,7 @@ derivatives through to @math{O(N)} must be computed and stored, but this
 does give a reliable error estimate.
 
 @deftypefun {gsl_sum_levin_u_workspace *} gsl_sum_levin_u_alloc (size_t @var{n})
-@tpindex gsl_sum_levin_u_workspace
+@tindex gsl_sum_levin_u_workspace
 This function allocates a workspace for a Levin @math{u}-transform of @var{n}
 terms.  The size of the workspace is @math{O(2n^2 + 3n)}.
 @end deftypefun
@@ -85,7 +85,7 @@ algorithm described above in order to verify the consistency of the
 results.
 
 @deftypefun {gsl_sum_levin_utrunc_workspace *} gsl_sum_levin_utrunc_alloc (size_t @var{n})
-@tpindex gsl_sum_levin_utrunc_workspace
+@tindex gsl_sum_levin_utrunc_workspace
 This function allocates a workspace for a Levin @math{u}-transform of @var{n}
 terms, without error estimation.  The size of the workspace is
 @math{O(3n)}.
@@ -147,7 +147,7 @@ the correct number of significant digits.
 
 @example
 $ ./a.out 
-@verbatiminclude examples/sum.out
+@verbatiminclude examples/sum.txt
 @end example
 
 @noindent

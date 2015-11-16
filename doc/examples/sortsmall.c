@@ -24,11 +24,11 @@ main (void)
 
   gsl_sort_smallest (small, k, x, 1, N);
 
-  printf ("%d smallest values from %d\n", k, N);
+  printf ("%zu smallest values from %zu\n", k, N);
 
   for (i = 0; i < k; i++)
     {
-      printf ("%d: %.18f\n", i, small[i]);
+      printf ("%zu: %.18f\n", i, small[i]);
     }
 
   free (x);

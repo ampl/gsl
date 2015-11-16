@@ -32,19 +32,15 @@
 */
 
 int
-gsl_multifit_covar (const gsl_matrix * J, double epsrel, gsl_matrix * covar)
+gsl_multifit_covar (const gsl_matrix * J, const double epsrel, gsl_matrix * covar)
 {
-  double tolr;
-
-  size_t i, j, k;
-  size_t kmax = 0;
-
+  int status;
   gsl_matrix * r;
   gsl_vector * tau;
   gsl_vector * norm;
   gsl_permutation * perm;
-
-  size_t m = J->size1, n = J->size2 ;
+  const size_t m = J->size1;
+  const size_t n = J->size2;
   
   if (m < n) 
     {
@@ -67,10 +63,26 @@ gsl_multifit_covar (const gsl_matrix * J, double epsrel, gsl_matrix * covar)
     gsl_linalg_QRPT_decomp (r, tau, perm, &signum, norm);
   }
   
-  
+  status = gsl_multifit_covar_QRPT(r, perm, epsrel, covar);
+
+  gsl_matrix_free (r);
+  gsl_permutation_free (perm);
+  gsl_vector_free (tau);
+  gsl_vector_free (norm);
+
+  return status;
+}
+
+int
+gsl_multifit_covar_QRPT (gsl_matrix * r, gsl_permutation * perm,
+                         const double epsrel, gsl_matrix * covar)
+{
   /* Form the inverse of R in the full upper triangle of R */
 
-  tolr = epsrel * fabs(gsl_matrix_get(r, 0, 0));
+  double tolr = epsrel * fabs(gsl_matrix_get(r, 0, 0));
+  const size_t n = r->size2;
+  size_t i, j, k;
+  size_t kmax = 0;
 
   for (k = 0 ; k < n ; k++)
     {
@@ -183,10 +195,5 @@ gsl_multifit_covar (const gsl_matrix * J, double epsrel, gsl_matrix * covar)
         }
     }
 
-  gsl_matrix_free (r);
-  gsl_permutation_free (perm);
-  gsl_vector_free (tau);
-  gsl_vector_free (norm);
-
   return GSL_SUCCESS;
-}
+} /* gsl_multifit_covar_QRPT() */

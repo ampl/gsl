@@ -31,11 +31,11 @@ main (void)
   printf ("term-by-term sum = % .16f using %d terms\n", 
           sum, N);
 
-  printf ("term-by-term sum = % .16f using %d terms\n", 
+  printf ("term-by-term sum = % .16f using %zu terms\n", 
           w->sum_plain, w->terms_used);
 
   printf ("exact value      = % .16f\n", zeta_2);
-  printf ("accelerated sum  = % .16f using %d terms\n", 
+  printf ("accelerated sum  = % .16f using %zu terms\n", 
           sum_accel, w->terms_used);
 
   printf ("estimated error  = % .16f\n", err);

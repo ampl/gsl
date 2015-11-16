@@ -5,6 +5,8 @@
 double
 f (double x, void *p)
 {
+  (void)(p); /* avoid unused parameter warning */
+
   if (x < 0.5)
     return 0.25;
   else

@@ -20,10 +20,13 @@
 #ifndef __GSL_LINALG_H__
 #define __GSL_LINALG_H__
 
+#include <stdlib.h>
 #include <gsl/gsl_mode.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_inline.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -282,6 +285,10 @@ int gsl_linalg_QR_Qvec (const gsl_matrix * QR,
 int gsl_linalg_QR_QTmat (const gsl_matrix * QR,
                          const gsl_vector * tau,
                          gsl_matrix * A);
+
+int gsl_linalg_QR_matQ (const gsl_matrix * QR,
+                        const gsl_vector * tau,
+                        gsl_matrix * A);
 
 int gsl_linalg_QR_unpack (const gsl_matrix * QR,
                           const gsl_vector * tau,
@@ -588,6 +595,55 @@ int gsl_linalg_balance_matrix (gsl_matrix * A, gsl_vector * D);
 int gsl_linalg_balance_accum (gsl_matrix * A, gsl_vector * D);
 int gsl_linalg_balance_columns (gsl_matrix * A, gsl_vector * D);
 
+INLINE_DECL void gsl_linalg_givens (const double a, const double b,
+                                    double *c, double *s);
+INLINE_DECL void gsl_linalg_givens_gv (gsl_vector * v, const size_t i,
+                                       const size_t j, const double c,
+                                       const double s);
+
+#ifdef HAVE_INLINE
+
+/* Generate a Givens rotation (cos,sin) which takes v=(x,y) to (|v|,0) 
+   From Golub and Van Loan, "Matrix Computations", Section 5.1.8 */
+INLINE_FUN
+void
+gsl_linalg_givens (const double a, const double b, double *c, double *s)
+{
+  if (b == 0)
+    {
+      *c = 1;
+      *s = 0;
+    }
+  else if (fabs (b) > fabs (a))
+    {
+      double t = -a / b;
+      double s1 = 1.0 / sqrt (1 + t * t);
+      *s = s1;
+      *c = s1 * t;
+    }
+  else
+    {
+      double t = -b / a;
+      double c1 = 1.0 / sqrt (1 + t * t);
+      *c = c1;
+      *s = c1 * t;
+    }
+} /* gsl_linalg_givens() */
+
+INLINE_FUN
+void
+gsl_linalg_givens_gv (gsl_vector * v, const size_t i, const size_t j,
+                      const double c, const double s)
+{
+  /* Apply rotation to vector v' = G^T v */
+
+  double vi = gsl_vector_get (v, i);
+  double vj = gsl_vector_get (v, j);
+  gsl_vector_set (v, i, c * vi - s * vj);
+  gsl_vector_set (v, j, s * vi + c * vj);
+}
+
+#endif /* HAVE_INLINE */
 
 __END_DECLS
 

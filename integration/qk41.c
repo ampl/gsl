@@ -52,7 +52,7 @@ static const double xgk[21] =   /* abscissae of the 41-point kronrod rule */
 /* xgk[1], xgk[3], ... abscissae of the 20-point gauss rule. 
    xgk[0], xgk[2], ... abscissae to optimally extend the 20-point gauss rule */
 
-static const double wg[11] =    /* weights of the 20-point gauss rule */
+static const double wg[10] =    /* weights of the 20-point gauss rule */
 {
   0.017614007139152118311861962351853,
   0.040601429800386941331039952274932,

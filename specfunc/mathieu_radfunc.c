@@ -27,7 +27,7 @@
 #include <gsl/gsl_sf_mathieu.h>
 
 
-int gsl_sf_mathieu_Mc(int kind, int order, double qq, double zz,
+int gsl_sf_mathieu_Mc_e(int kind, int order, double qq, double zz,
                       gsl_sf_result *result)
 {
   int even_odd, kk, mm, status;
@@ -59,7 +59,7 @@ int gsl_sf_mathieu_Mc(int kind, int order, double qq, double zz,
       even_odd = 1;
 
   /* Compute the characteristic value. */
-  status = gsl_sf_mathieu_a(order, qq, &aa);
+  status = gsl_sf_mathieu_a_e(order, qq, &aa);
   if (status != GSL_SUCCESS)
   {
       return status;
@@ -133,7 +133,7 @@ int gsl_sf_mathieu_Mc(int kind, int order, double qq, double zz,
 }
 
 
-int gsl_sf_mathieu_Ms(int kind, int order, double qq, double zz,
+int gsl_sf_mathieu_Ms_e(int kind, int order, double qq, double zz,
                       gsl_sf_result *result)
 {
   int even_odd, kk, mm, status;
@@ -173,7 +173,7 @@ int gsl_sf_mathieu_Ms(int kind, int order, double qq, double zz,
       even_odd = 1;
   
   /* Compute the characteristic value. */
-  status = gsl_sf_mathieu_b(order, qq, &aa);
+  status = gsl_sf_mathieu_b_e(order, qq, &aa);
   if (status != GSL_SUCCESS)
   {
       return status;
@@ -471,4 +471,19 @@ int gsl_sf_mathieu_Ms_array(int kind, int nmin, int nmax, double qq,
   } /* order loop */
   
   return GSL_SUCCESS;
+}
+
+
+/*-*-*-*-*-*-*-*-*-* Functions w/ Natural Prototypes *-*-*-*-*-*-*-*-*-*-*/
+
+#include "eval.h"                                                           
+
+double gsl_sf_mathieu_Mc(int kind, int order, double qq, double zz)
+{
+	EVAL_RESULT(gsl_sf_mathieu_Mc_e(kind, order, qq, zz, &result));
+}
+
+double gsl_sf_mathieu_Ms(int kind, int order, double qq, double zz)
+{
+	EVAL_RESULT(gsl_sf_mathieu_Ms_e(kind, order, qq, zz, &result));
 }

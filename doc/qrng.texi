@@ -17,7 +17,7 @@ The functions described in this section are declared in the header file
 * Quasi-random number generator initialization::  
 * Sampling from a quasi-random number generator::  
 * Auxiliary quasi-random number generator functions::  
-* Saving and resorting quasi-random number generator state::  
+* Saving and restoring quasi-random number generator state::  
 * Quasi-random number generator algorithms::  
 * Quasi-random number generator examples::  
 * Quasi-random number references::  
@@ -27,8 +27,8 @@ The functions described in this section are declared in the header file
 @section Quasi-random number generator initialization
 
 @deftypefun {gsl_qrng *} gsl_qrng_alloc (const gsl_qrng_type * @var{T}, unsigned int @var{d})
-@tpindex gsl_qrng
-@tpindex gsl_qrng_type
+@tindex gsl_qrng
+@tindex gsl_qrng_type
 This function returns a pointer to a newly-created instance of a
 quasi-random sequence generator of type @var{T} and dimension @var{d}.
 If there is insufficient memory to create the generator then the
@@ -79,8 +79,8 @@ fwrite (state, n, 1, stream);
 @end deftypefun
 
 
-@node Saving and resorting quasi-random number generator state
-@section Saving and resorting quasi-random number generator state
+@node Saving and restoring quasi-random number generator state
+@section Saving and restoring quasi-random number generator state
 
 @deftypefun int gsl_qrng_memcpy (gsl_qrng * @var{dest}, const gsl_qrng * @var{src})
 This function copies the quasi-random sequence generator @var{src} into the

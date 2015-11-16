@@ -6,8 +6,8 @@ main (void)
 {
   gsl_block * b = gsl_block_alloc (100);
   
-  printf ("length of block = %u\n", b->size);
-  printf ("block data address = %#x\n", b->data);
+  printf ("length of block = %zu\n", b->size);
+  printf ("block data address = %p\n", b->data);
 
   gsl_block_free (b);
   return 0;

@@ -367,7 +367,7 @@ static double approx_s(int order, double qq)
 }
 
 
-int gsl_sf_mathieu_a(int order, double qq, gsl_sf_result *result)
+int gsl_sf_mathieu_a_e(int order, double qq, gsl_sf_result *result)
 {
   int even_odd, nterms = 50, ii, counter = 0, maxcount = 1000;
   int dir = 0;  /* step direction for new search */
@@ -395,9 +395,9 @@ int gsl_sf_mathieu_a(int order, double qq, gsl_sf_result *result)
   if (qq < 0.0)
   {
       if (even_odd == 0)
-          return gsl_sf_mathieu_a(order, -qq, result);
+          return gsl_sf_mathieu_a_e(order, -qq, result);
       else
-          return gsl_sf_mathieu_b(order, -qq, result);
+          return gsl_sf_mathieu_b_e(order, -qq, result);
   }
   
   /* Compute an initial approximation for the characteristic value. */
@@ -493,7 +493,7 @@ int gsl_sf_mathieu_a(int order, double qq, gsl_sf_result *result)
 }
 
 
-int gsl_sf_mathieu_b(int order, double qq, gsl_sf_result *result)
+int gsl_sf_mathieu_b_e(int order, double qq, gsl_sf_result *result)
 {
   int even_odd, nterms = 50, ii, counter = 0, maxcount = 1000;
   int dir = 0;  /* step direction for new search */
@@ -527,9 +527,9 @@ int gsl_sf_mathieu_b(int order, double qq, gsl_sf_result *result)
   if (qq < 0.0)
   {
       if (even_odd == 0)
-          return gsl_sf_mathieu_b(order, -qq, result);
+          return gsl_sf_mathieu_b_e(order, -qq, result);
       else
-          return gsl_sf_mathieu_a(order, -qq, result);
+          return gsl_sf_mathieu_a_e(order, -qq, result);
   }
   
   /* Compute an initial approximation for the characteristic value. */
@@ -872,4 +872,19 @@ int gsl_sf_mathieu_b_array(int order_min, int order_max, double qq, gsl_sf_mathi
     }
 
   return GSL_SUCCESS;
+}
+
+
+/*-*-*-*-*-*-*-*-*-* Functions w/ Natural Prototypes *-*-*-*-*-*-*-*-*-*-*/
+
+#include "eval.h"                                                          
+
+double gsl_sf_mathieu_a(int order, double qq)
+{
+	EVAL_RESULT(gsl_sf_mathieu_a_e(order, qq, &result));
+}
+
+double gsl_sf_mathieu_b(int order, double qq)
+{
+	EVAL_RESULT(gsl_sf_mathieu_b_e(order, qq, &result));
 }

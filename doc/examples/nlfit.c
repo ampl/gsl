@@ -8,28 +8,35 @@
 
 #include "expfit.c"
 
+/* number of data points to fit */
 #define N 40
-
-void print_state (size_t iter, gsl_multifit_fdfsolver * s);
 
 int
 main (void)
 {
-  const gsl_multifit_fdfsolver_type *T;
+  const gsl_multifit_fdfsolver_type *T = gsl_multifit_fdfsolver_lmsder;
   gsl_multifit_fdfsolver *s;
-  int status;
-  unsigned int i, iter = 0;
+  int status, info;
+  size_t i;
   const size_t n = N;
   const size_t p = 3;
 
+  gsl_matrix *J = gsl_matrix_alloc(n, p);
   gsl_matrix *covar = gsl_matrix_alloc (p, p);
-  double y[N], sigma[N];
-  struct data d = { n, y, sigma};
+  double y[N], weights[N];
+  struct data d = { n, y };
   gsl_multifit_function_fdf f;
   double x_init[3] = { 1.0, 0.0, 0.0 };
   gsl_vector_view x = gsl_vector_view_array (x_init, p);
+  gsl_vector_view w = gsl_vector_view_array(weights, n);
   const gsl_rng_type * type;
   gsl_rng * r;
+  gsl_vector *res_f;
+  double chi, chi0;
+
+  const double xtol = 1e-8;
+  const double gtol = 1e-8;
+  const double ftol = 0.0;
 
   gsl_rng_env_setup();
 
@@ -37,8 +44,7 @@ main (void)
   r = gsl_rng_alloc (type);
 
   f.f = &expb_f;
-  f.df = &expb_df;
-  f.fdf = &expb_fdf;
+  f.df = &expb_df;   /* set to NULL for finite-difference Jacobian */
   f.n = n;
   f.p = p;
   f.params = &d;
@@ -48,68 +54,63 @@ main (void)
   for (i = 0; i < n; i++)
     {
       double t = i;
-      y[i] = 1.0 + 5 * exp (-0.1 * t) 
-                 + gsl_ran_gaussian (r, 0.1);
-      sigma[i] = 0.1;
-      printf ("data: %u %g %g\n", i, y[i], sigma[i]);
+      double yi = 1.0 + 5 * exp (-0.1 * t);
+      double si = 0.1 * yi;
+      double dy = gsl_ran_gaussian(r, si);
+
+      weights[i] = 1.0 / (si * si);
+      y[i] = yi + dy;
+      printf ("data: %zu %g %g\n", i, y[i], si);
     };
 
-  T = gsl_multifit_fdfsolver_lmsder;
   s = gsl_multifit_fdfsolver_alloc (T, n, p);
-  gsl_multifit_fdfsolver_set (s, &f, &x.vector);
 
-  print_state (iter, s);
+  /* initialize solver with starting point and weights */
+  gsl_multifit_fdfsolver_wset (s, &f, &x.vector, &w.vector);
 
-  do
-    {
-      iter++;
-      status = gsl_multifit_fdfsolver_iterate (s);
+  /* compute initial residual norm */
+  res_f = gsl_multifit_fdfsolver_residual(s);
+  chi0 = gsl_blas_dnrm2(res_f);
 
-      printf ("status = %s\n", gsl_strerror (status));
+  /* solve the system with a maximum of 20 iterations */
+  status = gsl_multifit_fdfsolver_driver(s, 20, xtol, gtol, ftol, &info);
 
-      print_state (iter, s);
+  gsl_multifit_fdfsolver_jac(s, J);
+  gsl_multifit_covar (J, 0.0, covar);
 
-      if (status)
-        break;
-
-      status = gsl_multifit_test_delta (s->dx, s->x,
-                                        1e-4, 1e-4);
-    }
-  while (status == GSL_CONTINUE && iter < 500);
-
-  gsl_multifit_covar (s->J, 0.0, covar);
+  /* compute final residual norm */
+  chi = gsl_blas_dnrm2(res_f);
 
 #define FIT(i) gsl_vector_get(s->x, i)
 #define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
 
+  fprintf(stderr, "summary from method '%s'\n",
+          gsl_multifit_fdfsolver_name(s));
+  fprintf(stderr, "number of iterations: %zu\n",
+          gsl_multifit_fdfsolver_niter(s));
+  fprintf(stderr, "function evaluations: %zu\n", f.nevalf);
+  fprintf(stderr, "Jacobian evaluations: %zu\n", f.nevaldf);
+  fprintf(stderr, "reason for stopping: %s\n",
+          (info == 1) ? "small step size" : "small gradient");
+  fprintf(stderr, "initial |f(x)| = %g\n", chi0);
+  fprintf(stderr, "final   |f(x)| = %g\n", chi);
+
   { 
-    double chi = gsl_blas_dnrm2(s->f);
     double dof = n - p;
     double c = GSL_MAX_DBL(1, chi / sqrt(dof)); 
 
-    printf("chisq/dof = %g\n",  pow(chi, 2.0) / dof);
+    fprintf(stderr, "chisq/dof = %g\n",  pow(chi, 2.0) / dof);
 
-    printf ("A      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
-    printf ("lambda = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
-    printf ("b      = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
+    fprintf (stderr, "A      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
+    fprintf (stderr, "lambda = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
+    fprintf (stderr, "b      = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
   }
 
-  printf ("status = %s\n", gsl_strerror (status));
+  fprintf (stderr, "status = %s\n", gsl_strerror (status));
 
   gsl_multifit_fdfsolver_free (s);
   gsl_matrix_free (covar);
+  gsl_matrix_free (J);
   gsl_rng_free (r);
   return 0;
-}
-
-void
-print_state (size_t iter, gsl_multifit_fdfsolver * s)
-{
-  printf ("iter: %3u x = % 15.8f % 15.8f % 15.8f "
-          "|f(x)| = %g\n",
-          iter,
-          gsl_vector_get (s->x, 0), 
-          gsl_vector_get (s->x, 1),
-          gsl_vector_get (s->x, 2), 
-          gsl_blas_dnrm2 (s->f));
 }

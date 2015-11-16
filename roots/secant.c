@@ -79,7 +79,12 @@ secant_iterate (void * vstate, gsl_function_fdf * fdf, double * root)
 
   double x_new, f_new, df_new;
 
-  if (state->df == 0.0)
+  if(f == 0.0)
+  {
+	  return GSL_SUCCESS;
+  }
+
+  if(df == 0.0)
     {
       GSL_ERROR("derivative is zero", GSL_EZERODIV);
     }
@@ -87,7 +92,7 @@ secant_iterate (void * vstate, gsl_function_fdf * fdf, double * root)
   x_new = x - (f / df);
 
   f_new = GSL_FN_FDF_EVAL_F(fdf, x_new) ;
-  df_new = (f_new - f) / (x_new - x) ;
+  df_new = df * ((f - f_new) / f);
 
   *root = x_new ;
 

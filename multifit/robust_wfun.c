@@ -30,6 +30,12 @@
 #define TUNING_OLS            (1.0)
 #define TUNING_WELSCH         (2.985)
 
+/*
+ * Note: for each of the weighting functions below, it
+ * is safe to call them with in-place parameters, so that
+ * input/output vectors are the same
+ */
+
 static int
 bisquare(const gsl_vector *r, gsl_vector *w)
 {

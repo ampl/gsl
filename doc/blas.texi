@@ -652,7 +652,7 @@ Here is the output from the program,
 
 @example
 $ ./a.out
-@verbatiminclude examples/blas.out
+@verbatiminclude examples/blas.txt
 @end example
 
 @node BLAS References and Further Reading

@@ -24,6 +24,8 @@ double exact = 1.3932039296856768591842462603255;
 double
 g (double *k, size_t dim, void *params)
 {
+  (void)(dim); /* avoid unused parameter warnings */
+  (void)(params);
   double A = 1.0 / (M_PI * M_PI * M_PI);
   return A / (1.0 - cos (k[0]) * cos (k[1]) * cos (k[2]));
 }

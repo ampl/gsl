@@ -21,7 +21,7 @@ main (void)
 
       d = gsl_blas_dnrm2 (&column.vector);
 
-      printf ("matrix column %d, norm = %g\n", j, d);
+      printf ("matrix column %zu, norm = %g\n", j, d);
     }
 
   gsl_matrix_free (m);

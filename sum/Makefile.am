@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslsum.la
 
 pkginclude_HEADERS = gsl_sum.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslsum_la_SOURCES = levin_u.c levin_utrunc.c work_u.c work_utrunc.c
 

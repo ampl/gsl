@@ -170,7 +170,7 @@ for multiple orders, using array-based routines.  The array-based
 routines require a preallocated workspace.
 
 @deftypefun {gsl_sf_mathieu_workspace *} gsl_sf_mathieu_alloc (size_t @var{n}, double @var{qmax})
-@tpindex gsl_sf_mathieu_workspace
+@tindex gsl_sf_mathieu_workspace
 This function returns a workspace for the array versions of the
 Mathieu routines.  The arguments @var{n} and @var{qmax} specify the
 maximum order and @math{q}-value of Mathieu functions which can be
@@ -190,8 +190,10 @@ This function frees the workspace @var{work}.
 @subsection Mathieu Function Characteristic Values
 @cindex Mathieu Function Characteristic Values
 
-@deftypefun int gsl_sf_mathieu_a (int @var{n}, double @var{q}, gsl_sf_result * @var{result})
-@deftypefunx int gsl_sf_mathieu_b (int @var{n}, double @var{q}, gsl_sf_result * @var{result})
+@deftypefun int gsl_sf_mathieu_a (int @var{n}, double @var{q})
+@deftypefunx int gsl_sf_mathieu_a_e (int @var{n}, double @var{q}, gsl_sf_result * @var{result})
+@deftypefunx int gsl_sf_mathieu_b (int @var{n}, double @var{q})
+@deftypefunx int gsl_sf_mathieu_b_e (int @var{n}, double @var{q}, gsl_sf_result * @var{result})
 These routines compute the characteristic values @math{a_n(q)},
 @math{b_n(q)} of the Mathieu functions @math{ce_n(q,x)} and
 @math{se_n(q,x)}, respectively.
@@ -210,8 +212,10 @@ These routines compute a series of Mathieu characteristic values
 @cindex @math{ce(q,x)}, Mathieu function
 @cindex @math{se(q,x)}, Mathieu function
 
-@deftypefun int gsl_sf_mathieu_ce (int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
-@deftypefunx int gsl_sf_mathieu_se (int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
+@deftypefun int gsl_sf_mathieu_ce (int @var{n}, double @var{q}, double @var{x})
+@deftypefunx int gsl_sf_mathieu_ce_e (int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
+@deftypefunx int gsl_sf_mathieu_se (int @var{n}, double @var{q}, double @var{x})
+@deftypefunx int gsl_sf_mathieu_se_e (int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
 These routines compute the angular Mathieu functions @math{ce_n(q,x)}
 and @math{se_n(q,x)}, respectively.
 @end deftypefun
@@ -228,8 +232,10 @@ These routines compute a series of the angular Mathieu functions
 @subsection Radial Mathieu Functions
 @cindex Radial Mathieu Functions
 
-@deftypefun int gsl_sf_mathieu_Mc (int @var{j}, int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
-@deftypefunx int gsl_sf_mathieu_Ms (int @var{j}, int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
+@deftypefun int gsl_sf_mathieu_Mc (int @var{j}, int @var{n}, double @var{q}, double @var{x})
+@deftypefunx int gsl_sf_mathieu_Mc_e (int @var{j}, int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
+@deftypefunx int gsl_sf_mathieu_Ms (int @var{j}, int @var{n}, double @var{q}, double @var{x})
+@deftypefunx int gsl_sf_mathieu_Ms_e (int @var{j}, int @var{n}, double @var{q}, double @var{x}, gsl_sf_result * @var{result})
 These routines compute the radial @var{j}-th kind Mathieu functions
 @c{$Mc_n^{(j)}(q,x)$}
 @math{Mc_n^@{(j)@}(q,x)} and 

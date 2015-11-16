@@ -34,7 +34,7 @@ The functions described in this chapter are defined in the header file
 
 @node The Permutation struct
 @section The Permutation struct
-@tpindex gsl_permutation
+@tindex gsl_permutation
 A permutation is defined by a structure containing two components, the size
 of the permutation and a pointer to the permutation array.  The elements
 of the permutation array are all of type @code{size_t}.  The

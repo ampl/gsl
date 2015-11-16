@@ -18,4 +18,4 @@ CLEANFILES = siman_test.out
 libgslsiman_la_SOURCES = siman.c
 pkginclude_HEADERS = gsl_siman.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)

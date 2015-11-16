@@ -107,7 +107,7 @@ gsl_sf_gegenpoly_n_e(int n, double lambda, double x, gsl_sf_result * result)
     return gsl_sf_gegenpoly_3_e(lambda, x, result);
   }
   else {
-    if(lambda == 0.0 && (x >= -1.0 || x <= 1.0)) {
+    if(lambda == 0.0 && (x >= -1.0 && x <= 1.0)) {
       /* 2 T_n(x)/n */
       const double z = n * acos(x);
       result->val = 2.0 * cos(z) / n;

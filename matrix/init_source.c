@@ -73,6 +73,7 @@ FUNCTION (gsl_matrix, calloc) (const size_t n1, const size_t n2)
     return 0;
 
   /* initialize matrix to zero */
+  memset(m->data, 0, MULTIPLICITY * n1 * n2 * sizeof(ATOMIC));
 
   for (i = 0; i < MULTIPLICITY * n1 * n2; i++)
     {

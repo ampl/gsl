@@ -1,4 +1,81 @@
-* What is new in gsl-1.16:
+* What is new in gsl-2.1:
+
+** added test suite for example programs
+
+** bug fix when compiling with #undef GSL_DISABLE_DEPRECATED
+
+** bug fix in setting libtool age versioning
+
+** bug fix in gsl_multifit_wlinear()
+
+** added gsl_multifit_linear_rcond() to compute reciprocal
+   condition number of least squares matrix
+
+** added gsl_multilarge module for large linear least squares
+   systems
+
+* What was new in gsl-2.0:
+
+** fixed bug #43258 for hypergeometric functions (Raymond Rogers)
+
+** added L-curve analysis routines for linear Tikhonov regression
+
+** add running statistics module
+
+** added bilinear and bicubic interpolation (David Zaslavsky)
+
+** added function gsl_multifit_robust_residuals to compute robust
+   fit residuals
+
+** added Steffen monotonic interpolation method (Jean-François Caron)
+
+** added new nonlinear least squares solver 'lmniel' suitable for
+   systems with large numbers of data
+
+** nonlinear least squares solver now tracks the number of function
+   and Jacobian evaluations, see example program for details
+
+** the 'fdf' field of gsl_multifit_function_fdf is now deprecated
+   and does not need to be specified for nonlinear least squares
+   problems
+
+** added extensive test suite to nonlinear least squares module,
+   resulting in a few minor bug fixes; the routine
+   gsl_multifit_fdfsolver_driver has been rewritten (with API change)
+   to handle the various error codes of the lmsder iterate
+   routine, resulting in a high level caller which is highly robust
+   for a wide class of problems
+
+** added support for sparse matrices, including a GMRES
+   iterative linear solver
+
+** added routines gsl_linalg_givens and gsl_linalg_givens_gv
+   for Givens rotations
+
+** added Tikhonov (ridge) regularization to least squares module
+   (linear and nonlinear)
+
+** removed unused argument 'n' from gsl_sf_ellint_D
+
+** merged bspline_deriv_workspace into bspline_workspace to simplify
+   bspline API; the functions
+     gsl_bspline_deriv_alloc
+     gsl_bspline_deriv_free
+   are now deprecated and will be removed in a future release.
+
+** merged ALF extension into GSL for associated Legendre functions;
+   api has changed; consequently the functions:
+     gsl_sf_legendre_Plm_array
+     gsl_sf_legendre_Plm_deriv_array
+     gsl_sf_legendre_sphPlm_array
+     gsl_sf_legendre_sphPlm_deriv_array
+     gsl_sf_legendre_array_size
+   are now deprecated and will be removed in a future release.
+
+** added function gsl_multifit_robust_weights to allow user to
+   access the various weighting functions
+
+* What was new in gsl-1.16:
 
 ** fixed error in gsl_rng_fwrite where uninitialized padding
    bytes were being written (bug #39104)

@@ -1,0 +1,234 @@
+@cindex running statistics
+@cindex online statistics
+
+This chapter describes routines for computing running statistics,
+also known as online statistics, of data. These routines are
+suitable for handling large datasets for which it may be
+inconvenient or impractical to store in memory all at once.
+The data can be processed in a single pass, one point at a time.
+Each time a data point is added to the accumulator, internal
+parameters are updated in order to compute the current mean, variance,
+standard deviation, skewness, and kurtosis. These statistics are
+exact, and are updated with numerically stable single-pass algorithms.
+The median and arbitrary quantiles are also available, however these
+calculations use algorithms which provide approximations, and grow
+more accurate as more data is added to the accumulator.
+
+The functions described in this chapter are declared in the header file
+@file{gsl_rstat.h}.
+
+@menu
+* Running Statistics Initializing the Accumulator::
+* Running Statistics Adding Data to the Accumulator::
+* Running Statistics Current Statistics::
+* Running Statistics Quantiles::      
+* Running Statistics Example programs::  
+* Running Statistics References and Further Reading::  
+@end menu
+
+@node Running Statistics Initializing the Accumulator
+@section Initializing the Accumulator
+
+@deftypefun {gsl_rstat_workspace *} gsl_rstat_alloc (void)
+This function allocates a workspace for computing running statistics.
+The size of the workspace is @math{O(1)}.
+@end deftypefun
+
+@deftypefun void gsl_rstat_free (gsl_rstat_workspace * @var{w})
+This function frees the memory associated with the workspace @var{w}.
+@end deftypefun
+
+@deftypefun int gsl_rstat_reset (gsl_rstat_workspace * @var{w})
+This function resets the workspace @var{w} to its initial state,
+so it can begin working on a new set of data.
+@end deftypefun
+
+@node Running Statistics Adding Data to the Accumulator
+@section Adding Data to the Accumulator
+
+@deftypefun int gsl_rstat_add (const double @var{x}, gsl_rstat_workspace * @var{w})
+This function adds the data point @var{x} to the statistical
+accumulator, updating calculations of the mean, variance,
+standard deviation, skewness, kurtosis, and median.
+@end deftypefun
+
+@deftypefun size_t gsl_rstat_n (gsl_rstat_workspace * @var{w})
+This function returns the number of data so far added to the accumulator.
+@end deftypefun
+
+@node Running Statistics Current Statistics
+@section Current Statistics
+
+@deftypefun double gsl_rstat_min (gsl_rstat_workspace * @var{w})
+This function returns the minimum value added to the accumulator.
+@end deftypefun
+
+@deftypefun double gsl_rstat_max (gsl_rstat_workspace * @var{w})
+This function returns the maximum value added to the accumulator.
+@end deftypefun
+
+@deftypefun double gsl_rstat_mean (gsl_rstat_workspace * @var{w})
+This function returns the mean of all data added to the accumulator,
+defined as
+@tex
+\beforedisplay
+$$
+{\Hat\mu} = {1 \over N} \sum x_i
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\Hat\mu = (1/N) \sum x_i
+@end example
+
+@end ifinfo
+@end deftypefun
+
+@deftypefun double gsl_rstat_variance (gsl_rstat_workspace * @var{w})
+This function returns the variance of all data added to the accumulator,
+defined as
+@tex
+\beforedisplay
+$$
+{\Hat\sigma}^2 = {1 \over (N-1)} \sum (x_i - {\Hat\mu})^2
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\Hat\sigma^2 = (1/(N-1)) \sum (x_i - \Hat\mu)^2
+@end example
+
+@end ifinfo
+@end deftypefun
+
+@deftypefun double gsl_rstat_sd (gsl_rstat_workspace * @var{w})
+This function returns the standard deviation of all data added to the
+accumulator, defined as the square root of the variance given above.
+@end deftypefun
+
+@deftypefun double gsl_rstat_skew (gsl_rstat_workspace * @var{w})
+This function returns the skewness of all data added to the accumulator,
+defined as
+@tex
+\beforedisplay
+$$
+skew = {1 \over N} \sum 
+ {\left( x_i - {\Hat\mu} \over {\Hat\sigma} \right)}^3
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+skew = (1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^3
+@end example
+
+@end ifinfo
+@end deftypefun
+
+@deftypefun double gsl_rstat_kurtosis (gsl_rstat_workspace * @var{w})
+This function returns the kurtosis of all data added to the accumulator,
+defined as
+@tex
+\beforedisplay
+$$
+kurtosis = \left( {1 \over N} \sum 
+ {\left(x_i - {\Hat\mu} \over {\Hat\sigma} \right)}^4 
+ \right) 
+ - 3
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+kurtosis = ((1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^4)  - 3
+@end example
+
+@end ifinfo
+@end deftypefun
+
+@deftypefun double gsl_rstat_median (gsl_rstat_workspace * @var{w})
+This function returns an estimate of the median of the data added to
+the accumulator.
+@end deftypefun
+
+@node Running Statistics Quantiles
+@section Quantiles
+
+The functions in this section estimate quantiles dynamically without
+storing the entire dataset, using the algorithm of Jain and Chlamtec, 1985.
+Only five points (markers) are stored which represent the minimum
+and maximum of the data, as well as current estimates of the
+@math{p/2}-, @math{p}-, and @math{(1+p)/2}-quantiles. Each time
+a new data point is added, the marker positions and heights are
+updated.
+
+@deftypefun {gsl_rstat_quantile_workspace *} gsl_rstat_quantile_alloc (const double @var{p})
+This function allocates a workspace for the dynamic estimation of
+@var{p}-quantiles, where @var{p} is between @math{0} and @math{1}.
+The median corresponds to @math{p = 0.5}. The size of the workspace
+is @math{O(1)}.
+@end deftypefun
+
+@deftypefun void gsl_rstat_quantile_free (gsl_rstat_quantile_workspace * @var{w})
+This function frees the memory associated with the workspace @var{w}.
+@end deftypefun
+
+@deftypefun int gsl_rstat_quantile_add (const double @var{x}, gsl_rstat_quantile_workspace * @var{w})
+This function updates the estimate of the @math{p}-quantile with
+the new data point @var{x}.
+@end deftypefun
+
+@deftypefun double gsl_rstat_quantile_get (gsl_rstat_quantile_workspace * @var{w})
+This function returns the current estimate of the @math{p}-quantile.
+@end deftypefun
+
+@node Running Statistics Example programs
+@section Examples
+
+Here is a basic example of how to use the statistical functions:
+
+@example
+@verbatiminclude examples/rstat.c
+@end example
+
+The program should produce the following output,
+
+@example
+@verbatiminclude examples/rstat.txt
+@end example
+
+@noindent
+This next program estimates the lower quartile, median and upper
+quartile from 10,000 samples of a random Rayleigh distribution,
+using the @math{P^2} algorithm of Jain and Chlamtec. For
+comparison, the exact values are also computed from the sorted
+dataset.
+
+@example
+@verbatiminclude examples/rquantile.c
+@end example
+
+The program should produce the following output,
+
+@example
+@verbatiminclude examples/rquantile.txt
+@end example
+
+@node Running Statistics References and Further Reading
+@section References and Further Reading
+
+The algorithm used to dynamically estimate @math{p}-quantiles is described
+in the paper,
+@itemize @w{}
+@item
+R. Jain and I. Chlamtac.
+@cite{The P^2 algorithm for dynamic calculation of quantiles and histograms without storing observations},
+Communications of the ACM, Volume 28 (October), Number 10, 1985,
+p. 1076-1085.
+@end itemize

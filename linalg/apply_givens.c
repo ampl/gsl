@@ -111,15 +111,3 @@ apply_givens_lq (size_t M, size_t N, gsl_matrix * Q, gsl_matrix * L,
     }
 #endif
 }
-
-inline static void
-apply_givens_vec (gsl_vector * v, size_t i, size_t j, double c, double s)
-{
-  /* Apply rotation to vector v' = G^T v */
-
-  double vi = gsl_vector_get (v, i);
-  double vj = gsl_vector_get (v, j);
-  gsl_vector_set (v, i, c * vi - s * vj);
-  gsl_vector_set (v, j, s * vi + c * vj);
-}
-

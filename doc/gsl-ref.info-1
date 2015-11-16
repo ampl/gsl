@@ -2,13 +2,20 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
+Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections and no cover texts.  A copy of the license is
-included in the section entitled "GNU Free Documentation License".
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Free Software
+Needs Free Documentation", the Front-Cover text being "A GNU Manual",
+and with the Back-Cover Text being (a) (see below).  A copy of the
+license is included in the section entitled "GNU Free Documentation
+License".
+
+   (a) The Back-Cover Text is: "You have the freedom to copy and modify
+this GNU Manual."
 INFO-DIR-SECTION Software libraries
 START-INFO-DIR-ENTRY
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
@@ -22,7 +29,7 @@ GSL
 
 This file documents the GNU Scientific Library (GSL), a collection of
 numerical routines for scientific computing.  It corresponds to release
-1.16 of the library.  Please report any errors in this manual to
+2.1 of the library.  Please report any errors in this manual to
 <bug-gsl@gnu.org>.
 
    More information about GSL can be found at the project homepage,
@@ -36,13 +43,20 @@ from sales of the manual helps support the development of GSL.
 project homepage thanks to Daisuke Tominaga.
 
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
+Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections and no cover texts.  A copy of the license is
-included in the section entitled "GNU Free Documentation License".
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Free Software
+Needs Free Documentation", the Front-Cover text being "A GNU Manual",
+and with the Back-Cover Text being (a) (see below).  A copy of the
+license is included in the section entitled "GNU Free Documentation
+License".
+
+   (a) The Back-Cover Text is: "You have the freedom to copy and modify
+this GNU Manual."
 
 * Menu:
 
@@ -67,6 +81,7 @@ included in the section entitled "GNU Free Documentation License".
 * Quasi-Random Sequences::      
 * Random Number Distributions::  
 * Statistics::                  
+* Running Statistics::                  
 * Histograms::                  
 * N-tuples::                    
 * Monte Carlo Integration::     
@@ -84,7 +99,10 @@ included in the section entitled "GNU Free Documentation License".
 * Multidimensional Minimization::  
 * Least-Squares Fitting::       
 * Nonlinear Least-Squares Fitting::  
-* Basis Splines::               
+* Basis Splines::
+* Sparse Matrices::
+* Sparse BLAS Support::
+* Sparse Linear Algebra::
 * Physical Constants::          
 * IEEE floating-point arithmetic::  
 * Debugging Numerical Programs::  
@@ -375,7 +393,7 @@ computing the value of the Bessel function J_0(x) for x=5,
 The output is shown below, and should be correct to double-precision
 accuracy,(1)
 
-     J0(5) = -1.775967713143382920e-01
+     J0(5) = -1.775967713143382642e-01
 
 The steps needed to compile this program are described in the following
 sections.
@@ -2150,11 +2168,11 @@ The following program will find these roots.
 The output of the program is,
 
      $ ./a.out
-     z0 = -0.809016994374947451 +0.587785252292473137
-     z1 = -0.809016994374947451 -0.587785252292473137
-     z2 = +0.309016994374947451 +0.951056516295153642
-     z3 = +0.309016994374947451 -0.951056516295153642
-     z4 = +1.000000000000000000 +0.000000000000000000
+     z0 = -0.809016994374947673 +0.587785252292473359
+     z1 = -0.809016994374947673 -0.587785252292473359
+     z2 = +0.309016994374947507 +0.951056516295152976
+     z3 = +0.309016994374947507 -0.951056516295152976
+     z4 = +0.999999999999999889 +0.000000000000000000
 
 which agrees with the analytic result, z_n = \exp(2 \pi n i/5).
 
@@ -2783,7 +2801,7 @@ the modified Bessel functions of fractional order, i_l(x) =
  -- Function: int gsl_sf_bessel_il_scaled_array (int LMAX, double X,
           double RESULT_ARRAY[])
      This routine computes the values of the scaled regular modified
-     cylindrical Bessel functions \exp(-|x|) i_l(x) for l from 0 to LMAX
+     spherical Bessel functions \exp(-|x|) i_l(x) for l from 0 to LMAX
      inclusive for lmax >= 0, storing the results in the array
      RESULT_ARRAY.  The values are computed using recurrence relations
      for efficiency, and therefore may differ slightly from the exact
@@ -3401,16 +3419,15 @@ File: gsl-ref.info,  Node: Legendre Form of Incomplete Elliptic Integrals,  Next
      parameters m = k^2 and \sin^2(\alpha) = k^2, with the change of
      sign n \to -n.
 
- -- Function: double gsl_sf_ellint_D (double PHI, double K, double N,
-          gsl_mode_t MODE)
- -- Function: int gsl_sf_ellint_D_e (double PHI, double K, double N,
-          gsl_mode_t MODE, gsl_sf_result * RESULT)
+ -- Function: double gsl_sf_ellint_D (double PHI, double K, gsl_mode_t
+          MODE)
+ -- Function: int gsl_sf_ellint_D_e (double PHI, double K, gsl_mode_t
+          MODE, gsl_sf_result * RESULT)
      These functions compute the incomplete elliptic integral D(\phi,k)
      which is defined through the Carlson form RD(x,y,z) by the
      following relation,
 
-          D(\phi,k,n) = (1/3)(\sin(\phi))^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
-     The argument N is not used and will be removed in a future release.
+          D(\phi,k) = (1/3)(\sin(\phi))^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
 
 
 File: gsl-ref.info,  Node: Carlson Forms,  Prev: Legendre Form of Incomplete Elliptic Integrals,  Up: Elliptic Integrals
@@ -4356,29 +4373,174 @@ File: gsl-ref.info,  Node: Associated Legendre Polynomials and Spherical Harmoni
 7.24.2 Associated Legendre Polynomials and Spherical Harmonics
 --------------------------------------------------------------
 
-The following functions compute the associated Legendre Polynomials
-P_l^m(x).  Note that this function grows combinatorially with l and can
-overflow for l larger than about 150.  There is no trouble for small m,
-but overflow occurs when m and l are both large.  Rather than allow
-overflows, these functions refuse to calculate P_l^m(x) and return
-'GSL_EOVRFLW' when they can sense that l and m are too big.
+The following functions compute the associated Legendre polynomials
+P_l^m(x) which are solutions of the differential equation
 
-   If you want to calculate a spherical harmonic, then _do not_ use
-these functions.  Instead use 'gsl_sf_legendre_sphPlm' below, which uses
-a similar recursion, but with the normalized functions.
+     (1 - x^2) d^2 P_l^m(x) / dx^2 P_l^m(x) - 2x d/dx P_l^m(x) +
+     ( l(l+1) - m^2 / (1 - x^2) ) P_l^m(x) = 0
+
+   where the degree l and order m satisfy 0 \le l and 0 \le m \le l.
+The functions P_l^m(x) grow combinatorially with l and can overflow for
+l larger than about 150.  Alternatively, one may calculate normalized
+associated Legendre polynomials.  There are a number of different
+normalization conventions, and these functions can be stably computed up
+to degree and order 2700.  The following normalizations are provided:
+'Schmidt semi-normalization'
+     Schmidt semi-normalized associated Legendre polynomials are often
+     used in the magnetics community and are defined as
+          S_l^0(x) = P_l^0(x)
+          S_l^m(x) = (-1)^m \sqrt((2(l-m)! / (l+m)!)) P_l^m(x), m > 0
+     The factor of (-1)^m is called the Condon-Shortley phase factor and
+     can be excluded if desired by setting the parameter 'csphase = 1'
+     in the functions below.
+
+'Spherical Harmonic Normalization'
+     The associated Legendre polynomials suitable for calculating
+     spherical harmonics are defined as
+          Y_l^m(x) = (-1)^m \sqrt((2l + 1) * (l-m)! / (4 \pi) / (l+m)!) P_l^m(x)
+     where again the phase factor (-1)^m can be included or excluded if
+     desired.
+
+'Full Normalization'
+     The fully normalized associated Legendre polynomials are defined as
+          N_l^m(x) = (-1)^m \sqrt((l + 1/2) * (l-m)! / (l+m)!) P_l^m(x)
+     and have the property
+          \int_(-1)^1 ( N_l^m(x) )^2 dx = 1
+
+   The normalized associated Legendre routines below use a recurrence
+relation which is stable up to a degree and order of about 2700.  Beyond
+this, the computed functions could suffer from underflow leading to
+incorrect results.  Routines are provided to compute first and second
+derivatives dP_l^m(x)/dx and d^2 P_l^m(x)/dx^2 as well as their
+alternate versions d P_l^m(\cos{\theta})/d\theta and d^2
+P_l^m(\cos{\theta})/d\theta^2.  While there is a simple scaling
+relationship between the two forms, the derivatives involving \theta are
+heavily used in spherical harmonic expansions and so these routines are
+also provided.
+
+   In the functions below, a parameter of type 'gsl_sf_legendre_t'
+specifies the type of normalization to use.  The possible values are
+'GSL_SF_LEGENDRE_NONE'
+     This specifies the computation of the unnormalized associated
+     Legendre polynomials P_l^m(x).
+
+'GSL_SF_LEGENDRE_SCHMIDT'
+     This specifies the computation of the Schmidt semi-normalized
+     associated Legendre polynomials S_l^m(x).
+
+'GSL_SF_LEGENDRE_SPHARM'
+     This specifies the computation of the spherical harmonic associated
+     Legendre polynomials Y_l^m(x).
+
+'GSL_SF_LEGENDRE_FULL'
+     This specifies the computation of the fully normalized associated
+     Legendre polynomials N_l^m(x).
+
+ -- Function: int gsl_sf_legendre_array (const gsl_sf_legendre_t NORM,
+          const size_t LMAX, const double X, double RESULT_ARRAY[])
+ -- Function: int gsl_sf_legendre_array_e (const gsl_sf_legendre_t NORM,
+          const size_t LMAX, const double X, const double CSPHASE,
+          double RESULT_ARRAY[])
+     These functions calculate all normalized associated Legendre
+     polynomials for 0 \le l \le lmax and 0 \le m \le l for |x| <= 1.
+     The NORM parameter specifies which normalization is used.  The
+     normalized P_l^m(x) values are stored in RESULT_ARRAY, whose
+     minimum size can be obtained from calling
+     'gsl_sf_legendre_array_n'.  The array index of P_l^m(x) is obtained
+     from calling 'gsl_sf_legendre_array_index(l, m)'.  To include or
+     exclude the Condon-Shortley phase factor of (-1)^m, set the
+     parameter CSPHASE to either -1 or 1 respectively in the '_e'
+     function.  This factor is included by default.
+
+ -- Function: int gsl_sf_legendre_deriv_array (const gsl_sf_legendre_t
+          NORM, const size_t LMAX, const double X, double
+          RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
+ -- Function: int gsl_sf_legendre_deriv_array_e (const gsl_sf_legendre_t
+          NORM, const size_t LMAX, const double X, const double CSPHASE,
+          double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
+     These functions calculate all normalized associated Legendre
+     functions and their first derivatives up to degree LMAX for |x| <
+     1.  The parameter NORM specifies the normalization used.  The
+     normalized P_l^m(x) values and their derivatives dP_l^m(x)/dx are
+     stored in RESULT_ARRAY and RESULT_DERIV_ARRAY respectively.  To
+     include or exclude the Condon-Shortley phase factor of (-1)^m, set
+     the parameter CSPHASE to either -1 or 1 respectively in the '_e'
+     function.  This factor is included by default.
+
+ -- Function: int gsl_sf_legendre_deriv_alt_array (const
+          gsl_sf_legendre_t NORM, const size_t LMAX, const double X,
+          double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
+ -- Function: int gsl_sf_legendre_deriv_alt_array_e (const
+          gsl_sf_legendre_t NORM, const size_t LMAX, const double X,
+          const double CSPHASE, double RESULT_ARRAY[], double
+          RESULT_DERIV_ARRAY[])
+     These functions calculate all normalized associated Legendre
+     functions and their (alternate) first derivatives up to degree LMAX
+     for |x| < 1.  The normalized P_l^m(x) values and their derivatives
+     dP_l^m(\cos{\theta})/d\theta are stored in RESULT_ARRAY and
+     RESULT_DERIV_ARRAY respectively.  To include or exclude the
+     Condon-Shortley phase factor of (-1)^m, set the parameter CSPHASE
+     to either -1 or 1 respectively in the '_e' function.  This factor
+     is included by default.
+
+ -- Function: int gsl_sf_legendre_deriv2_array (const gsl_sf_legendre_t
+          NORM, const size_t LMAX, const double X, double
+          RESULT_ARRAY[], double RESULT_DERIV_ARRAY[], double
+          RESULT_DERIV2_ARRAY[])
+ -- Function: int gsl_sf_legendre_deriv2_array_e (const
+          gsl_sf_legendre_t NORM, const size_t LMAX, const double X,
+          const double CSPHASE, double RESULT_ARRAY[], double
+          RESULT_DERIV_ARRAY[], double RESULT_DERIV2_ARRAY[])
+     These functions calculate all normalized associated Legendre
+     functions and their first and second derivatives up to degree LMAX
+     for |x| < 1.  The parameter NORM specifies the normalization used.
+     The normalized P_l^m(x), their first derivatives dP_l^m(x)/dx, and
+     their second derivatives d^2 P_l^m(x)/dx^2 are stored in
+     RESULT_ARRAY, RESULT_DERIV_ARRAY, and RESULT_DERIV2_ARRAY
+     respectively.  To include or exclude the Condon-Shortley phase
+     factor of (-1)^m, set the parameter CSPHASE to either -1 or 1
+     respectively in the '_e' function.  This factor is included by
+     default.
+
+ -- Function: int gsl_sf_legendre_deriv2_alt_array (const
+          gsl_sf_legendre_t NORM, const size_t LMAX, const double X,
+          double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[], double
+          RESULT_DERIV2_ARRAY[])
+ -- Function: int gsl_sf_legendre_deriv2_alt_array_e (const
+          gsl_sf_legendre_t NORM, const size_t LMAX, const double X,
+          const double CSPHASE, double RESULT_ARRAY[], double
+          RESULT_DERIV_ARRAY[], double RESULT_DERIV2_ARRAY[])
+     These functions calculate all normalized associated Legendre
+     functions and their (alternate) first and second derivatives up to
+     degree LMAX for |x| < 1.  The parameter NORM specifies the
+     normalization used.  The normalized P_l^m(x), their first
+     derivatives dP_l^m(\cos{\theta})/d\theta, and their second
+     derivatives d^2 P_l^m(\cos{\theta})/d\theta^2 are stored in
+     RESULT_ARRAY, RESULT_DERIV_ARRAY, and RESULT_DERIV2_ARRAY
+     respectively.  To include or exclude the Condon-Shortley phase
+     factor of (-1)^m, set the parameter CSPHASE to either -1 or 1
+     respectively in the '_e' function.  This factor is included by
+     default.
+
+ -- Function: size_t gsl_sf_legendre_array_n (const size_t LMAX)
+     This function returns the minimum array size for maximum degree
+     LMAX needed for the array versions of the associated Legendre
+     functions.  Size is calculated as the total number of P_l^m(x)
+     functions, plus extra space for precomputing multiplicative factors
+     used in the recurrence relations.
+
+ -- Function: size_t gsl_sf_legendre_array_index (const size_t L, const
+          size_t M)
+     This function returns the index into RESULT_ARRAY,
+     RESULT_DERIV_ARRAY, or RESULT_DERIV2_ARRAY corresponding to
+     P_l^m(x), P_l^{'m}(x), or P_l^{''m}(x).  The index is given by
+     l(l+1)/2 + m.
 
  -- Function: double gsl_sf_legendre_Plm (int L, int M, double X)
  -- Function: int gsl_sf_legendre_Plm_e (int L, int M, double X,
           gsl_sf_result * RESULT)
      These routines compute the associated Legendre polynomial P_l^m(x)
      for m >= 0, l >= m, |x| <= 1.
-
- -- Function: int gsl_sf_legendre_Plm_array (int LMAX, int M, double X,
-          double RESULT_ARRAY[])
- -- Function: int gsl_sf_legendre_Plm_deriv_array (int LMAX, int M,
-          double X, double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
-     These functions compute arrays of Legendre polynomials P_l^m(x) and
-     derivatives dP_l^m(x)/dx, for m >= 0, l = |m|, ..., lmax, |x| <= 1.
 
  -- Function: double gsl_sf_legendre_sphPlm (int L, int M, double X)
  -- Function: int gsl_sf_legendre_sphPlm_e (int L, int M, double X,
@@ -4389,19 +4551,26 @@ a similar recursion, but with the normalized functions.
      satisfy m >= 0, l >= m, |x| <= 1.  Theses routines avoid the
      overflows that occur for the standard normalization of P_l^m(x).
 
+ -- Function: int gsl_sf_legendre_Plm_array (int LMAX, int M, double X,
+          double RESULT_ARRAY[])
+ -- Function: int gsl_sf_legendre_Plm_deriv_array (int LMAX, int M,
+          double X, double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
+     These functions are now deprecated and will be removed in a future
+     release; see 'gsl_sf_legendre_array' and
+     'gsl_sf_legendre_deriv_array'.
+
  -- Function: int gsl_sf_legendre_sphPlm_array (int LMAX, int M, double
           X, double RESULT_ARRAY[])
  -- Function: int gsl_sf_legendre_sphPlm_deriv_array (int LMAX, int M,
           double X, double RESULT_ARRAY[], double RESULT_DERIV_ARRAY[])
-     These functions compute arrays of normalized associated Legendre
-     functions \sqrt{(2l+1)/(4\pi)} \sqrt{(l-m)!/(l+m)!} P_l^m(x), and
-     derivatives, for m >= 0, l = |m|, ..., lmax, |x| <= 1.0
+     These functions are now deprecated and will be removed in a future
+     release; see 'gsl_sf_legendre_array' and
+     'gsl_sf_legendre_deriv_array'.
 
  -- Function: int gsl_sf_legendre_array_size (const int LMAX, const int
           M)
-     This function returns the size of RESULT_ARRAY[] needed for the
-     array versions of P_l^m(x), LMAX - M + 1.  An inline version of
-     this function is used when 'HAVE_INLINE' is defined.
+     This function is now deprecated and will be removed in a future
+     release.
 
 
 File: gsl-ref.info,  Node: Conical Functions,  Next: Radial Functions for Hyperbolic Space,  Prev: Associated Legendre Polynomials and Spherical Harmonics,  Up: Legendre Functions and Spherical Harmonics
@@ -4592,9 +4761,11 @@ File: gsl-ref.info,  Node: Mathieu Function Characteristic Values,  Next: Angula
 7.26.2 Mathieu Function Characteristic Values
 ---------------------------------------------
 
- -- Function: int gsl_sf_mathieu_a (int N, double Q, gsl_sf_result *
+ -- Function: int gsl_sf_mathieu_a (int N, double Q)
+ -- Function: int gsl_sf_mathieu_a_e (int N, double Q, gsl_sf_result *
           RESULT)
- -- Function: int gsl_sf_mathieu_b (int N, double Q, gsl_sf_result *
+ -- Function: int gsl_sf_mathieu_b (int N, double Q)
+ -- Function: int gsl_sf_mathieu_b_e (int N, double Q, gsl_sf_result *
           RESULT)
      These routines compute the characteristic values a_n(q), b_n(q) of
      the Mathieu functions ce_n(q,x) and se_n(q,x), respectively.
@@ -4615,9 +4786,11 @@ File: gsl-ref.info,  Node: Angular Mathieu Functions,  Next: Radial Mathieu Func
 7.26.3 Angular Mathieu Functions
 --------------------------------
 
- -- Function: int gsl_sf_mathieu_ce (int N, double Q, double X,
+ -- Function: int gsl_sf_mathieu_ce (int N, double Q, double X)
+ -- Function: int gsl_sf_mathieu_ce_e (int N, double Q, double X,
           gsl_sf_result * RESULT)
- -- Function: int gsl_sf_mathieu_se (int N, double Q, double X,
+ -- Function: int gsl_sf_mathieu_se (int N, double Q, double X)
+ -- Function: int gsl_sf_mathieu_se_e (int N, double Q, double X,
           gsl_sf_result * RESULT)
      These routines compute the angular Mathieu functions ce_n(q,x) and
      se_n(q,x), respectively.
@@ -4638,9 +4811,11 @@ File: gsl-ref.info,  Node: Radial Mathieu Functions,  Prev: Angular Mathieu Func
 7.26.4 Radial Mathieu Functions
 -------------------------------
 
- -- Function: int gsl_sf_mathieu_Mc (int J, int N, double Q, double X,
+ -- Function: int gsl_sf_mathieu_Mc (int J, int N, double Q, double X)
+ -- Function: int gsl_sf_mathieu_Mc_e (int J, int N, double Q, double X,
           gsl_sf_result * RESULT)
- -- Function: int gsl_sf_mathieu_Ms (int J, int N, double Q, double X,
+ -- Function: int gsl_sf_mathieu_Ms (int J, int N, double Q, double X)
+ -- Function: int gsl_sf_mathieu_Ms_e (int J, int N, double Q, double X,
           gsl_sf_result * RESULT)
      These routines compute the radial J-th kind Mathieu functions
      Mc_n^{(j)}(q,x) and Ms_n^{(j)}(q,x) of order N.
@@ -5062,7 +5237,7 @@ Here are the results of running the program,
 
      $ ./a.out
      status  = success
-     J0(5.0) = -0.177596771314338292
+     J0(5.0) = -0.177596771314338264
            +/-  0.000000000000000193
      exact   = -0.177596771314338292
 
@@ -5089,7 +5264,7 @@ are not accessible.
 The results of the function are the same,
 
      $ ./a.out
-     J0(5.0) = -0.177596771314338292
+     J0(5.0) = -0.177596771314338264
      exact   = -0.177596771314338292
 
 
@@ -5124,6 +5299,11 @@ compute the special functions,
 
      Y.Y. Luke, Algorithms for the Computation of Mathematical
      Functions, Academic Press, New York (1977).
+
+     S. A. Holmes and W. E. Featherstone, A unified approach to the
+     Clenshaw summation and the recursive computation of very high
+     degree and order normalised associated Legendre functions, Journal
+     of Geodesy, 76, pg.  279-299, 2002.
 
 
 File: gsl-ref.info,  Node: Vectors and Matrices,  Next: Permutations,  Prev: Special Functions,  Up: Top
@@ -5296,8 +5476,8 @@ The following program shows how to allocate a block,
      {
        gsl_block * b = gsl_block_alloc (100);
 
-       printf ("length of block = %u\n", b->size);
-       printf ("block data address = %#x\n", b->data);
+       printf ("length of block = %zu\n", b->size);
+       printf ("block data address = %p\n", b->data);
 
        gsl_block_free (b);
        return 0;
@@ -5433,13 +5613,15 @@ functions is controlled by the global integer variable
 'gsl_check_range' to zero.  Due to function-call overhead, there is less
 benefit in disabling range checking here than for inline functions.
 
- -- Function: double gsl_vector_get (const gsl_vector * V, size_t I)
+ -- Function: double gsl_vector_get (const gsl_vector * V, const size_t
+          I)
      This function returns the I-th element of a vector V.  If I lies
      outside the allowed range of 0 to N-1 then the error handler is
      invoked and 0 is returned.  An inline version of this function is
      used when 'HAVE_INLINE' is defined.
 
- -- Function: void gsl_vector_set (gsl_vector * V, size_t I, double X)
+ -- Function: void gsl_vector_set (gsl_vector * V, const size_t I,
+          double X)
      This function sets the value of the I-th element of a vector V to
      X.  If I lies outside the allowed range of 0 to N-1 then the error
      handler is invoked.  An inline version of this function is used
@@ -6042,15 +6224,15 @@ accessed by the function 'gsl_matrix_get(m,i,j)' and
 
 where TDA is the physical row-length of the matrix.
 
- -- Function: double gsl_matrix_get (const gsl_matrix * M, size_t I,
-          size_t J)
+ -- Function: double gsl_matrix_get (const gsl_matrix * M, const size_t
+          I, const size_t J)
      This function returns the (i,j)-th element of a matrix M.  If I or
      J lie outside the allowed range of 0 to N1-1 and 0 to N2-1 then the
      error handler is invoked and 0 is returned.  An inline version of
      this function is used when 'HAVE_INLINE' is defined.
 
- -- Function: void gsl_matrix_set (gsl_matrix * M, size_t I, size_t J,
-          double X)
+ -- Function: void gsl_matrix_set (gsl_matrix * M, const size_t I, const
+          size_t J, double X)
      This function sets the value of the (i,j)-th element of a matrix M
      to X.  If I or J lies outside the allowed range of 0 to N1-1 and 0
      to N2-1 then the error handler is invoked.  An inline version of
@@ -6694,7 +6876,7 @@ program computes the column norms of a matrix.
 
            d = gsl_blas_dnrm2 (&column.vector);
 
-           printf ("matrix column %d, norm = %g\n", j, d);
+           printf ("matrix column %zu, norm = %g\n", j, d);
          }
 
        gsl_matrix_free (m);
@@ -7051,263 +7233,4 @@ many applications in the theory of permutations.
           gsl_permutation * Q)
      This function counts the number of cycles in the permutation Q,
      given in canonical form.
-
-
-File: gsl-ref.info,  Node: Permutation Examples,  Next: Permutation References and Further Reading,  Prev: Permutations in cyclic form,  Up: Permutations
-
-9.9 Examples
-============
-
-The example program below creates a random permutation (by shuffling the
-elements of the identity) and finds its inverse.
-
-     #include <stdio.h>
-     #include <gsl/gsl_rng.h>
-     #include <gsl/gsl_randist.h>
-     #include <gsl/gsl_permutation.h>
-
-     int
-     main (void)
-     {
-       const size_t N = 10;
-       const gsl_rng_type * T;
-       gsl_rng * r;
-
-       gsl_permutation * p = gsl_permutation_alloc (N);
-       gsl_permutation * q = gsl_permutation_alloc (N);
-
-       gsl_rng_env_setup();
-       T = gsl_rng_default;
-       r = gsl_rng_alloc (T);
-
-       printf ("initial permutation:");
-       gsl_permutation_init (p);
-       gsl_permutation_fprintf (stdout, p, " %u");
-       printf ("\n");
-
-       printf (" random permutation:");
-       gsl_ran_shuffle (r, p->data, N, sizeof(size_t));
-       gsl_permutation_fprintf (stdout, p, " %u");
-       printf ("\n");
-
-       printf ("inverse permutation:");
-       gsl_permutation_inverse (q, p);
-       gsl_permutation_fprintf (stdout, q, " %u");
-       printf ("\n");
-
-       gsl_permutation_free (p);
-       gsl_permutation_free (q);
-       gsl_rng_free (r);
-
-       return 0;
-     }
-
-Here is the output from the program,
-
-     $ ./a.out
-     initial permutation: 0 1 2 3 4 5 6 7 8 9
-      random permutation: 1 3 5 2 7 6 0 4 9 8
-     inverse permutation: 6 0 3 1 7 2 5 4 9 8
-
-The random permutation 'p[i]' and its inverse 'q[i]' are related through
-the identity 'p[q[i]] = i', which can be verified from the output.
-
-   The next example program steps forwards through all possible third
-order permutations, starting from the identity,
-
-     #include <stdio.h>
-     #include <gsl/gsl_permutation.h>
-
-     int
-     main (void)
-     {
-       gsl_permutation * p = gsl_permutation_alloc (3);
-
-       gsl_permutation_init (p);
-
-       do
-        {
-           gsl_permutation_fprintf (stdout, p, " %u");
-           printf ("\n");
-        }
-       while (gsl_permutation_next(p) == GSL_SUCCESS);
-
-       gsl_permutation_free (p);
-
-       return 0;
-     }
-
-Here is the output from the program,
-
-     $ ./a.out
-      0 1 2
-      0 2 1
-      1 0 2
-      1 2 0
-      2 0 1
-      2 1 0
-
-The permutations are generated in lexicographic order.  To reverse the
-sequence, begin with the final permutation (which is the reverse of the
-identity) and replace 'gsl_permutation_next' with
-'gsl_permutation_prev'.
-
-
-File: gsl-ref.info,  Node: Permutation References and Further Reading,  Prev: Permutation Examples,  Up: Permutations
-
-9.10 References and Further Reading
-===================================
-
-The subject of permutations is covered extensively in Knuth's 'Sorting
-and Searching',
-
-     Donald E. Knuth, 'The Art of Computer Programming: Sorting and
-     Searching' (Vol 3, 3rd Ed, 1997), Addison-Wesley, ISBN 0201896850.
-
-For the definition of the "canonical form" see,
-
-     Donald E. Knuth, 'The Art of Computer Programming: Fundamental
-     Algorithms' (Vol 1, 3rd Ed, 1997), Addison-Wesley, ISBN 0201896850.
-     Section 1.3.3, 'An Unusual Correspondence', p.178-179.
-
-
-File: gsl-ref.info,  Node: Combinations,  Next: Multisets,  Prev: Permutations,  Up: Top
-
-10 Combinations
-***************
-
-This chapter describes functions for creating and manipulating
-combinations.  A combination c is represented by an array of k integers
-in the range 0 to n-1, where each value c_i occurs at most once.  The
-combination c corresponds to indices of k elements chosen from an n
-element vector.  Combinations are useful for iterating over all
-k-element subsets of a set.
-
-   The functions described in this chapter are defined in the header
-file 'gsl_combination.h'.
-
-* Menu:
-
-* The Combination struct::      
-* Combination allocation::      
-* Accessing combination elements::  
-* Combination properties::      
-* Combination functions::       
-* Reading and writing combinations::  
-* Combination Examples::        
-* Combination References and Further Reading::
-
-
-File: gsl-ref.info,  Node: The Combination struct,  Next: Combination allocation,  Up: Combinations
-
-10.1 The Combination struct
-===========================
-
-A combination is defined by a structure containing three components, the
-values of n and k, and a pointer to the combination array.  The elements
-of the combination array are all of type 'size_t', and are stored in
-increasing order.  The 'gsl_combination' structure looks like this,
-
-     typedef struct
-     {
-       size_t n;
-       size_t k;
-       size_t *data;
-     } gsl_combination;
-
-
-File: gsl-ref.info,  Node: Combination allocation,  Next: Accessing combination elements,  Prev: The Combination struct,  Up: Combinations
-
-10.2 Combination allocation
-===========================
-
- -- Function: gsl_combination * gsl_combination_alloc (size_t N, size_t
-          K)
-     This function allocates memory for a new combination with
-     parameters N, K.  The combination is not initialized and its
-     elements are undefined.  Use the function 'gsl_combination_calloc'
-     if you want to create a combination which is initialized to the
-     lexicographically first combination.  A null pointer is returned if
-     insufficient memory is available to create the combination.
-
- -- Function: gsl_combination * gsl_combination_calloc (size_t N, size_t
-          K)
-     This function allocates memory for a new combination with
-     parameters N, K and initializes it to the lexicographically first
-     combination.  A null pointer is returned if insufficient memory is
-     available to create the combination.
-
- -- Function: void gsl_combination_init_first (gsl_combination * C)
-     This function initializes the combination C to the
-     lexicographically first combination, i.e.  (0,1,2,...,k-1).
-
- -- Function: void gsl_combination_init_last (gsl_combination * C)
-     This function initializes the combination C to the
-     lexicographically last combination, i.e.  (n-k,n-k+1,...,n-1).
-
- -- Function: void gsl_combination_free (gsl_combination * C)
-     This function frees all the memory used by the combination C.
-
- -- Function: int gsl_combination_memcpy (gsl_combination * DEST, const
-          gsl_combination * SRC)
-     This function copies the elements of the combination SRC into the
-     combination DEST.  The two combinations must have the same size.
-
-
-File: gsl-ref.info,  Node: Accessing combination elements,  Next: Combination properties,  Prev: Combination allocation,  Up: Combinations
-
-10.3 Accessing combination elements
-===================================
-
-The following function can be used to access the elements of a
-combination.
-
- -- Function: size_t gsl_combination_get (const gsl_combination * C,
-          const size_t I)
-     This function returns the value of the I-th element of the
-     combination C.  If I lies outside the allowed range of 0 to K-1
-     then the error handler is invoked and 0 is returned.  An inline
-     version of this function is used when 'HAVE_INLINE' is defined.
-
-
-File: gsl-ref.info,  Node: Combination properties,  Next: Combination functions,  Prev: Accessing combination elements,  Up: Combinations
-
-10.4 Combination properties
-===========================
-
- -- Function: size_t gsl_combination_n (const gsl_combination * C)
-     This function returns the range (n) of the combination C.
-
- -- Function: size_t gsl_combination_k (const gsl_combination * C)
-     This function returns the number of elements (k) in the combination
-     C.
-
- -- Function: size_t * gsl_combination_data (const gsl_combination * C)
-     This function returns a pointer to the array of elements in the
-     combination C.
-
- -- Function: int gsl_combination_valid (gsl_combination * C)
-     This function checks that the combination C is valid.  The K
-     elements should lie in the range 0 to N-1, with each value
-     occurring once at most and in increasing order.
-
-
-File: gsl-ref.info,  Node: Combination functions,  Next: Reading and writing combinations,  Prev: Combination properties,  Up: Combinations
-
-10.5 Combination functions
-==========================
-
- -- Function: int gsl_combination_next (gsl_combination * C)
-     This function advances the combination C to the next combination in
-     lexicographic order and returns 'GSL_SUCCESS'.  If no further
-     combinations are available it returns 'GSL_FAILURE' and leaves C
-     unmodified.  Starting with the first combination and repeatedly
-     applying this function will iterate through all possible
-     combinations of a given order.
-
- -- Function: int gsl_combination_prev (gsl_combination * C)
-     This function steps backwards from the combination C to the
-     previous combination in lexicographic order, returning
-     'GSL_SUCCESS'.  If no previous combination is available it returns
-     'GSL_FAILURE' and leaves C unmodified.
 

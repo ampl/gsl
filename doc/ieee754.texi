@@ -232,7 +232,7 @@ necessary machine-specific initializations for you when you call the
 function @code{gsl_ieee_env_setup}.
 
 @deftypefun void gsl_ieee_env_setup ()
-@vrindex @env{GSL_IEEE_MODE}
+@vindex @env{GSL_IEEE_MODE}
 This function reads the environment variable @code{GSL_IEEE_MODE} and
 attempts to set up the corresponding specified IEEE modes.  The
 environment variable should be a list of keywords, separated by

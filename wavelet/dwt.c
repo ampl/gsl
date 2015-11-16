@@ -44,7 +44,7 @@ binary_logn (const size_t n)
       logn++;
     }
 
-  ntest = (1 << logn);
+  ntest = ((size_t)1 << logn);
 
   if (n != ntest)
     {

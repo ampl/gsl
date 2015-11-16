@@ -61,6 +61,7 @@ sel_func (void *ntuple_data, void *params)
 double
 val_func (void *ntuple_data, void *params)
 {
+  (void)(params); /* avoid unused parameter warning */
   struct data * data = (struct data *) ntuple_data;  
   double x, y, z;
 

@@ -6,7 +6,7 @@ pkginclude_HEADERS = gsl_roots.h
 
 noinst_HEADERS = roots.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslroots_la_SOURCES = bisection.c brent.c falsepos.c	newton.c  secant.c steffenson.c	convergence.c fsolver.c fdfsolver.c 
 

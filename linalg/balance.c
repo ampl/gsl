@@ -19,7 +19,7 @@
 
 /* Balance a general matrix by scaling the columns
  *
- * B =  A D
+ * A_new = A D^{-1}
  *
  * where D is a diagonal matrix
  */

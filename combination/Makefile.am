@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslcombination.la
 
 pkginclude_HEADERS = gsl_combination.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslcombination_la_SOURCES = init.c file.c combination.c inline.c
 

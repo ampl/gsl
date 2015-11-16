@@ -301,7 +301,7 @@ The output lists the 5 smallest values, in ascending order,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/sortsmall.out
+@verbatiminclude examples/sortsmall.txt
 @end example
 
 @node Sorting References and Further Reading

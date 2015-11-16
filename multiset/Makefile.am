@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslmultiset.la
 
 pkginclude_HEADERS = gsl_multiset.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslmultiset_la_SOURCES = init.c file.c multiset.c inline.c
 

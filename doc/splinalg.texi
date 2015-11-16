@@ -1,0 +1,296 @@
+@cindex sparse linear algebra
+@cindex linear algebra, sparse
+
+This chapter describes functions for solving sparse linear systems
+of equations. The library provides linear algebra routines which
+operate directly on the @code{gsl_spmatrix} and @code{gsl_vector}
+objects.
+
+@noindent
+The functions described in this chapter are declared in the header file
+@file{gsl_splinalg.h}.
+
+@menu
+* Overview of Sparse Linear Algebra::
+* Sparse Iterative Solvers::
+* Sparse Linear Algebra Examples::
+* Sparse Linear Algebra References and Further Reading::
+@end menu
+
+@node Overview of Sparse Linear Algebra
+@section Overview
+@cindex sparse linear algebra, overview
+
+This chapter is primarily concerned with the solution of the
+linear system
+@tex
+\beforedisplay
+$$
+A x = b
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+A x = b
+@end example
+@end ifinfo
+where @math{A} is a general square @math{n}-by-@math{n} non-singular
+sparse matrix, @math{x} is an unknown @math{n}-by-@math{1} vector, and
+@math{b} is a given @math{n}-by-1 right hand side vector. There exist
+many methods for solving such sparse linear systems, which broadly
+fall into either direct or iterative categories. Direct methods include
+LU and QR decompositions, while iterative methods start with an
+initial guess for the vector @math{x} and update the guess through
+iteration until convergence. GSL does not currently provide any
+direct sparse solvers.
+
+@node Sparse Iterative Solvers
+@section Sparse Iterative Solvers
+@cindex sparse matrices, iterative solvers
+@cindex sparse linear algebra, iterative solvers
+@cindex sparse, iterative solvers
+
+@menu
+* Sparse Iterative Solver Overview::
+* Sparse Iterative Solvers Types::
+* Iterating the Sparse Linear System::
+@end menu
+
+@node Sparse Iterative Solver Overview
+@subsection Overview
+
+Many practical iterative methods of solving large @math{n}-by-@math{n}
+sparse linear systems involve projecting an approximate solution for
+@var{x} onto a subspace of @math{{\bf R}^n}. If we define a @math{m}-dimensional
+subspace @math{{\cal K}} as the subspace of approximations to the solution
+@var{x}, then @math{m} constraints must be imposed to determine
+the next approximation. These @math{m} constraints define another
+@math{m}-dimensional subspace denoted by @math{{\cal L}}. The
+subspace dimension @math{m} is typically chosen to be much smaller than
+@math{n} in order to reduce the computational
+effort needed to generate the next approximate solution vector.
+The many iterative algorithms which exist differ mainly
+in their choice of @math{{\cal K}} and @math{{\cal L}}.
+
+@node Sparse Iterative Solvers Types
+@subsection Types of Sparse Iterative Solvers
+
+The sparse linear algebra library provides the following types
+of iterative solvers:
+
+@deffn {Sparse Iterative Type} gsl_splinalg_itersolve_gmres
+@cindex gmres
+This specifies the Generalized Minimum Residual Method (GMRES).
+This is a projection method using @math{{\cal K} = {\cal K}_m}
+and @math{{\cal L} = A {\cal K}_m} where @math{{\cal K}_m} is
+the @math{m}-th Krylov subspace
+@tex
+\beforedisplay
+$$
+{\cal K}_m = span \left\{ r_0, A r_0, ..., A^{m-1} r_0 \right\}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+K_m = span( r_0, A r_0, ..., A^(m-1) r_0)
+@end example
+@end ifinfo
+and @math{r_0 = b - A x_0} is the residual vector of the initial guess
+@math{x_0}. If @math{m} is set equal to @math{n}, then the Krylov
+subspace is @math{{\bf R}^n} and GMRES will provide the exact solution
+@var{x}.  However, the goal is for the method to arrive at a very good
+approximation to @var{x} using a much smaller subspace @math{{\cal K}_m}. By
+default, the GMRES method selects @math{m = MIN(n,10)} but the user
+may specify a different value for @math{m}. The GMRES storage
+requirements grow as @math{O(n(m+1))} and the number of flops
+grow as @math{O(4 m^2 n - 4 m^3 / 3)}.
+
+In the below function @code{gsl_splinalg_itersolve_iterate}, one
+GMRES iteration is defined as projecting the approximate solution
+vector onto each Krylov subspace @math{{\cal K}_1, ..., {\cal K}_m},
+and so @math{m} can be kept smaller by "restarting" the method
+and calling @code{gsl_splinalg_itersolve_iterate} multiple times,
+providing the updated approximation @var{x} to each new call. If
+the method is not adequately converging, the user may try increasing
+the parameter @math{m}.
+
+GMRES is considered a robust general purpose iterative solver, however
+there are cases where the method stagnates if the matrix is not
+positive-definite and fails to reduce the residual until the very last
+projection onto the subspace @math{{\cal K}_n = {\bf R}^n}. In these
+cases, preconditioning the linear system can help, but GSL does not
+currently provide any preconditioners.
+@end deffn
+
+@node Iterating the Sparse Linear System
+@subsection Iterating the Sparse Linear System
+
+The following functions are provided to allocate storage for the
+sparse linear solvers and iterate the system to a solution.
+
+@deftypefun {gsl_splinalg_itersolve *} gsl_splinalg_itersolve_alloc (const gsl_splinalg_itersolve_type * @var{T}, const size_t @var{n}, const size_t @var{m})
+This function allocates a workspace for the iterative solution of
+@var{n}-by-@var{n} sparse matrix systems. The iterative solver type
+is specified by @var{T}. The argument @var{m} specifies the size
+of the solution candidate subspace @math{{\cal K}_m}. The dimension
+@var{m} may be set to 0 in which case a reasonable default value is used.
+@end deftypefun
+
+@deftypefun void gsl_splinalg_itersolve_free (gsl_splinalg_itersolve * @var{w})
+This function frees the memory associated with the workspace @var{w}.
+@end deftypefun
+
+@deftypefun {const char *} gsl_splinalg_itersolve_name (const gsl_splinalg_itersolve * @var{w})
+This function returns a string pointer to the name of the solver.
+@end deftypefun
+
+@deftypefun int gsl_splinalg_itersolve_iterate (const gsl_spmatrix *@var{A}, const gsl_vector *@var{b}, const double @var{tol}, gsl_vector *@var{x}, gsl_splinalg_itersolve *@var{w})
+This function performs one iteration of the iterative method for
+the sparse linear system specfied by the matrix @var{A}, right hand
+side vector @var{b} and solution vector @var{x}. On input, @var{x}
+must be set to an initial guess for the solution. On output,
+@var{x} is updated to give the current solution estimate. The
+parameter @var{tol} specifies the relative tolerance between the residual
+norm and norm of @var{b} in order to check for convergence.
+When the following condition is satisfied:
+@tex
+\beforedisplay
+$$
+|| A x - b || \le tol \times || b ||
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+|| A x - b || <= tol * || b ||
+@end example
+@end ifinfo
+the method has converged, the function returns @code{GSL_SUCCESS} and
+the final solution is provided in @var{x}. Otherwise, the function
+returns @code{GSL_CONTINUE} to signal that more iterations are
+required. Here, @math{|| \cdot ||} represents the Euclidean norm.
+The input matrix @var{A} may be in triplet or compressed column
+format.
+@end deftypefun
+
+@deftypefun double gsl_splinalg_itersolve_normr (const gsl_splinalg_itersolve *@var{w})
+This function returns the current residual norm
+@math{||r|| = ||A x - b||}, which is updated after each call to
+@code{gsl_splinalg_itersolve_iterate}.
+@end deftypefun
+
+@node Sparse Linear Algebra Examples
+@section Examples
+@cindex sparse linear algebra, examples
+
+This example program demonstrates the sparse linear algebra routines on
+the solution of a simple 1D Poisson equation on @math{[0,1]}:
+@tex
+\beforedisplay
+$$
+{d^2 u(x) \over dx^2} = f(x) = -\pi^2 \sin{(\pi x)}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+u''(x) = f(x) = -\pi^2 \sin(\pi x)
+@end example
+@end ifinfo
+with boundary conditions @math{u(0) = u(1) = 0}. The analytic solution of
+this simple problem is @math{u(x) = \sin{\pi x}}. We will solve this
+problem by finite differencing the left hand side to give
+@tex
+\beforedisplay
+$$
+{1 \over h^2} \left( u_{i+1} - 2 u_i + u_{i-1} \right) = f_i
+$$
+\afterdisplay
+@end tex
+@ifinfo
+@example
+1/h^2 ( u_(i+1) - 2 u_i + u_(i-1) ) = f_i
+@end example
+@end ifinfo
+Defining a grid of @math{N} points, @math{h = 1/(N-1)}. In the finite
+difference equation above, @math{u_0 = u_{N-1} = 0} are known from
+the boundary conditions, so we will only put the equations for
+@math{i = 1, ..., N-2} into the matrix system. The resulting
+@math{(N-2) \times (N-2)} matrix equation is
+@tex
+\beforedisplay
+$$
+{1 \over h^2}
+\left(
+\matrix{
+-2 & 1 & 0 & 0 & \ldots & 0 \cr
+1 & -2 & 1 & 0 & \ldots & 0 \cr
+0 & 1 & -2 & 1 & \ldots & 0 \cr
+\vdots & \vdots & \ddots & \ddots & \ddots & \vdots \cr
+0 & \ldots & \ldots & 1 & -2 & 1 \cr
+0 & \ldots & \ldots & \ldots & 1 & -2 \cr
+}
+\right)
+\left(
+\matrix{
+u_1 \cr
+u_2 \cr
+u_3 \cr
+\vdots \cr
+u_{N-3} \cr
+u_{N-2} \cr
+}
+\right) =
+\left(
+\matrix{
+f_1 \cr
+f_2 \cr
+f_3 \cr
+\vdots \cr
+f_{N-3} \cr
+f_{N-2} \cr
+}
+\right)
+$$
+\afterdisplay
+@end tex
+An example program which constructs and solves this system is given below.
+The system is solved using the iterative GMRES solver. Here is
+the output of the program:
+
+@example
+iter 0 residual = 4.297275996844e-11
+Converged
+@end example
+@noindent
+showing that the method converged in a single iteration.
+The calculated solution is shown in the following plot.
+
+@page
+@iftex
+@center @image{sparse_poisson,6in}
+@end iftex
+
+@example
+@verbatiminclude examples/poisson.c
+@end example
+
+@node Sparse Linear Algebra References and Further Reading
+@section References and Further Reading
+@cindex sparse linear algebra, references
+
+The implementation of the GMRES iterative solver closely follows
+the publications
+
+@itemize @w{}
+@item
+H. F. Walker, Implementation of the GMRES method using
+Householder transformations, SIAM J. Sci. Stat. Comput.
+9(1), 1988.
+
+@item
+Y. Saad, Iterative methods for sparse linear systems, 2nd edition,
+SIAM, 2003.
+@end itemize

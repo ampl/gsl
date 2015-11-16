@@ -1120,7 +1120,7 @@ hyperg_1F1_ab_posint(const int a, const int b, const double x, gsl_sf_result * r
        * the values near the line b=2a+x. Then recurse
        * forward on a from a0.
        */
-      int a0 = ceil(0.5*(b-x));
+      int a0 = (int) ceil(0.5*(b-x));
       double Ma0b;    /* M(a0,b)   */
       double Ma0bp1;  /* M(a0,b+1) */
       double Ma0p1b;  /* M(a0+1,b) */

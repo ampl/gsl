@@ -20,7 +20,7 @@ dofit(const gsl_multifit_robust_type *T,
 int
 main (int argc, char **argv)
 {
-  int i;
+  size_t i;
   size_t n;
   const size_t p = 2; /* linear fit */
   gsl_matrix *X, *cov;

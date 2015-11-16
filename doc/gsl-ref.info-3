@@ -2,17 +2,299 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
+Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections and no cover texts.  A copy of the license is
-included in the section entitled "GNU Free Documentation License".
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Free Software
+Needs Free Documentation", the Front-Cover text being "A GNU Manual",
+and with the Back-Cover Text being (a) (see below).  A copy of the
+license is included in the section entitled "GNU Free Documentation
+License".
+
+   (a) The Back-Cover Text is: "You have the freedom to copy and modify
+this GNU Manual."
 INFO-DIR-SECTION Software libraries
 START-INFO-DIR-ENTRY
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
 END-INFO-DIR-ENTRY
+
+
+File: gsl-ref.info,  Node: The Levy alpha-Stable Distributions,  Next: The Levy skew alpha-Stable Distribution,  Prev: The Landau Distribution,  Up: Random Number Distributions
+
+20.12 The Levy alpha-Stable Distributions
+=========================================
+
+ -- Function: double gsl_ran_levy (const gsl_rng * R, double C, double
+          ALPHA)
+     This function returns a random variate from the Levy symmetric
+     stable distribution with scale C and exponent ALPHA.  The symmetric
+     stable probability distribution is defined by a Fourier transform,
+
+          p(x) = {1 \over 2 \pi} \int_{-\infty}^{+\infty} dt \exp(-it x - |c t|^alpha)
+
+     There is no explicit solution for the form of p(x) and the library
+     does not define a corresponding 'pdf' function.  For \alpha = 1 the
+     distribution reduces to the Cauchy distribution.  For \alpha = 2 it
+     is a Gaussian distribution with \sigma = \sqrt{2} c.  For \alpha <
+     1 the tails of the distribution become extremely wide.
+
+     The algorithm only works for 0 < alpha <= 2.
+
+
+
+File: gsl-ref.info,  Node: The Levy skew alpha-Stable Distribution,  Next: The Gamma Distribution,  Prev: The Levy alpha-Stable Distributions,  Up: Random Number Distributions
+
+20.13 The Levy skew alpha-Stable Distribution
+=============================================
+
+ -- Function: double gsl_ran_levy_skew (const gsl_rng * R, double C,
+          double ALPHA, double BETA)
+     This function returns a random variate from the Levy skew stable
+     distribution with scale C, exponent ALPHA and skewness parameter
+     BETA.  The skewness parameter must lie in the range [-1,1].  The
+     Levy skew stable probability distribution is defined by a Fourier
+     transform,
+
+          p(x) = {1 \over 2 \pi} \int_{-\infty}^{+\infty} dt \exp(-it x - |c t|^alpha (1-i beta sign(t) tan(pi alpha/2)))
+
+     When \alpha = 1 the term \tan(\pi \alpha/2) is replaced by
+     -(2/\pi)\log|t|.  There is no explicit solution for the form of
+     p(x) and the library does not define a corresponding 'pdf'
+     function.  For \alpha = 2 the distribution reduces to a Gaussian
+     distribution with \sigma = \sqrt{2} c and the skewness parameter
+     has no effect.  For \alpha < 1 the tails of the distribution become
+     extremely wide.  The symmetric distribution corresponds to \beta =
+     0.
+
+     The algorithm only works for 0 < alpha <= 2.
+
+   The Levy alpha-stable distributions have the property that if N
+alpha-stable variates are drawn from the distribution p(c, \alpha,
+\beta) then the sum Y = X_1 + X_2 + \dots + X_N will also be distributed
+as an alpha-stable variate, p(N^(1/\alpha) c, \alpha, \beta).
+
+
+
+File: gsl-ref.info,  Node: The Gamma Distribution,  Next: The Flat (Uniform) Distribution,  Prev: The Levy skew alpha-Stable Distribution,  Up: Random Number Distributions
+
+20.14 The Gamma Distribution
+============================
+
+ -- Function: double gsl_ran_gamma (const gsl_rng * R, double A, double
+          B)
+     This function returns a random variate from the gamma distribution.
+     The distribution function is,
+
+          p(x) dx = {1 \over \Gamma(a) b^a} x^{a-1} e^{-x/b} dx
+
+     for x > 0.
+
+     The gamma distribution with an integer parameter A is known as the
+     Erlang distribution.
+
+     The variates are computed using the Marsaglia-Tsang fast gamma
+     method.  This function for this method was previously called
+     'gsl_ran_gamma_mt' and can still be accessed using this name.
+
+ -- Function: double gsl_ran_gamma_knuth (const gsl_rng * R, double A,
+          double B)
+     This function returns a gamma variate using the algorithms from
+     Knuth (vol 2).
+
+ -- Function: double gsl_ran_gamma_pdf (double X, double A, double B)
+     This function computes the probability density p(x) at X for a
+     gamma distribution with parameters A and B, using the formula given
+     above.
+
+
+ -- Function: double gsl_cdf_gamma_P (double X, double A, double B)
+ -- Function: double gsl_cdf_gamma_Q (double X, double A, double B)
+ -- Function: double gsl_cdf_gamma_Pinv (double P, double A, double B)
+ -- Function: double gsl_cdf_gamma_Qinv (double Q, double A, double B)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the gamma distribution with parameters
+     A and B.
+
+
+File: gsl-ref.info,  Node: The Flat (Uniform) Distribution,  Next: The Lognormal Distribution,  Prev: The Gamma Distribution,  Up: Random Number Distributions
+
+20.15 The Flat (Uniform) Distribution
+=====================================
+
+ -- Function: double gsl_ran_flat (const gsl_rng * R, double A, double
+          B)
+     This function returns a random variate from the flat (uniform)
+     distribution from A to B.  The distribution is,
+
+          p(x) dx = {1 \over (b-a)} dx
+
+     if a <= x < b and 0 otherwise.
+
+ -- Function: double gsl_ran_flat_pdf (double X, double A, double B)
+     This function computes the probability density p(x) at X for a
+     uniform distribution from A to B, using the formula given above.
+
+
+ -- Function: double gsl_cdf_flat_P (double X, double A, double B)
+ -- Function: double gsl_cdf_flat_Q (double X, double A, double B)
+ -- Function: double gsl_cdf_flat_Pinv (double P, double A, double B)
+ -- Function: double gsl_cdf_flat_Qinv (double Q, double A, double B)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for a uniform distribution from A to B.
+
+
+File: gsl-ref.info,  Node: The Lognormal Distribution,  Next: The Chi-squared Distribution,  Prev: The Flat (Uniform) Distribution,  Up: Random Number Distributions
+
+20.16 The Lognormal Distribution
+================================
+
+ -- Function: double gsl_ran_lognormal (const gsl_rng * R, double ZETA,
+          double SIGMA)
+     This function returns a random variate from the lognormal
+     distribution.  The distribution function is,
+
+          p(x) dx = {1 \over x \sqrt{2 \pi \sigma^2} } \exp(-(\ln(x) - \zeta)^2/2 \sigma^2) dx
+
+     for x > 0.
+
+ -- Function: double gsl_ran_lognormal_pdf (double X, double ZETA,
+          double SIGMA)
+     This function computes the probability density p(x) at X for a
+     lognormal distribution with parameters ZETA and SIGMA, using the
+     formula given above.
+
+
+ -- Function: double gsl_cdf_lognormal_P (double X, double ZETA, double
+          SIGMA)
+ -- Function: double gsl_cdf_lognormal_Q (double X, double ZETA, double
+          SIGMA)
+ -- Function: double gsl_cdf_lognormal_Pinv (double P, double ZETA,
+          double SIGMA)
+ -- Function: double gsl_cdf_lognormal_Qinv (double Q, double ZETA,
+          double SIGMA)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the lognormal distribution with
+     parameters ZETA and SIGMA.
+
+
+File: gsl-ref.info,  Node: The Chi-squared Distribution,  Next: The F-distribution,  Prev: The Lognormal Distribution,  Up: Random Number Distributions
+
+20.17 The Chi-squared Distribution
+==================================
+
+The chi-squared distribution arises in statistics.  If Y_i are n
+independent Gaussian random variates with unit variance then the
+sum-of-squares,
+
+     X_i = \sum_i Y_i^2
+
+has a chi-squared distribution with n degrees of freedom.
+
+ -- Function: double gsl_ran_chisq (const gsl_rng * R, double NU)
+     This function returns a random variate from the chi-squared
+     distribution with NU degrees of freedom.  The distribution function
+     is,
+
+          p(x) dx = {1 \over 2 \Gamma(\nu/2) } (x/2)^{\nu/2 - 1} \exp(-x/2) dx
+
+     for x >= 0.
+
+ -- Function: double gsl_ran_chisq_pdf (double X, double NU)
+     This function computes the probability density p(x) at X for a
+     chi-squared distribution with NU degrees of freedom, using the
+     formula given above.
+
+
+ -- Function: double gsl_cdf_chisq_P (double X, double NU)
+ -- Function: double gsl_cdf_chisq_Q (double X, double NU)
+ -- Function: double gsl_cdf_chisq_Pinv (double P, double NU)
+ -- Function: double gsl_cdf_chisq_Qinv (double Q, double NU)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the chi-squared distribution with NU
+     degrees of freedom.
+
+
+File: gsl-ref.info,  Node: The F-distribution,  Next: The t-distribution,  Prev: The Chi-squared Distribution,  Up: Random Number Distributions
+
+20.18 The F-distribution
+========================
+
+The F-distribution arises in statistics.  If Y_1 and Y_2 are chi-squared
+deviates with \nu_1 and \nu_2 degrees of freedom then the ratio,
+
+     X = { (Y_1 / \nu_1) \over (Y_2 / \nu_2) }
+
+has an F-distribution F(x;\nu_1,\nu_2).
+
+ -- Function: double gsl_ran_fdist (const gsl_rng * R, double NU1,
+          double NU2)
+     This function returns a random variate from the F-distribution with
+     degrees of freedom NU1 and NU2.  The distribution function is,
+
+          p(x) dx =
+             { \Gamma((\nu_1 + \nu_2)/2)
+                  \over \Gamma(\nu_1/2) \Gamma(\nu_2/2) }
+             \nu_1^{\nu_1/2} \nu_2^{\nu_2/2}
+             x^{\nu_1/2 - 1} (\nu_2 + \nu_1 x)^{-\nu_1/2 -\nu_2/2}
+
+     for x >= 0.
+
+ -- Function: double gsl_ran_fdist_pdf (double X, double NU1, double
+          NU2)
+     This function computes the probability density p(x) at X for an
+     F-distribution with NU1 and NU2 degrees of freedom, using the
+     formula given above.
+
+
+ -- Function: double gsl_cdf_fdist_P (double X, double NU1, double NU2)
+ -- Function: double gsl_cdf_fdist_Q (double X, double NU1, double NU2)
+ -- Function: double gsl_cdf_fdist_Pinv (double P, double NU1, double
+          NU2)
+ -- Function: double gsl_cdf_fdist_Qinv (double Q, double NU1, double
+          NU2)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the F-distribution with NU1 and NU2
+     degrees of freedom.
+
+
+File: gsl-ref.info,  Node: The t-distribution,  Next: The Beta Distribution,  Prev: The F-distribution,  Up: Random Number Distributions
+
+20.19 The t-distribution
+========================
+
+The t-distribution arises in statistics.  If Y_1 has a normal
+distribution and Y_2 has a chi-squared distribution with \nu degrees of
+freedom then the ratio,
+
+     X = { Y_1 \over \sqrt{Y_2 / \nu} }
+
+has a t-distribution t(x;\nu) with \nu degrees of freedom.
+
+ -- Function: double gsl_ran_tdist (const gsl_rng * R, double NU)
+     This function returns a random variate from the t-distribution.
+     The distribution function is,
+
+          p(x) dx = {\Gamma((\nu + 1)/2) \over \sqrt{\pi \nu} \Gamma(\nu/2)}
+             (1 + x^2/\nu)^{-(\nu + 1)/2} dx
+
+     for -\infty < x < +\infty.
+
+ -- Function: double gsl_ran_tdist_pdf (double X, double NU)
+     This function computes the probability density p(x) at X for a
+     t-distribution with NU degrees of freedom, using the formula given
+     above.
+
+
+ -- Function: double gsl_cdf_tdist_P (double X, double NU)
+ -- Function: double gsl_cdf_tdist_Q (double X, double NU)
+ -- Function: double gsl_cdf_tdist_Pinv (double P, double NU)
+ -- Function: double gsl_cdf_tdist_Qinv (double Q, double NU)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the t-distribution with NU degrees of
+     freedom.
 
 
 File: gsl-ref.info,  Node: The Beta Distribution,  Next: The Logistic Distribution,  Prev: The t-distribution,  Up: Random Number Distributions
@@ -747,7 +1029,6 @@ default generator type 'gsl_rng_default' can be changed with the
 variates,
 
      $ GSL_RNG_SEED=123 ./a.out
-     GSL_RNG_SEED=123
       4 5 6 3 3 1 4 2 5 5
 
 The following program generates a random walk in two dimensions.
@@ -872,7 +1153,7 @@ based on the following papers,
      Cody.  Mathematics of Computation 23, n107, 631-637 (July 1969).
 
 
-File: gsl-ref.info,  Node: Statistics,  Next: Histograms,  Prev: Random Number Distributions,  Up: Top
+File: gsl-ref.info,  Node: Statistics,  Next: Running Statistics,  Prev: Random Number Distributions,  Up: Top
 
 21 Statistics
 *************
@@ -1451,7 +1732,7 @@ Here is a basic example of how to use the statistical functions:
 
    This program should produce the following output,
 
-     Original dataset: 17.2, 18.1, 16.5, 18.3, 12.6
+     Original dataset:  17.2, 18.1, 16.5, 18.3, 12.6
      Sorted dataset: 12.6, 16.5, 17.2, 18.1, 18.3
      The median is 17.2
      The upper quartile is 18.1
@@ -1488,9 +1769,285 @@ The Review of Particle Physics is available online at the website
 <http://pdg.lbl.gov/>.
 
 
-File: gsl-ref.info,  Node: Histograms,  Next: N-tuples,  Prev: Statistics,  Up: Top
+File: gsl-ref.info,  Node: Running Statistics,  Next: Histograms,  Prev: Statistics,  Up: Top
 
-22 Histograms
+22 Running Statistics
+*********************
+
+This chapter describes routines for computing running statistics, also
+known as online statistics, of data.  These routines are suitable for
+handling large datasets for which it may be inconvenient or impractical
+to store in memory all at once.  The data can be processed in a single
+pass, one point at a time.  Each time a data point is added to the
+accumulator, internal parameters are updated in order to compute the
+current mean, variance, standard deviation, skewness, and kurtosis.
+These statistics are exact, and are updated with numerically stable
+single-pass algorithms.  The median and arbitrary quantiles are also
+available, however these calculations use algorithms which provide
+approximations, and grow more accurate as more data is added to the
+accumulator.
+
+   The functions described in this chapter are declared in the header
+file 'gsl_rstat.h'.
+
+* Menu:
+
+* Running Statistics Initializing the Accumulator::
+* Running Statistics Adding Data to the Accumulator::
+* Running Statistics Current Statistics::
+* Running Statistics Quantiles::      
+* Running Statistics Example programs::  
+* Running Statistics References and Further Reading::  
+
+
+File: gsl-ref.info,  Node: Running Statistics Initializing the Accumulator,  Next: Running Statistics Adding Data to the Accumulator,  Up: Running Statistics
+
+22.1 Initializing the Accumulator
+=================================
+
+ -- Function: gsl_rstat_workspace * gsl_rstat_alloc (void)
+     This function allocates a workspace for computing running
+     statistics.  The size of the workspace is O(1).
+
+ -- Function: void gsl_rstat_free (gsl_rstat_workspace * W)
+     This function frees the memory associated with the workspace W.
+
+ -- Function: int gsl_rstat_reset (gsl_rstat_workspace * W)
+     This function resets the workspace W to its initial state, so it
+     can begin working on a new set of data.
+
+
+File: gsl-ref.info,  Node: Running Statistics Adding Data to the Accumulator,  Next: Running Statistics Current Statistics,  Prev: Running Statistics Initializing the Accumulator,  Up: Running Statistics
+
+22.2 Adding Data to the Accumulator
+===================================
+
+ -- Function: int gsl_rstat_add (const double X, gsl_rstat_workspace *
+          W)
+     This function adds the data point X to the statistical accumulator,
+     updating calculations of the mean, variance, standard deviation,
+     skewness, kurtosis, and median.
+
+ -- Function: size_t gsl_rstat_n (gsl_rstat_workspace * W)
+     This function returns the number of data so far added to the
+     accumulator.
+
+
+File: gsl-ref.info,  Node: Running Statistics Current Statistics,  Next: Running Statistics Quantiles,  Prev: Running Statistics Adding Data to the Accumulator,  Up: Running Statistics
+
+22.3 Current Statistics
+=======================
+
+ -- Function: double gsl_rstat_min (gsl_rstat_workspace * W)
+     This function returns the minimum value added to the accumulator.
+
+ -- Function: double gsl_rstat_max (gsl_rstat_workspace * W)
+     This function returns the maximum value added to the accumulator.
+
+ -- Function: double gsl_rstat_mean (gsl_rstat_workspace * W)
+     This function returns the mean of all data added to the
+     accumulator, defined as
+
+          \Hat\mu = (1/N) \sum x_i
+
+ -- Function: double gsl_rstat_variance (gsl_rstat_workspace * W)
+     This function returns the variance of all data added to the
+     accumulator, defined as
+
+          \Hat\sigma^2 = (1/(N-1)) \sum (x_i - \Hat\mu)^2
+
+ -- Function: double gsl_rstat_sd (gsl_rstat_workspace * W)
+     This function returns the standard deviation of all data added to
+     the accumulator, defined as the square root of the variance given
+     above.
+
+ -- Function: double gsl_rstat_skew (gsl_rstat_workspace * W)
+     This function returns the skewness of all data added to the
+     accumulator, defined as
+
+          skew = (1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^3
+
+ -- Function: double gsl_rstat_kurtosis (gsl_rstat_workspace * W)
+     This function returns the kurtosis of all data added to the
+     accumulator, defined as
+
+          kurtosis = ((1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^4)  - 3
+
+ -- Function: double gsl_rstat_median (gsl_rstat_workspace * W)
+     This function returns an estimate of the median of the data added
+     to the accumulator.
+
+
+File: gsl-ref.info,  Node: Running Statistics Quantiles,  Next: Running Statistics Example programs,  Prev: Running Statistics Current Statistics,  Up: Running Statistics
+
+22.4 Quantiles
+==============
+
+The functions in this section estimate quantiles dynamically without
+storing the entire dataset, using the algorithm of Jain and Chlamtec,
+1985.  Only five points (markers) are stored which represent the minimum
+and maximum of the data, as well as current estimates of the p/2-, p-,
+and (1+p)/2-quantiles.  Each time a new data point is added, the marker
+positions and heights are updated.
+
+ -- Function: gsl_rstat_quantile_workspace * gsl_rstat_quantile_alloc
+          (const double P)
+     This function allocates a workspace for the dynamic estimation of
+     P-quantiles, where P is between 0 and 1.  The median corresponds to
+     p = 0.5.  The size of the workspace is O(1).
+
+ -- Function: void gsl_rstat_quantile_free (gsl_rstat_quantile_workspace
+          * W)
+     This function frees the memory associated with the workspace W.
+
+ -- Function: int gsl_rstat_quantile_add (const double X,
+          gsl_rstat_quantile_workspace * W)
+     This function updates the estimate of the p-quantile with the new
+     data point X.
+
+ -- Function: double gsl_rstat_quantile_get
+          (gsl_rstat_quantile_workspace * W)
+     This function returns the current estimate of the p-quantile.
+
+
+File: gsl-ref.info,  Node: Running Statistics Example programs,  Next: Running Statistics References and Further Reading,  Prev: Running Statistics Quantiles,  Up: Running Statistics
+
+22.5 Examples
+=============
+
+Here is a basic example of how to use the statistical functions:
+
+     #include <stdio.h>
+     #include <gsl/gsl_rstat.h>
+
+     int
+     main(void)
+     {
+       double data[5] = {17.2, 18.1, 16.5, 18.3, 12.6};
+       double mean, variance, largest, smallest;
+       gsl_rstat_workspace *rstat_p = gsl_rstat_alloc();
+       size_t i;
+
+       /* add data to rstat accumulator */
+       for (i = 0; i < 5; ++i)
+         gsl_rstat_add(data[i], rstat_p);
+
+       mean     = gsl_rstat_mean(rstat_p);
+       variance = gsl_rstat_variance(rstat_p);
+       largest  = gsl_rstat_max(rstat_p);
+       smallest = gsl_rstat_min(rstat_p);
+
+       printf ("The dataset is %g, %g, %g, %g, %g\n",
+              data[0], data[1], data[2], data[3], data[4]);
+
+       printf ("The sample mean is %g\n", mean);
+       printf ("The estimated variance is %g\n", variance);
+       printf ("The largest value is %g\n", largest);
+       printf ("The smallest value is %g\n", smallest);
+
+       gsl_rstat_free(rstat_p);
+
+       return 0;
+     }
+
+   The program should produce the following output,
+
+     The dataset is 17.2, 18.1, 16.5, 18.3, 12.6
+     The sample mean is 16.54
+     The estimated variance is 5.373
+     The largest value is 18.3
+     The smallest value is 12.6
+
+This next program estimates the lower quartile, median and upper
+quartile from 10,000 samples of a random Rayleigh distribution, using
+the P^2 algorithm of Jain and Chlamtec.  For comparison, the exact
+values are also computed from the sorted dataset.
+
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <gsl/gsl_rstat.h>
+     #include <gsl/gsl_statistics.h>
+     #include <gsl/gsl_rng.h>
+     #include <gsl/gsl_randist.h>
+     #include <gsl/gsl_sort.h>
+
+     int
+     main(void)
+     {
+       const size_t N = 10000;
+       double *data = malloc(N * sizeof(double));
+       gsl_rstat_quantile_workspace *work_25 = gsl_rstat_quantile_alloc(0.25);
+       gsl_rstat_quantile_workspace *work_50 = gsl_rstat_quantile_alloc(0.5);
+       gsl_rstat_quantile_workspace *work_75 = gsl_rstat_quantile_alloc(0.75);
+       gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
+       double exact_p25, exact_p50, exact_p75;
+       double val_p25, val_p50, val_p75;
+       size_t i;
+
+       /* add data to quantile accumulators; also store data for exact
+        * comparisons */
+       for (i = 0; i < N; ++i)
+         {
+           data[i] = gsl_ran_rayleigh(r, 1.0);
+           gsl_rstat_quantile_add(data[i], work_25);
+           gsl_rstat_quantile_add(data[i], work_50);
+           gsl_rstat_quantile_add(data[i], work_75);
+         }
+
+       /* exact values */
+       gsl_sort(data, 1, N);
+       exact_p25 = gsl_stats_quantile_from_sorted_data(data, 1, N, 0.25);
+       exact_p50 = gsl_stats_quantile_from_sorted_data(data, 1, N, 0.5);
+       exact_p75 = gsl_stats_quantile_from_sorted_data(data, 1, N, 0.75);
+
+       /* estimated values */
+       val_p25 = gsl_rstat_quantile_get(work_25);
+       val_p50 = gsl_rstat_quantile_get(work_50);
+       val_p75 = gsl_rstat_quantile_get(work_75);
+
+       printf ("The dataset is %g, %g, %g, %g, %g, ...\n",
+              data[0], data[1], data[2], data[3], data[4]);
+
+       printf ("0.25 quartile: exact = %.5f, estimated = %.5f, error = %.6e\n",
+               exact_p25, val_p25, (val_p25 - exact_p25) / exact_p25);
+       printf ("0.50 quartile: exact = %.5f, estimated = %.5f, error = %.6e\n",
+               exact_p50, val_p50, (val_p50 - exact_p50) / exact_p50);
+       printf ("0.75 quartile: exact = %.5f, estimated = %.5f, error = %.6e\n",
+               exact_p75, val_p75, (val_p75 - exact_p75) / exact_p75);
+
+       gsl_rstat_quantile_free(work_25);
+       gsl_rstat_quantile_free(work_50);
+       gsl_rstat_quantile_free(work_75);
+       gsl_rng_free(r);
+       free(data);
+
+       return 0;
+     }
+
+   The program should produce the following output,
+
+     The dataset is 0.00645272, 0.0074002, 0.0120706, 0.0207256, 0.0227282, ...
+     0.25 quartile: exact = 0.75766, estimated = 0.75580, error = -2.450209e-03
+     0.50 quartile: exact = 1.17508, estimated = 1.17438, error = -5.995912e-04
+     0.75 quartile: exact = 1.65347, estimated = 1.65696, error = 2.110571e-03
+
+
+File: gsl-ref.info,  Node: Running Statistics References and Further Reading,  Prev: Running Statistics Example programs,  Up: Running Statistics
+
+22.6 References and Further Reading
+===================================
+
+The algorithm used to dynamically estimate p-quantiles is described in
+the paper,
+     R. Jain and I. Chlamtac.  'The P^2 algorithm for dynamic
+     calculation of quantiles and histograms without storing
+     observations', Communications of the ACM, Volume 28 (October),
+     Number 10, 1985, p.  1076-1085.
+
+
+File: gsl-ref.info,  Node: Histograms,  Next: N-tuples,  Prev: Running Statistics,  Up: Top
+
+23 Histograms
 *************
 
 This chapter describes functions for creating histograms.  Histograms
@@ -1538,7 +2095,7 @@ This can be useful for generating simulations based on real data.
 
 File: gsl-ref.info,  Node: The histogram struct,  Next: Histogram allocation,  Up: Histograms
 
-22.1 The histogram struct
+23.1 The histogram struct
 =========================
 
 A histogram is defined by the following struct,
@@ -1582,7 +2139,7 @@ in the header file 'gsl_histogram.h'.
 
 File: gsl-ref.info,  Node: Histogram allocation,  Next: Copying Histograms,  Prev: The histogram struct,  Up: Histograms
 
-22.2 Histogram allocation
+23.2 Histogram allocation
 =========================
 
 The functions for allocating memory to a histogram follow the style of
@@ -1646,7 +2203,7 @@ necessary to check every histogram 'alloc'.
 
 File: gsl-ref.info,  Node: Copying Histograms,  Next: Updating and accessing histogram elements,  Prev: Histogram allocation,  Up: Histograms
 
-22.3 Copying Histograms
+23.3 Copying Histograms
 =======================
 
  -- Function: int gsl_histogram_memcpy (gsl_histogram * DEST, const
@@ -1663,7 +2220,7 @@ File: gsl-ref.info,  Node: Copying Histograms,  Next: Updating and accessing his
 
 File: gsl-ref.info,  Node: Updating and accessing histogram elements,  Next: Searching histogram ranges,  Prev: Copying Histograms,  Up: Histograms
 
-22.4 Updating and accessing histogram elements
+23.4 Updating and accessing histogram elements
 ==============================================
 
 There are two ways to access histogram bins, either by specifying an x
@@ -1725,7 +2282,7 @@ identify the bin which covers the appropriate range.
 
 File: gsl-ref.info,  Node: Searching histogram ranges,  Next: Histogram Statistics,  Prev: Updating and accessing histogram elements,  Up: Histograms
 
-22.5 Searching histogram ranges
+23.5 Searching histogram ranges
 ===============================
 
 The following functions are used by the access and update routines to
@@ -1746,7 +2303,7 @@ locate the bin which corresponds to a given x coordinate.
 
 File: gsl-ref.info,  Node: Histogram Statistics,  Next: Histogram Operations,  Prev: Searching histogram ranges,  Up: Histograms
 
-22.6 Histogram Statistics
+23.6 Histogram Statistics
 =========================
 
  -- Function: double gsl_histogram_max_val (const gsl_histogram * H)
@@ -1787,7 +2344,7 @@ File: gsl-ref.info,  Node: Histogram Statistics,  Next: Histogram Operations,  P
 
 File: gsl-ref.info,  Node: Histogram Operations,  Next: Reading and writing histograms,  Prev: Histogram Statistics,  Up: Histograms
 
-22.7 Histogram Operations
+23.7 Histogram Operations
 =========================
 
  -- Function: int gsl_histogram_equal_bins_p (const gsl_histogram * H1,
@@ -1832,7 +2389,7 @@ File: gsl-ref.info,  Node: Histogram Operations,  Next: Reading and writing hist
 
 File: gsl-ref.info,  Node: Reading and writing histograms,  Next: Resampling from histograms,  Prev: Histogram Operations,  Up: Histograms
 
-22.8 Reading and writing histograms
+23.8 Reading and writing histograms
 ===================================
 
 The library provides functions for reading and writing histograms to a
@@ -1893,7 +2450,7 @@ file as binary data or formatted text.
 
 File: gsl-ref.info,  Node: Resampling from histograms,  Next: The histogram probability distribution struct,  Prev: Reading and writing histograms,  Up: Histograms
 
-22.9 Resampling from histograms
+23.9 Resampling from histograms
 ===============================
 
 A histogram made by counting events can be regarded as a measurement of
@@ -1911,7 +2468,7 @@ distribution of events within each bin is assumed to be uniform.
 
 File: gsl-ref.info,  Node: The histogram probability distribution struct,  Next: Example programs for histograms,  Prev: Resampling from histograms,  Up: Histograms
 
-22.10 The histogram probability distribution struct
+23.10 The histogram probability distribution struct
 ===================================================
 
 The probability distribution function for a histogram consists of a set
@@ -1974,7 +2531,7 @@ samples from it.
 
 File: gsl-ref.info,  Node: Example programs for histograms,  Next: Two dimensional histograms,  Prev: The histogram probability distribution struct,  Up: Histograms
 
-22.11 Example programs for histograms
+23.11 Example programs for histograms
 =====================================
 
 The following program shows how to make a simple histogram of a column
@@ -2039,7 +2596,7 @@ distribution and the fluctuations caused by the finite sample size.
 
 File: gsl-ref.info,  Node: Two dimensional histograms,  Next: The 2D histogram struct,  Prev: Example programs for histograms,  Up: Histograms
 
-22.12 Two dimensional histograms
+23.12 Two dimensional histograms
 ================================
 
 A two dimensional histogram consists of a set of "bins" which count the
@@ -2054,7 +2611,7 @@ distribution n(x,E).
 
 File: gsl-ref.info,  Node: The 2D histogram struct,  Next: 2D Histogram allocation,  Prev: Two dimensional histograms,  Up: Histograms
 
-22.13 The 2D histogram struct
+23.13 The 2D histogram struct
 =============================
 
 Two dimensional histograms are defined by the following struct,
@@ -2095,7 +2652,7 @@ in the header file 'gsl_histogram2d.h'.
 
 File: gsl-ref.info,  Node: 2D Histogram allocation,  Next: Copying 2D Histograms,  Prev: The 2D histogram struct,  Up: Histograms
 
-22.14 2D Histogram allocation
+23.14 2D Histogram allocation
 =============================
 
 The functions for allocating memory to a 2D histogram follow the style
@@ -2136,7 +2693,7 @@ necessary to check every 2D histogram 'alloc'.
 
 File: gsl-ref.info,  Node: Copying 2D Histograms,  Next: Updating and accessing 2D histogram elements,  Prev: 2D Histogram allocation,  Up: Histograms
 
-22.15 Copying 2D Histograms
+23.15 Copying 2D Histograms
 ===========================
 
  -- Function: int gsl_histogram2d_memcpy (gsl_histogram2d * DEST, const
@@ -2153,7 +2710,7 @@ File: gsl-ref.info,  Node: Copying 2D Histograms,  Next: Updating and accessing 
 
 File: gsl-ref.info,  Node: Updating and accessing 2D histogram elements,  Next: Searching 2D histogram ranges,  Prev: Copying 2D Histograms,  Up: Histograms
 
-22.16 Updating and accessing 2D histogram elements
+23.16 Updating and accessing 2D histogram elements
 ==================================================
 
 You can access the bins of a two-dimensional histogram either by
@@ -2220,7 +2777,7 @@ the bin which covers the appropriate range.
 
 File: gsl-ref.info,  Node: Searching 2D histogram ranges,  Next: 2D Histogram Statistics,  Prev: Updating and accessing 2D histogram elements,  Up: Histograms
 
-22.17 Searching 2D histogram ranges
+23.17 Searching 2D histogram ranges
 ===================================
 
 The following functions are used by the access and update routines to
@@ -2240,7 +2797,7 @@ locate the bin which corresponds to a given (x,y) coordinate.
 
 File: gsl-ref.info,  Node: 2D Histogram Statistics,  Next: 2D Histogram Operations,  Prev: Searching 2D histogram ranges,  Up: Histograms
 
-22.18 2D Histogram Statistics
+23.18 2D Histogram Statistics
 =============================
 
  -- Function: double gsl_histogram2d_max_val (const gsl_histogram2d * H)
@@ -2302,7 +2859,7 @@ File: gsl-ref.info,  Node: 2D Histogram Statistics,  Next: 2D Histogram Operatio
 
 File: gsl-ref.info,  Node: 2D Histogram Operations,  Next: Reading and writing 2D histograms,  Prev: 2D Histogram Statistics,  Up: Histograms
 
-22.19 2D Histogram Operations
+23.19 2D Histogram Operations
 =============================
 
  -- Function: int gsl_histogram2d_equal_bins_p (const gsl_histogram2d *
@@ -2350,7 +2907,7 @@ File: gsl-ref.info,  Node: 2D Histogram Operations,  Next: Reading and writing 2
 
 File: gsl-ref.info,  Node: Reading and writing 2D histograms,  Next: Resampling from 2D histograms,  Prev: 2D Histogram Operations,  Up: Histograms
 
-22.20 Reading and writing 2D histograms
+23.20 Reading and writing 2D histograms
 =======================================
 
 The library provides functions for reading and writing two dimensional
@@ -2424,7 +2981,7 @@ histograms to a file as binary data or formatted text.
 
 File: gsl-ref.info,  Node: Resampling from 2D histograms,  Next: Example programs for 2D histograms,  Prev: Reading and writing 2D histograms,  Up: Histograms
 
-22.21 Resampling from 2D histograms
+23.21 Resampling from 2D histograms
 ===================================
 
 As in the one-dimensional case, a two-dimensional histogram made by
@@ -2488,7 +3045,7 @@ generate random samples from it.
 
 File: gsl-ref.info,  Node: Example programs for 2D histograms,  Prev: Resampling from 2D histograms,  Up: Histograms
 
-22.22 Example programs for 2D histograms
+23.22 Example programs for 2D histograms
 ========================================
 
 This program demonstrates two features of two-dimensional histograms.
@@ -2553,7 +3110,7 @@ which are printed out.
 
 File: gsl-ref.info,  Node: N-tuples,  Next: Monte Carlo Integration,  Prev: Histograms,  Up: Top
 
-23 N-tuples
+24 N-tuples
 ***********
 
 This chapter describes functions for creating and manipulating
@@ -2590,7 +3147,7 @@ event.
 
 File: gsl-ref.info,  Node: The ntuple struct,  Next: Creating ntuples,  Up: N-tuples
 
-23.1 The ntuple struct
+24.1 The ntuple struct
 ======================
 
 Ntuples are manipulated using the 'gsl_ntuple' struct.  This struct
@@ -2607,7 +3164,7 @@ ntuple data struct.
 
 File: gsl-ref.info,  Node: Creating ntuples,  Next: Opening an existing ntuple file,  Prev: The ntuple struct,  Up: N-tuples
 
-23.2 Creating ntuples
+24.2 Creating ntuples
 =====================
 
  -- Function: gsl_ntuple * gsl_ntuple_create (char * FILENAME, void *
@@ -2622,7 +3179,7 @@ File: gsl-ref.info,  Node: Creating ntuples,  Next: Opening an existing ntuple f
 
 File: gsl-ref.info,  Node: Opening an existing ntuple file,  Next: Writing ntuples,  Prev: Creating ntuples,  Up: N-tuples
 
-23.3 Opening an existing ntuple file
+24.3 Opening an existing ntuple file
 ====================================
 
  -- Function: gsl_ntuple * gsl_ntuple_open (char * FILENAME, void *
@@ -2636,7 +3193,7 @@ File: gsl-ref.info,  Node: Opening an existing ntuple file,  Next: Writing ntupl
 
 File: gsl-ref.info,  Node: Writing ntuples,  Next: Reading ntuples,  Prev: Opening an existing ntuple file,  Up: N-tuples
 
-23.4 Writing ntuples
+24.4 Writing ntuples
 ====================
 
  -- Function: int gsl_ntuple_write (gsl_ntuple * NTUPLE)
@@ -2649,7 +3206,7 @@ File: gsl-ref.info,  Node: Writing ntuples,  Next: Reading ntuples,  Prev: Openi
 
 File: gsl-ref.info,  Node: Reading ntuples,  Next: Closing an ntuple file,  Prev: Writing ntuples,  Up: N-tuples
 
-23.5 Reading ntuples
+24.5 Reading ntuples
 ====================
 
  -- Function: int gsl_ntuple_read (gsl_ntuple * NTUPLE)
@@ -2659,7 +3216,7 @@ File: gsl-ref.info,  Node: Reading ntuples,  Next: Closing an ntuple file,  Prev
 
 File: gsl-ref.info,  Node: Closing an ntuple file,  Next: Histogramming ntuple values,  Prev: Reading ntuples,  Up: N-tuples
 
-23.6 Closing an ntuple file
+24.6 Closing an ntuple file
 ===========================
 
  -- Function: int gsl_ntuple_close (gsl_ntuple * NTUPLE)
@@ -2669,7 +3226,7 @@ File: gsl-ref.info,  Node: Closing an ntuple file,  Next: Histogramming ntuple v
 
 File: gsl-ref.info,  Node: Histogramming ntuple values,  Next: Example ntuple programs,  Prev: Closing an ntuple file,  Up: N-tuples
 
-23.7 Histogramming ntuple values
+24.7 Histogramming ntuple values
 ================================
 
 Once an ntuple has been created its contents can be histogrammed in
@@ -2716,7 +3273,7 @@ added to the histogram for the ntuple row.
 
 File: gsl-ref.info,  Node: Example ntuple programs,  Next: Ntuple References and Further Reading,  Prev: Histogramming ntuple values,  Up: N-tuples
 
-23.8 Examples
+24.8 Examples
 =============
 
 The following example programs demonstrate the use of ntuples in
@@ -2837,6 +3394,7 @@ E^2=x^2+y^2+z^2, and select only those which exceed a lower limit of
      double
      val_func (void *ntuple_data, void *params)
      {
+       (void)(params); /* avoid unused parameter warning */
        struct data * data = (struct data *) ntuple_data;
        double x, y, z;
 
@@ -2853,7 +3411,7 @@ Note the cut-off at the lower bound.
 
 File: gsl-ref.info,  Node: Ntuple References and Further Reading,  Prev: Example ntuple programs,  Up: N-tuples
 
-23.9 References and Further Reading
+24.9 References and Further Reading
 ===================================
 
 Further information on the use of ntuples can be found in the
@@ -2862,7 +3420,7 @@ documentation for the CERN packages PAW and HBOOK (available online).
 
 File: gsl-ref.info,  Node: Monte Carlo Integration,  Next: Simulated Annealing,  Prev: N-tuples,  Up: Top
 
-24 Monte Carlo Integration
+25 Monte Carlo Integration
 **************************
 
 This chapter describes routines for multidimensional Monte Carlo
@@ -2895,7 +3453,7 @@ resulting in an underestimate of the error.
 
 File: gsl-ref.info,  Node: Monte Carlo Interface,  Next: PLAIN Monte Carlo,  Up: Monte Carlo Integration
 
-24.1 Interface
+25.1 Interface
 ==============
 
 All of the Monte Carlo integration routines use the same general form of
@@ -2975,7 +3533,7 @@ The function f(x) can be evaluated using the following macro,
 
 File: gsl-ref.info,  Node: PLAIN Monte Carlo,  Next: MISER,  Prev: Monte Carlo Interface,  Up: Monte Carlo Integration
 
-24.2 PLAIN Monte Carlo
+25.2 PLAIN Monte Carlo
 ======================
 
 The plain Monte Carlo algorithm samples points randomly from the
@@ -3030,7 +3588,7 @@ file 'gsl_monte_plain.h'.
 
 File: gsl-ref.info,  Node: MISER,  Next: VEGAS,  Prev: PLAIN Monte Carlo,  Up: Monte Carlo Integration
 
-24.3 MISER
+25.3 MISER
 ==========
 
 The MISER algorithm of Press and Farrar is based on recursive stratified
@@ -3172,7 +3730,7 @@ the 'gsl_monte_miser_state' struct is now deprecated.
 
 File: gsl-ref.info,  Node: VEGAS,  Next: Monte Carlo Examples,  Prev: MISER,  Up: Monte Carlo Integration
 
-24.4 VEGAS
+25.4 VEGAS
 ==========
 
 The VEGAS algorithm of Lepage is based on importance sampling.  It
@@ -3365,7 +3923,7 @@ the 'gsl_monte_vegas_state' but such use is deprecated.
 
 File: gsl-ref.info,  Node: Monte Carlo Examples,  Next: Monte Carlo Integration References and Further Reading,  Prev: VEGAS,  Up: Monte Carlo Integration
 
-24.5 Examples
+25.5 Examples
 =============
 
 The example program below uses the Monte Carlo routines to estimate the
@@ -3416,6 +3974,8 @@ special measures are needed to avoid these singularities.
      double
      g (double *k, size_t dim, void *params)
      {
+       (void)(dim); /* avoid unused parameter warnings */
+       (void)(params);
        double A = 1.0 / (M_PI * M_PI * M_PI);
        return A / (1.0 - cos (k[0]) * cos (k[1]) * cos (k[2]));
      }
@@ -3547,7 +4107,7 @@ algorithms.
 
 File: gsl-ref.info,  Node: Monte Carlo Integration References and Further Reading,  Prev: Monte Carlo Examples,  Up: Monte Carlo Integration
 
-24.6 References and Further Reading
+25.6 References and Further Reading
 ===================================
 
 The MISER algorithm is described in the following article by Press and
@@ -3568,7 +4128,7 @@ The VEGAS algorithm is described in the following papers,
 
 File: gsl-ref.info,  Node: Simulated Annealing,  Next: Ordinary Differential Equations,  Prev: Monte Carlo Integration,  Up: Top
 
-25 Simulated Annealing
+26 Simulated Annealing
 **********************
 
 Stochastic search techniques are used when the structure of a space is
@@ -3598,7 +4158,7 @@ file 'gsl_siman.h'.
 
 File: gsl-ref.info,  Node: Simulated Annealing algorithm,  Next: Simulated Annealing functions,  Up: Simulated Annealing
 
-25.1 Simulated Annealing algorithm
+26.1 Simulated Annealing algorithm
 ==================================
 
 The simulated annealing algorithm takes random walks through the problem
@@ -3626,7 +4186,7 @@ what allows simulated annealing to frequently get out of local minima.
 
 File: gsl-ref.info,  Node: Simulated Annealing functions,  Next: Examples with Simulated Annealing,  Prev: Simulated Annealing algorithm,  Up: Simulated Annealing
 
-25.2 Simulated Annealing functions
+26.2 Simulated Annealing functions
 ==================================
 
  -- Function: void gsl_siman_solve (const gsl_rng * R, void * X0_P,
@@ -3738,7 +4298,7 @@ prototypes for these functions are given below.
 
 File: gsl-ref.info,  Node: Examples with Simulated Annealing,  Next: Simulated Annealing References and Further Reading,  Prev: Simulated Annealing functions,  Up: Simulated Annealing
 
-25.3 Examples
+26.3 Examples
 =============
 
 The simulated annealing package is clumsy, and it has to be because it
@@ -3754,7 +4314,7 @@ application with little change and should make things easier.
 
 File: gsl-ref.info,  Node: Trivial example,  Next: Traveling Salesman Problem,  Up: Examples with Simulated Annealing
 
-25.3.1 Trivial example
+26.3.1 Trivial example
 ----------------------
 
 The first example, in one dimensional Cartesian space, sets up an energy
@@ -3826,7 +4386,7 @@ minimum.
      }
 
      int
-     main(int argc, char *argv[])
+     main(void)
      {
        const gsl_rng_type * T;
        gsl_rng * r;
@@ -3859,7 +4419,7 @@ in the following way:
 
 File: gsl-ref.info,  Node: Traveling Salesman Problem,  Prev: Trivial example,  Up: Examples with Simulated Annealing
 
-25.3.2 Traveling Salesman Problem
+26.3.2 Traveling Salesman Problem
 ---------------------------------
 
 The TSP ("Traveling Salesman Problem") is the classic combinatorial
@@ -3935,7 +4495,7 @@ the calculation at which a new temperature is set) for this problem:
 
 File: gsl-ref.info,  Node: Simulated Annealing References and Further Reading,  Prev: Examples with Simulated Annealing,  Up: Simulated Annealing
 
-25.4 References and Further Reading
+26.4 References and Further Reading
 ===================================
 
 Further information is available in the following book,
@@ -3946,7 +4506,7 @@ Further information is available in the following book,
 
 File: gsl-ref.info,  Node: Ordinary Differential Equations,  Next: Interpolation,  Prev: Simulated Annealing,  Up: Top
 
-26 Ordinary Differential Equations
+27 Ordinary Differential Equations
 **********************************
 
 This chapter describes functions for solving ordinary differential
@@ -3976,7 +4536,7 @@ retained under the original name for backwards compatibility.
 
 File: gsl-ref.info,  Node: Defining the ODE System,  Next: Stepping Functions,  Up: Ordinary Differential Equations
 
-26.1 Defining the ODE System
+27.1 Defining the ODE System
 ============================
 
 The routines solve the general n-dimensional first-order system,
@@ -3998,12 +4558,13 @@ A system of equations is defined using the 'gsl_odeiv2_system' datatype.
           The function should return 'GSL_SUCCESS' if the calculation
           was completed successfully.  Any other return value indicates
           an error.  A special return value 'GSL_EBADFUNC' causes
-          'gsl_odeiv2' routines to immediately stop and return.  The
-          user must call an appropriate reset function (e.g.
-          'gsl_odeiv2_driver_reset' or 'gsl_odeiv2_step_reset') before
-          continuing.  Use return values distinct from standard GSL
-          error codes to distinguish your function as the source of the
-          error.
+          'gsl_odeiv2' routines to immediately stop and return.  If
+          'function' is modified (for example contents of PARAMS), the
+          user must call an appropriate reset function
+          ('gsl_odeiv2_driver_reset', 'gsl_odeiv2_evolve_reset' or
+          'gsl_odeiv2_step_reset') before continuing.  Use return values
+          distinct from standard GSL error codes to distinguish your
+          function as the source of the error.
 
      'int (* jacobian) (double t, const double y[], double * dfdy, double dfdt[], void * params);'
           This function should store the vector of derivative elements
@@ -4020,12 +4581,13 @@ A system of equations is defined using the 'gsl_odeiv2_system' datatype.
           The function should return 'GSL_SUCCESS' if the calculation
           was completed successfully.  Any other return value indicates
           an error.  A special return value 'GSL_EBADFUNC' causes
-          'gsl_odeiv2' routines to immediately stop and return.  The
-          user must call an appropriate reset function (e.g.
-          'gsl_odeiv2_driver_reset' or 'gsl_odeiv2_step_reset') before
-          continuing.  Use return values distinct from standard GSL
-          error codes to distinguish your function as the source of the
-          error.
+          'gsl_odeiv2' routines to immediately stop and return.  If
+          'jacobian' is modified (for example contents of PARAMS), the
+          user must call an appropriate reset function
+          ('gsl_odeiv2_driver_reset', 'gsl_odeiv2_evolve_reset' or
+          'gsl_odeiv2_step_reset') before continuing.  Use return values
+          distinct from standard GSL error codes to distinguish your
+          function as the source of the error.
 
      'size_t dimension;'
           This is the dimension of the system of equations.
@@ -4036,7 +4598,7 @@ A system of equations is defined using the 'gsl_odeiv2_system' datatype.
 
 File: gsl-ref.info,  Node: Stepping Functions,  Next: Adaptive Step-size Control,  Prev: Defining the ODE System,  Up: Ordinary Differential Equations
 
-26.2 Stepping Functions
+27.2 Stepping Functions
 =======================
 
 The lowest level components are the "stepping functions" which advance a
@@ -4181,7 +4743,7 @@ resulting local error.
 
 File: gsl-ref.info,  Node: Adaptive Step-size Control,  Next: Evolution,  Prev: Stepping Functions,  Up: Ordinary Differential Equations
 
-26.3 Adaptive Step-size Control
+27.3 Adaptive Step-size Control
 ===============================
 
 The control function examines the proposed change to the solution
@@ -4308,7 +4870,7 @@ step-size for a user-specified level of error.
 
 File: gsl-ref.info,  Node: Evolution,  Next: Driver,  Prev: Adaptive Step-size Control,  Up: Ordinary Differential Equations
 
-26.4 Evolution
+27.4 Evolution
 ==============
 
 The evolution function combines the results of a stepping function and
@@ -4392,7 +4954,7 @@ separately and not directly over the range (t_0,t_1).
 
 File: gsl-ref.info,  Node: Driver,  Next: ODE Example programs,  Prev: Evolution,  Up: Ordinary Differential Equations
 
-26.5 Driver
+27.5 Driver
 ===========
 
 The driver object is a high level wrapper that combines the evolution,
@@ -4474,7 +5036,7 @@ control and stepper objects for easy use.
 
 File: gsl-ref.info,  Node: ODE Example programs,  Next: ODE References and Further Reading,  Prev: Driver,  Up: Ordinary Differential Equations
 
-26.6 Examples
+27.6 Examples
 =============
 
 The following program solves the second-order nonlinear Van der Pol
@@ -4506,6 +5068,7 @@ v).  The loop in the example prints the solution at the points t_i = 1,
      func (double t, const double y[], double f[],
            void *params)
      {
+       (void)(t); /* avoid unused parameter warning */
        double mu = *(double *)params;
        f[0] = y[1];
        f[1] = -y[0] - mu*y[1]*(y[0]*y[0] - 1);
@@ -4516,6 +5079,7 @@ v).  The loop in the example prints the solution at the points t_i = 1,
      jac (double t, const double y[], double *dfdy,
           double dfdt[], void *params)
      {
+       (void)(t); /* avoid unused parameter warning */
        double mu = *(double *)params;
        gsl_matrix_view dfdy_mat
          = gsl_matrix_view_array (dfdy, 2, 2);
@@ -4647,7 +5211,7 @@ with a fixed stepsize of 0.001.
 
 File: gsl-ref.info,  Node: ODE References and Further Reading,  Prev: ODE Example programs,  Up: Ordinary Differential Equations
 
-26.7 References and Further Reading
+27.7 References and Further Reading
 ===================================
 
      Ascher, U.M., Petzold, L.R., 'Computer Methods for Ordinary
@@ -4694,16 +5258,17 @@ the following articles,
 
 File: gsl-ref.info,  Node: Interpolation,  Next: Numerical Differentiation,  Prev: Ordinary Differential Equations,  Up: Top
 
-27 Interpolation
+28 Interpolation
 ****************
 
 This chapter describes functions for performing interpolation.  The
-library provides a variety of interpolation methods, including Cubic
-splines and Akima splines.  The interpolation types are interchangeable,
-allowing different methods to be used without recompiling.
-Interpolations can be defined for both normal and periodic boundary
-conditions.  Additional functions are available for computing
-derivatives and integrals of interpolating functions.
+library provides a variety of interpolation methods, including Cubic,
+Akima, and Steffen splines.  The interpolation types are
+interchangeable, allowing different methods to be used without
+recompiling.  Interpolations can be defined for both normal and periodic
+boundary conditions.  Additional functions are available for computing
+derivatives and integrals of interpolating functions.  Routines are
+provided for interpolating both one and two dimensional datasets.
 
    These interpolation methods produce curves that pass through each
 datapoint.  To interpolate noisy data with a smoothing curve see *note
@@ -4714,20 +5279,27 @@ files 'gsl_interp.h' and 'gsl_spline.h'.
 
 * Menu:
 
-* Introduction to Interpolation::  
-* Interpolation Functions::     
-* Interpolation Types::         
-* Index Look-up and Acceleration::  
-* Evaluation of Interpolating Functions::  
-* Higher-level Interface::      
-* Interpolation Example programs::  
-* Interpolation References and Further Reading::  
+* 1D Introduction to Interpolation::  
+* 1D Interpolation Functions::     
+* 1D Interpolation Types::         
+* 1D Index Look-up and Acceleration::  
+* 1D Evaluation of Interpolating Functions::  
+* 1D Higher-level Interface::      
+* 1D Interpolation Example programs::  
+* 1D Interpolation References and Further Reading::  
+* 2D Introduction to Interpolation::  
+* 2D Interpolation Functions::     
+* 2D Interpolation Grids::     
+* 2D Interpolation Types::         
+* 2D Evaluation of Interpolating Functions::  
+* 2D Higher-level Interface::      
+* 2D Interpolation Example programs::  
 
 
-File: gsl-ref.info,  Node: Introduction to Interpolation,  Next: Interpolation Functions,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Introduction to Interpolation,  Next: 1D Interpolation Functions,  Up: Interpolation
 
-27.1 Introduction
-=================
+28.1 Introduction to 1D Interpolation
+=====================================
 
 Given a set of data points (x_1, y_1) \dots (x_n, y_n) the routines
 described in this section compute a continuous interpolating function
@@ -4736,10 +5308,10 @@ its behavior at the end-points is determined by the type of
 interpolation used.
 
 
-File: gsl-ref.info,  Node: Interpolation Functions,  Next: Interpolation Types,  Prev: Introduction to Interpolation,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Interpolation Functions,  Next: 1D Interpolation Types,  Prev: 1D Introduction to Interpolation,  Up: Interpolation
 
-27.2 Interpolation Functions
-============================
+28.2 1D Interpolation Functions
+===============================
 
 The interpolation function for a given dataset is stored in a
 'gsl_interp' object.  These are created by the following functions.
@@ -4763,12 +5335,12 @@ The interpolation function for a given dataset is stored in a
      This function frees the interpolation object INTERP.
 
 
-File: gsl-ref.info,  Node: Interpolation Types,  Next: Index Look-up and Acceleration,  Prev: Interpolation Functions,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Interpolation Types,  Next: 1D Index Look-up and Acceleration,  Prev: 1D Interpolation Functions,  Up: Interpolation
 
-27.3 Interpolation Types
-========================
+28.3 1D Interpolation Types
+===========================
 
-The interpolation library provides six interpolation types:
+The interpolation library provides the following interpolation types:
 
  -- Interpolation Type: gsl_interp_linear
      Linear interpolation.  This interpolation method does not require
@@ -4804,7 +5376,16 @@ The interpolation library provides six interpolation types:
      Non-rounded Akima spline with periodic boundary conditions.  This
      method uses the non-rounded corner algorithm of Wodicka.
 
-   The following related functions are available:
+ -- Interpolation Type: gsl_interp_steffen
+     Steffen's method guarantees the monotonicity of the interpolating
+     function between the given data points.  Therefore, minima and
+     maxima can only occur exactly at the data points, and there can
+     never be spurious oscillations between data points.  The
+     interpolated function is piecewise cubic in each interval.  The
+     resulting curve and its first derivative are guaranteed to be
+     continuous, but the second derivative may be discontinuous.
+
+The following related functions are available:
 
  -- Function: const char * gsl_interp_name (const gsl_interp * INTERP)
      This function returns the name of the interpolation type used by
@@ -4826,10 +5407,10 @@ The interpolation library provides six interpolation types:
      Akima spline interpolation requires a minimum of 5 points.
 
 
-File: gsl-ref.info,  Node: Index Look-up and Acceleration,  Next: Evaluation of Interpolating Functions,  Prev: Interpolation Types,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Index Look-up and Acceleration,  Next: 1D Evaluation of Interpolating Functions,  Prev: 1D Interpolation Types,  Up: Interpolation
 
-27.4 Index Look-up and Acceleration
-===================================
+28.4 1D Index Look-up and Acceleration
+======================================
 
 The state of searches can be stored in a 'gsl_interp_accel' object,
 which is a kind of iterator for interpolation lookups.  It caches the
@@ -4868,10 +5449,10 @@ immediately.
      This function frees the accelerator object ACC.
 
 
-File: gsl-ref.info,  Node: Evaluation of Interpolating Functions,  Next: Higher-level Interface,  Prev: Index Look-up and Acceleration,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Evaluation of Interpolating Functions,  Next: 1D Higher-level Interface,  Prev: 1D Index Look-up and Acceleration,  Up: Interpolation
 
-27.5 Evaluation of Interpolating Functions
-==========================================
+28.5 1D Evaluation of Interpolating Functions
+=============================================
 
  -- Function: double gsl_interp_eval (const gsl_interp * INTERP, const
           double XA[], const double YA[], double X, gsl_interp_accel *
@@ -4916,10 +5497,10 @@ File: gsl-ref.info,  Node: Evaluation of Interpolating Functions,  Next: Higher-
      accelerator ACC.
 
 
-File: gsl-ref.info,  Node: Higher-level Interface,  Next: Interpolation Example programs,  Prev: Evaluation of Interpolating Functions,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Higher-level Interface,  Next: 1D Interpolation Example programs,  Prev: 1D Evaluation of Interpolating Functions,  Up: Interpolation
 
-27.6 Higher-level Interface
-===========================
+28.6 1D Higher-level Interface
+==============================
 
 The functions described in the previous sections required the user to
 supply pointers to the x and y arrays on each call.  The following
@@ -4962,10 +5543,10 @@ functions are defined in the header file 'gsl_spline.h'.
           double A, double B, gsl_interp_accel * ACC, double * RESULT)
 
 
-File: gsl-ref.info,  Node: Interpolation Example programs,  Next: Interpolation References and Further Reading,  Prev: Higher-level Interface,  Up: Interpolation
+File: gsl-ref.info,  Node: 1D Interpolation Example programs,  Next: 1D Interpolation References and Further Reading,  Prev: 1D Higher-level Interface,  Up: Interpolation
 
-27.7 Examples
-=============
+28.7 Examples of 1D Interpolation
+=================================
 
 The following program demonstrates the use of the interpolation and
 spline functions.  It computes a cubic spline interpolation of the
@@ -5078,25 +5659,449 @@ The result shows a periodic interpolation of the original points.  The
 slope of the fitted curve is the same at the beginning and end of the
 data, and the second derivative is also.
 
-
-File: gsl-ref.info,  Node: Interpolation References and Further Reading,  Prev: Interpolation Example programs,  Up: Interpolation
+   The next program illustrates the difference between the cubic spline,
+Akima, and Steffen interpolation types on a difficult dataset.
 
-27.8 References and Further Reading
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <math.h>
+
+     #include <gsl/gsl_math.h>
+     #include <gsl/gsl_spline.h>
+
+     int
+     main(void)
+     {
+       size_t i;
+       const size_t N = 9;
+
+       /* this dataset is taken from
+        * J. M. Hyman, Accurate Monotonicity preserving cubic interpolation,
+        * SIAM J. Sci. Stat. Comput. 4, 4, 1983. */
+       const double x[] = { 7.99, 8.09, 8.19, 8.7, 9.2,
+                            10.0, 12.0, 15.0, 20.0 };
+       const double y[] = { 0.0, 2.76429e-5, 4.37498e-2,
+                            0.169183, 0.469428, 0.943740,
+                            0.998636, 0.999919, 0.999994 };
+
+       gsl_interp_accel *acc = gsl_interp_accel_alloc();
+       gsl_spline *spline_cubic = gsl_spline_alloc(gsl_interp_cspline, N);
+       gsl_spline *spline_akima = gsl_spline_alloc(gsl_interp_akima, N);
+       gsl_spline *spline_steffen = gsl_spline_alloc(gsl_interp_steffen, N);
+
+       gsl_spline_init(spline_cubic, x, y, N);
+       gsl_spline_init(spline_akima, x, y, N);
+       gsl_spline_init(spline_steffen, x, y, N);
+
+       for (i = 0; i < N; ++i)
+         printf("%g %g\n", x[i], y[i]);
+
+       printf("\n\n");
+
+       for (i = 0; i <= 100; ++i)
+         {
+           double xi = (1 - i / 100.0) * x[0] + (i / 100.0) * x[N-1];
+           double yi_cubic = gsl_spline_eval(spline_cubic, xi, acc);
+           double yi_akima = gsl_spline_eval(spline_akima, xi, acc);
+           double yi_steffen = gsl_spline_eval(spline_steffen, xi, acc);
+
+           printf("%g %g %g %g\n", xi, yi_cubic, yi_akima, yi_steffen);
+         }
+
+       gsl_spline_free(spline_cubic);
+       gsl_spline_free(spline_akima);
+       gsl_spline_free(spline_steffen);
+       gsl_interp_accel_free(acc);
+
+       return 0;
+     }
+
+The cubic method exhibits a local maxima between the 6th and 7th data
+points and continues oscillating for the rest of the data.  Akima also
+shows a local maxima but recovers and follows the data well after the
+7th grid point.  Steffen preserves monotonicity in all intervals and
+does not exhibit oscillations, at the expense of having a discontinuous
+second derivative.
+
+
+File: gsl-ref.info,  Node: 1D Interpolation References and Further Reading,  Next: 2D Introduction to Interpolation,  Prev: 1D Interpolation Example programs,  Up: Interpolation
+
+28.8 References and Further Reading
 ===================================
 
 Descriptions of the interpolation algorithms and further references can
-be found in the following books:
+be found in the following publications:
 
      C.W. Ueberhuber, 'Numerical Computation (Volume 1), Chapter 9
      "Interpolation"', Springer (1997), ISBN 3-540-62058-3.
 
-     D.M. Young, R.T. Gregory 'A Survey of Numerical Mathematics (Volume
-     1), Chapter 6.8', Dover (1988), ISBN 0-486-65691-8.
+     D.M. Young, R.T. Gregory, 'A Survey of Numerical Mathematics
+     (Volume 1), Chapter 6.8', Dover (1988), ISBN 0-486-65691-8.
+
+     M. Steffen, 'A simple method for monotonic interpolation in one
+     dimension', Astron.  Astrophys.  239, 443-450, 1990.
+
+
+File: gsl-ref.info,  Node: 2D Introduction to Interpolation,  Next: 2D Interpolation Functions,  Prev: 1D Interpolation References and Further Reading,  Up: Interpolation
+
+28.9 Introduction to 2D Interpolation
+=====================================
+
+Given two sets of equally spaced grid points: x_1,...,x_m with spacing
+\delta x, and y_1,...,y_n with spacing \delta y, plus a set of function
+values z_{ij} for each grid point (x_i,y_j), the routines described in
+this section compute a continuous interpolation function z(x,y) such
+that z(x_i,y_j) = z_{ij}.
+
+
+File: gsl-ref.info,  Node: 2D Interpolation Functions,  Next: 2D Interpolation Grids,  Prev: 2D Introduction to Interpolation,  Up: Interpolation
+
+28.10 2D Interpolation Functions
+================================
+
+The interpolation function for a given dataset is stored in a
+'gsl_interp2d' object.  These are created by the following functions.
+
+ -- Function: gsl_interp2d * gsl_interp2d_alloc (const gsl_interp2d_type
+          * T, const size_t XSIZE, const size_t YSIZE)
+     This function returns a pointer to a newly allocated interpolation
+     object of type T for XSIZE grid points in the x direction and YSIZE
+     grid points in the y direction.
+
+ -- Function: int gsl_interp2d_init (gsl_interp2d * INTERP, const double
+          XA[], const double YA[], const double ZA[], const size_t
+          XSIZE, const size_t YSIZE)
+     This function initializes the interpolation object INTERP for the
+     data (XA,YA,ZA) where XA and YA are arrays of the x and y grid
+     points of size XSIZE and YSIZE respectively, and ZA is an array of
+     function values of size XSIZE*YSIZE.  The interpolation object
+     ('gsl_interp2d') does not save the data arrays XA, YA, and ZA and
+     only stores the static state computed from the data.  The XA and YA
+     data arrays are always assumed to be strictly ordered, with
+     increasing x,y values; the behavior for other arrangements is not
+     defined.
+
+ -- Function: void gsl_interp2d_free (gsl_interp2d * INTERP)
+     This function frees the interpolation object INTERP.
+
+
+File: gsl-ref.info,  Node: 2D Interpolation Grids,  Next: 2D Interpolation Types,  Prev: 2D Interpolation Functions,  Up: Interpolation
+
+28.11 2D Interpolation Grids
+============================
+
+The 2D interpolation routines access the function values z_{ij} with the
+following ordering:
+
+     z_ij = za[j*xsize + i]
+
+   with i = 0,...,xsize-1 and j = 0,...,ysize-1.  However, for ease of
+use, the following functions are provided to add and retrieve elements
+from the function grid without requiring knowledge of the internal
+ordering.
+
+ -- Function: int gsl_interp2d_set (const gsl_interp2d * INTERP, double
+          ZA[], const size_t I, const size_t J, const double Z)
+     This function sets the value z_{ij} for grid point (I,J) of the
+     array ZA to Z.
+
+ -- Function: double gsl_interp2d_get (const gsl_interp2d * INTERP,
+          const double ZA[], const size_t I, const size_t J)
+     This function returns the value z_{ij} for grid point (I,J) stored
+     in the array ZA.
+
+ -- Function: size_t gsl_interp2d_idx (const gsl_interp2d * INTERP,
+          const size_t I, const size_t J)
+     This function returns the index corresponding to the grid point
+     (I,J).  The index is given by j*xsize + i.
+
+
+File: gsl-ref.info,  Node: 2D Interpolation Types,  Next: 2D Evaluation of Interpolating Functions,  Prev: 2D Interpolation Grids,  Up: Interpolation
+
+28.12 2D Interpolation Types
+============================
+
+The interpolation library provides the following 2D interpolation types:
+
+ -- Interpolation Type: gsl_interp2d_bilinear
+     Bilinear interpolation.  This interpolation method does not require
+     any additional memory.
+
+ -- Interpolation Type: gsl_interp2d_bicubic
+     Bicubic interpolation.
+
+ -- Function: const char * gsl_interp2d_name (const gsl_interp2d *
+          INTERP)
+     This function returns the name of the interpolation type used by
+     INTERP.  For example,
+
+          printf ("interp uses '%s' interpolation.\n",
+                  gsl_interp2d_name (interp));
+
+     would print something like,
+
+          interp uses 'bilinear' interpolation.
+
+ -- Function: unsigned int gsl_interp2d_min_size (const gsl_interp2d *
+          INTERP)
+ -- Function: unsigned int gsl_interp2d_type_min_size (const
+          gsl_interp2d_type * T)
+     These functions return the minimum number of points required by the
+     interpolation object INTERP or interpolation type T.  For example,
+     bicubic interpolation requires a minimum of 4 points.
+
+
+File: gsl-ref.info,  Node: 2D Evaluation of Interpolating Functions,  Next: 2D Higher-level Interface,  Prev: 2D Interpolation Types,  Up: Interpolation
+
+28.13 2D Evaluation of Interpolating Functions
+==============================================
+
+ -- Function: double gsl_interp2d_eval (const gsl_interp2d * INTERP,
+          const double XA[], const double YA[], const double ZA[], const
+          double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_e (const gsl_interp2d * INTERP,
+          const double XA[], const double YA[], const double ZA[], const
+          double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * Z)
+     These functions return the interpolated value of Z for a given
+     point (X,Y), using the interpolation object INTERP, data arrays XA,
+     YA, and ZA and the accelerators XACC and YACC.  When X is outside
+     the range of XA or Y is outside the range of YA, the error code
+     'GSL_EDOM' is returned.
+
+ -- Function: double gsl_interp2d_eval_extrap (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_extrap_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * Z)
+     These functions return the interpolated value of Z for a given
+     point (X,Y), using the interpolation object INTERP, data arrays XA,
+     YA, and ZA and the accelerators XACC and YACC.  The functions
+     perform no bounds checking, so when X is outside the range of XA or
+     Y is outside the range of YA, extrapolation is performed.
+
+ -- Function: double gsl_interp2d_eval_deriv_x (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_deriv_x_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * D)
+     These functions return the interpolated value D = \partial z /
+     \partial x for a given point (X,Y), using the interpolation object
+     INTERP, data arrays XA, YA, and ZA and the accelerators XACC and
+     YACC.  When X is outside the range of XA or Y is outside the range
+     of YA, the error code 'GSL_EDOM' is returned.
+
+ -- Function: double gsl_interp2d_eval_deriv_y (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_deriv_y_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * D)
+     These functions return the interpolated value D = \partial z /
+     \partial y for a given point (X,Y), using the interpolation object
+     INTERP, data arrays XA, YA, and ZA and the accelerators XACC and
+     YACC.  When X is outside the range of XA or Y is outside the range
+     of YA, the error code 'GSL_EDOM' is returned.
+
+ -- Function: double gsl_interp2d_eval_deriv_xx (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_deriv_xx_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * D)
+     These functions return the interpolated value D = \partial^2 z /
+     \partial x^2 for a given point (X,Y), using the interpolation
+     object INTERP, data arrays XA, YA, and ZA and the accelerators XACC
+     and YACC.  When X is outside the range of XA or Y is outside the
+     range of YA, the error code 'GSL_EDOM' is returned.
+
+ -- Function: double gsl_interp2d_eval_deriv_yy (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_deriv_yy_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * D)
+     These functions return the interpolated value D = \partial^2 z /
+     \partial y^2 for a given point (X,Y), using the interpolation
+     object INTERP, data arrays XA, YA, and ZA and the accelerators XACC
+     and YACC.  When X is outside the range of XA or Y is outside the
+     range of YA, the error code 'GSL_EDOM' is returned.
+
+ -- Function: double gsl_interp2d_eval_deriv_xy (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_interp2d_eval_deriv_xy_e (const gsl_interp2d *
+          INTERP, const double XA[], const double YA[], const double
+          ZA[], const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * D)
+     These functions return the interpolated value D = \partial^2 z /
+     \partial x \partial y for a given point (X,Y), using the
+     interpolation object INTERP, data arrays XA, YA, and ZA and the
+     accelerators XACC and YACC.  When X is outside the range of XA or Y
+     is outside the range of YA, the error code 'GSL_EDOM' is returned.
+
+
+File: gsl-ref.info,  Node: 2D Higher-level Interface,  Next: 2D Interpolation Example programs,  Prev: 2D Evaluation of Interpolating Functions,  Up: Interpolation
+
+28.14 2D Higher-level Interface
+===============================
+
+The functions described in the previous sections required the user to
+supply pointers to the x, y, and z arrays on each call.  The following
+functions are equivalent to the corresponding 'gsl_interp2d' functions
+but maintain a copy of this data in the 'gsl_spline2d' object.  This
+removes the need to pass XA, YA, and ZA as arguments on each evaluation.
+These functions are defined in the header file 'gsl_spline2d.h'.
+
+ -- Function: gsl_spline2d * gsl_spline2d_alloc (const gsl_interp2d_type
+          * T, size_t XSIZE, size_t YSIZE)
+
+ -- Function: int gsl_spline2d_init (gsl_spline2d * SPLINE, const double
+          XA[], const double YA[], const double ZA[], size_t XSIZE,
+          size_t YSIZE)
+
+ -- Function: void gsl_spline2d_free (gsl_spline2d * SPLINE)
+
+ -- Function: const char * gsl_spline2d_name (const gsl_spline2d *
+          SPLINE)
+
+ -- Function: unsigned int gsl_spline2d_min_size (const gsl_spline2d *
+          SPLINE)
+
+ -- Function: double gsl_spline2d_eval (const gsl_spline2d * SPLINE,
+          const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_e (const gsl_spline2d * SPLINE,
+          const double X, const double Y, gsl_interp_accel * XACC,
+          gsl_interp_accel * YACC, double * Z)
+
+ -- Function: double gsl_spline2d_eval_deriv_x (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_deriv_x_e (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC, double * D)
+
+ -- Function: double gsl_spline2d_eval_deriv_y (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_deriv_y_e (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC, double * D)
+
+ -- Function: double gsl_spline2d_eval_deriv_xx (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_deriv_xx_e (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC, double * D)
+
+ -- Function: double gsl_spline2d_eval_deriv_yy (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_deriv_yy_e (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC, double * D)
+
+ -- Function: double gsl_spline2d_eval_deriv_xy (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC)
+ -- Function: int gsl_spline2d_eval_deriv_xy_e (const gsl_spline2d *
+          SPLINE, const double X, const double Y, gsl_interp_accel *
+          XACC, gsl_interp_accel * YACC, double * D)
+
+ -- Function: int gsl_spline2d_set (const gsl_spline2d * SPLINE, double
+          ZA[], const size_t I, const size_t J, const double Z)
+
+ -- Function: double gsl_spline2d_get (const gsl_spline2d * SPLINE,
+          const double ZA[], const size_t I, const size_t J)
+     This function returns the value z_{ij} for grid point (I,J) stored
+     in the array ZA.
+
+
+File: gsl-ref.info,  Node: 2D Interpolation Example programs,  Prev: 2D Higher-level Interface,  Up: Interpolation
+
+28.15 2D Interpolation Example programs
+=======================================
+
+The following example performs bilinear interpolation on the unit
+square, using z values of (0,1,0.5,1) going clockwise around the square.
+
+     #include <stdio.h>
+     #include <stdlib.h>
+
+     #include <gsl/gsl_math.h>
+     #include <gsl/gsl_interp2d.h>
+     #include <gsl/gsl_spline2d.h>
+
+     int
+     main()
+     {
+       const gsl_interp2d_type *T = gsl_interp2d_bilinear;
+       const size_t N = 100;             /* number of points to interpolate */
+       const double xa[] = { 0.0, 1.0 }; /* define unit square */
+       const double ya[] = { 0.0, 1.0 };
+       const size_t nx = sizeof(xa) / sizeof(double); /* x grid points */
+       const size_t ny = sizeof(ya) / sizeof(double); /* y grid points */
+       double *za = malloc(nx * ny * sizeof(double));
+       gsl_spline2d *spline = gsl_spline2d_alloc(T, nx, ny);
+       gsl_interp_accel *xacc = gsl_interp_accel_alloc();
+       gsl_interp_accel *yacc = gsl_interp_accel_alloc();
+       size_t i, j;
+
+       /* set z grid values */
+       gsl_spline2d_set(spline, za, 0, 0, 0.0);
+       gsl_spline2d_set(spline, za, 0, 1, 1.0);
+       gsl_spline2d_set(spline, za, 1, 1, 0.5);
+       gsl_spline2d_set(spline, za, 1, 0, 1.0);
+
+       /* initialize interpolation */
+       gsl_spline2d_init(spline, xa, ya, za, nx, ny);
+
+       /* interpolate N values in x and y and print out grid for plotting */
+       for (i = 0; i < N; ++i)
+         {
+           double xi = i / (N - 1.0);
+
+           for (j = 0; j < N; ++j)
+             {
+               double yj = j / (N - 1.0);
+               double zij = gsl_spline2d_eval(spline, xi, yj, xacc, yacc);
+
+               printf("%f %f %f\n", xi, yj, zij);
+             }
+           printf("\n");
+         }
+
+       gsl_spline2d_free(spline);
+       gsl_interp_accel_free(xacc);
+       gsl_interp_accel_free(yacc);
+       free(za);
+
+       return 0;
+     }
+
+The results of the interpolation are shown in the following plot, where
+the corners are labeled with their fixed z values.
 
 
 File: gsl-ref.info,  Node: Numerical Differentiation,  Next: Chebyshev Approximations,  Prev: Interpolation,  Up: Top
 
-28 Numerical Differentiation
+29 Numerical Differentiation
 ****************************
 
 The functions described in this chapter compute numerical derivatives by
@@ -5113,7 +6118,7 @@ These functions are declared in the header file 'gsl_deriv.h'.
 
 File: gsl-ref.info,  Node: Numerical Differentiation functions,  Next: Numerical Differentiation Examples,  Up: Numerical Differentiation
 
-28.1 Functions
+29.1 Functions
 ==============
 
  -- Function: int gsl_deriv_central (const gsl_function * F, double X,
@@ -5166,7 +6171,7 @@ File: gsl-ref.info,  Node: Numerical Differentiation functions,  Next: Numerical
 
 File: gsl-ref.info,  Node: Numerical Differentiation Examples,  Next: Numerical Differentiation References,  Prev: Numerical Differentiation functions,  Up: Numerical Differentiation
 
-28.2 Examples
+29.2 Examples
 =============
 
 The following code estimates the derivative of the function f(x) =
@@ -5179,6 +6184,7 @@ the derivative at x=0 is computed using 'gsl_deriv_forward'.
 
      double f (double x, void * params)
      {
+       (void)(params); /* avoid unused parameter warning */
        return pow (x, 1.5);
      }
 
@@ -5211,7 +6217,7 @@ Here is the output of the program,
      $ ./a.out
      f(x) = x^(3/2)
      x = 2.0
-     f'(x) = 2.1213203120 +/- 0.0000004064
+     f'(x) = 2.1213203120 +/- 0.0000005006
      exact = 2.1213203436
 
      x = 0.0
@@ -5221,7 +6227,7 @@ Here is the output of the program,
 
 File: gsl-ref.info,  Node: Numerical Differentiation References,  Prev: Numerical Differentiation Examples,  Up: Numerical Differentiation
 
-28.3 References and Further Reading
+29.3 References and Further Reading
 ===================================
 
 The algorithms used by these functions are described in the following
@@ -5236,7 +6242,7 @@ sources:
 
 File: gsl-ref.info,  Node: Chebyshev Approximations,  Next: Series Acceleration,  Prev: Numerical Differentiation,  Up: Top
 
-29 Chebyshev Approximations
+30 Chebyshev Approximations
 ***************************
 
 This chapter describes routines for computing Chebyshev approximations
@@ -5263,7 +6269,7 @@ file 'gsl_chebyshev.h'.
 
 File: gsl-ref.info,  Node: Chebyshev Definitions,  Next: Creation and Calculation of Chebyshev Series,  Up: Chebyshev Approximations
 
-29.1 Definitions
+30.1 Definitions
 ================
 
 A Chebyshev series is stored using the following structure,
@@ -5288,7 +6294,7 @@ which is needed when accessing the coefficients directly.
 
 File: gsl-ref.info,  Node: Creation and Calculation of Chebyshev Series,  Next: Auxiliary Functions for Chebyshev Series,  Prev: Chebyshev Definitions,  Up: Chebyshev Approximations
 
-29.2 Creation and Calculation of Chebyshev Series
+30.2 Creation and Calculation of Chebyshev Series
 =================================================
 
  -- Function: gsl_cheb_series * gsl_cheb_alloc (const size_t N)
@@ -5308,7 +6314,7 @@ File: gsl-ref.info,  Node: Creation and Calculation of Chebyshev Series,  Next: 
 
 File: gsl-ref.info,  Node: Auxiliary Functions for Chebyshev Series,  Next: Chebyshev Series Evaluation,  Prev: Creation and Calculation of Chebyshev Series,  Up: Chebyshev Approximations
 
-29.3 Auxiliary Functions
+30.3 Auxiliary Functions
 ========================
 
 The following functions provide information about an existing Chebyshev
@@ -5326,7 +6332,7 @@ series.
 
 File: gsl-ref.info,  Node: Chebyshev Series Evaluation,  Next: Derivatives and Integrals,  Prev: Auxiliary Functions for Chebyshev Series,  Up: Chebyshev Approximations
 
-29.4 Chebyshev Series Evaluation
+30.4 Chebyshev Series Evaluation
 ================================
 
  -- Function: double gsl_cheb_eval (const gsl_cheb_series * CS, double
@@ -5356,7 +6362,7 @@ File: gsl-ref.info,  Node: Chebyshev Series Evaluation,  Next: Derivatives and I
 
 File: gsl-ref.info,  Node: Derivatives and Integrals,  Next: Chebyshev Approximation Examples,  Prev: Chebyshev Series Evaluation,  Up: Chebyshev Approximations
 
-29.5 Derivatives and Integrals
+30.5 Derivatives and Integrals
 ==============================
 
 The following functions allow a Chebyshev series to be differentiated or
@@ -5382,7 +6388,7 @@ neglected.
 
 File: gsl-ref.info,  Node: Chebyshev Approximation Examples,  Next: Chebyshev Approximation References and Further Reading,  Prev: Derivatives and Integrals,  Up: Chebyshev Approximations
 
-29.6 Examples
+30.6 Examples
 =============
 
 The following example program computes Chebyshev approximations to a
@@ -5399,6 +6405,8 @@ visible.
      double
      f (double x, void *p)
      {
+       (void)(p); /* avoid unused parameter warning */
+
        if (x < 0.5)
          return 0.25;
        else
@@ -5440,7 +6448,7 @@ approximation and 40-th order approximation, all sampled at intervals of
 
 File: gsl-ref.info,  Node: Chebyshev Approximation References and Further Reading,  Prev: Chebyshev Approximation Examples,  Up: Chebyshev Approximations
 
-29.7 References and Further Reading
+30.7 References and Further Reading
 ===================================
 
 The following paper describes the use of Chebyshev series,
@@ -5452,7 +6460,7 @@ The following paper describes the use of Chebyshev series,
 
 File: gsl-ref.info,  Node: Series Acceleration,  Next: Wavelet Transforms,  Prev: Chebyshev Approximations,  Up: Top
 
-30 Series Acceleration
+31 Series Acceleration
 **********************
 
 The functions described in this chapter accelerate the convergence of a
@@ -5474,7 +6482,7 @@ asymptotic series.
 
 File: gsl-ref.info,  Node: Acceleration functions,  Next: Acceleration functions without error estimation,  Up: Series Acceleration
 
-30.1 Acceleration functions
+31.1 Acceleration functions
 ===========================
 
 The following functions compute the full Levin u-transform of a series
@@ -5520,7 +6528,7 @@ reliable error estimate.
 
 File: gsl-ref.info,  Node: Acceleration functions without error estimation,  Next: Example of accelerating a series,  Prev: Acceleration functions,  Up: Series Acceleration
 
-30.2 Acceleration functions without error estimation
+31.2 Acceleration functions without error estimation
 ====================================================
 
 The functions described in this section compute the Levin u-transform of
@@ -5568,7 +6576,7 @@ results.
 
 File: gsl-ref.info,  Node: Example of accelerating a series,  Next: Series Acceleration References,  Prev: Acceleration functions without error estimation,  Up: Series Acceleration
 
-30.3 Examples
+31.3 Examples
 =============
 
 The following code calculates an estimate of \zeta(2) = \pi^2 / 6 using
@@ -5612,11 +6620,11 @@ the series converge slowly.
        printf ("term-by-term sum = % .16f using %d terms\n",
                sum, N);
 
-       printf ("term-by-term sum = % .16f using %d terms\n",
+       printf ("term-by-term sum = % .16f using %zu terms\n",
                w->sum_plain, w->terms_used);
 
        printf ("exact value      = % .16f\n", zeta_2);
-       printf ("accelerated sum  = % .16f using %d terms\n",
+       printf ("accelerated sum  = % .16f using %zu terms\n",
                sum_accel, w->terms_used);
 
        printf ("estimated error  = % .16f\n", err);
@@ -5636,9 +6644,9 @@ accurate, giving the correct number of significant digits.
      term-by-term sum =  1.5961632439130233 using 20 terms
      term-by-term sum =  1.5759958390005426 using 13 terms
      exact value      =  1.6449340668482264
-     accelerated sum  =  1.6449340668166479 using 13 terms
-     estimated error  =  0.0000000000508580
-     actual error     = -0.0000000000315785
+     accelerated sum  =  1.6449340669228176 using 13 terms
+     estimated error  =  0.0000000000888360
+     actual error     =  0.0000000000745912
 
 Note that a direct summation of this series would require 10^10 terms to
 achieve the same precision as the accelerated sum does in 13 terms.
@@ -5646,7 +6654,7 @@ achieve the same precision as the accelerated sum does in 13 terms.
 
 File: gsl-ref.info,  Node: Series Acceleration References,  Prev: Example of accelerating a series,  Up: Series Acceleration
 
-30.4 References and Further Reading
+31.4 References and Further Reading
 ===================================
 
 The algorithms used by these functions are described in the following
@@ -5670,7 +6678,7 @@ A review paper on the Levin Transform is available online,
 
 File: gsl-ref.info,  Node: Wavelet Transforms,  Next: Discrete Hankel Transforms,  Prev: Series Acceleration,  Up: Top
 
-31 Wavelet Transforms
+32 Wavelet Transforms
 *********************
 
 This chapter describes functions for performing Discrete Wavelet
@@ -5689,7 +6697,7 @@ header files 'gsl_wavelet.h' and 'gsl_wavelet2d.h'.
 
 File: gsl-ref.info,  Node: DWT Definitions,  Next: DWT Initialization,  Up: Wavelet Transforms
 
-31.1 Definitions
+32.1 Definitions
 ================
 
 The continuous wavelet transform and its inverse are defined by the
@@ -5717,7 +6725,7 @@ referred to as the "fast wavelet transform".
 
 File: gsl-ref.info,  Node: DWT Initialization,  Next: DWT Transform Functions,  Prev: DWT Definitions,  Up: Wavelet Transforms
 
-31.2 Initialization
+32.2 Initialization
 ===================
 
 The 'gsl_wavelet' structure contains the filter coefficients defining
@@ -5782,7 +6790,7 @@ during the transform.
 
 File: gsl-ref.info,  Node: DWT Transform Functions,  Next: DWT Examples,  Prev: DWT Initialization,  Up: Wavelet Transforms
 
-31.3 Transform Functions
+32.3 Transform Functions
 ========================
 
 This sections describes the actual functions performing the discrete
@@ -5799,7 +6807,7 @@ of the transform.
 
 File: gsl-ref.info,  Node: DWT in one dimension,  Next: DWT in two dimension,  Up: DWT Transform Functions
 
-31.3.1 Wavelet transforms in one dimension
+32.3.1 Wavelet transforms in one dimension
 ------------------------------------------
 
  -- Function: int gsl_wavelet_transform (const gsl_wavelet * W, double *
@@ -5841,7 +6849,7 @@ File: gsl-ref.info,  Node: DWT in one dimension,  Next: DWT in two dimension,  U
 
 File: gsl-ref.info,  Node: DWT in two dimension,  Prev: DWT in one dimension,  Up: DWT Transform Functions
 
-31.3.2 Wavelet transforms in two dimension
+32.3.2 Wavelet transforms in two dimension
 ------------------------------------------
 
 The library provides functions to perform two-dimensional discrete
@@ -5927,7 +6935,7 @@ file 'gsl_wavelet2d.h'.
 
 File: gsl-ref.info,  Node: DWT Examples,  Next: DWT References,  Prev: DWT Transform Functions,  Up: Wavelet Transforms
 
-31.4 Examples
+32.4 Examples
 =============
 
 The following program demonstrates the use of the one-dimensional
@@ -5943,6 +6951,7 @@ transform, while setting the others to zero.
      int
      main (int argc, char **argv)
      {
+       (void)(argc); /* avoid unused parameter warning */
        int i, n = 256, nc = 20;
        double *data = malloc (n * sizeof (double));
        double *abscoeff = malloc (n * sizeof (double));
@@ -5992,13 +7001,13 @@ transform, while setting the others to zero.
 
 The output can be used with the GNU plotutils 'graph' program,
 
-     $ ./a.out ecg.dat > dwt.dat
-     $ graph -T ps -x 0 256 32 -h 0.3 -a dwt.dat > dwt.ps
+     $ ./a.out ecg.dat > dwt.txt
+     $ graph -T ps -x 0 256 32 -h 0.3 -a dwt.txt > dwt.ps
 
 
 File: gsl-ref.info,  Node: DWT References,  Prev: DWT Examples,  Up: Wavelet Transforms
 
-31.5 References and Further Reading
+32.5 References and Further Reading
 ===================================
 
 The mathematical background to wavelet transforms is covered in the
@@ -6052,7 +7061,7 @@ The PhysioNet archive of physiological datasets can be found online at
 
 File: gsl-ref.info,  Node: Discrete Hankel Transforms,  Next: One dimensional Root-Finding,  Prev: Wavelet Transforms,  Up: Top
 
-32 Discrete Hankel Transforms
+33 Discrete Hankel Transforms
 *****************************
 
 This chapter describes functions for performing Discrete Hankel
@@ -6068,42 +7077,64 @@ Transforms (DHTs).  The functions are declared in the header file
 
 File: gsl-ref.info,  Node: Discrete Hankel Transform Definition,  Next: Discrete Hankel Transform Functions,  Up: Discrete Hankel Transforms
 
-32.1 Definitions
+33.1 Definitions
 ================
 
 The discrete Hankel transform acts on a vector of sampled data, where
 the samples are assumed to have been taken at points related to the
-zeroes of a Bessel function of fixed order; compare this to the case of
+zeros of a Bessel function of fixed order; compare this to the case of
 the discrete Fourier transform, where samples are taken at points
 related to the zeroes of the sine or cosine function.
 
-   Specifically, let f(t) be a function on the unit interval and
-j_(\nu,m) the m-th zero of the Bessel function J_\nu(x).  Then the
-finite \nu-Hankel transform of f(t) is defined to be the set of numbers
-g_m given by,
-     g_m = \int_0^1 t dt J_\nu(j_(\nu,m)t) f(t),
+   Starting with its definition, the Hankel transform (or Bessel
+transform) of order \nu of a function f with \nu > -1/2 is defined as
+(see Johnson, 1987 and Lemoine, 1994)
+     F_\nu(u) = \int_0^\infty f(t) J_\nu(u t) t dt
 
-so that,
-     f(t) = \sum_{m=1}^\infty (2 J_\nu(j_(\nu,m)t) / J_(\nu+1)(j_(\nu,m))^2) g_m.
+If the integral exists, F_\nu is called the Hankel transformation of f.
+The reverse transform is given by
+     f(t) = \int_0^\infty F_\nu(u) J_\nu(u t) u du ,
 
-Suppose that f is band-limited in the sense that g_m=0 for m > M.  Then
-we have the following fundamental sampling theorem.
-     g_m = (2 / j_(\nu,M)^2)
-           \sum_{k=1}^{M-1} f(j_(\nu,k)/j_(\nu,M))
+where \int_0^\infty f(t) t^{1/2} dt must exist and be absolutely
+convergent, and where f(t) satisfies Dirichlet's conditions (of limited
+total fluctuations) in the interval [0,\infty].
+
+   Now the discrete Hankel transform works on a discrete function f,
+which is sampled on points n=1...M located at positions
+t_n=(j_{\nu,n}/j_{\nu,M}) X in real space and at u_n=j_{\nu,n}/X in
+reciprocal space.  Here, j_{\nu,m} are the m-th zeros of the Bessel
+function J_\nu(x) arranged in ascending order.  Moreover, the discrete
+functions are assumed to be band limited, so f(t_n)=0 and F(u_n)=0 for
+n>M.  Accordingly, the function f is defined on the interval [0,X].
+
+   Following the work of Johnson, 1987 and Lemoine, 1994, the discrete
+Hankel transform is given by
+     F_\nu(u_m) = (2 X^2 / j_(\nu,M)^2)
+           \sum_{k=1}^{M-1} f(j_(\nu,k) X/j_(\nu,M))
                (J_\nu(j_(\nu,m) j_(\nu,k) / j_(\nu,M)) / J_(\nu+1)(j_(\nu,k))^2).
 
 It is this discrete expression which defines the discrete Hankel
-transform.  The kernel in the summation above defines the matrix of the
+transform calculated by GSL. In GSL, forward and backward transforms are
+defined equally and calculate F_\nu(u_m).  Following Johnson, the
+backward transform reads
+     f(t_k) = (2 / X^2)
+           \sum_{m=1}^{M-1} F(j_(\nu,m)/X)
+               (J_\nu(j_(\nu,m) j_(\nu,k) / j_(\nu,M)) / J_(\nu+1)(j_(\nu,m))^2).
+
+Obviously, using the forward transform instead of the backward transform
+gives an additional factor X^4/j_{\nu,M}^2=t_m^2/u_m^2.
+
+   The kernel in the summation above defines the matrix of the
 \nu-Hankel transform of size M-1.  The coefficients of this matrix,
 being dependent on \nu and M, must be precomputed and stored; the
 'gsl_dht' object encapsulates this data.  The allocation function
 'gsl_dht_alloc' returns a 'gsl_dht' object which must be properly
 initialized with 'gsl_dht_init' before it can be used to perform
 transforms on data sample vectors, for fixed \nu and M, using the
-'gsl_dht_apply' function.  The implementation allows a scaling of the
-fundamental interval, for convenience, so that one can assume the
-function is defined on the interval [0,X], rather than the unit
-interval.
+'gsl_dht_apply' function.  The implementation allows to define the
+length X of the fundamental interval, for convenience, while discrete
+Hankel transforms are often defined on the unit interval instead of
+[0,X].
 
    Notice that by assumption f(t) vanishes at the endpoints of the
 interval, consistent with the inversion formula and the sampling formula
@@ -6114,7 +7145,7 @@ differential equation.
 
 File: gsl-ref.info,  Node: Discrete Hankel Transform Functions,  Next: Discrete Hankel Transform References,  Prev: Discrete Hankel Transform Definition,  Up: Discrete Hankel Transforms
 
-32.2 Functions
+33.2 Functions
 ==============
 
  -- Function: gsl_dht * gsl_dht_alloc (size_t SIZE)
@@ -6154,7 +7185,7 @@ File: gsl-ref.info,  Node: Discrete Hankel Transform Functions,  Next: Discrete 
 
 File: gsl-ref.info,  Node: Discrete Hankel Transform References,  Prev: Discrete Hankel Transform Functions,  Up: Discrete Hankel Transforms
 
-32.3 References and Further Reading
+33.3 References and Further Reading
 ===================================
 
 The algorithms used by these functions are described in the following
@@ -6167,7 +7198,7 @@ papers,
 
 File: gsl-ref.info,  Node: One dimensional Root-Finding,  Next: One dimensional Minimization,  Prev: Discrete Hankel Transforms,  Up: Top
 
-33 One dimensional Root-Finding
+34 One dimensional Root-Finding
 *******************************
 
 This chapter describes routines for finding roots of arbitrary
@@ -6200,7 +7231,7 @@ finding functions and related declarations.
 
 File: gsl-ref.info,  Node: Root Finding Overview,  Next: Root Finding Caveats,  Up: One dimensional Root-Finding
 
-33.1 Overview
+34.1 Overview
 =============
 
 One-dimensional root finding algorithms can be divided into two classes,
@@ -6236,1150 +7267,4 @@ The updating procedure uses only function evaluations (not derivatives).
 The state for root polishing solvers is held in a 'gsl_root_fdfsolver'
 struct.  The updates require both the function and its derivative (hence
 the name 'fdf') to be supplied by the user.
-
-
-File: gsl-ref.info,  Node: Root Finding Caveats,  Next: Initializing the Solver,  Prev: Root Finding Overview,  Up: One dimensional Root-Finding
-
-33.2 Caveats
-============
-
-Note that root finding functions can only search for one root at a time.
-When there are several roots in the search area, the first root to be
-found will be returned; however it is difficult to predict which of the
-roots this will be.  _In most cases, no error will be reported if you
-try to find a root in an area where there is more than one._
-
-   Care must be taken when a function may have a multiple root (such as
-f(x) = (x-x_0)^2 or f(x) = (x-x_0)^3).  It is not possible to use
-root-bracketing algorithms on even-multiplicity roots.  For these
-algorithms the initial interval must contain a zero-crossing, where the
-function is negative at one end of the interval and positive at the
-other end.  Roots with even-multiplicity do not cross zero, but only
-touch it instantaneously.  Algorithms based on root bracketing will
-still work for odd-multiplicity roots (e.g.  cubic, quintic, ...).  Root
-polishing algorithms generally work with higher multiplicity roots, but
-at a reduced rate of convergence.  In these cases the "Steffenson
-algorithm" can be used to accelerate the convergence of multiple roots.
-
-   While it is not absolutely required that f have a root within the
-search region, numerical root finding functions should not be used
-haphazardly to check for the _existence_ of roots.  There are better
-ways to do this.  Because it is easy to create situations where
-numerical root finders can fail, it is a bad idea to throw a root finder
-at a function you do not know much about.  In general it is best to
-examine the function visually by plotting before searching for a root.
-
-
-File: gsl-ref.info,  Node: Initializing the Solver,  Next: Providing the function to solve,  Prev: Root Finding Caveats,  Up: One dimensional Root-Finding
-
-33.3 Initializing the Solver
-============================
-
- -- Function: gsl_root_fsolver * gsl_root_fsolver_alloc (const
-          gsl_root_fsolver_type * T)
-     This function returns a pointer to a newly allocated instance of a
-     solver of type T.  For example, the following code creates an
-     instance of a bisection solver,
-
-          const gsl_root_fsolver_type * T
-            = gsl_root_fsolver_bisection;
-          gsl_root_fsolver * s
-            = gsl_root_fsolver_alloc (T);
-
-     If there is insufficient memory to create the solver then the
-     function returns a null pointer and the error handler is invoked
-     with an error code of 'GSL_ENOMEM'.
-
- -- Function: gsl_root_fdfsolver * gsl_root_fdfsolver_alloc (const
-          gsl_root_fdfsolver_type * T)
-     This function returns a pointer to a newly allocated instance of a
-     derivative-based solver of type T.  For example, the following code
-     creates an instance of a Newton-Raphson solver,
-
-          const gsl_root_fdfsolver_type * T
-            = gsl_root_fdfsolver_newton;
-          gsl_root_fdfsolver * s
-            = gsl_root_fdfsolver_alloc (T);
-
-     If there is insufficient memory to create the solver then the
-     function returns a null pointer and the error handler is invoked
-     with an error code of 'GSL_ENOMEM'.
-
- -- Function: int gsl_root_fsolver_set (gsl_root_fsolver * S,
-          gsl_function * F, double X_LOWER, double X_UPPER)
-     This function initializes, or reinitializes, an existing solver S
-     to use the function F and the initial search interval [X_LOWER,
-     X_UPPER].
-
- -- Function: int gsl_root_fdfsolver_set (gsl_root_fdfsolver * S,
-          gsl_function_fdf * FDF, double ROOT)
-     This function initializes, or reinitializes, an existing solver S
-     to use the function and derivative FDF and the initial guess ROOT.
-
- -- Function: void gsl_root_fsolver_free (gsl_root_fsolver * S)
- -- Function: void gsl_root_fdfsolver_free (gsl_root_fdfsolver * S)
-     These functions free all the memory associated with the solver S.
-
- -- Function: const char * gsl_root_fsolver_name (const gsl_root_fsolver
-          * S)
- -- Function: const char * gsl_root_fdfsolver_name (const
-          gsl_root_fdfsolver * S)
-     These functions return a pointer to the name of the solver.  For
-     example,
-
-          printf ("s is a '%s' solver\n",
-                  gsl_root_fsolver_name (s));
-
-     would print something like 's is a 'bisection' solver'.
-
-
-File: gsl-ref.info,  Node: Providing the function to solve,  Next: Search Bounds and Guesses,  Prev: Initializing the Solver,  Up: One dimensional Root-Finding
-
-33.4 Providing the function to solve
-====================================
-
-You must provide a continuous function of one variable for the root
-finders to operate on, and, sometimes, its first derivative.  In order
-to allow for general parameters the functions are defined by the
-following data types:
-
- -- Data Type: gsl_function
-     This data type defines a general function with parameters.
-
-     'double (* function) (double X, void * PARAMS)'
-          this function should return the value f(x,params) for argument
-          X and parameters PARAMS
-
-     'void * params'
-          a pointer to the parameters of the function
-
-   Here is an example for the general quadratic function,
-
-     f(x) = a x^2 + b x + c
-
-with a = 3, b = 2, c = 1.  The following code defines a 'gsl_function'
-'F' which you could pass to a root finder as a function pointer:
-
-     struct my_f_params { double a; double b; double c; };
-
-     double
-     my_f (double x, void * p) {
-        struct my_f_params * params
-          = (struct my_f_params *)p;
-        double a = (params->a);
-        double b = (params->b);
-        double c = (params->c);
-
-        return  (a * x + b) * x + c;
-     }
-
-     gsl_function F;
-     struct my_f_params params = { 3.0, 2.0, 1.0 };
-
-     F.function = &my_f;
-     F.params = &params;
-
-The function f(x) can be evaluated using the macro 'GSL_FN_EVAL(&F,x)'
-defined in 'gsl_math.h'.
-
- -- Data Type: gsl_function_fdf
-     This data type defines a general function with parameters and its
-     first derivative.
-
-     'double (* f) (double X, void * PARAMS)'
-          this function should return the value of f(x,params) for
-          argument X and parameters PARAMS
-
-     'double (* df) (double X, void * PARAMS)'
-          this function should return the value of the derivative of F
-          with respect to X, f'(x,params), for argument X and parameters
-          PARAMS
-
-     'void (* fdf) (double X, void * PARAMS, double * F, double * DF)'
-          this function should set the values of the function F to
-          f(x,params) and its derivative DF to f'(x,params) for argument
-          X and parameters PARAMS.  This function provides an
-          optimization of the separate functions for f(x) and f'(x)--it
-          is always faster to compute the function and its derivative at
-          the same time.
-
-     'void * params'
-          a pointer to the parameters of the function
-
-   Here is an example where f(x) = 2\exp(2x):
-
-     double
-     my_f (double x, void * params)
-     {
-        return exp (2 * x);
-     }
-
-     double
-     my_df (double x, void * params)
-     {
-        return 2 * exp (2 * x);
-     }
-
-     void
-     my_fdf (double x, void * params,
-             double * f, double * df)
-     {
-        double t = exp (2 * x);
-
-        *f = t;
-        *df = 2 * t;   /* uses existing value */
-     }
-
-     gsl_function_fdf FDF;
-
-     FDF.f = &my_f;
-     FDF.df = &my_df;
-     FDF.fdf = &my_fdf;
-     FDF.params = 0;
-
-The function f(x) can be evaluated using the macro
-'GSL_FN_FDF_EVAL_F(&FDF,x)' and the derivative f'(x) can be evaluated
-using the macro 'GSL_FN_FDF_EVAL_DF(&FDF,x)'.  Both the function y =
-f(x) and its derivative dy = f'(x) can be evaluated at the same time
-using the macro 'GSL_FN_FDF_EVAL_F_DF(&FDF,x,y,dy)'.  The macro stores
-f(x) in its Y argument and f'(x) in its DY argument--both of these
-should be pointers to 'double'.
-
-
-File: gsl-ref.info,  Node: Search Bounds and Guesses,  Next: Root Finding Iteration,  Prev: Providing the function to solve,  Up: One dimensional Root-Finding
-
-33.5 Search Bounds and Guesses
-==============================
-
-You provide either search bounds or an initial guess; this section
-explains how search bounds and guesses work and how function arguments
-control them.
-
-   A guess is simply an x value which is iterated until it is within the
-desired precision of a root.  It takes the form of a 'double'.
-
-   Search bounds are the endpoints of an interval which is iterated
-until the length of the interval is smaller than the requested
-precision.  The interval is defined by two values, the lower limit and
-the upper limit.  Whether the endpoints are intended to be included in
-the interval or not depends on the context in which the interval is
-used.
-
-
-File: gsl-ref.info,  Node: Root Finding Iteration,  Next: Search Stopping Parameters,  Prev: Search Bounds and Guesses,  Up: One dimensional Root-Finding
-
-33.6 Iteration
-==============
-
-The following functions drive the iteration of each algorithm.  Each
-function performs one iteration to update the state of any solver of the
-corresponding type.  The same functions work for all solvers so that
-different methods can be substituted at runtime without modifications to
-the code.
-
- -- Function: int gsl_root_fsolver_iterate (gsl_root_fsolver * S)
- -- Function: int gsl_root_fdfsolver_iterate (gsl_root_fdfsolver * S)
-     These functions perform a single iteration of the solver S.  If the
-     iteration encounters an unexpected problem then an error code will
-     be returned,
-
-     'GSL_EBADFUNC'
-          the iteration encountered a singular point where the function
-          or its derivative evaluated to 'Inf' or 'NaN'.
-
-     'GSL_EZERODIV'
-          the derivative of the function vanished at the iteration
-          point, preventing the algorithm from continuing without a
-          division by zero.
-
-   The solver maintains a current best estimate of the root at all
-times.  The bracketing solvers also keep track of the current best
-interval bounding the root.  This information can be accessed with the
-following auxiliary functions,
-
- -- Function: double gsl_root_fsolver_root (const gsl_root_fsolver * S)
- -- Function: double gsl_root_fdfsolver_root (const gsl_root_fdfsolver *
-          S)
-     These functions return the current estimate of the root for the
-     solver S.
-
- -- Function: double gsl_root_fsolver_x_lower (const gsl_root_fsolver *
-          S)
- -- Function: double gsl_root_fsolver_x_upper (const gsl_root_fsolver *
-          S)
-     These functions return the current bracketing interval for the
-     solver S.
-
-
-File: gsl-ref.info,  Node: Search Stopping Parameters,  Next: Root Bracketing Algorithms,  Prev: Root Finding Iteration,  Up: One dimensional Root-Finding
-
-33.7 Search Stopping Parameters
-===============================
-
-A root finding procedure should stop when one of the following
-conditions is true:
-
-   * A root has been found to within the user-specified precision.
-
-   * A user-specified maximum number of iterations has been reached.
-
-   * An error has occurred.
-
-The handling of these conditions is under user control.  The functions
-below allow the user to test the precision of the current result in
-several standard ways.
-
- -- Function: int gsl_root_test_interval (double X_LOWER, double
-          X_UPPER, double EPSABS, double EPSREL)
-     This function tests for the convergence of the interval [X_LOWER,
-     X_UPPER] with absolute error EPSABS and relative error EPSREL.  The
-     test returns 'GSL_SUCCESS' if the following condition is achieved,
-
-          |a - b| < epsabs + epsrel min(|a|,|b|)
-
-     when the interval x = [a,b] does not include the origin.  If the
-     interval includes the origin then \min(|a|,|b|) is replaced by zero
-     (which is the minimum value of |x| over the interval).  This
-     ensures that the relative error is accurately estimated for roots
-     close to the origin.
-
-     This condition on the interval also implies that any estimate of
-     the root r in the interval satisfies the same condition with
-     respect to the true root r^*,
-
-          |r - r^*| < epsabs + epsrel r^*
-
-     assuming that the true root r^* is contained within the interval.
-
- -- Function: int gsl_root_test_delta (double X1, double X0, double
-          EPSABS, double EPSREL)
-
-     This function tests for the convergence of the sequence ..., X0, X1
-     with absolute error EPSABS and relative error EPSREL.  The test
-     returns 'GSL_SUCCESS' if the following condition is achieved,
-
-          |x_1 - x_0| < epsabs + epsrel |x_1|
-
-     and returns 'GSL_CONTINUE' otherwise.
-
- -- Function: int gsl_root_test_residual (double F, double EPSABS)
-     This function tests the residual value F against the absolute error
-     bound EPSABS.  The test returns 'GSL_SUCCESS' if the following
-     condition is achieved,
-
-          |f| < epsabs
-
-     and returns 'GSL_CONTINUE' otherwise.  This criterion is suitable
-     for situations where the precise location of the root, x, is
-     unimportant provided a value can be found where the residual,
-     |f(x)|, is small enough.
-
-
-File: gsl-ref.info,  Node: Root Bracketing Algorithms,  Next: Root Finding Algorithms using Derivatives,  Prev: Search Stopping Parameters,  Up: One dimensional Root-Finding
-
-33.8 Root Bracketing Algorithms
-===============================
-
-The root bracketing algorithms described in this section require an
-initial interval which is guaranteed to contain a root--if a and b are
-the endpoints of the interval then f(a) must differ in sign from f(b).
-This ensures that the function crosses zero at least once in the
-interval.  If a valid initial interval is used then these algorithm
-cannot fail, provided the function is well-behaved.
-
-   Note that a bracketing algorithm cannot find roots of even degree,
-since these do not cross the x-axis.
-
- -- Solver: gsl_root_fsolver_bisection
-
-     The "bisection algorithm" is the simplest method of bracketing the
-     roots of a function.  It is the slowest algorithm provided by the
-     library, with linear convergence.
-
-     On each iteration, the interval is bisected and the value of the
-     function at the midpoint is calculated.  The sign of this value is
-     used to determine which half of the interval does not contain a
-     root.  That half is discarded to give a new, smaller interval
-     containing the root.  This procedure can be continued indefinitely
-     until the interval is sufficiently small.
-
-     At any time the current estimate of the root is taken as the
-     midpoint of the interval.
-
- -- Solver: gsl_root_fsolver_falsepos
-
-     The "false position algorithm" is a method of finding roots based
-     on linear interpolation.  Its convergence is linear, but it is
-     usually faster than bisection.
-
-     On each iteration a line is drawn between the endpoints (a,f(a))
-     and (b,f(b)) and the point where this line crosses the x-axis taken
-     as a "midpoint".  The value of the function at this point is
-     calculated and its sign is used to determine which side of the
-     interval does not contain a root.  That side is discarded to give a
-     new, smaller interval containing the root.  This procedure can be
-     continued indefinitely until the interval is sufficiently small.
-
-     The best estimate of the root is taken from the linear
-     interpolation of the interval on the current iteration.
-
- -- Solver: gsl_root_fsolver_brent
-
-     The "Brent-Dekker method" (referred to here as "Brent's method")
-     combines an interpolation strategy with the bisection algorithm.
-     This produces a fast algorithm which is still robust.
-
-     On each iteration Brent's method approximates the function using an
-     interpolating curve.  On the first iteration this is a linear
-     interpolation of the two endpoints.  For subsequent iterations the
-     algorithm uses an inverse quadratic fit to the last three points,
-     for higher accuracy.  The intercept of the interpolating curve with
-     the x-axis is taken as a guess for the root.  If it lies within the
-     bounds of the current interval then the interpolating point is
-     accepted, and used to generate a smaller interval.  If the
-     interpolating point is not accepted then the algorithm falls back
-     to an ordinary bisection step.
-
-     The best estimate of the root is taken from the most recent
-     interpolation or bisection.
-
-
-File: gsl-ref.info,  Node: Root Finding Algorithms using Derivatives,  Next: Root Finding Examples,  Prev: Root Bracketing Algorithms,  Up: One dimensional Root-Finding
-
-33.9 Root Finding Algorithms using Derivatives
-==============================================
-
-The root polishing algorithms described in this section require an
-initial guess for the location of the root.  There is no absolute
-guarantee of convergence--the function must be suitable for this
-technique and the initial guess must be sufficiently close to the root
-for it to work.  When these conditions are satisfied then convergence is
-quadratic.
-
-   These algorithms make use of both the function and its derivative.
-
- -- Derivative Solver: gsl_root_fdfsolver_newton
-
-     Newton's Method is the standard root-polishing algorithm.  The
-     algorithm begins with an initial guess for the location of the
-     root.  On each iteration, a line tangent to the function f is drawn
-     at that position.  The point where this line crosses the x-axis
-     becomes the new guess.  The iteration is defined by the following
-     sequence,
-
-          x_{i+1} = x_i - f(x_i)/f'(x_i)
-
-     Newton's method converges quadratically for single roots, and
-     linearly for multiple roots.
-
- -- Derivative Solver: gsl_root_fdfsolver_secant
-
-     The "secant method" is a simplified version of Newton's method
-     which does not require the computation of the derivative on every
-     step.
-
-     On its first iteration the algorithm begins with Newton's method,
-     using the derivative to compute a first step,
-
-          x_1 = x_0 - f(x_0)/f'(x_0)
-
-     Subsequent iterations avoid the evaluation of the derivative by
-     replacing it with a numerical estimate, the slope of the line
-     through the previous two points,
-
-          x_{i+1} = x_i f(x_i) / f'_{est} where
-           f'_{est} = (f(x_i) - f(x_{i-1})/(x_i - x_{i-1})
-
-     When the derivative does not change significantly in the vicinity
-     of the root the secant method gives a useful saving.
-     Asymptotically the secant method is faster than Newton's method
-     whenever the cost of evaluating the derivative is more than 0.44
-     times the cost of evaluating the function itself.  As with all
-     methods of computing a numerical derivative the estimate can suffer
-     from cancellation errors if the separation of the points becomes
-     too small.
-
-     On single roots, the method has a convergence of order (1 + \sqrt
-     5)/2 (approximately 1.62).  It converges linearly for multiple
-     roots.
-
- -- Derivative Solver: gsl_root_fdfsolver_steffenson
-
-     The "Steffenson Method"(1) provides the fastest convergence of all
-     the routines.  It combines the basic Newton algorithm with an
-     Aitken "delta-squared" acceleration.  If the Newton iterates are
-     x_i then the acceleration procedure generates a new sequence R_i,
-
-          R_i = x_i - (x_{i+1} - x_i)^2 / (x_{i+2} - 2 x_{i+1} + x_{i})
-
-     which converges faster than the original sequence under reasonable
-     conditions.  The new sequence requires three terms before it can
-     produce its first value so the method returns accelerated values on
-     the second and subsequent iterations.  On the first iteration it
-     returns the ordinary Newton estimate.  The Newton iterate is also
-     returned if the denominator of the acceleration term ever becomes
-     zero.
-
-     As with all acceleration procedures this method can become unstable
-     if the function is not well-behaved.
-
-   ---------- Footnotes ----------
-
-   (1) J.F. Steffensen (1873-1961).  The spelling used in the name of
-the function is slightly incorrect, but has been preserved to avoid
-incompatibility.
-
-
-File: gsl-ref.info,  Node: Root Finding Examples,  Next: Root Finding References and Further Reading,  Prev: Root Finding Algorithms using Derivatives,  Up: One dimensional Root-Finding
-
-33.10 Examples
-==============
-
-For any root finding algorithm we need to prepare the function to be
-solved.  For this example we will use the general quadratic equation
-described earlier.  We first need a header file ('demo_fn.h') to define
-the function parameters,
-
-     struct quadratic_params
-       {
-         double a, b, c;
-       };
-
-     double quadratic (double x, void *params);
-     double quadratic_deriv (double x, void *params);
-     void quadratic_fdf (double x, void *params,
-                         double *y, double *dy);
-
-We place the function definitions in a separate file ('demo_fn.c'),
-
-     double
-     quadratic (double x, void *params)
-     {
-       struct quadratic_params *p
-         = (struct quadratic_params *) params;
-
-       double a = p->a;
-       double b = p->b;
-       double c = p->c;
-
-       return (a * x + b) * x + c;
-     }
-
-     double
-     quadratic_deriv (double x, void *params)
-     {
-       struct quadratic_params *p
-         = (struct quadratic_params *) params;
-
-       double a = p->a;
-       double b = p->b;
-       double c = p->c;
-
-       return 2.0 * a * x + b;
-     }
-
-     void
-     quadratic_fdf (double x, void *params,
-                    double *y, double *dy)
-     {
-       struct quadratic_params *p
-         = (struct quadratic_params *) params;
-
-       double a = p->a;
-       double b = p->b;
-       double c = p->c;
-
-       *y = (a * x + b) * x + c;
-       *dy = 2.0 * a * x + b;
-     }
-
-The first program uses the function solver 'gsl_root_fsolver_brent' for
-Brent's method and the general quadratic defined above to solve the
-following equation,
-
-     x^2 - 5 = 0
-
-with solution x = \sqrt 5 = 2.236068...
-
-     #include <stdio.h>
-     #include <gsl/gsl_errno.h>
-     #include <gsl/gsl_math.h>
-     #include <gsl/gsl_roots.h>
-
-     #include "demo_fn.h"
-     #include "demo_fn.c"
-
-     int
-     main (void)
-     {
-       int status;
-       int iter = 0, max_iter = 100;
-       const gsl_root_fsolver_type *T;
-       gsl_root_fsolver *s;
-       double r = 0, r_expected = sqrt (5.0);
-       double x_lo = 0.0, x_hi = 5.0;
-       gsl_function F;
-       struct quadratic_params params = {1.0, 0.0, -5.0};
-
-       F.function = &quadratic;
-       F.params = &params;
-
-       T = gsl_root_fsolver_brent;
-       s = gsl_root_fsolver_alloc (T);
-       gsl_root_fsolver_set (s, &F, x_lo, x_hi);
-
-       printf ("using %s method\n",
-               gsl_root_fsolver_name (s));
-
-       printf ("%5s [%9s, %9s] %9s %10s %9s\n",
-               "iter", "lower", "upper", "root",
-               "err", "err(est)");
-
-       do
-         {
-           iter++;
-           status = gsl_root_fsolver_iterate (s);
-           r = gsl_root_fsolver_root (s);
-           x_lo = gsl_root_fsolver_x_lower (s);
-           x_hi = gsl_root_fsolver_x_upper (s);
-           status = gsl_root_test_interval (x_lo, x_hi,
-                                            0, 0.001);
-
-           if (status == GSL_SUCCESS)
-             printf ("Converged:\n");
-
-           printf ("%5d [%.7f, %.7f] %.7f %+.7f %.7f\n",
-                   iter, x_lo, x_hi,
-                   r, r - r_expected,
-                   x_hi - x_lo);
-         }
-       while (status == GSL_CONTINUE && iter < max_iter);
-
-       gsl_root_fsolver_free (s);
-
-       return status;
-     }
-
-Here are the results of the iterations,
-
-     $ ./a.out
-     using brent method
-      iter [    lower,     upper]      root        err  err(est)
-         1 [1.0000000, 5.0000000] 1.0000000 -1.2360680 4.0000000
-         2 [1.0000000, 3.0000000] 3.0000000 +0.7639320 2.0000000
-         3 [2.0000000, 3.0000000] 2.0000000 -0.2360680 1.0000000
-         4 [2.2000000, 3.0000000] 2.2000000 -0.0360680 0.8000000
-         5 [2.2000000, 2.2366300] 2.2366300 +0.0005621 0.0366300
-     Converged:
-         6 [2.2360634, 2.2366300] 2.2360634 -0.0000046 0.0005666
-
-If the program is modified to use the bisection solver instead of
-Brent's method, by changing 'gsl_root_fsolver_brent' to
-'gsl_root_fsolver_bisection' the slower convergence of the Bisection
-method can be observed,
-
-     $ ./a.out
-     using bisection method
-      iter [    lower,     upper]      root        err  err(est)
-         1 [0.0000000, 2.5000000] 1.2500000 -0.9860680 2.5000000
-         2 [1.2500000, 2.5000000] 1.8750000 -0.3610680 1.2500000
-         3 [1.8750000, 2.5000000] 2.1875000 -0.0485680 0.6250000
-         4 [2.1875000, 2.5000000] 2.3437500 +0.1076820 0.3125000
-         5 [2.1875000, 2.3437500] 2.2656250 +0.0295570 0.1562500
-         6 [2.1875000, 2.2656250] 2.2265625 -0.0095055 0.0781250
-         7 [2.2265625, 2.2656250] 2.2460938 +0.0100258 0.0390625
-         8 [2.2265625, 2.2460938] 2.2363281 +0.0002601 0.0195312
-         9 [2.2265625, 2.2363281] 2.2314453 -0.0046227 0.0097656
-        10 [2.2314453, 2.2363281] 2.2338867 -0.0021813 0.0048828
-        11 [2.2338867, 2.2363281] 2.2351074 -0.0009606 0.0024414
-     Converged:
-        12 [2.2351074, 2.2363281] 2.2357178 -0.0003502 0.0012207
-
-   The next program solves the same function using a derivative solver
-instead.
-
-     #include <stdio.h>
-     #include <gsl/gsl_errno.h>
-     #include <gsl/gsl_math.h>
-     #include <gsl/gsl_roots.h>
-
-     #include "demo_fn.h"
-     #include "demo_fn.c"
-
-     int
-     main (void)
-     {
-       int status;
-       int iter = 0, max_iter = 100;
-       const gsl_root_fdfsolver_type *T;
-       gsl_root_fdfsolver *s;
-       double x0, x = 5.0, r_expected = sqrt (5.0);
-       gsl_function_fdf FDF;
-       struct quadratic_params params = {1.0, 0.0, -5.0};
-
-       FDF.f = &quadratic;
-       FDF.df = &quadratic_deriv;
-       FDF.fdf = &quadratic_fdf;
-       FDF.params = &params;
-
-       T = gsl_root_fdfsolver_newton;
-       s = gsl_root_fdfsolver_alloc (T);
-       gsl_root_fdfsolver_set (s, &FDF, x);
-
-       printf ("using %s method\n",
-               gsl_root_fdfsolver_name (s));
-
-       printf ("%-5s %10s %10s %10s\n",
-               "iter", "root", "err", "err(est)");
-       do
-         {
-           iter++;
-           status = gsl_root_fdfsolver_iterate (s);
-           x0 = x;
-           x = gsl_root_fdfsolver_root (s);
-           status = gsl_root_test_delta (x, x0, 0, 1e-3);
-
-           if (status == GSL_SUCCESS)
-             printf ("Converged:\n");
-
-           printf ("%5d %10.7f %+10.7f %10.7f\n",
-                   iter, x, x - r_expected, x - x0);
-         }
-       while (status == GSL_CONTINUE && iter < max_iter);
-
-       gsl_root_fdfsolver_free (s);
-       return status;
-     }
-
-Here are the results for Newton's method,
-
-     $ ./a.out
-     using newton method
-     iter        root        err   err(est)
-         1  3.0000000 +0.7639320 -2.0000000
-         2  2.3333333 +0.0972654 -0.6666667
-         3  2.2380952 +0.0020273 -0.0952381
-     Converged:
-         4  2.2360689 +0.0000009 -0.0020263
-
-Note that the error can be estimated more accurately by taking the
-difference between the current iterate and next iterate rather than the
-previous iterate.  The other derivative solvers can be investigated by
-changing 'gsl_root_fdfsolver_newton' to 'gsl_root_fdfsolver_secant' or
-'gsl_root_fdfsolver_steffenson'.
-
-
-File: gsl-ref.info,  Node: Root Finding References and Further Reading,  Prev: Root Finding Examples,  Up: One dimensional Root-Finding
-
-33.11 References and Further Reading
-====================================
-
-For information on the Brent-Dekker algorithm see the following two
-papers,
-
-     R. P. Brent, "An algorithm with guaranteed convergence for finding
-     a zero of a function", 'Computer Journal', 14 (1971) 422-425
-
-     J. C. P. Bus and T. J. Dekker, "Two Efficient Algorithms with
-     Guaranteed Convergence for Finding a Zero of a Function", 'ACM
-     Transactions of Mathematical Software', Vol. 1 No. 4 (1975) 330-345
-
-
-File: gsl-ref.info,  Node: One dimensional Minimization,  Next: Multidimensional Root-Finding,  Prev: One dimensional Root-Finding,  Up: Top
-
-34 One dimensional Minimization
-*******************************
-
-This chapter describes routines for finding minima of arbitrary
-one-dimensional functions.  The library provides low level components
-for a variety of iterative minimizers and convergence tests.  These can
-be combined by the user to achieve the desired solution, with full
-access to the intermediate steps of the algorithms.  Each class of
-methods uses the same framework, so that you can switch between
-minimizers at runtime without needing to recompile your program.  Each
-instance of a minimizer keeps track of its own state, allowing the
-minimizers to be used in multi-threaded programs.
-
-   The header file 'gsl_min.h' contains prototypes for the minimization
-functions and related declarations.  To use the minimization algorithms
-to find the maximum of a function simply invert its sign.
-
-* Menu:
-
-* Minimization Overview::       
-* Minimization Caveats::        
-* Initializing the Minimizer::  
-* Providing the function to minimize::  
-* Minimization Iteration::      
-* Minimization Stopping Parameters::  
-* Minimization Algorithms::     
-* Minimization Examples::       
-* Minimization References and Further Reading::  
-
-
-File: gsl-ref.info,  Node: Minimization Overview,  Next: Minimization Caveats,  Up: One dimensional Minimization
-
-34.1 Overview
-=============
-
-The minimization algorithms begin with a bounded region known to contain
-a minimum.  The region is described by a lower bound a and an upper
-bound b, with an estimate of the location of the minimum x.
-
-The value of the function at x must be less than the value of the
-function at the ends of the interval,
-
-     f(a) > f(x) < f(b)
-
-This condition guarantees that a minimum is contained somewhere within
-the interval.  On each iteration a new point x' is selected using one of
-the available algorithms.  If the new point is a better estimate of the
-minimum, i.e. where f(x') < f(x), then the current estimate of the
-minimum x is updated.  The new point also allows the size of the bounded
-interval to be reduced, by choosing the most compact set of points which
-satisfies the constraint f(a) > f(x) < f(b).  The interval is reduced
-until it encloses the true minimum to a desired tolerance.  This
-provides a best estimate of the location of the minimum and a rigorous
-error estimate.
-
-   Several bracketing algorithms are available within a single
-framework.  The user provides a high-level driver for the algorithm, and
-the library provides the individual functions necessary for each of the
-steps.  There are three main phases of the iteration.  The steps are,
-
-   * initialize minimizer state, S, for algorithm T
-
-   * update S using the iteration T
-
-   * test S for convergence, and repeat iteration if necessary
-
-The state for the minimizers is held in a 'gsl_min_fminimizer' struct.
-The updating procedure uses only function evaluations (not derivatives).
-
-
-File: gsl-ref.info,  Node: Minimization Caveats,  Next: Initializing the Minimizer,  Prev: Minimization Overview,  Up: One dimensional Minimization
-
-34.2 Caveats
-============
-
-Note that minimization functions can only search for one minimum at a
-time.  When there are several minima in the search area, the first
-minimum to be found will be returned; however it is difficult to predict
-which of the minima this will be.  _In most cases, no error will be
-reported if you try to find a minimum in an area where there is more
-than one._
-
-   With all minimization algorithms it can be difficult to determine the
-location of the minimum to full numerical precision.  The behavior of
-the function in the region of the minimum x^* can be approximated by a
-Taylor expansion,
-
-     y = f(x^*) + (1/2) f''(x^*) (x - x^*)^2
-
-and the second term of this expansion can be lost when added to the
-first term at finite precision.  This magnifies the error in locating
-x^*, making it proportional to \sqrt \epsilon (where \epsilon is the
-relative accuracy of the floating point numbers).  For functions with
-higher order minima, such as x^4, the magnification of the error is
-correspondingly worse.  The best that can be achieved is to converge to
-the limit of numerical accuracy in the function values, rather than the
-location of the minimum itself.
-
-
-File: gsl-ref.info,  Node: Initializing the Minimizer,  Next: Providing the function to minimize,  Prev: Minimization Caveats,  Up: One dimensional Minimization
-
-34.3 Initializing the Minimizer
-===============================
-
- -- Function: gsl_min_fminimizer * gsl_min_fminimizer_alloc (const
-          gsl_min_fminimizer_type * T)
-     This function returns a pointer to a newly allocated instance of a
-     minimizer of type T.  For example, the following code creates an
-     instance of a golden section minimizer,
-
-          const gsl_min_fminimizer_type * T
-            = gsl_min_fminimizer_goldensection;
-          gsl_min_fminimizer * s
-            = gsl_min_fminimizer_alloc (T);
-
-     If there is insufficient memory to create the minimizer then the
-     function returns a null pointer and the error handler is invoked
-     with an error code of 'GSL_ENOMEM'.
-
- -- Function: int gsl_min_fminimizer_set (gsl_min_fminimizer * S,
-          gsl_function * F, double X_MINIMUM, double X_LOWER, double
-          X_UPPER)
-     This function sets, or resets, an existing minimizer S to use the
-     function F and the initial search interval [X_LOWER, X_UPPER], with
-     a guess for the location of the minimum X_MINIMUM.
-
-     If the interval given does not contain a minimum, then the function
-     returns an error code of 'GSL_EINVAL'.
-
- -- Function: int gsl_min_fminimizer_set_with_values (gsl_min_fminimizer
-          * S, gsl_function * F, double X_MINIMUM, double F_MINIMUM,
-          double X_LOWER, double F_LOWER, double X_UPPER, double
-          F_UPPER)
-     This function is equivalent to 'gsl_min_fminimizer_set' but uses
-     the values F_MINIMUM, F_LOWER and F_UPPER instead of computing
-     'f(x_minimum)', 'f(x_lower)' and 'f(x_upper)'.
-
- -- Function: void gsl_min_fminimizer_free (gsl_min_fminimizer * S)
-     This function frees all the memory associated with the minimizer S.
-
- -- Function: const char * gsl_min_fminimizer_name (const
-          gsl_min_fminimizer * S)
-     This function returns a pointer to the name of the minimizer.  For
-     example,
-
-          printf ("s is a '%s' minimizer\n",
-                  gsl_min_fminimizer_name (s));
-
-     would print something like 's is a 'brent' minimizer'.
-
-
-File: gsl-ref.info,  Node: Providing the function to minimize,  Next: Minimization Iteration,  Prev: Initializing the Minimizer,  Up: One dimensional Minimization
-
-34.4 Providing the function to minimize
-=======================================
-
-You must provide a continuous function of one variable for the
-minimizers to operate on.  In order to allow for general parameters the
-functions are defined by a 'gsl_function' data type (*note Providing the
-function to solve::).
-
-
-File: gsl-ref.info,  Node: Minimization Iteration,  Next: Minimization Stopping Parameters,  Prev: Providing the function to minimize,  Up: One dimensional Minimization
-
-34.5 Iteration
-==============
-
-The following functions drive the iteration of each algorithm.  Each
-function performs one iteration to update the state of any minimizer of
-the corresponding type.  The same functions work for all minimizers so
-that different methods can be substituted at runtime without
-modifications to the code.
-
- -- Function: int gsl_min_fminimizer_iterate (gsl_min_fminimizer * S)
-     This function performs a single iteration of the minimizer S.  If
-     the iteration encounters an unexpected problem then an error code
-     will be returned,
-
-     'GSL_EBADFUNC'
-          the iteration encountered a singular point where the function
-          evaluated to 'Inf' or 'NaN'.
-
-     'GSL_FAILURE'
-          the algorithm could not improve the current best approximation
-          or bounding interval.
-
-   The minimizer maintains a current best estimate of the position of
-the minimum at all times, and the current interval bounding the minimum.
-This information can be accessed with the following auxiliary functions,
-
- -- Function: double gsl_min_fminimizer_x_minimum (const
-          gsl_min_fminimizer * S)
-     This function returns the current estimate of the position of the
-     minimum for the minimizer S.
-
- -- Function: double gsl_min_fminimizer_x_upper (const
-          gsl_min_fminimizer * S)
- -- Function: double gsl_min_fminimizer_x_lower (const
-          gsl_min_fminimizer * S)
-     These functions return the current upper and lower bound of the
-     interval for the minimizer S.
-
- -- Function: double gsl_min_fminimizer_f_minimum (const
-          gsl_min_fminimizer * S)
- -- Function: double gsl_min_fminimizer_f_upper (const
-          gsl_min_fminimizer * S)
- -- Function: double gsl_min_fminimizer_f_lower (const
-          gsl_min_fminimizer * S)
-     These functions return the value of the function at the current
-     estimate of the minimum and at the upper and lower bounds of the
-     interval for the minimizer S.
-
-
-File: gsl-ref.info,  Node: Minimization Stopping Parameters,  Next: Minimization Algorithms,  Prev: Minimization Iteration,  Up: One dimensional Minimization
-
-34.6 Stopping Parameters
-========================
-
-A minimization procedure should stop when one of the following
-conditions is true:
-
-   * A minimum has been found to within the user-specified precision.
-
-   * A user-specified maximum number of iterations has been reached.
-
-   * An error has occurred.
-
-The handling of these conditions is under user control.  The function
-below allows the user to test the precision of the current result.
-
- -- Function: int gsl_min_test_interval (double X_LOWER, double X_UPPER,
-          double EPSABS, double EPSREL)
-     This function tests for the convergence of the interval [X_LOWER,
-     X_UPPER] with absolute error EPSABS and relative error EPSREL.  The
-     test returns 'GSL_SUCCESS' if the following condition is achieved,
-
-          |a - b| < epsabs + epsrel min(|a|,|b|)
-
-     when the interval x = [a,b] does not include the origin.  If the
-     interval includes the origin then \min(|a|,|b|) is replaced by zero
-     (which is the minimum value of |x| over the interval).  This
-     ensures that the relative error is accurately estimated for minima
-     close to the origin.
-
-     This condition on the interval also implies that any estimate of
-     the minimum x_m in the interval satisfies the same condition with
-     respect to the true minimum x_m^*,
-
-          |x_m - x_m^*| < epsabs + epsrel x_m^*
-
-     assuming that the true minimum x_m^* is contained within the
-     interval.
-
-
-File: gsl-ref.info,  Node: Minimization Algorithms,  Next: Minimization Examples,  Prev: Minimization Stopping Parameters,  Up: One dimensional Minimization
-
-34.7 Minimization Algorithms
-============================
-
-The minimization algorithms described in this section require an initial
-interval which is guaranteed to contain a minimum--if a and b are the
-endpoints of the interval and x is an estimate of the minimum then f(a)
-> f(x) < f(b).  This ensures that the function has at least one minimum
-somewhere in the interval.  If a valid initial interval is used then
-these algorithm cannot fail, provided the function is well-behaved.
-
- -- Minimizer: gsl_min_fminimizer_goldensection
-
-     The "golden section algorithm" is the simplest method of bracketing
-     the minimum of a function.  It is the slowest algorithm provided by
-     the library, with linear convergence.
-
-     On each iteration, the algorithm first compares the subintervals
-     from the endpoints to the current minimum.  The larger subinterval
-     is divided in a golden section (using the famous ratio (3-\sqrt
-     5)/2 = 0.3189660...) and the value of the function at this new
-     point is calculated.  The new value is used with the constraint
-     f(a') > f(x') < f(b') to a select new interval containing the
-     minimum, by discarding the least useful point.  This procedure can
-     be continued indefinitely until the interval is sufficiently small.
-     Choosing the golden section as the bisection ratio can be shown to
-     provide the fastest convergence for this type of algorithm.
-
- -- Minimizer: gsl_min_fminimizer_brent
-
-     The "Brent minimization algorithm" combines a parabolic
-     interpolation with the golden section algorithm.  This produces a
-     fast algorithm which is still robust.
-
-     The outline of the algorithm can be summarized as follows: on each
-     iteration Brent's method approximates the function using an
-     interpolating parabola through three existing points.  The minimum
-     of the parabola is taken as a guess for the minimum.  If it lies
-     within the bounds of the current interval then the interpolating
-     point is accepted, and used to generate a smaller interval.  If the
-     interpolating point is not accepted then the algorithm falls back
-     to an ordinary golden section step.  The full details of Brent's
-     method include some additional checks to improve convergence.
-
- -- Minimizer: gsl_min_fminimizer_quad_golden
-     This is a variant of Brent's algorithm which uses the safeguarded
-     step-length algorithm of Gill and Murray.
-
-
-File: gsl-ref.info,  Node: Minimization Examples,  Next: Minimization References and Further Reading,  Prev: Minimization Algorithms,  Up: One dimensional Minimization
-
-34.8 Examples
-=============
-
-The following program uses the Brent algorithm to find the minimum of
-the function f(x) = \cos(x) + 1, which occurs at x = \pi.  The starting
-interval is (0,6), with an initial guess for the minimum of 2.
-
-     #include <stdio.h>
-     #include <gsl/gsl_errno.h>
-     #include <gsl/gsl_math.h>
-     #include <gsl/gsl_min.h>
-
-     double fn1 (double x, void * params)
-     {
-       return cos(x) + 1.0;
-     }
-
-     int
-     main (void)
-     {
-       int status;
-       int iter = 0, max_iter = 100;
-       const gsl_min_fminimizer_type *T;
-       gsl_min_fminimizer *s;
-       double m = 2.0, m_expected = M_PI;
-       double a = 0.0, b = 6.0;
-       gsl_function F;
-
-       F.function = &fn1;
-       F.params = 0;
-
-       T = gsl_min_fminimizer_brent;
-       s = gsl_min_fminimizer_alloc (T);
-       gsl_min_fminimizer_set (s, &F, m, a, b);
-
-       printf ("using %s method\n",
-               gsl_min_fminimizer_name (s));
-
-       printf ("%5s [%9s, %9s] %9s %10s %9s\n",
-               "iter", "lower", "upper", "min",
-               "err", "err(est)");
-
-       printf ("%5d [%.7f, %.7f] %.7f %+.7f %.7f\n",
-               iter, a, b,
-               m, m - m_expected, b - a);
-
-       do
-         {
-           iter++;
-           status = gsl_min_fminimizer_iterate (s);
-
-           m = gsl_min_fminimizer_x_minimum (s);
-           a = gsl_min_fminimizer_x_lower (s);
-           b = gsl_min_fminimizer_x_upper (s);
-
-           status
-             = gsl_min_test_interval (a, b, 0.001, 0.0);
-
-           if (status == GSL_SUCCESS)
-             printf ("Converged:\n");
-
-           printf ("%5d [%.7f, %.7f] "
-                   "%.7f %+.7f %.7f\n",
-                   iter, a, b,
-                   m, m - m_expected, b - a);
-         }
-       while (status == GSL_CONTINUE && iter < max_iter);
-
-       gsl_min_fminimizer_free (s);
-
-       return status;
-     }
-
-Here are the results of the minimization procedure.
-
-     $ ./a.out
-         0 [0.0000000, 6.0000000] 2.0000000 -1.1415927 6.0000000
-         1 [2.0000000, 6.0000000] 3.2758640 +0.1342713 4.0000000
-         2 [2.0000000, 3.2831929] 3.2758640 +0.1342713 1.2831929
-         3 [2.8689068, 3.2831929] 3.2758640 +0.1342713 0.4142862
-         4 [2.8689068, 3.2831929] 3.2758640 +0.1342713 0.4142862
-         5 [2.8689068, 3.2758640] 3.1460585 +0.0044658 0.4069572
-         6 [3.1346075, 3.2758640] 3.1460585 +0.0044658 0.1412565
-         7 [3.1346075, 3.1874620] 3.1460585 +0.0044658 0.0528545
-         8 [3.1346075, 3.1460585] 3.1460585 +0.0044658 0.0114510
-         9 [3.1346075, 3.1460585] 3.1424060 +0.0008133 0.0114510
-        10 [3.1346075, 3.1424060] 3.1415885 -0.0000041 0.0077985
-     Converged:
-        11 [3.1415885, 3.1424060] 3.1415927 -0.0000000 0.0008175
 

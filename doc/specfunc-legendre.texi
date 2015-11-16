@@ -84,17 +84,233 @@ These routines compute the Legendre function @math{Q_l(x)} for @math{x >
 @node Associated Legendre Polynomials and Spherical Harmonics
 @subsection Associated Legendre Polynomials and Spherical Harmonics
 
-The following functions compute the associated Legendre Polynomials
-@math{P_l^m(x)}.  Note that this function grows combinatorially with
-@math{l} and can overflow for @math{l} larger than about 150.  There is
-no trouble for small @math{m}, but overflow occurs when @math{m} and
-@math{l} are both large.  Rather than allow overflows, these functions
-refuse to calculate @math{P_l^m(x)} and return @code{GSL_EOVRFLW} when
-they can sense that @math{l} and @math{m} are too big.
+The following functions compute the associated Legendre polynomials
+@math{P_l^m(x)} which are solutions of the differential equation
+@tex
+\beforedisplay
+$$
+(1 - x^2) {d^2 \over dx^2} P_l^m(x) - 2x {d \over dx} P_l^m(x) +
+\left( l(l+1) - {m^2 \over 1 - x^2} \right) P_l^m(x) = 0
+$$
+\afterdisplay
+@end tex
+@ifinfo
 
-If you want to calculate a spherical harmonic, then @emph{do not} use
-these functions.  Instead use @code{gsl_sf_legendre_sphPlm} below,
-which uses a similar recursion, but with the normalized functions.
+@example
+(1 - x^2) d^2 P_l^m(x) / dx^2 P_l^m(x) - 2x d/dx P_l^m(x) +
+( l(l+1) - m^2 / (1 - x^2) ) P_l^m(x) = 0
+@end example
+
+@end ifinfo
+where the degree @math{l} and order @math{m} satisfy @math{0 \le l} and
+@math{0 \le m \le l}.
+The functions @math{P_l^m(x)} grow combinatorially with
+@math{l} and can overflow for @math{l} larger than about 150.
+Alternatively, one may calculate normalized associated Legendre
+polynomials. There are a number of different normalization conventions,
+and these
+functions can be stably computed up to degree and order 2700. The
+following normalizations are provided:
+@table @code
+@item Schmidt semi-normalization
+Schmidt semi-normalized associated Legendre polynomials are often
+used in the magnetics community and are defined as
+@tex
+\beforedisplay
+$$
+\eqalign{
+S_l^0(x) &= P_l^0(x) \cr 
+S_l^m(x) &= (-1)^m \sqrt{2 {(l-m)! \over (l+m)!}} P_l^m(x), m > 0 
+}
+$$
+\afterdisplay
+@end tex 
+@ifinfo
+@example
+S_l^0(x) = P_l^0(x)
+S_l^m(x) = (-1)^m \sqrt((2(l-m)! / (l+m)!)) P_l^m(x), m > 0 
+@end example
+@end ifinfo
+The factor of @math{(-1)^m} is called the Condon-Shortley phase
+factor and can be excluded if desired by setting the parameter
+@code{csphase = 1} in the functions below.
+
+@item Spherical Harmonic Normalization
+The associated Legendre polynomials suitable for calculating spherical
+harmonics are defined as
+@tex
+\beforedisplay
+$$
+Y_l^m(x) = (-1)^m \sqrt{{2l + 1 \over 4 \pi} {(l-m)! \over (l+m)!}} P_l^m(x)
+$$
+\afterdisplay
+@end tex 
+@ifinfo
+@example
+Y_l^m(x) = (-1)^m \sqrt((2l + 1) * (l-m)! / (4 \pi) / (l+m)!) P_l^m(x)
+@end example
+@end ifinfo
+where again the phase factor @math{(-1)^m} can be included or excluded
+if desired.
+
+@item Full Normalization
+The fully normalized associated Legendre polynomials are defined as
+@tex
+\beforedisplay
+$$
+N_l^m(x) = (-1)^m \sqrt{(l + {1 \over 2}) {(l-m)! \over (l+m)!}} P_l^m(x)
+$$
+\afterdisplay
+@end tex 
+@ifinfo
+@example
+N_l^m(x) = (-1)^m \sqrt((l + 1/2) * (l-m)! / (l+m)!) P_l^m(x)
+@end example
+@end ifinfo
+and have the property
+@tex
+\beforedisplay
+$$
+\int_{-1}^1 N_l^m(x)^2 dx = 1
+$$
+\afterdisplay
+@end tex 
+@ifinfo
+@example
+\int_(-1)^1 ( N_l^m(x) )^2 dx = 1
+@end example
+@end ifinfo
+
+@end table
+The normalized associated Legendre routines below use a recurrence
+relation which is stable up to a degree and order of about 2700.
+Beyond this, the computed functions could suffer from underflow
+leading to incorrect results. Routines are provided to compute
+first and second derivatives
+@math{dP_l^m(x)/dx} and @math{d^2 P_l^m(x)/dx^2} as well as their alternate
+versions @math{d P_l^m(\cos{\theta})/d\theta} and
+@math{d^2 P_l^m(\cos{\theta})/d\theta^2}. While there is a simple
+scaling relationship between the two forms, the derivatives
+involving @math{\theta} are heavily used in spherical harmonic
+expansions and so these routines are also provided.
+
+In the functions below, a parameter of type @code{gsl_sf_legendre_t}
+specifies the type of normalization to use. The possible values are
+@table @code
+@item GSL_SF_LEGENDRE_NONE
+This specifies the computation of the unnormalized associated
+Legendre polynomials @math{P_l^m(x)}.
+
+@item GSL_SF_LEGENDRE_SCHMIDT
+This specifies the computation of the Schmidt semi-normalized associated
+Legendre polynomials @math{S_l^m(x)}.
+
+@item GSL_SF_LEGENDRE_SPHARM
+This specifies the computation of the spherical harmonic associated
+Legendre polynomials @math{Y_l^m(x)}.
+
+@item GSL_SF_LEGENDRE_FULL
+This specifies the computation of the fully normalized associated
+Legendre polynomials @math{N_l^m(x)}.
+@end table
+
+@deftypefun int gsl_sf_legendre_array (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, double @var{result_array}[])
+@deftypefunx int gsl_sf_legendre_array_e (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, const double @var{csphase}, double @var{result_array}[])
+These functions calculate all normalized associated Legendre
+polynomials for @math{0 \le l \le lmax} and
+@math{0 \le m \le l} for
+@c{$|x| \le 1$}
+@math{|x| <= 1}.
+The @var{norm} parameter specifies which normalization is used.
+The normalized @math{P_l^m(x)} values are stored in @var{result_array}, whose
+minimum size can be obtained from calling @code{gsl_sf_legendre_array_n}.
+The array index of @math{P_l^m(x)} is obtained from calling
+@code{gsl_sf_legendre_array_index(l, m)}. To include or exclude
+the Condon-Shortley phase factor of @math{(-1)^m}, set the parameter
+@var{csphase} to either @math{-1} or @math{1} respectively in the
+@code{_e} function. This factor is included by default.
+@end deftypefun
+
+@deftypefun int gsl_sf_legendre_deriv_array (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[])
+@deftypefunx int gsl_sf_legendre_deriv_array_e (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, const double @var{csphase}, double @var{result_array}[], double @var{result_deriv_array}[])
+These functions calculate all normalized associated Legendre
+functions and their first derivatives up to degree @var{lmax} for
+@c{$|x| < 1$}
+@math{|x| < 1}.
+The parameter @var{norm} specifies the normalization used. The
+normalized @math{P_l^m(x)} values and their derivatives
+@math{dP_l^m(x)/dx} are stored in @var{result_array} and
+@var{result_deriv_array} respectively.
+To include or exclude
+the Condon-Shortley phase factor of @math{(-1)^m}, set the parameter
+@var{csphase} to either @math{-1} or @math{1} respectively in the
+@code{_e} function. This factor is included by default.
+@end deftypefun
+
+@deftypefun int gsl_sf_legendre_deriv_alt_array (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[])
+@deftypefunx int gsl_sf_legendre_deriv_alt_array_e (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, const double @var{csphase}, double @var{result_array}[], double @var{result_deriv_array}[])
+These functions calculate all normalized associated Legendre
+functions and their (alternate) first derivatives up to degree @var{lmax} for
+@c{$|x| < 1$}
+@math{|x| < 1}.
+The normalized @math{P_l^m(x)} values and their derivatives
+@math{dP_l^m(\cos{\theta})/d\theta} are stored in @var{result_array} and
+@var{result_deriv_array} respectively.
+To include or exclude
+the Condon-Shortley phase factor of @math{(-1)^m}, set the parameter
+@var{csphase} to either @math{-1} or @math{1} respectively in the
+@code{_e} function. This factor is included by default.
+@end deftypefun
+
+@deftypefun int gsl_sf_legendre_deriv2_array (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[], double @var{result_deriv2_array}[])
+@deftypefunx int gsl_sf_legendre_deriv2_array_e (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, const double @var{csphase}, double @var{result_array}[], double @var{result_deriv_array}[], double @var{result_deriv2_array}[])
+These functions calculate all normalized associated Legendre
+functions and their first and second derivatives up to degree @var{lmax} for
+@c{$|x| < 1$}
+@math{|x| < 1}.
+The parameter @var{norm} specifies the normalization used. The
+normalized @math{P_l^m(x)}, their first derivatives
+@math{dP_l^m(x)/dx}, and their second derivatives
+@math{d^2 P_l^m(x)/dx^2} are stored in @var{result_array},
+@var{result_deriv_array}, and @var{result_deriv2_array} respectively.
+To include or exclude
+the Condon-Shortley phase factor of @math{(-1)^m}, set the parameter
+@var{csphase} to either @math{-1} or @math{1} respectively in the
+@code{_e} function. This factor is included by default.
+@end deftypefun
+
+@deftypefun int gsl_sf_legendre_deriv2_alt_array (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[], double @var{result_deriv2_array}[])
+@deftypefunx int gsl_sf_legendre_deriv2_alt_array_e (const gsl_sf_legendre_t @var{norm}, const size_t @var{lmax}, const double @var{x}, const double @var{csphase}, double @var{result_array}[], double @var{result_deriv_array}[], double @var{result_deriv2_array}[])
+These functions calculate all normalized associated Legendre
+functions and their (alternate) first and second derivatives up to degree
+@var{lmax} for
+@c{$|x| < 1$}
+@math{|x| < 1}.
+The parameter @var{norm} specifies the normalization used. The
+normalized @math{P_l^m(x)}, their first derivatives
+@math{dP_l^m(\cos{\theta})/d\theta}, and their second derivatives
+@math{d^2 P_l^m(\cos{\theta})/d\theta^2} are stored in @var{result_array},
+@var{result_deriv_array}, and @var{result_deriv2_array} respectively.
+To include or exclude
+the Condon-Shortley phase factor of @math{(-1)^m}, set the parameter
+@var{csphase} to either @math{-1} or @math{1} respectively in the
+@code{_e} function. This factor is included by default.
+@end deftypefun
+
+@deftypefun size_t gsl_sf_legendre_array_n (const size_t @var{lmax})
+This function returns the minimum array size for maximum degree @var{lmax}
+needed for the array versions of the associated Legendre functions.
+Size is calculated as the total number of @math{P_l^m(x)} functions,
+plus extra space for precomputing multiplicative factors used in the
+recurrence relations.
+@end deftypefun
+
+@deftypefun size_t gsl_sf_legendre_array_index (const size_t @var{l}, const size_t @var{m})
+This function returns the index into @var{result_array},
+@var{result_deriv_array}, or @var{result_deriv2_array} corresponding
+to @math{P_l^m(x)}, @math{P_l^{'m}(x)}, or @math{P_l^{''m}(x)}. The
+index is given by @math{l(l+1)/2 + m}.
+@end deftypefun
 
 @deftypefun double gsl_sf_legendre_Plm (int @var{l}, int @var{m}, double @var{x})
 @deftypefunx int gsl_sf_legendre_Plm_e (int @var{l}, int @var{m}, double @var{x}, gsl_sf_result * @var{result})
@@ -105,18 +321,6 @@ These routines compute the associated Legendre polynomial
 @math{|x| <= 1}. 
 @comment Exceptional Return Values: GSL_EDOM, GSL_EOVRFLW
 @end deftypefun
-
-@deftypefun int gsl_sf_legendre_Plm_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[])
-@deftypefunx int gsl_sf_legendre_Plm_deriv_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[])
-These functions compute arrays of Legendre polynomials
-@math{P_l^m(x)} and derivatives @math{dP_l^m(x)/dx},
-for @c{$m \ge 0$}
-@math{m >= 0}, @c{$l = |m|, \dots, lmax$}
-@math{l = |m|, ..., lmax}, @c{$|x| \le 1$}
-@math{|x| <= 1}.
-@comment Exceptional Return Values: GSL_EDOM, GSL_EOVRFLW
-@end deftypefun
-
 
 @deftypefun double gsl_sf_legendre_sphPlm (int @var{l}, int @var{m}, double @var{x})
 @deftypefunx int gsl_sf_legendre_sphPlm_e (int @var{l}, int @var{m}, double @var{x}, gsl_sf_result * @var{result})
@@ -131,23 +335,23 @@ that occur for the standard normalization of @math{P_l^m(x)}.
 @comment Exceptional Return Values: GSL_EDOM
 @end deftypefun
 
+@deftypefun int gsl_sf_legendre_Plm_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[])
+@deftypefunx int gsl_sf_legendre_Plm_deriv_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[])
+These functions are now deprecated and will be removed in a future
+release; see @code{gsl_sf_legendre_array} and
+@code{gsl_sf_legendre_deriv_array}.
+@end deftypefun
+
 @deftypefun int gsl_sf_legendre_sphPlm_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[])
 @deftypefunx int gsl_sf_legendre_sphPlm_deriv_array (int @var{lmax}, int @var{m}, double @var{x}, double @var{result_array}[], double @var{result_deriv_array}[])
-These functions compute arrays of normalized associated Legendre functions
-@c{$\sqrt{(2l+1)/(4\pi)} \sqrt{(l-m)!/(l+m)!} P_l^m(x)$}
-@math{\sqrt@{(2l+1)/(4\pi)@} \sqrt@{(l-m)!/(l+m)!@} P_l^m(x)},
-and derivatives,
-for @c{$m \ge 0$}
-@math{m >= 0}, @c{$l = |m|, \dots, lmax$}
-@math{l = |m|, ..., lmax}, @c{$|x| \le 1$}
-@math{|x| <= 1.0}
-@comment Exceptional Return Values: GSL_EDOM
+These functions are now deprecated and will be removed in a future
+release; see @code{gsl_sf_legendre_array} and
+@code{gsl_sf_legendre_deriv_array}.
 @end deftypefun
 
 @deftypefun int gsl_sf_legendre_array_size (const int @var{lmax}, const int @var{m})
-This function returns the size of @var{result_array}[] needed for the array
-versions of @math{P_l^m(x)}, @math{@var{lmax} - @var{m} + 1}.  @inlinefn{}
-@comment Exceptional Return Values: none
+This function is now deprecated and will be removed in a future
+release.
 @end deftypefun
 
 @node Conical Functions

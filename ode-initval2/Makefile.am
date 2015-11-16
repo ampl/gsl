@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslodeiv2.la
 
 pkginclude_HEADERS = gsl_odeiv2.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslodeiv2_la_SOURCES = control.c cstd.c cscal.c evolve.c step.c rk2.c rk2imp.c rk4.c rk4imp.c rkf45.c rk8pd.c rkck.c bsimp.c rk1imp.c msadams.c msbdf.c driver.c
 

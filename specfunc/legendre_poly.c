@@ -290,7 +290,6 @@ gsl_sf_legendre_Pl_deriv_array(const int lmax, const double x, double * result_a
   }
 }
 
-
 int
 gsl_sf_legendre_Plm_e(const int l, const int m, const double x, gsl_sf_result * result)
 {
@@ -357,6 +356,100 @@ gsl_sf_legendre_Plm_e(const int l, const int m, const double x, gsl_sf_result * 
   }
 }
 
+int
+gsl_sf_legendre_sphPlm_e(const int l, int m, const double x, gsl_sf_result * result)
+{
+  /* CHECK_POINTER(result) */
+
+  if(m < 0 || l < m || x < -1.0 || x > 1.0) {
+    DOMAIN_ERROR(result);
+  }
+  else if(m == 0) {
+    gsl_sf_result P;
+    int stat_P = gsl_sf_legendre_Pl_e(l, x, &P);
+    double pre = sqrt((2.0*l + 1.0)/(4.0*M_PI));
+    result->val  = pre * P.val;
+    result->err  = pre * P.err;
+    result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
+    return stat_P;
+  }
+  else if(x == 1.0 || x == -1.0) {
+    /* m > 0 here */
+    result->val = 0.0;
+    result->err = 0.0;
+    return GSL_SUCCESS;
+  }
+  else {
+    /* m > 0 and |x| < 1 here */
+
+    /* Starting value for recursion.
+     * Y_m^m(x) = sqrt( (2m+1)/(4pi m) gamma(m+1/2)/gamma(m) ) (-1)^m (1-x^2)^(m/2) / pi^(1/4)
+     */
+    gsl_sf_result lncirc;
+    gsl_sf_result lnpoch;
+    double lnpre_val;
+    double lnpre_err;
+    gsl_sf_result ex_pre;
+    double sr;
+    const double sgn = ( GSL_IS_ODD(m) ? -1.0 : 1.0);
+    const double y_mmp1_factor = x * sqrt(2.0*m + 3.0);
+    double y_mm, y_mm_err;
+    double y_mmp1, y_mmp1_err;
+    gsl_sf_log_1plusx_e(-x*x, &lncirc);
+    gsl_sf_lnpoch_e(m, 0.5, &lnpoch);  /* Gamma(m+1/2)/Gamma(m) */
+    lnpre_val = -0.25*M_LNPI + 0.5 * (lnpoch.val + m*lncirc.val);
+    lnpre_err = 0.25*M_LNPI*GSL_DBL_EPSILON + 0.5 * (lnpoch.err + fabs(m)*lncirc.err);
+    /* Compute exp(ln_pre) with error term, avoiding call to gsl_sf_exp_err BJG */
+    ex_pre.val = exp(lnpre_val);
+    ex_pre.err = 2.0*(sinh(lnpre_err) + GSL_DBL_EPSILON)*ex_pre.val;
+    sr     = sqrt((2.0+1.0/m)/(4.0*M_PI));
+    y_mm   = sgn * sr * ex_pre.val;
+    y_mm_err  = 2.0 * GSL_DBL_EPSILON * fabs(y_mm) + sr * ex_pre.err;
+    y_mm_err *= 1.0 + 1.0/(GSL_DBL_EPSILON + fabs(1.0-x));
+    y_mmp1 = y_mmp1_factor * y_mm;
+    y_mmp1_err=fabs(y_mmp1_factor) * y_mm_err;
+
+    if(l == m){
+      result->val  = y_mm;
+      result->err  = y_mm_err;
+      result->err += 2.0 * GSL_DBL_EPSILON * fabs(y_mm);
+      return GSL_SUCCESS;
+    }
+    else if(l == m + 1) {
+      result->val  = y_mmp1;
+      result->err  = y_mmp1_err;
+      result->err += 2.0 * GSL_DBL_EPSILON * fabs(y_mmp1);
+      return GSL_SUCCESS;
+    }
+    else{
+      double y_ell = 0.0;
+      double y_ell_err = 0.0;
+      int ell;
+
+      /* Compute Y_l^m, l > m+1, upward recursion on l. */
+      for(ell=m+2; ell <= l; ell++){
+        const double rat1 = (double)(ell-m)/(double)(ell+m);
+        const double rat2 = (ell-m-1.0)/(ell+m-1.0);
+        const double factor1 = sqrt(rat1*(2.0*ell+1.0)*(2.0*ell-1.0));
+        const double factor2 = sqrt(rat1*rat2*(2.0*ell+1.0)/(2.0*ell-3.0));
+        y_ell = (x*y_mmp1*factor1 - (ell+m-1.0)*y_mm*factor2) / (ell-m);
+        y_mm   = y_mmp1;
+        y_mmp1 = y_ell;
+
+        y_ell_err = 0.5*(fabs(x*factor1)*y_mmp1_err + fabs((ell+m-1.0)*factor2)*y_mm_err) / fabs(ell-m);
+        y_mm_err = y_mmp1_err;
+        y_mmp1_err = y_ell_err;
+      }
+
+      result->val  = y_ell;
+      result->err  = y_ell_err + (0.5*(l-m) + 1.0) * GSL_DBL_EPSILON * fabs(y_ell);
+
+      return GSL_SUCCESS;
+    }
+  }
+}
+
+#ifndef GSL_DISABLE_DEPRECATED
 
 int
 gsl_sf_legendre_Plm_array(const int lmax, const int m, const double x, double * result_array)
@@ -418,7 +511,6 @@ gsl_sf_legendre_Plm_array(const int lmax, const int m, const double x, double * 
     }
   }
 }
-
 
 int
 gsl_sf_legendre_Plm_deriv_array(
@@ -497,101 +589,6 @@ gsl_sf_legendre_Plm_deriv_array(
     }
   }
 }
-
-
-int
-gsl_sf_legendre_sphPlm_e(const int l, int m, const double x, gsl_sf_result * result)
-{
-  /* CHECK_POINTER(result) */
-
-  if(m < 0 || l < m || x < -1.0 || x > 1.0) {
-    DOMAIN_ERROR(result);
-  }
-  else if(m == 0) {
-    gsl_sf_result P;
-    int stat_P = gsl_sf_legendre_Pl_e(l, x, &P);
-    double pre = sqrt((2.0*l + 1.0)/(4.0*M_PI));
-    result->val  = pre * P.val;
-    result->err  = pre * P.err;
-    result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
-    return stat_P;
-  }
-  else if(x == 1.0 || x == -1.0) {
-    /* m > 0 here */
-    result->val = 0.0;
-    result->err = 0.0;
-    return GSL_SUCCESS;
-  }
-  else {
-    /* m > 0 and |x| < 1 here */
-
-    /* Starting value for recursion.
-     * Y_m^m(x) = sqrt( (2m+1)/(4pi m) gamma(m+1/2)/gamma(m) ) (-1)^m (1-x^2)^(m/2) / pi^(1/4)
-     */
-    gsl_sf_result lncirc;
-    gsl_sf_result lnpoch;
-    double lnpre_val;
-    double lnpre_err;
-    gsl_sf_result ex_pre;
-    double sr;
-    const double sgn = ( GSL_IS_ODD(m) ? -1.0 : 1.0);
-    const double y_mmp1_factor = x * sqrt(2.0*m + 3.0);
-    double y_mm, y_mm_err;
-    double y_mmp1, y_mmp1_err;
-    gsl_sf_log_1plusx_e(-x*x, &lncirc);
-    gsl_sf_lnpoch_e(m, 0.5, &lnpoch);  /* Gamma(m+1/2)/Gamma(m) */
-    lnpre_val = -0.25*M_LNPI + 0.5 * (lnpoch.val + m*lncirc.val);
-    lnpre_err = 0.25*M_LNPI*GSL_DBL_EPSILON + 0.5 * (lnpoch.err + fabs(m)*lncirc.err);
-    /* Compute exp(ln_pre) with error term, avoiding call to gsl_sf_exp_err BJG */
-    ex_pre.val = exp(lnpre_val);
-    ex_pre.err = 2.0*(sinh(lnpre_err) + GSL_DBL_EPSILON)*ex_pre.val;
-    sr     = sqrt((2.0+1.0/m)/(4.0*M_PI));
-    y_mm   = sgn * sr * ex_pre.val;
-    y_mm_err  = 2.0 * GSL_DBL_EPSILON * fabs(y_mm) + sr * ex_pre.err;
-    y_mm_err *= 1.0 + 1.0/(GSL_DBL_EPSILON + fabs(1.0-x));
-    y_mmp1 = y_mmp1_factor * y_mm;
-    y_mmp1_err=fabs(y_mmp1_factor) * y_mm_err;
-
-    if(l == m){
-      result->val  = y_mm;
-      result->err  = y_mm_err;
-      result->err += 2.0 * GSL_DBL_EPSILON * fabs(y_mm);
-      return GSL_SUCCESS;
-    }
-    else if(l == m + 1) {
-      result->val  = y_mmp1;
-      result->err  = y_mmp1_err;
-      result->err += 2.0 * GSL_DBL_EPSILON * fabs(y_mmp1);
-      return GSL_SUCCESS;
-    }
-    else{
-      double y_ell = 0.0;
-      double y_ell_err;
-      int ell;
-
-      /* Compute Y_l^m, l > m+1, upward recursion on l. */
-      for(ell=m+2; ell <= l; ell++){
-        const double rat1 = (double)(ell-m)/(double)(ell+m);
-        const double rat2 = (ell-m-1.0)/(ell+m-1.0);
-        const double factor1 = sqrt(rat1*(2.0*ell+1.0)*(2.0*ell-1.0));
-        const double factor2 = sqrt(rat1*rat2*(2.0*ell+1.0)/(2.0*ell-3.0));
-        y_ell = (x*y_mmp1*factor1 - (ell+m-1.0)*y_mm*factor2) / (ell-m);
-        y_mm   = y_mmp1;
-        y_mmp1 = y_ell;
-
-        y_ell_err = 0.5*(fabs(x*factor1)*y_mmp1_err + fabs((ell+m-1.0)*factor2)*y_mm_err) / fabs(ell-m);
-        y_mm_err = y_mmp1_err;
-        y_mmp1_err = y_ell_err;
-      }
-
-      result->val  = y_ell;
-      result->err  = y_ell_err + (0.5*(l-m) + 1.0) * GSL_DBL_EPSILON * fabs(y_ell);
-
-      return GSL_SUCCESS;
-    }
-  }
-}
-
 
 int
 gsl_sf_legendre_sphPlm_array(const int lmax, int m, const double x, double * result_array)
@@ -743,6 +740,8 @@ gsl_sf_legendre_array_size(const int lmax, const int m)
   return lmax-m+1;
 }
 
+#endif /* !GSL_DISABLE_DEPRECATED */
+
 /*-*-*-*-*-*-*-*-*-* Functions w/ Natural Prototypes *-*-*-*-*-*-*-*-*-*-*/
 
 #include "eval.h"
@@ -776,4 +775,3 @@ double gsl_sf_legendre_sphPlm(const int l, const int m, const double x)
 {
   EVAL_RESULT(gsl_sf_legendre_sphPlm_e(l, m, x, &result));
 }
-

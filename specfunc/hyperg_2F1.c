@@ -599,6 +599,12 @@ hyperg_2F1_reflect(const double a, const double b, const double c,
     result->err += 2.0 * GSL_DBL_EPSILON * (fabs(pre1.val*F1.val) + fabs(pre2.val*F2.val));
     result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
 
+    if (status_F1)
+      return status_F1;
+
+    if (status_F2)
+      return status_F2;
+
     return GSL_SUCCESS;
   }
 }

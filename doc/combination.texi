@@ -24,7 +24,7 @@ The functions described in this chapter are defined in the header file
 
 @node The Combination struct
 @section The Combination struct
-@tpindex gsl_combination
+@tindex gsl_combination
 A combination is defined by a structure containing three components, the
 values of @math{n} and @math{k}, and a pointer to the combination array.
 The elements of the combination array are all of type @code{size_t}, and
@@ -197,7 +197,7 @@ Here is the output from the program,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/combination.out
+@verbatiminclude examples/combination.txt
 @end example
 
 @noindent

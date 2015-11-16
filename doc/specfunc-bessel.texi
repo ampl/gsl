@@ -405,7 +405,7 @@ function of order @var{l}, @math{ \exp(-|x|) i_l(x) }
 
 @deftypefun int gsl_sf_bessel_il_scaled_array (int @var{lmax}, double @var{x}, double @var{result_array}[])
 This routine computes the values of the scaled regular modified
-cylindrical Bessel functions @math{\exp(-|x|) i_l(x)} for @math{l} from
+spherical Bessel functions @math{\exp(-|x|) i_l(x)} for @math{l} from
 0 to @var{lmax} inclusive for @c{$lmax \geq 0$}
 @math{lmax >= 0}, storing the results in
 the array @var{result_array}. 

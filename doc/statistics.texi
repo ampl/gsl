@@ -767,7 +767,7 @@ Here is a basic example of how to use the statistical functions:
 The program should produce the following output,
 
 @example
-@verbatiminclude examples/stat.out
+@verbatiminclude examples/stat.txt
 @end example
 
 
@@ -780,7 +780,7 @@ Here is an example using sorted data,
 This program should produce the following output,
 
 @example
-@verbatiminclude examples/statsort.out
+@verbatiminclude examples/statsort.txt
 @end example
 
 @node Statistics References and Further Reading

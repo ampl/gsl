@@ -185,7 +185,7 @@ svd2 (gsl_vector * d, gsl_vector * f, gsl_matrix * U, gsl_matrix * V)
     {
       /* Eliminate off-diagonal element in [0,f0;0,d1] to make [d,0;0,0] */
 
-      create_givens (f0, d1, &c, &s);
+      gsl_linalg_givens (f0, d1, &c, &s);
 
       /* compute B <= G^T B X,  where X = [0,1;1,0] */
 
@@ -213,7 +213,7 @@ svd2 (gsl_vector * d, gsl_vector * f, gsl_matrix * U, gsl_matrix * V)
     {
       /* Eliminate off-diagonal element in [d0,f0;0,0] */
 
-      create_givens (d0, f0, &c, &s);
+      gsl_linalg_givens (d0, f0, &c, &s);
 
       /* compute B <= B G */
 
@@ -273,7 +273,7 @@ svd2 (gsl_vector * d, gsl_vector * f, gsl_matrix * U, gsl_matrix * V)
           gsl_matrix_swap_columns(V, 0, 1);
         } 
 
-      create_givens (a11, a21, &c, &s);
+      gsl_linalg_givens (a11, a21, &c, &s);
       
       /* compute B <= G^T B */
       
@@ -312,7 +312,7 @@ chase_out_intermediate_zero (gsl_vector * d, gsl_vector * f, gsl_matrix * U, siz
 
   for (k = k0; k < n - 1; k++)
     {
-      create_givens (y, -x, &c, &s);
+      gsl_linalg_givens (y, -x, &c, &s);
       
       /* Compute U <= U G */
 
@@ -370,7 +370,7 @@ chase_out_trailing_zero (gsl_vector * d, gsl_vector * f, gsl_matrix * V)
 
   for (k = n - 1; k-- > 0;)
     {
-      create_givens (x, y, &c, &s);
+      gsl_linalg_givens (x, y, &c, &s);
 
       /* Compute V <= V G where G = [c, s ; -s, c] */
 
@@ -492,7 +492,7 @@ qrstep (gsl_vector * d, gsl_vector * f, gsl_matrix * U, gsl_matrix * V)
   for (k = 0; k < n - 1; k++)
     {
       double c, s;
-      create_givens (y, z, &c, &s);
+      gsl_linalg_givens (y, z, &c, &s);
 
       /* Compute V <= V G */
 
@@ -547,7 +547,7 @@ qrstep (gsl_vector * d, gsl_vector * f, gsl_matrix * U, gsl_matrix * V)
         z = zk;
       }
 
-      create_givens (y, z, &c, &s);
+      gsl_linalg_givens (y, z, &c, &s);
 
       /* Compute U <= U G */
 

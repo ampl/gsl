@@ -24,7 +24,7 @@ The functions described in this chapter are defined in the header file
 
 @node The Multiset struct
 @section The Multiset struct
-@tpindex gsl_multiset
+@tindex gsl_multiset
 A multiset is defined by a structure containing three components, the
 values of @math{n} and @math{k}, and a pointer to the multiset array.
 The elements of the multiset array are all of type @code{size_t}, and
@@ -194,7 +194,7 @@ Here is the output from the program,
 
 @example
 $ ./a.out
-@verbatiminclude examples/multiset.out
+@verbatiminclude examples/multiset.txt
 @end example
 
 @noindent

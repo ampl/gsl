@@ -2,17 +2,283 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
+Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections and no cover texts.  A copy of the license is
-included in the section entitled "GNU Free Documentation License".
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License" and "Free Software
+Needs Free Documentation", the Front-Cover text being "A GNU Manual",
+and with the Back-Cover Text being (a) (see below).  A copy of the
+license is included in the section entitled "GNU Free Documentation
+License".
+
+   (a) The Back-Cover Text is: "You have the freedom to copy and modify
+this GNU Manual."
 INFO-DIR-SECTION Software libraries
 START-INFO-DIR-ENTRY
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
 END-INFO-DIR-ENTRY
+
+
+File: gsl-ref.info,  Node: Permutation Examples,  Next: Permutation References and Further Reading,  Prev: Permutations in cyclic form,  Up: Permutations
+
+9.9 Examples
+============
+
+The example program below creates a random permutation (by shuffling the
+elements of the identity) and finds its inverse.
+
+     #include <stdio.h>
+     #include <gsl/gsl_rng.h>
+     #include <gsl/gsl_randist.h>
+     #include <gsl/gsl_permutation.h>
+
+     int
+     main (void)
+     {
+       const size_t N = 10;
+       const gsl_rng_type * T;
+       gsl_rng * r;
+
+       gsl_permutation * p = gsl_permutation_alloc (N);
+       gsl_permutation * q = gsl_permutation_alloc (N);
+
+       gsl_rng_env_setup();
+       T = gsl_rng_default;
+       r = gsl_rng_alloc (T);
+
+       printf ("initial permutation:");
+       gsl_permutation_init (p);
+       gsl_permutation_fprintf (stdout, p, " %u");
+       printf ("\n");
+
+       printf (" random permutation:");
+       gsl_ran_shuffle (r, p->data, N, sizeof(size_t));
+       gsl_permutation_fprintf (stdout, p, " %u");
+       printf ("\n");
+
+       printf ("inverse permutation:");
+       gsl_permutation_inverse (q, p);
+       gsl_permutation_fprintf (stdout, q, " %u");
+       printf ("\n");
+
+       gsl_permutation_free (p);
+       gsl_permutation_free (q);
+       gsl_rng_free (r);
+
+       return 0;
+     }
+
+Here is the output from the program,
+
+     $ ./a.out
+     initial permutation: 0 1 2 3 4 5 6 7 8 9
+      random permutation: 1 3 5 2 7 6 0 4 9 8
+     inverse permutation: 6 0 3 1 7 2 5 4 9 8
+
+The random permutation 'p[i]' and its inverse 'q[i]' are related through
+the identity 'p[q[i]] = i', which can be verified from the output.
+
+   The next example program steps forwards through all possible third
+order permutations, starting from the identity,
+
+     #include <stdio.h>
+     #include <gsl/gsl_permutation.h>
+
+     int
+     main (void)
+     {
+       gsl_permutation * p = gsl_permutation_alloc (3);
+
+       gsl_permutation_init (p);
+
+       do
+        {
+           gsl_permutation_fprintf (stdout, p, " %u");
+           printf ("\n");
+        }
+       while (gsl_permutation_next(p) == GSL_SUCCESS);
+
+       gsl_permutation_free (p);
+
+       return 0;
+     }
+
+Here is the output from the program,
+
+     $ ./a.out
+      0 1 2
+      0 2 1
+      1 0 2
+      1 2 0
+      2 0 1
+      2 1 0
+
+The permutations are generated in lexicographic order.  To reverse the
+sequence, begin with the final permutation (which is the reverse of the
+identity) and replace 'gsl_permutation_next' with
+'gsl_permutation_prev'.
+
+
+File: gsl-ref.info,  Node: Permutation References and Further Reading,  Prev: Permutation Examples,  Up: Permutations
+
+9.10 References and Further Reading
+===================================
+
+The subject of permutations is covered extensively in Knuth's 'Sorting
+and Searching',
+
+     Donald E. Knuth, 'The Art of Computer Programming: Sorting and
+     Searching' (Vol 3, 3rd Ed, 1997), Addison-Wesley, ISBN 0201896850.
+
+For the definition of the "canonical form" see,
+
+     Donald E. Knuth, 'The Art of Computer Programming: Fundamental
+     Algorithms' (Vol 1, 3rd Ed, 1997), Addison-Wesley, ISBN 0201896850.
+     Section 1.3.3, 'An Unusual Correspondence', p.178-179.
+
+
+File: gsl-ref.info,  Node: Combinations,  Next: Multisets,  Prev: Permutations,  Up: Top
+
+10 Combinations
+***************
+
+This chapter describes functions for creating and manipulating
+combinations.  A combination c is represented by an array of k integers
+in the range 0 to n-1, where each value c_i occurs at most once.  The
+combination c corresponds to indices of k elements chosen from an n
+element vector.  Combinations are useful for iterating over all
+k-element subsets of a set.
+
+   The functions described in this chapter are defined in the header
+file 'gsl_combination.h'.
+
+* Menu:
+
+* The Combination struct::      
+* Combination allocation::      
+* Accessing combination elements::  
+* Combination properties::      
+* Combination functions::       
+* Reading and writing combinations::  
+* Combination Examples::        
+* Combination References and Further Reading::
+
+
+File: gsl-ref.info,  Node: The Combination struct,  Next: Combination allocation,  Up: Combinations
+
+10.1 The Combination struct
+===========================
+
+A combination is defined by a structure containing three components, the
+values of n and k, and a pointer to the combination array.  The elements
+of the combination array are all of type 'size_t', and are stored in
+increasing order.  The 'gsl_combination' structure looks like this,
+
+     typedef struct
+     {
+       size_t n;
+       size_t k;
+       size_t *data;
+     } gsl_combination;
+
+
+File: gsl-ref.info,  Node: Combination allocation,  Next: Accessing combination elements,  Prev: The Combination struct,  Up: Combinations
+
+10.2 Combination allocation
+===========================
+
+ -- Function: gsl_combination * gsl_combination_alloc (size_t N, size_t
+          K)
+     This function allocates memory for a new combination with
+     parameters N, K.  The combination is not initialized and its
+     elements are undefined.  Use the function 'gsl_combination_calloc'
+     if you want to create a combination which is initialized to the
+     lexicographically first combination.  A null pointer is returned if
+     insufficient memory is available to create the combination.
+
+ -- Function: gsl_combination * gsl_combination_calloc (size_t N, size_t
+          K)
+     This function allocates memory for a new combination with
+     parameters N, K and initializes it to the lexicographically first
+     combination.  A null pointer is returned if insufficient memory is
+     available to create the combination.
+
+ -- Function: void gsl_combination_init_first (gsl_combination * C)
+     This function initializes the combination C to the
+     lexicographically first combination, i.e.  (0,1,2,...,k-1).
+
+ -- Function: void gsl_combination_init_last (gsl_combination * C)
+     This function initializes the combination C to the
+     lexicographically last combination, i.e.  (n-k,n-k+1,...,n-1).
+
+ -- Function: void gsl_combination_free (gsl_combination * C)
+     This function frees all the memory used by the combination C.
+
+ -- Function: int gsl_combination_memcpy (gsl_combination * DEST, const
+          gsl_combination * SRC)
+     This function copies the elements of the combination SRC into the
+     combination DEST.  The two combinations must have the same size.
+
+
+File: gsl-ref.info,  Node: Accessing combination elements,  Next: Combination properties,  Prev: Combination allocation,  Up: Combinations
+
+10.3 Accessing combination elements
+===================================
+
+The following function can be used to access the elements of a
+combination.
+
+ -- Function: size_t gsl_combination_get (const gsl_combination * C,
+          const size_t I)
+     This function returns the value of the I-th element of the
+     combination C.  If I lies outside the allowed range of 0 to K-1
+     then the error handler is invoked and 0 is returned.  An inline
+     version of this function is used when 'HAVE_INLINE' is defined.
+
+
+File: gsl-ref.info,  Node: Combination properties,  Next: Combination functions,  Prev: Accessing combination elements,  Up: Combinations
+
+10.4 Combination properties
+===========================
+
+ -- Function: size_t gsl_combination_n (const gsl_combination * C)
+     This function returns the range (n) of the combination C.
+
+ -- Function: size_t gsl_combination_k (const gsl_combination * C)
+     This function returns the number of elements (k) in the combination
+     C.
+
+ -- Function: size_t * gsl_combination_data (const gsl_combination * C)
+     This function returns a pointer to the array of elements in the
+     combination C.
+
+ -- Function: int gsl_combination_valid (gsl_combination * C)
+     This function checks that the combination C is valid.  The K
+     elements should lie in the range 0 to N-1, with each value
+     occurring once at most and in increasing order.
+
+
+File: gsl-ref.info,  Node: Combination functions,  Next: Reading and writing combinations,  Prev: Combination properties,  Up: Combinations
+
+10.5 Combination functions
+==========================
+
+ -- Function: int gsl_combination_next (gsl_combination * C)
+     This function advances the combination C to the next combination in
+     lexicographic order and returns 'GSL_SUCCESS'.  If no further
+     combinations are available it returns 'GSL_FAILURE' and leaves C
+     unmodified.  Starting with the first combination and repeatedly
+     applying this function will iterate through all possible
+     combinations of a given order.
+
+ -- Function: int gsl_combination_prev (gsl_combination * C)
+     This function steps backwards from the combination C to the
+     previous combination in lexicographic order, returning
+     'GSL_SUCCESS'.  If no previous combination is available it returns
+     'GSL_FAILURE' and leaves C unmodified.
 
 
 File: gsl-ref.info,  Node: Reading and writing combinations,  Next: Combination Examples,  Prev: Combination functions,  Up: Combinations
@@ -359,7 +625,7 @@ are ordered lexicographically.
 Here is the output from the program,
 
      $ ./a.out
-     all multisets of {0,1,2,3} by size:
+     All multisets of {0,1,2,3} by size:
      { }
      { 0 }
      { 1 }
@@ -749,11 +1015,11 @@ smallest numbers from 100000 uniform random variates stored in an array,
 
        gsl_sort_smallest (small, k, x, 1, N);
 
-       printf ("%d smallest values from %d\n", k, N);
+       printf ("%zu smallest values from %zu\n", k, N);
 
        for (i = 0; i < k; i++)
          {
-           printf ("%d: %.18f\n", i, small[i]);
+           printf ("%zu: %.18f\n", i, small[i]);
          }
 
        free (x);
@@ -1535,6 +1801,7 @@ file 'gsl_linalg.h'.
 * Hessenberg Decomposition of Real Matrices::
 * Hessenberg-Triangular Decomposition of Real Matrices::
 * Bidiagonalization::           
+* Givens Rotations::  
 * Householder Transformations::  
 * Householder solver for linear systems::  
 * Tridiagonal Systems::         
@@ -1571,11 +1838,12 @@ matrices.
      contains L.  The diagonal elements of L are unity, and are not
      stored.
 
-     The permutation matrix P is encoded in the permutation P.  The j-th
-     column of the matrix P is given by the k-th column of the identity
-     matrix, where k = p_j the j-th element of the permutation vector.
-     The sign of the permutation is given by SIGNUM.  It has the value
-     (-1)^n, where n is the number of interchanges in the permutation.
+     The permutation matrix P is encoded in the permutation P on output.
+     The j-th column of the matrix P is given by the k-th column of the
+     identity matrix, where k = p_j the j-th element of the permutation
+     vector.  The sign of the permutation is given by SIGNUM.  It has
+     the value (-1)^n, where n is the number of interchanges in the
+     permutation.
 
      The algorithm used in the decomposition is Gaussian Elimination
      with partial pivoting (Golub & Van Loan, 'Matrix Computations',
@@ -2162,7 +2430,7 @@ eigenvalue problem.
      workspace of length N is needed in WORK.
 
 
-File: gsl-ref.info,  Node: Bidiagonalization,  Next: Householder Transformations,  Prev: Hessenberg-Triangular Decomposition of Real Matrices,  Up: Linear Algebra
+File: gsl-ref.info,  Node: Bidiagonalization,  Next: Givens Rotations,  Prev: Hessenberg-Triangular Decomposition of Real Matrices,  Up: Linear Algebra
 
 14.10 Bidiagonalization
 =======================
@@ -2210,9 +2478,37 @@ The size of U is M-by-N and the size of V is N-by-N.
      the diagonal vector DIAG and superdiagonal vector SUPERDIAG.
 
 
-File: gsl-ref.info,  Node: Householder Transformations,  Next: Householder solver for linear systems,  Prev: Bidiagonalization,  Up: Linear Algebra
+File: gsl-ref.info,  Node: Givens Rotations,  Next: Householder Transformations,  Prev: Bidiagonalization,  Up: Linear Algebra
 
-14.11 Householder Transformations
+14.11 Givens Rotations
+======================
+
+A Givens rotation is a rotation in the plane acting on two elements of a
+given vector.  It can be represented in matrix form as
+   where the \cos{\theta} and \sin{\theta} appear at the intersection of
+the ith and jth rows and columns.  When acting on a vector x,
+G(i,j,\theta) x performs a rotation of the (i,j) elements of x.  Givens
+rotations are typically used to introduce zeros in vectors, such as
+during the QR decomposition of a matrix.  In this case, it is typically
+desired to find c and s such that
+   with r = \sqrt{a^2 + b^2}.
+
+ -- Function: void gsl_linalg_givens (const double A, const double B,
+          double * C, double * S)
+     This function computes c = \cos{\theta} and s = \sin{\theta} so
+     that the Givens matrix G(\theta) acting on the vector (a,b)
+     produces (r, 0), with r = \sqrt{a^2 + b^2}.
+
+ -- Function: void gsl_linalg_givens_gv (gsl_vector * V, const size_t I,
+          const size_t J, const double C, const double S)
+     This function applies the Givens rotation defined by c =
+     \cos{\theta} and s = \sin{\theta} to the I and J elements of V.  On
+     output, (v(i),v(j)) \leftarrow G(\theta) (v(i),v(j)).
+
+
+File: gsl-ref.info,  Node: Householder Transformations,  Next: Householder solver for linear systems,  Prev: Givens Rotations,  Up: Linear Algebra
+
+14.12 Householder Transformations
 =================================
 
 A Householder transformation is a rank-1 modification of the identity
@@ -2226,13 +2522,17 @@ v).  The functions described in this section use the rank-1 structure of
 the Householder matrix to create and apply Householder transformations
 efficiently.
 
- -- Function: double gsl_linalg_householder_transform (gsl_vector * V)
+ -- Function: double gsl_linalg_householder_transform (gsl_vector * W)
  -- Function: gsl_complex gsl_linalg_complex_householder_transform
-          (gsl_vector_complex * V)
+          (gsl_vector_complex * W)
      This function prepares a Householder transformation P = I - \tau v
      v^T which can be used to zero all the elements of the input vector
-     except the first.  On output the transformation is stored in the
-     vector V and the scalar \tau is returned.
+     W except the first.  On output the Householder vector V is stored
+     in W and the scalar \tau is returned.  The householder vector V is
+     normalized so that V[0] = 1, however this 1 is not stored in the
+     output vector.  Instead, W[0] is set to the first element of the
+     transformed vector, so that if u = P w, W[0] = u[0] on output and
+     the remainder of u is zero.
 
  -- Function: int gsl_linalg_householder_hm (double TAU, const
           gsl_vector * V, gsl_matrix * A)
@@ -2261,7 +2561,7 @@ efficiently.
 
 File: gsl-ref.info,  Node: Householder solver for linear systems,  Next: Tridiagonal Systems,  Prev: Householder Transformations,  Up: Linear Algebra
 
-14.12 Householder solver for linear systems
+14.13 Householder solver for linear systems
 ===========================================
 
  -- Function: int gsl_linalg_HH_solve (gsl_matrix * A, const gsl_vector
@@ -2280,7 +2580,7 @@ File: gsl-ref.info,  Node: Householder solver for linear systems,  Next: Tridiag
 
 File: gsl-ref.info,  Node: Tridiagonal Systems,  Next: Balancing,  Prev: Householder solver for linear systems,  Up: Linear Algebra
 
-14.13 Tridiagonal Systems
+14.14 Tridiagonal Systems
 =========================
 
 The functions described in this section efficiently solve symmetric,
@@ -2346,7 +2646,7 @@ error code 'GSL_ESING'.
 
 File: gsl-ref.info,  Node: Balancing,  Next: Linear Algebra Examples,  Prev: Tridiagonal Systems,  Up: Linear Algebra
 
-14.14 Balancing
+14.15 Balancing
 ===============
 
 The process of balancing a matrix applies similarity transformations to
@@ -2369,7 +2669,7 @@ point radix.
 
 File: gsl-ref.info,  Node: Linear Algebra Examples,  Next: Linear Algebra References and Further Reading,  Prev: Balancing,  Up: Linear Algebra
 
-14.15 Examples
+14.16 Examples
 ==============
 
 The following program solves the linear system A x = b.  The system to
@@ -2421,7 +2721,8 @@ and the solution is found using LU decomposition of the matrix A.
 
 Here is the output from the program,
 
-     x = -4.05205
+     x =
+     -4.05205
      -12.6056
      1.66091
      8.69377
@@ -2449,7 +2750,7 @@ with the equation A x = b.
 
 File: gsl-ref.info,  Node: Linear Algebra References and Further Reading,  Prev: Linear Algebra Examples,  Up: Linear Algebra
 
-14.16 References and Further Reading
+14.17 References and Further Reading
 ====================================
 
 Further information on the algorithms described in this section can be
@@ -3748,9 +4049,9 @@ a sample of length 630 (=2*3*3*5*7) using the mixed-radix algorithm.
        wavetable = gsl_fft_complex_wavetable_alloc (n);
        workspace = gsl_fft_complex_workspace_alloc (n);
 
-       for (i = 0; i < wavetable->nf; i++)
+       for (i = 0; i < (int) wavetable->nf; i++)
          {
-            printf ("# factor %d: %d\n", i,
+            printf ("# factor %d: %zu\n", i,
                     wavetable->factor[i]);
          }
 
@@ -5001,7 +5302,7 @@ The program below computes this integral to a relative accuracy bound of
        printf ("exact result    = % .18f\n", expected);
        printf ("estimated error = % .18f\n", error);
        printf ("actual error    = % .18f\n", result - expected);
-       printf ("intervals =  %d\n", w->size);
+       printf ("intervals       = %zu\n", w->size);
 
        gsl_integration_workspace_free (w);
 
@@ -5012,11 +5313,11 @@ The results below show that the desired accuracy is achieved after 8
 subdivisions.
 
      $ ./a.out
-     result          = -3.999999999999973799
+     result          = -4.000000000000085265
      exact result    = -4.000000000000000000
-     estimated error =  0.000000000000246025
-     actual error    =  0.000000000000026201
-     intervals =  8
+     estimated error =  0.000000000000135447
+     actual error    = -0.000000000000085265
+     intervals       = 8
 
 In fact, the extrapolation procedure used by 'QAGS' produces an accuracy
 of almost twice as many digits.  The error estimate returned by the
@@ -6006,8 +6307,6 @@ program using a seed value of 123 and the multiple-recursive generator
 'mrg',
 
      $ GSL_RNG_SEED=123 GSL_RNG_TYPE=mrg ./a.out
-     GSL_RNG_TYPE=mrg
-     GSL_RNG_SEED=123
      0.33050
      0.86631
      0.32982
@@ -6088,7 +6387,7 @@ file 'gsl_qrng.h'.
 * Quasi-random number generator initialization::  
 * Sampling from a quasi-random number generator::  
 * Auxiliary quasi-random number generator functions::  
-* Saving and resorting quasi-random number generator state::  
+* Saving and restoring quasi-random number generator state::  
 * Quasi-random number generator algorithms::  
 * Quasi-random number generator examples::  
 * Quasi-random number references::  
@@ -6129,7 +6428,7 @@ File: gsl-ref.info,  Node: Sampling from a quasi-random number generator,  Next:
      'HAVE_INLINE' is defined.
 
 
-File: gsl-ref.info,  Node: Auxiliary quasi-random number generator functions,  Next: Saving and resorting quasi-random number generator state,  Prev: Sampling from a quasi-random number generator,  Up: Quasi-Random Sequences
+File: gsl-ref.info,  Node: Auxiliary quasi-random number generator functions,  Next: Saving and restoring quasi-random number generator state,  Prev: Sampling from a quasi-random number generator,  Up: Quasi-Random Sequences
 
 19.3 Auxiliary quasi-random number generator functions
 ======================================================
@@ -6149,9 +6448,9 @@ File: gsl-ref.info,  Node: Auxiliary quasi-random number generator functions,  N
           fwrite (state, n, 1, stream);
 
 
-File: gsl-ref.info,  Node: Saving and resorting quasi-random number generator state,  Next: Quasi-random number generator algorithms,  Prev: Auxiliary quasi-random number generator functions,  Up: Quasi-Random Sequences
+File: gsl-ref.info,  Node: Saving and restoring quasi-random number generator state,  Next: Quasi-random number generator algorithms,  Prev: Auxiliary quasi-random number generator functions,  Up: Quasi-Random Sequences
 
-19.4 Saving and resorting quasi-random number generator state
+19.4 Saving and restoring quasi-random number generator state
 =============================================================
 
  -- Function: int gsl_qrng_memcpy (gsl_qrng * DEST, const gsl_qrng *
@@ -6165,7 +6464,7 @@ File: gsl-ref.info,  Node: Saving and resorting quasi-random number generator st
      is an exact copy of the generator Q.
 
 
-File: gsl-ref.info,  Node: Quasi-random number generator algorithms,  Next: Quasi-random number generator examples,  Prev: Saving and resorting quasi-random number generator state,  Up: Quasi-Random Sequences
+File: gsl-ref.info,  Node: Quasi-random number generator algorithms,  Next: Quasi-random number generator examples,  Prev: Saving and restoring quasi-random number generator state,  Up: Quasi-Random Sequences
 
 19.5 Quasi-random number generator algorithms
 =============================================
@@ -6686,279 +6985,4 @@ File: gsl-ref.info,  Node: The Landau Distribution,  Next: The Levy alpha-Stable
      Landau distribution using an approximation to the formula given
      above.
 
-
-
-File: gsl-ref.info,  Node: The Levy alpha-Stable Distributions,  Next: The Levy skew alpha-Stable Distribution,  Prev: The Landau Distribution,  Up: Random Number Distributions
-
-20.12 The Levy alpha-Stable Distributions
-=========================================
-
- -- Function: double gsl_ran_levy (const gsl_rng * R, double C, double
-          ALPHA)
-     This function returns a random variate from the Levy symmetric
-     stable distribution with scale C and exponent ALPHA.  The symmetric
-     stable probability distribution is defined by a Fourier transform,
-
-          p(x) = {1 \over 2 \pi} \int_{-\infty}^{+\infty} dt \exp(-it x - |c t|^alpha)
-
-     There is no explicit solution for the form of p(x) and the library
-     does not define a corresponding 'pdf' function.  For \alpha = 1 the
-     distribution reduces to the Cauchy distribution.  For \alpha = 2 it
-     is a Gaussian distribution with \sigma = \sqrt{2} c.  For \alpha <
-     1 the tails of the distribution become extremely wide.
-
-     The algorithm only works for 0 < alpha <= 2.
-
-
-
-File: gsl-ref.info,  Node: The Levy skew alpha-Stable Distribution,  Next: The Gamma Distribution,  Prev: The Levy alpha-Stable Distributions,  Up: Random Number Distributions
-
-20.13 The Levy skew alpha-Stable Distribution
-=============================================
-
- -- Function: double gsl_ran_levy_skew (const gsl_rng * R, double C,
-          double ALPHA, double BETA)
-     This function returns a random variate from the Levy skew stable
-     distribution with scale C, exponent ALPHA and skewness parameter
-     BETA.  The skewness parameter must lie in the range [-1,1].  The
-     Levy skew stable probability distribution is defined by a Fourier
-     transform,
-
-          p(x) = {1 \over 2 \pi} \int_{-\infty}^{+\infty} dt \exp(-it x - |c t|^alpha (1-i beta sign(t) tan(pi alpha/2)))
-
-     When \alpha = 1 the term \tan(\pi \alpha/2) is replaced by
-     -(2/\pi)\log|t|.  There is no explicit solution for the form of
-     p(x) and the library does not define a corresponding 'pdf'
-     function.  For \alpha = 2 the distribution reduces to a Gaussian
-     distribution with \sigma = \sqrt{2} c and the skewness parameter
-     has no effect.  For \alpha < 1 the tails of the distribution become
-     extremely wide.  The symmetric distribution corresponds to \beta =
-     0.
-
-     The algorithm only works for 0 < alpha <= 2.
-
-   The Levy alpha-stable distributions have the property that if N
-alpha-stable variates are drawn from the distribution p(c, \alpha,
-\beta) then the sum Y = X_1 + X_2 + \dots + X_N will also be distributed
-as an alpha-stable variate, p(N^(1/\alpha) c, \alpha, \beta).
-
-
-
-File: gsl-ref.info,  Node: The Gamma Distribution,  Next: The Flat (Uniform) Distribution,  Prev: The Levy skew alpha-Stable Distribution,  Up: Random Number Distributions
-
-20.14 The Gamma Distribution
-============================
-
- -- Function: double gsl_ran_gamma (const gsl_rng * R, double A, double
-          B)
-     This function returns a random variate from the gamma distribution.
-     The distribution function is,
-
-          p(x) dx = {1 \over \Gamma(a) b^a} x^{a-1} e^{-x/b} dx
-
-     for x > 0.
-
-     The gamma distribution with an integer parameter A is known as the
-     Erlang distribution.
-
-     The variates are computed using the Marsaglia-Tsang fast gamma
-     method.  This function for this method was previously called
-     'gsl_ran_gamma_mt' and can still be accessed using this name.
-
- -- Function: double gsl_ran_gamma_knuth (const gsl_rng * R, double A,
-          double B)
-     This function returns a gamma variate using the algorithms from
-     Knuth (vol 2).
-
- -- Function: double gsl_ran_gamma_pdf (double X, double A, double B)
-     This function computes the probability density p(x) at X for a
-     gamma distribution with parameters A and B, using the formula given
-     above.
-
-
- -- Function: double gsl_cdf_gamma_P (double X, double A, double B)
- -- Function: double gsl_cdf_gamma_Q (double X, double A, double B)
- -- Function: double gsl_cdf_gamma_Pinv (double P, double A, double B)
- -- Function: double gsl_cdf_gamma_Qinv (double Q, double A, double B)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the gamma distribution with parameters
-     A and B.
-
-
-File: gsl-ref.info,  Node: The Flat (Uniform) Distribution,  Next: The Lognormal Distribution,  Prev: The Gamma Distribution,  Up: Random Number Distributions
-
-20.15 The Flat (Uniform) Distribution
-=====================================
-
- -- Function: double gsl_ran_flat (const gsl_rng * R, double A, double
-          B)
-     This function returns a random variate from the flat (uniform)
-     distribution from A to B.  The distribution is,
-
-          p(x) dx = {1 \over (b-a)} dx
-
-     if a <= x < b and 0 otherwise.
-
- -- Function: double gsl_ran_flat_pdf (double X, double A, double B)
-     This function computes the probability density p(x) at X for a
-     uniform distribution from A to B, using the formula given above.
-
-
- -- Function: double gsl_cdf_flat_P (double X, double A, double B)
- -- Function: double gsl_cdf_flat_Q (double X, double A, double B)
- -- Function: double gsl_cdf_flat_Pinv (double P, double A, double B)
- -- Function: double gsl_cdf_flat_Qinv (double Q, double A, double B)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for a uniform distribution from A to B.
-
-
-File: gsl-ref.info,  Node: The Lognormal Distribution,  Next: The Chi-squared Distribution,  Prev: The Flat (Uniform) Distribution,  Up: Random Number Distributions
-
-20.16 The Lognormal Distribution
-================================
-
- -- Function: double gsl_ran_lognormal (const gsl_rng * R, double ZETA,
-          double SIGMA)
-     This function returns a random variate from the lognormal
-     distribution.  The distribution function is,
-
-          p(x) dx = {1 \over x \sqrt{2 \pi \sigma^2} } \exp(-(\ln(x) - \zeta)^2/2 \sigma^2) dx
-
-     for x > 0.
-
- -- Function: double gsl_ran_lognormal_pdf (double X, double ZETA,
-          double SIGMA)
-     This function computes the probability density p(x) at X for a
-     lognormal distribution with parameters ZETA and SIGMA, using the
-     formula given above.
-
-
- -- Function: double gsl_cdf_lognormal_P (double X, double ZETA, double
-          SIGMA)
- -- Function: double gsl_cdf_lognormal_Q (double X, double ZETA, double
-          SIGMA)
- -- Function: double gsl_cdf_lognormal_Pinv (double P, double ZETA,
-          double SIGMA)
- -- Function: double gsl_cdf_lognormal_Qinv (double Q, double ZETA,
-          double SIGMA)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the lognormal distribution with
-     parameters ZETA and SIGMA.
-
-
-File: gsl-ref.info,  Node: The Chi-squared Distribution,  Next: The F-distribution,  Prev: The Lognormal Distribution,  Up: Random Number Distributions
-
-20.17 The Chi-squared Distribution
-==================================
-
-The chi-squared distribution arises in statistics.  If Y_i are n
-independent Gaussian random variates with unit variance then the
-sum-of-squares,
-
-     X_i = \sum_i Y_i^2
-
-has a chi-squared distribution with n degrees of freedom.
-
- -- Function: double gsl_ran_chisq (const gsl_rng * R, double NU)
-     This function returns a random variate from the chi-squared
-     distribution with NU degrees of freedom.  The distribution function
-     is,
-
-          p(x) dx = {1 \over 2 \Gamma(\nu/2) } (x/2)^{\nu/2 - 1} \exp(-x/2) dx
-
-     for x >= 0.
-
- -- Function: double gsl_ran_chisq_pdf (double X, double NU)
-     This function computes the probability density p(x) at X for a
-     chi-squared distribution with NU degrees of freedom, using the
-     formula given above.
-
-
- -- Function: double gsl_cdf_chisq_P (double X, double NU)
- -- Function: double gsl_cdf_chisq_Q (double X, double NU)
- -- Function: double gsl_cdf_chisq_Pinv (double P, double NU)
- -- Function: double gsl_cdf_chisq_Qinv (double Q, double NU)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the chi-squared distribution with NU
-     degrees of freedom.
-
-
-File: gsl-ref.info,  Node: The F-distribution,  Next: The t-distribution,  Prev: The Chi-squared Distribution,  Up: Random Number Distributions
-
-20.18 The F-distribution
-========================
-
-The F-distribution arises in statistics.  If Y_1 and Y_2 are chi-squared
-deviates with \nu_1 and \nu_2 degrees of freedom then the ratio,
-
-     X = { (Y_1 / \nu_1) \over (Y_2 / \nu_2) }
-
-has an F-distribution F(x;\nu_1,\nu_2).
-
- -- Function: double gsl_ran_fdist (const gsl_rng * R, double NU1,
-          double NU2)
-     This function returns a random variate from the F-distribution with
-     degrees of freedom NU1 and NU2.  The distribution function is,
-
-          p(x) dx =
-             { \Gamma((\nu_1 + \nu_2)/2)
-                  \over \Gamma(\nu_1/2) \Gamma(\nu_2/2) }
-             \nu_1^{\nu_1/2} \nu_2^{\nu_2/2}
-             x^{\nu_1/2 - 1} (\nu_2 + \nu_1 x)^{-\nu_1/2 -\nu_2/2}
-
-     for x >= 0.
-
- -- Function: double gsl_ran_fdist_pdf (double X, double NU1, double
-          NU2)
-     This function computes the probability density p(x) at X for an
-     F-distribution with NU1 and NU2 degrees of freedom, using the
-     formula given above.
-
-
- -- Function: double gsl_cdf_fdist_P (double X, double NU1, double NU2)
- -- Function: double gsl_cdf_fdist_Q (double X, double NU1, double NU2)
- -- Function: double gsl_cdf_fdist_Pinv (double P, double NU1, double
-          NU2)
- -- Function: double gsl_cdf_fdist_Qinv (double Q, double NU1, double
-          NU2)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the F-distribution with NU1 and NU2
-     degrees of freedom.
-
-
-File: gsl-ref.info,  Node: The t-distribution,  Next: The Beta Distribution,  Prev: The F-distribution,  Up: Random Number Distributions
-
-20.19 The t-distribution
-========================
-
-The t-distribution arises in statistics.  If Y_1 has a normal
-distribution and Y_2 has a chi-squared distribution with \nu degrees of
-freedom then the ratio,
-
-     X = { Y_1 \over \sqrt{Y_2 / \nu} }
-
-has a t-distribution t(x;\nu) with \nu degrees of freedom.
-
- -- Function: double gsl_ran_tdist (const gsl_rng * R, double NU)
-     This function returns a random variate from the t-distribution.
-     The distribution function is,
-
-          p(x) dx = {\Gamma((\nu + 1)/2) \over \sqrt{\pi \nu} \Gamma(\nu/2)}
-             (1 + x^2/\nu)^{-(\nu + 1)/2} dx
-
-     for -\infty < x < +\infty.
-
- -- Function: double gsl_ran_tdist_pdf (double X, double NU)
-     This function computes the probability density p(x) at X for a
-     t-distribution with NU degrees of freedom, using the formula given
-     above.
-
-
- -- Function: double gsl_cdf_tdist_P (double X, double NU)
- -- Function: double gsl_cdf_tdist_Q (double X, double NU)
- -- Function: double gsl_cdf_tdist_Pinv (double P, double NU)
- -- Function: double gsl_cdf_tdist_Qinv (double Q, double NU)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the t-distribution with NU degrees of
-     freedom.
 

@@ -83,7 +83,7 @@ possibly with some indices thrown in.  To use the random number
 generators, you do not need to know the details of what comprises the
 state, and besides that varies from algorithm to algorithm.
 
-@tpindex gsl_rng_type
+@tindex gsl_rng_type
 The random number generator library uses two special structs,
 @code{gsl_rng_type} which holds static information about each type of
 generator and @code{gsl_rng} which describes an instance of a generator
@@ -96,7 +96,7 @@ The functions described in this section are declared in the header file
 @section Random number generator initialization
 
 @deftypefun {gsl_rng *} gsl_rng_alloc (const gsl_rng_type * @var{T})
-@tpindex gsl_rng
+@tindex gsl_rng
 This function returns a pointer to a newly-created
 instance of a random number generator of type @var{T}.
 For example, the following code creates an instance of the Tausworthe
@@ -110,8 +110,8 @@ If there is insufficient memory to create the generator then the
 function returns a null pointer and the error handler is invoked with an
 error code of @code{GSL_ENOMEM}.
 
-@vrindex gsl_rng_default_seed
-@vrindex @env{GSL_RNG_SEED}
+@vindex gsl_rng_default_seed
+@vindex @env{GSL_RNG_SEED}
 @cindex @code{GSL_RNG_SEED}
 The generator is automatically initialized with the default seed,
 @code{gsl_rng_default_seed}.  This is zero by default but can be changed
@@ -282,10 +282,10 @@ the function @code{gsl_rng_env_setup}.  This makes it easy try out
 different generators and seeds without having to recompile your program.
 
 @deftypefun {const gsl_rng_type *} gsl_rng_env_setup (void)
-@vrindex @env{GSL_RNG_TYPE}
-@vrindex @env{GSL_RNG_SEED}
-@vrindex gsl_rng_default
-@vrindex gsl_rng_default_seed
+@vindex @env{GSL_RNG_TYPE}
+@vindex @env{GSL_RNG_SEED}
+@vindex gsl_rng_default
+@vindex gsl_rng_default_seed
 This function reads the environment variables @code{GSL_RNG_TYPE} and
 @code{GSL_RNG_SEED} and uses their values to set the corresponding
 library variables @code{gsl_rng_default} and
@@ -325,7 +325,7 @@ defaults, an @code{mt19937} generator with a seed of 0,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/rng.out
+@verbatiminclude examples/rng.txt
 @end example
 
 @noindent
@@ -1376,7 +1376,7 @@ Here is the output of the program,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/rngunif.out
+@verbatiminclude examples/rngunif.txt
 @end example
 
 @noindent
@@ -1389,7 +1389,7 @@ multiple-recursive generator @code{mrg},
 
 @example
 $ GSL_RNG_SEED=123 GSL_RNG_TYPE=mrg ./a.out 
-@verbatiminclude examples/rngunif.2.out
+@verbatiminclude examples/rngunif2.txt
 @end example
 
 @node Random Number References and Further Reading

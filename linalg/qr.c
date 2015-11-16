@@ -22,14 +22,12 @@
 #include <config.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 
-#include <gsl/gsl_linalg.h>
-
-#include "givens.c"
 #include "apply_givens.c"
 
 /* Factorise a general M x N matrix A into
@@ -381,7 +379,7 @@ gsl_linalg_QR_Qvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * 
     {
       size_t i;
 
-      /* compute Q^T v */
+      /* compute Q v */
 
       for (i = GSL_MIN (M, N); i-- > 0;)
         {
@@ -396,7 +394,7 @@ gsl_linalg_QR_Qvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * 
     }
 }
 
-/* Form the product Q^T A  from a QR factorized matrix */
+/* Form the product Q^T A from a QR factorized matrix */
 
 int
 gsl_linalg_QR_QTmat (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix * A)
@@ -430,6 +428,38 @@ gsl_linalg_QR_QTmat (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix *
     }
 }
 
+/* Form the product A Q from a QR factorized matrix */
+int
+gsl_linalg_QR_matQ (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix * A)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+
+  if (tau->size != GSL_MIN (M, N))
+    {
+      GSL_ERROR ("size of tau must be MIN(M,N)", GSL_EBADLEN);
+    }
+  else if (A->size2 != M)
+    {
+      GSL_ERROR ("matrix must have M columns", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      /* compute A Q */
+
+      for (i = 0; i < GSL_MIN (M, N); i++)
+        {
+          gsl_vector_const_view c = gsl_matrix_const_column (QR, i);
+          gsl_vector_const_view h = gsl_vector_const_subvector (&(c.vector), i, M - i);
+          gsl_matrix_view m = gsl_matrix_submatrix(A, 0, i, A->size1, M - i);
+          double ti = gsl_vector_get (tau, i);
+          gsl_linalg_householder_mh (ti, &(h.vector), &(m.matrix));
+        }
+      return GSL_SUCCESS;
+    }
+}
 
 /*  Form the orthogonal matrix Q from the packed QR matrix */
 
@@ -534,8 +564,8 @@ gsl_linalg_QR_update (gsl_matrix * Q, gsl_matrix * R,
           double wk = gsl_vector_get (w, k);
           double wkm1 = gsl_vector_get (w, k - 1);
 
-          create_givens (wkm1, wk, &c, &s);
-          apply_givens_vec (w, k - 1, k, c, s);
+          gsl_linalg_givens (wkm1, wk, &c, &s);
+          gsl_linalg_givens_gv (w, k - 1, k, c, s);
           apply_givens_qr (M, N, Q, R, k - 1, k, c, s);
         }
 
@@ -559,7 +589,7 @@ gsl_linalg_QR_update (gsl_matrix * Q, gsl_matrix * R,
           double diag = gsl_matrix_get (R, k - 1, k - 1);
           double offdiag = gsl_matrix_get (R, k, k - 1);
 
-          create_givens (diag, offdiag, &c, &s);
+          gsl_linalg_givens (diag, offdiag, &c, &s);
           apply_givens_qr (M, N, Q, R, k - 1, k, c, s);
 
           gsl_matrix_set (R, k, k - 1, 0.0);    /* exact zero of G^T */

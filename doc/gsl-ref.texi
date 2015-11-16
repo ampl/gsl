@@ -125,13 +125,19 @@ Inline versions of these functions are used when @code{HAVE_INLINE} is defined.
 @set GSL @i{GNU Scientific Library}
 
 @copying
-Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The GSL Team.
+Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL Team.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections and no cover texts.  A copy of the license is
-included in the section entitled ``GNU Free Documentation License''.
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Free Software
+Needs Free Documentation'', the Front-Cover text being ``A GNU Manual'',
+and with the Back-Cover Text being (a) (see below). A copy of the
+license is included in the section entitled ``GNU Free Documentation
+License''.
+
+(a) The Back-Cover Text is: ``You have the freedom to copy and modify this
+GNU Manual.''
 @end copying
 
 @titlepage
@@ -251,6 +257,7 @@ project homepage thanks to Daisuke Tominaga.
 * Quasi-Random Sequences::      
 * Random Number Distributions::  
 * Statistics::                  
+* Running Statistics::                  
 * Histograms::                  
 * N-tuples::                    
 * Monte Carlo Integration::     
@@ -268,7 +275,10 @@ project homepage thanks to Daisuke Tominaga.
 * Multidimensional Minimization::  
 * Least-Squares Fitting::       
 * Nonlinear Least-Squares Fitting::  
-* Basis Splines::               
+* Basis Splines::
+* Sparse Matrices::
+* Sparse BLAS Support::
+* Sparse Linear Algebra::
 * Physical Constants::          
 * IEEE floating-point arithmetic::  
 * Debugging Numerical Programs::  
@@ -365,11 +375,15 @@ project homepage thanks to Daisuke Tominaga.
 @chapter Random Number Distributions
 @include randist.texi
 
-@node Statistics, Histograms, Random Number Distributions, Top
+@node Statistics, Running Statistics, Random Number Distributions, Top
 @chapter Statistics
 @include statistics.texi
 
-@node Histograms, N-tuples, Statistics, Top
+@node Running Statistics, Histograms, Statistics, Top
+@chapter Running Statistics
+@include rstat.texi
+
+@node Histograms, N-tuples, Running Statistics, Top
 @chapter Histograms
 @include histogram.texi
 
@@ -437,11 +451,23 @@ project homepage thanks to Daisuke Tominaga.
 @chapter Nonlinear Least-Squares Fitting
 @include multifit.texi
 
-@node Basis Splines, Physical Constants, Nonlinear Least-Squares Fitting, Top
+@node Basis Splines, Sparse Matrices, Nonlinear Least-Squares Fitting, Top
 @chapter Basis Splines
 @include bspline.texi
 
-@node  Physical Constants, IEEE floating-point arithmetic, Basis Splines, Top
+@node Sparse Matrices, Sparse BLAS Support, Basis Splines, Top
+@chapter Sparse Matrices
+@include spmatrix.texi
+
+@node Sparse BLAS Support, Sparse Linear Algebra, Sparse Matrices, Top
+@chapter Sparse BLAS Support
+@include spblas.texi
+
+@node Sparse Linear Algebra, Physical Constants, Sparse BLAS Support, Top
+@chapter Sparse Linear Algebra
+@include splinalg.texi
+
+@node Physical Constants, IEEE floating-point arithmetic, Sparse Linear Algebra, Top
 @chapter Physical Constants
 @include const.texi
 
@@ -529,7 +555,7 @@ Implementation of the Mathieu functions.
 
 @item Patrick Alken
 Implementation of nonsymmetric and generalized eigensystems, B-splines,
-and robust linear regression.
+robust linear regression, and sparse matrices.
 
 @item Rhys Ulerich 
 Wrote the multiset routines.

@@ -27,7 +27,7 @@
 #include <gsl/gsl_sf_mathieu.h>
 
 
-int gsl_sf_mathieu_ce(int order, double qq, double zz, gsl_sf_result *result)
+int gsl_sf_mathieu_ce_e(int order, double qq, double zz, gsl_sf_result *result)
 {
   int even_odd, ii, status;
   double coeff[GSL_SF_MATHIEU_COEFF], norm, fn, factor;
@@ -63,7 +63,7 @@ int gsl_sf_mathieu_ce(int order, double qq, double zz, gsl_sf_result *result)
       order *= -1;
 
   /* Compute the characteristic value. */
-  status = gsl_sf_mathieu_a(order, qq, &aa);
+  status = gsl_sf_mathieu_a_e(order, qq, &aa);
   if (status != GSL_SUCCESS)
   {
       return status;
@@ -109,7 +109,7 @@ int gsl_sf_mathieu_ce(int order, double qq, double zz, gsl_sf_result *result)
 }
 
 
-int gsl_sf_mathieu_se(int order, double qq, double zz, gsl_sf_result *result)
+int gsl_sf_mathieu_se_e(int order, double qq, double zz, gsl_sf_result *result)
 {
   int even_odd, ii, status;
   double coeff[GSL_SF_MATHIEU_COEFF], norm, fn, factor;
@@ -149,7 +149,7 @@ int gsl_sf_mathieu_se(int order, double qq, double zz, gsl_sf_result *result)
       order *= -1;
 
   /* Compute the characteristic value. */
-  status = gsl_sf_mathieu_b(order, qq, &aa);
+  status = gsl_sf_mathieu_b_e(order, qq, &aa);
   if (status != GSL_SUCCESS)
   {
       return status;
@@ -347,4 +347,19 @@ int gsl_sf_mathieu_se_array(int nmin, int nmax, double qq, double zz,
   }
 
   return GSL_SUCCESS;
+}
+
+
+/*-*-*-*-*-*-*-*-*-* Functions w/ Natural Prototypes *-*-*-*-*-*-*-*-*-*-*/
+
+#include "eval.h"                                                           
+
+double gsl_sf_mathieu_ce(int order, double qq, double zz)
+{
+	EVAL_RESULT(gsl_sf_mathieu_ce_e(order, qq, zz, &result));
+}
+
+double gsl_sf_mathieu_se(int order, double qq, double zz)
+{
+	EVAL_RESULT(gsl_sf_mathieu_se_e(order, qq, zz, &result));
 }

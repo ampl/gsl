@@ -4,6 +4,7 @@
 
 double f (double x, void * params)
 {
+  (void)(params); /* avoid unused parameter warning */
   return pow (x, 1.5);
 }
 

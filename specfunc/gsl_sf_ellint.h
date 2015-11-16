@@ -81,8 +81,8 @@ double gsl_sf_ellint_E(double phi, double k, gsl_mode_t mode);
 int gsl_sf_ellint_P_e(double phi, double k, double n, gsl_mode_t mode, gsl_sf_result * result);
 double gsl_sf_ellint_P(double phi, double k, double n, gsl_mode_t mode);
 
-int gsl_sf_ellint_D_e(double phi, double k, double n, gsl_mode_t mode, gsl_sf_result * result);
-double gsl_sf_ellint_D(double phi, double k, double n, gsl_mode_t mode);
+int gsl_sf_ellint_D_e(double phi, double k, gsl_mode_t mode, gsl_sf_result * result);
+double gsl_sf_ellint_D(double phi, double k, gsl_mode_t mode);
 
 
 /* Carlson's symmetric basis of functions

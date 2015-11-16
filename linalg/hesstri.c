@@ -26,8 +26,6 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_blas.h>
 
-#include "givens.c"
-
 /*
  * This module contains routines related to the Hessenberg-Triangular
  * reduction of two general real matrices
@@ -114,10 +112,10 @@ gsl_linalg_hesstri_decomp(gsl_matrix * A, gsl_matrix * B, gsl_matrix * U,
                * compute G = [ CS SN ] so that G^t [ A(i-1,j) ] = [ * ]
                *             [-SN CS ]             [ A(i, j)  ]   [ 0 ]
                */
-              create_givens(gsl_matrix_get(A, i - 1, j),
-                            gsl_matrix_get(A, i, j),
-                            &cs,
-                            &sn);
+              gsl_linalg_givens(gsl_matrix_get(A, i - 1, j),
+                                gsl_matrix_get(A, i, j),
+                                &cs,
+                                &sn);
               /* invert so drot() works correctly (G -> G^t) */
               sn = -sn;
 
@@ -141,10 +139,10 @@ gsl_linalg_hesstri_decomp(gsl_matrix * A, gsl_matrix * B, gsl_matrix * U,
 
               /* step 2: rotate columns i, i - 1 to kill B(i, i - 1) */
 
-              create_givens(-gsl_matrix_get(B, i, i),
-                            gsl_matrix_get(B, i, i - 1),
-                            &cs,
-                            &sn);
+              gsl_linalg_givens(-gsl_matrix_get(B, i, i),
+                                gsl_matrix_get(B, i, i - 1),
+                                &cs,
+                                &sn);
               /* invert so drot() works correctly (G -> G^t) */
               sn = -sn;
 

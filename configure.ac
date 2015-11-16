@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gsl],[1.16])
+AC_INIT([gsl],[2.1])
 AC_CONFIG_SRCDIR(gsl_math.h)
 
 AM_INIT_AUTOMAKE([gnu])
@@ -28,12 +28,17 @@ dnl gsl-1.13   libgsl 14:0:14  libgslcblas 0:0:0
 dnl gsl-1.14   libgsl 15:0:15  libgslcblas 0:0:0 
 dnl gsl-1.15   libgsl 16:0:16  libgslcblas 0:0:0 
 dnl gsl-1.16   libgsl 17:0:17  libgslcblas 0:0:0 
+dnl gsl-2.0    libgsl 18:0:18  (**) libgslcblas 0:0:0 
+dnl gsl-2.1    libgsl 19:0:0   libgslcblas 0:0:0 
 dnl 
 dnl (*) There was an error on this release.  Firstly, the versioning
 dnl numbers were not updated.  Secondly, 2 functions were removed, but
 dnl the age not reset--this should have been 11:0:0.  However these
 dnl functions were not documented and are regarded as internal, so we
 dnl will assume 11:0:11.
+dnl
+dnl (**) There was an error on this release. Age should have been
+dnl reset to 18:0:0
 dnl
 dnl How to update library version number
 dnl ====================================
@@ -46,11 +51,14 @@ dnl
 dnl A: increment if any interfaces have been added; set to 0 if any
 dnl interfaces have been removed. removal has precedence over adding,
 dnl so set to 0 if both happened.
+dnl
+dnl See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+dnl for more detailed info
 
 dnl
-GSL_CURRENT=17
+GSL_CURRENT=19
 GSL_REVISION=0
-GSL_AGE=17
+GSL_AGE=0
 dnl
 CBLAS_CURRENT=0
 CBLAS_REVISION=0
@@ -92,7 +100,7 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 
 dnl Check compiler features
 AC_TYPE_SIZE_T
@@ -104,7 +112,7 @@ AC_C_CHAR_UNSIGNED
 GSL_CFLAGS="-I$includedir"
 GSL_LIBS="-L$libdir -lgsl"
 dnl macro from libtool - can be replaced with LT_LIB_M when we require libtool 2
-AC_CHECK_LIBM
+LT_LIB_M
 GSL_LIBM=$LIBM
 
 AC_SUBST(GSL_CFLAGS)
@@ -148,13 +156,19 @@ AC_CHECK_HEADERS(ieeefp.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
-case "$host_os" in
-     *mingw*)
-	MINGW=true
-	;;
+case $host in
+  *-*-cygwin* | *-*-mingw* )
+  if test "$enable_shared" = yes; then
+    GSLCBLAS_LDFLAGS="$GSLCBLAS_LDFLAGS -no-undefined"
+    GSL_LDFLAGS="$GSL_LDFLAGS -no-undefined"
+    GSL_LIBADD="cblas/libgslcblas.la"
+  fi
+  ;;
 esac
 
-AM_CONDITIONAL(MINGW32_HOST, test "$MINGW" = "true")
+AC_SUBST(GSLCBLAS_LDFLAGS)
+AC_SUBST(GSL_LDFLAGS)
+AC_SUBST(GSL_LIBADD)
 
 dnl Checks for library functions.
 
@@ -564,5 +578,65 @@ AH_VERBATIM([GSL_DISABLE_DEPRECATED],
 #define GSL_DISABLE_DEPRECATED 1])
 
 dnl
-AC_CONFIG_FILES([gsl_version.h gsl.spec gsl/Makefile test/Makefile err/Makefile sys/Makefile utils/Makefile const/Makefile min/Makefile multimin/Makefile ieee-utils/Makefile fft/Makefile specfunc/Makefile dht/Makefile fit/Makefile multifit/Makefile bspline/Makefile statistics/Makefile sum/Makefile roots/Makefile multiroots/Makefile ntuple/Makefile poly/Makefile qrng/Makefile rng/Makefile randist/Makefile siman/Makefile integration/Makefile interpolation/Makefile doc/Makefile block/Makefile vector/Makefile matrix/Makefile histogram/Makefile monte/Makefile ode-initval/Makefile ode-initval2/Makefile cblas/Makefile blas/Makefile linalg/Makefile eigen/Makefile permutation/Makefile combination/Makefile multiset/Makefile sort/Makefile complex/Makefile diff/Makefile deriv/Makefile cheb/Makefile cdf/Makefile wavelet/Makefile Makefile])
+AC_CONFIG_FILES([      \
+Makefile               \
+gsl_version.h          \
+gsl.spec               \
+blas/Makefile          \
+block/Makefile         \
+bspline/Makefile       \
+cblas/Makefile         \
+cdf/Makefile           \
+cheb/Makefile          \
+combination/Makefile   \
+complex/Makefile       \
+const/Makefile         \
+deriv/Makefile         \
+dht/Makefile           \
+diff/Makefile          \
+doc/Makefile           \
+doc/examples/Makefile  \
+eigen/Makefile         \
+err/Makefile           \
+fit/Makefile           \
+fft/Makefile           \
+gsl/Makefile           \
+histogram/Makefile     \
+ieee-utils/Makefile    \
+integration/Makefile   \
+interpolation/Makefile \
+linalg/Makefile        \
+matrix/Makefile        \
+min/Makefile           \
+monte/Makefile         \
+multifit/Makefile      \
+multilarge/Makefile    \
+multimin/Makefile      \
+multiroots/Makefile    \
+multiset/Makefile      \
+ntuple/Makefile        \
+ode-initval/Makefile   \
+ode-initval2/Makefile  \
+permutation/Makefile   \
+poly/Makefile          \
+qrng/Makefile          \
+randist/Makefile       \
+rng/Makefile           \
+roots/Makefile         \
+rstat/Makefile         \
+siman/Makefile         \
+sort/Makefile          \
+spblas/Makefile        \
+splinalg/Makefile      \
+spmatrix/Makefile      \
+specfunc/Makefile      \
+statistics/Makefile    \
+sum/Makefile           \
+sys/Makefile           \
+test/Makefile          \
+utils/Makefile         \
+vector/Makefile        \
+wavelet/Makefile       \
+])
+
 AC_OUTPUT

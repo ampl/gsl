@@ -36,7 +36,7 @@ absolute accuracy of @math{\epsilon ||A||_2}, where @math{\epsilon} is
 the machine precision.
 
 @deftypefun {gsl_eigen_symm_workspace *} gsl_eigen_symm_alloc (const size_t @var{n})
-@tpindex gsl_eigen_symm_workspace
+@tindex gsl_eigen_symm_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} real symmetric matrices.  The size of the workspace
 is @math{O(2n)}.
@@ -56,7 +56,7 @@ and are unordered.
 @end deftypefun
 
 @deftypefun {gsl_eigen_symmv_workspace *} gsl_eigen_symmv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_symmv_workspace
+@tindex gsl_eigen_symmv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} real symmetric matrices.  The size of
 the workspace is @math{O(4n)}.
@@ -88,7 +88,7 @@ the symmetric bidiagonalization and QR reduction method.
 @cindex hermitian matrix, complex, eigensystem
 @cindex complex hermitian matrix, eigensystem
 @deftypefun {gsl_eigen_herm_workspace *} gsl_eigen_herm_alloc (const size_t @var{n})
-@tpindex gsl_eigen_herm_workspace
+@tindex gsl_eigen_herm_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} complex hermitian matrices.  The size of the workspace
 is @math{O(3n)}.
@@ -109,7 +109,7 @@ zero and are not referenced. The eigenvalues are stored in the vector
 @end deftypefun
 
 @deftypefun {gsl_eigen_hermv_workspace *} gsl_eigen_hermv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_hermv_workspace
+@tindex gsl_eigen_hermv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} complex hermitian matrices.  The size of
 the workspace is @math{O(5n)}.
@@ -162,7 +162,7 @@ conjugate eigenvalues of @math{A}. The algorithm used is the double-shift
 Francis method.
 
 @deftypefun {gsl_eigen_nonsymm_workspace *} gsl_eigen_nonsymm_alloc (const size_t @var{n})
-@tpindex gsl_eigen_nonsymm_workspace
+@tindex gsl_eigen_nonsymm_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} real nonsymmetric matrices. The size of the workspace
 is @math{O(2n)}.
@@ -248,7 +248,7 @@ computes the Schur vectors and stores them into @var{Z}.
 @end deftypefun
 
 @deftypefun {gsl_eigen_nonsymmv_workspace *} gsl_eigen_nonsymmv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_nonsymmv_workspace
+@tindex gsl_eigen_nonsymmv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} real nonsymmetric matrices. The
 size of the workspace is @math{O(5n)}.
@@ -334,7 +334,7 @@ vectors of the original problem. The eigenvalues and eigenvectors
 of the generalized symmetric-definite eigenproblem are always real.
 
 @deftypefun {gsl_eigen_gensymm_workspace *} gsl_eigen_gensymm_alloc (const size_t @var{n})
-@tpindex gsl_eigen_gensymm_workspace
+@tindex gsl_eigen_gensymm_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} real generalized symmetric-definite eigensystems. The
 size of the workspace is @math{O(2n)}.
@@ -352,7 +352,7 @@ contains its Cholesky decomposition and @var{A} is destroyed.
 @end deftypefun
 
 @deftypefun {gsl_eigen_gensymmv_workspace *} gsl_eigen_gensymmv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_gensymmv_workspace
+@tindex gsl_eigen_gensymmv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} real generalized symmetric-definite
 eigensystems. The size of the workspace is @math{O(4n)}.
@@ -402,7 +402,7 @@ vectors of the original problem. The eigenvalues
 of the generalized hermitian-definite eigenproblem are always real.
 
 @deftypefun {gsl_eigen_genherm_workspace *} gsl_eigen_genherm_alloc (const size_t @var{n})
-@tpindex gsl_eigen_genherm_workspace
+@tindex gsl_eigen_genherm_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} complex generalized hermitian-definite eigensystems. The
 size of the workspace is @math{O(3n)}.
@@ -420,7 +420,7 @@ contains its Cholesky decomposition and @var{A} is destroyed.
 @end deftypefun
 
 @deftypefun {gsl_eigen_genhermv_workspace *} gsl_eigen_genhermv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_genhermv_workspace
+@tindex gsl_eigen_genhermv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} complex generalized hermitian-definite
 eigensystems. The size of the workspace is @math{O(5n)}.
@@ -526,7 +526,7 @@ values. The algorithm used is the QZ method due to Moler and Stewart
 (see references).
 
 @deftypefun {gsl_eigen_gen_workspace *} gsl_eigen_gen_alloc (const size_t @var{n})
-@tpindex gsl_eigen_gen_workspace
+@tindex gsl_eigen_gen_workspace
 This function allocates a workspace for computing eigenvalues of
 @var{n}-by-@var{n} real generalized nonsymmetric eigensystems. The
 size of the workspace is @math{O(n)}.
@@ -584,7 +584,7 @@ and @var{Z} respectively.
 @end deftypefun
 
 @deftypefun {gsl_eigen_genv_workspace *} gsl_eigen_genv_alloc (const size_t @var{n})
-@tpindex gsl_eigen_genv_workspace
+@tindex gsl_eigen_genv_workspace
 This function allocates a workspace for computing eigenvalues and
 eigenvectors of @var{n}-by-@var{n} real generalized nonsymmetric
 eigensystems. The size of the workspace is @math{O(7n)}.

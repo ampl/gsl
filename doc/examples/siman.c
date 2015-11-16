@@ -61,7 +61,7 @@ void P1(void *xp)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
   const gsl_rng_type * T;
   gsl_rng * r;

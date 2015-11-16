@@ -19,7 +19,6 @@ quadratic_deriv (double x, void *params)
 
   double a = p->a;
   double b = p->b;
-  double c = p->c;
 
   return 2.0 * a * x + b;
 }

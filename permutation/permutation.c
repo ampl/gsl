@@ -250,6 +250,7 @@ gsl_permutation_mul (gsl_permutation * p, const gsl_permutation * pa, const gsl_
 
   return GSL_SUCCESS;
 }
+
 int
 gsl_permutation_memcpy (gsl_permutation * dest,
                         const gsl_permutation * src)

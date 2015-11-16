@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslcomplex.la
 
 pkginclude_HEADERS = gsl_complex.h gsl_complex_math.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslcomplex_la_SOURCES = math.c inline.c
 

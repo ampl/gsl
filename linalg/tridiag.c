@@ -234,6 +234,11 @@ solve_cyc_tridiag(
       if (N == 1) 
         {
           x[0] = b[0] / diag[0];
+          free(delta);
+          free(gamma);
+          free(alpha);
+          free(c);
+          free(z);
           return GSL_SUCCESS;
         }
 

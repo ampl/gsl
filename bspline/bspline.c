@@ -64,13 +64,13 @@ gsl_bspline_alloc (const size_t k, const size_t nbreak)
     {
       gsl_bspline_workspace *w;
 
-      w = (gsl_bspline_workspace *) malloc (sizeof (gsl_bspline_workspace));
+      w = calloc (1, sizeof (gsl_bspline_workspace));
 
       if (w == 0)
-	{
-	  GSL_ERROR_NULL ("failed to allocate space for workspace",
-			  GSL_ENOMEM);
-	}
+        {
+          GSL_ERROR_NULL ("failed to allocate space for workspace",
+            GSL_ENOMEM);
+        }
 
       w->k = k;
       w->km1 = k - 1;
@@ -80,47 +80,96 @@ gsl_bspline_alloc (const size_t k, const size_t nbreak)
 
       w->knots = gsl_vector_alloc (w->n + k);
       if (w->knots == 0)
-	{
-	  free (w);
-	  GSL_ERROR_NULL ("failed to allocate space for knots vector",
-			  GSL_ENOMEM);
-	}
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL ("failed to allocate space for knots vector",
+            GSL_ENOMEM);
+        }
 
       w->deltal = gsl_vector_alloc (k);
       if (w->deltal == 0)
-	{
-	  gsl_vector_free (w->knots);
-	  free (w);
-	  GSL_ERROR_NULL ("failed to allocate space for deltal vector",
-			  GSL_ENOMEM);
-	}
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL ("failed to allocate space for deltal vector",
+            GSL_ENOMEM);
+        }
 
       w->deltar = gsl_vector_alloc (k);
       if (w->deltar == 0)
-	{
-	  gsl_vector_free (w->deltal);
-	  gsl_vector_free (w->knots);
-	  free (w);
-	  GSL_ERROR_NULL ("failed to allocate space for deltar vector",
-			  GSL_ENOMEM);
-	}
-
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL ("failed to allocate space for deltar vector",
+            GSL_ENOMEM);
+        }
 
       w->B = gsl_vector_alloc (k);
       if (w->B == 0)
-	{
-	  gsl_vector_free (w->deltar);;
-	  gsl_vector_free (w->deltal);
-	  gsl_vector_free (w->knots);
-	  free (w);
-	  GSL_ERROR_NULL
-	    ("failed to allocate space for temporary spline vector",
-	     GSL_ENOMEM);
-	}
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL
+            ("failed to allocate space for temporary spline vector",
+             GSL_ENOMEM);
+        }
+
+      w->A = gsl_matrix_alloc (k, k);
+      if (w->A == 0)
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL
+            ("failed to allocate space for derivative work matrix",
+             GSL_ENOMEM);
+        }
+
+      w->dB = gsl_matrix_alloc (k, k + 1);
+      if (w->dB == 0)
+        {
+          gsl_bspline_free (w);
+          GSL_ERROR_NULL
+            ("failed to allocate space for temporary derivative matrix",
+             GSL_ENOMEM);
+        }
 
       return w;
     }
-}				/* gsl_bspline_alloc() */
+} /* gsl_bspline_alloc() */
+
+/*
+gsl_bspline_free()
+  Free a gsl_bspline_workspace.
+
+Inputs: w - workspace to free
+
+Return: none
+*/
+
+void
+gsl_bspline_free (gsl_bspline_workspace * w)
+{
+  RETURN_IF_NULL (w);
+
+  if (w->knots)
+    gsl_vector_free (w->knots);
+
+  if (w->deltal)
+    gsl_vector_free (w->deltal);
+
+  if (w->deltar)
+    gsl_vector_free (w->deltar);
+
+  if (w->B)
+    gsl_vector_free (w->B);
+
+  if (w->A)
+    gsl_matrix_free(w->A);
+
+  if (w->dB)
+    gsl_matrix_free(w->dB);
+
+  free (w);
+} /* gsl_bspline_free() */
+
+
+#ifndef GSL_DISABLE_DEPRECATED
 
 /*
 gsl_bspline_deriv_alloc()
@@ -178,6 +227,26 @@ gsl_bspline_deriv_alloc (const size_t k)
     }
 }				/* gsl_bspline_deriv_alloc() */
 
+/*
+gsl_bspline_deriv_free()
+  Free a gsl_bspline_deriv_workspace.
+
+Inputs: dw - workspace to free
+
+Return: none
+*/
+
+void
+gsl_bspline_deriv_free (gsl_bspline_deriv_workspace * dw)
+{
+  RETURN_IF_NULL (dw);
+  gsl_matrix_free (dw->A);
+  gsl_matrix_free (dw->dB);
+  free (dw);
+}				/* gsl_bspline_deriv_free() */
+
+#endif /* !GSL_DISABLE_DEPRECATED */
+
 /* Return number of coefficients */
 size_t
 gsl_bspline_ncoeffs (gsl_bspline_workspace * w)
@@ -206,44 +275,6 @@ gsl_bspline_breakpoint (size_t i, gsl_bspline_workspace * w)
   size_t j = i + w->k - 1;
   return gsl_vector_get (w->knots, j);
 }
-
-/*
-gsl_bspline_free()
-  Free a gsl_bspline_workspace.
-
-Inputs: w - workspace to free
-
-Return: none
-*/
-
-void
-gsl_bspline_free (gsl_bspline_workspace * w)
-{
-  RETURN_IF_NULL (w);
-  gsl_vector_free (w->knots);
-  gsl_vector_free (w->deltal);
-  gsl_vector_free (w->deltar);
-  gsl_vector_free (w->B);
-  free (w);
-}				/* gsl_bspline_free() */
-
-/*
-gsl_bspline_deriv_free()
-  Free a gsl_bspline_deriv_workspace.
-
-Inputs: dw - workspace to free
-
-Return: none
-*/
-
-void
-gsl_bspline_deriv_free (gsl_bspline_deriv_workspace * dw)
-{
-  RETURN_IF_NULL (dw);
-  gsl_matrix_free (dw->A);
-  gsl_matrix_free (dw->dB);
-  free (dw);
-}				/* gsl_bspline_deriv_free() */
 
 /*
 gsl_bspline_knots()
@@ -276,23 +307,23 @@ gsl_bspline_knots (const gsl_vector * breakpts, gsl_bspline_workspace * w)
     }
   else
     {
-      size_t i;			/* looping */
+      size_t i; /* looping */
 
       for (i = 0; i < w->k; i++)
-	gsl_vector_set (w->knots, i, gsl_vector_get (breakpts, 0));
+        gsl_vector_set (w->knots, i, gsl_vector_get (breakpts, 0));
 
       for (i = 1; i < w->l; i++)
-	{
-	  gsl_vector_set (w->knots, w->k - 1 + i,
-			  gsl_vector_get (breakpts, i));
-	}
+        {
+          gsl_vector_set (w->knots, w->k - 1 + i,
+          gsl_vector_get (breakpts, i));
+        }
 
       for (i = w->n; i < w->n + w->k; i++)
-	gsl_vector_set (w->knots, i, gsl_vector_get (breakpts, w->l));
+        gsl_vector_set (w->knots, i, gsl_vector_get (breakpts, w->l));
 
       return GSL_SUCCESS;
     }
-}				/* gsl_bspline_knots() */
+} /* gsl_bspline_knots() */
 
 /*
 gsl_bspline_knots_uniform()
@@ -319,10 +350,10 @@ Notes: 1) w->knots is modified to contain the uniformly spaced
 
 int
 gsl_bspline_knots_uniform (const double a, const double b,
-			   gsl_bspline_workspace * w)
+                           gsl_bspline_workspace * w)
 {
-  size_t i;			/* looping */
-  double delta;			/* interval spacing */
+  size_t i;     /* looping */
+  double delta; /* interval spacing */
   double x;
 
   delta = (b - a) / (double) w->l;
@@ -341,7 +372,7 @@ gsl_bspline_knots_uniform (const double a, const double b,
     gsl_vector_set (w->knots, i, b);
 
   return GSL_SUCCESS;
-}				/* gsl_bspline_knots_uniform() */
+} /* gsl_bspline_knots_uniform() */
 
 /*
 gsl_bspline_eval()
@@ -378,23 +409,21 @@ gsl_bspline_eval (const double x, gsl_vector * B, gsl_bspline_workspace * w)
       /* find all non-zero B_i(x) values */
       error = gsl_bspline_eval_nonzero (x, w->B, &istart, &iend, w);
       if (error)
-	{
-	  return error;
-	}
+        return error;
 
       /* store values in appropriate part of given vector */
       for (i = 0; i < istart; i++)
-	gsl_vector_set (B, i, 0.0);
+        gsl_vector_set (B, i, 0.0);
 
       for (i = istart; i <= iend; i++)
-	gsl_vector_set (B, i, gsl_vector_get (w->B, i - istart));
+        gsl_vector_set (B, i, gsl_vector_get (w->B, i - istart));
 
       for (i = iend + 1; i < w->n; i++)
-	gsl_vector_set (B, i, 0.0);
+        gsl_vector_set (B, i, 0.0);
 
       return GSL_SUCCESS;
     }
-}				/* gsl_bspline_eval() */
+} /* gsl_bspline_eval() */
 
 /*
 gsl_bspline_eval_nonzero()
@@ -426,7 +455,7 @@ Notes: 1) the w->knots vector must be initialized before calling
 
 int
 gsl_bspline_eval_nonzero (const double x, gsl_vector * Bk, size_t * istart,
-			  size_t * iend, gsl_bspline_workspace * w)
+                          size_t * iend, gsl_bspline_workspace * w)
 {
   if (Bk->size != w->k)
     {
@@ -442,19 +471,17 @@ gsl_bspline_eval_nonzero (const double x, gsl_vector * Bk, size_t * istart,
       i = bspline_find_interval (x, &flag, w);
       error = bspline_process_interval_for_eval (x, &i, flag, w);
       if (error)
-	{
-	  return error;
-	}
+        return error;
 
       *istart = i - w->k + 1;
       *iend = i;
 
       bspline_pppack_bsplvb (w->knots, w->k, 1, x, *iend, &j, w->deltal,
-			     w->deltar, Bk);
+                             w->deltar, Bk);
 
       return GSL_SUCCESS;
     }
-}				/* gsl_bspline_eval_nonzero() */
+} /* gsl_bspline_eval_nonzero() */
 
 /*
 gsl_bspline_deriv_eval()
@@ -479,9 +506,8 @@ Notes: 1) The w->knots vector must be initialized prior to calling
 */
 
 int
-gsl_bspline_deriv_eval (const double x, const size_t nderiv, gsl_matrix * dB,
-			gsl_bspline_workspace * w,
-			gsl_bspline_deriv_workspace * dw)
+gsl_bspline_deriv_eval (const double x, const size_t nderiv,
+                        gsl_matrix * dB, gsl_bspline_workspace * w)
 {
   if (dB->size1 != w->n)
     {
@@ -490,12 +516,8 @@ gsl_bspline_deriv_eval (const double x, const size_t nderiv, gsl_matrix * dB,
   else if (dB->size2 < nderiv + 1)
     {
       GSL_ERROR
-	("dB matrix second dimension must be at least length nderiv+1",
-	 GSL_EBADLEN);
-    }
-  else if (dw->k < w->k) 
-    {
-      GSL_ERROR ("derivative workspace is too small", GSL_EBADLEN);
+        ("dB matrix second dimension must be at least length nderiv+1",
+         GSL_EBADLEN);
     }
   else
     {
@@ -507,29 +529,26 @@ gsl_bspline_deriv_eval (const double x, const size_t nderiv, gsl_matrix * dB,
 
       /* find all non-zero d^j/dx^j B_i(x) values */
       error =
-	gsl_bspline_deriv_eval_nonzero (x, nderiv, dw->dB, &istart, &iend, w,
-					dw);
+        gsl_bspline_deriv_eval_nonzero (x, nderiv, w->dB, &istart, &iend, w);
       if (error)
-	{
-	  return error;
-	}
+        return error;
 
       /* store values in appropriate part of given matrix */
       for (j = 0; j <= nderiv; j++)
-	{
-	  for (i = 0; i < istart; i++)
-	    gsl_matrix_set (dB, i, j, 0.0);
+        {
+          for (i = 0; i < istart; i++)
+          gsl_matrix_set (dB, i, j, 0.0);
 
-	  for (i = istart; i <= iend; i++)
-	    gsl_matrix_set (dB, i, j, gsl_matrix_get (dw->dB, i - istart, j));
+          for (i = istart; i <= iend; i++)
+            gsl_matrix_set (dB, i, j, gsl_matrix_get (w->dB, i - istart, j));
 
-	  for (i = iend + 1; i < w->n; i++)
-	    gsl_matrix_set (dB, i, j, 0.0);
-	}
+          for (i = iend + 1; i < w->n; i++)
+            gsl_matrix_set (dB, i, j, 0.0);
+        }
 
       return GSL_SUCCESS;
     }
-}				/* gsl_bspline_deriv_eval() */
+} /* gsl_bspline_deriv_eval() */
 
 /*
 gsl_bspline_deriv_eval_nonzero()
@@ -573,9 +592,8 @@ Notes: 1) the w->knots vector must be initialized before calling
 
 int
 gsl_bspline_deriv_eval_nonzero (const double x, const size_t nderiv,
-				gsl_matrix * dB, size_t * istart,
-				size_t * iend, gsl_bspline_workspace * w,
-				gsl_bspline_deriv_workspace * dw)
+                                gsl_matrix * dB, size_t * istart,
+                                size_t * iend, gsl_bspline_workspace * w)
 {
   if (dB->size1 != w->k)
     {
@@ -584,12 +602,8 @@ gsl_bspline_deriv_eval_nonzero (const double x, const size_t nderiv,
   else if (dB->size2 < nderiv + 1)
     {
       GSL_ERROR
-	("dB matrix second dimension must be at least length nderiv+1",
-	 GSL_EBADLEN);
-    }
-  else if (dw->k < w->k) 
-    {
-      GSL_ERROR ("derivative workspace is too small", GSL_EBADLEN);
+        ("dB matrix second dimension must be at least length nderiv+1",
+         GSL_EBADLEN);
     }
   else
     {
@@ -602,30 +616,26 @@ gsl_bspline_deriv_eval_nonzero (const double x, const size_t nderiv,
       i = bspline_find_interval (x, &flag, w);
       error = bspline_process_interval_for_eval (x, &i, flag, w);
       if (error)
-	{
-	  return error;
-	}
+        return error;
 
       *istart = i - w->k + 1;
       *iend = i;
 
       bspline_pppack_bsplvd (w->knots, w->k, x, *iend,
-			     w->deltal, w->deltar, dw->A, dB, nderiv);
+                             w->deltal, w->deltar, w->A, dB, nderiv);
 
       /* An order k b-spline has at most k-1 nonzero derivatives
          so we need to zero all requested higher order derivatives */
       min_nderivk = GSL_MIN_INT (nderiv, w->k - 1);
       for (j = min_nderivk + 1; j <= nderiv; j++)
-	{
-	  for (i = 0; i < w->k; i++)
-	    {
-	      gsl_matrix_set (dB, i, j, 0.0);
-	    }
-	}
+        {
+          for (i = 0; i < w->k; i++)
+            gsl_matrix_set (dB, i, j, 0.0);
+        }
 
       return GSL_SUCCESS;
     }
-}				/* gsl_bspline_deriv_eval_nonzero() */
+} /* gsl_bspline_deriv_eval_nonzero() */
 
 /****************************************
  *          INTERNAL ROUTINES           *

@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libgslintegration.la
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslintegration_la_SOURCES = qk15.c qk21.c qk31.c qk41.c qk51.c qk61.c qk.c qng.c qng.h qag.c	qags.c qagp.c workspace.c qcheb.c qawc.c qmomo.c qaws.c	qmomof.c qawo.c	qawf.c glfixed.c cquad.c
 

@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslwavelet.la
 
 pkginclude_HEADERS = gsl_wavelet.h gsl_wavelet2d.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslwavelet_la_SOURCES = dwt.c wavelet.c bspline.c daubechies.c haar.c
 

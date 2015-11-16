@@ -508,3 +508,6 @@ evaluation and ode improvements
 
 * Matthias Sitte <matthias.sitte@gmail.com> - bug report and patch for
   failing complex matrix IO routines
+
+* Raymond Rogers <raymond.rogers72@gmail.com> - bug fixes for confluent
+  hypergeometric functions

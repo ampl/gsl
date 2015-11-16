@@ -276,7 +276,7 @@ algorithm described in this section uses an iterative method to find the
 approximate locations of roots of higher order polynomials.
 
 @deftypefun {gsl_poly_complex_workspace *} gsl_poly_complex_workspace_alloc (size_t @var{n})
-@tpindex gsl_poly_complex_workspace
+@tindex gsl_poly_complex_workspace
 This function allocates space for a @code{gsl_poly_complex_workspace}
 struct and a workspace suitable for solving a polynomial with @var{n}
 coefficients using the routine @code{gsl_poly_complex_solve}.
@@ -344,7 +344,7 @@ The output of the program is,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/polyroots.out
+@verbatiminclude examples/polyroots.txt
 @end example
 
 @noindent

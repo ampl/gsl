@@ -555,7 +555,7 @@ converted into minutes before being displayed.
 Here is the output from the program,
 
 @example
-@verbatiminclude examples/const.out
+@verbatiminclude examples/const.txt
 @end example
 
 @node Physical Constant References and Further Reading

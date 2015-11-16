@@ -91,8 +91,8 @@ return @code{GSL_SUCCESS}.
 @section The gsl_sf_result struct
 @cindex gsl_sf_result
 @cindex gsl_sf_result_e10
-@tpindex gsl_sf_result
-@tpindex gsl_sf_result_e10
+@tindex gsl_sf_result
+@tindex gsl_sf_result_e10
 
 The error handling form of the special functions always calculate an
 error estimate along with the value of the result.  Therefore,
@@ -288,7 +288,7 @@ Here are the results of running the program,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/specfun_e.out
+@verbatiminclude examples/specfun_e.txt
 @end example
 
 @noindent
@@ -305,7 +305,7 @@ The results of the function are the same,
 
 @example
 $ ./a.out 
-@verbatiminclude examples/specfun.out
+@verbatiminclude examples/specfun.txt
 @end example
 
 
@@ -352,6 +352,12 @@ New York (1997).
 @item
 Y.Y. Luke, Algorithms for the Computation of Mathematical Functions, Academic
 Press, New York (1977).
+
+@item
+S. A. Holmes and W. E. Featherstone, A unified approach to the Clenshaw
+summation and the recursive computation of very high degree and order
+normalised associated Legendre functions, Journal of Geodesy, 76,
+pg. 279-299, 2002.
 
 @comment @item
 @comment Fermi-Dirac functions of orders @math{-1/2}, @math{1/2}, @math{3/2}, and

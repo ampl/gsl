@@ -66,7 +66,8 @@ FUNCTION (gsl_vector, calloc) (const size_t n)
   if (v == 0)
     return 0;
 
-  /* initialize vector to zero */
+  /* initialize vector to zero; memset takes care of the padding bytes */
+  memset(v->data, 0, MULTIPLICITY * n * sizeof(ATOMIC));
 
   for (i = 0; i < MULTIPLICITY * n; i++)
     {

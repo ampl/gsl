@@ -86,7 +86,7 @@ Here is the output of the program,
 
 @example
 $ ./a.out
-@verbatiminclude examples/diff.out
+@verbatiminclude examples/diff.txt
 @end example
 
 @node Numerical Differentiation References

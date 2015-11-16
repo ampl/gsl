@@ -78,6 +78,7 @@ GSL_VAR const gsl_interp_type * gsl_interp_cspline;
 GSL_VAR const gsl_interp_type * gsl_interp_cspline_periodic;
 GSL_VAR const gsl_interp_type * gsl_interp_akima;
 GSL_VAR const gsl_interp_type * gsl_interp_akima_periodic;
+GSL_VAR const gsl_interp_type * gsl_interp_steffen;
 
 gsl_interp_accel *
 gsl_interp_accel_alloc(void);

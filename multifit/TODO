@@ -10,10 +10,8 @@ The following would also be nice additions to the multifit function suite
 
 The following features should be added to the nonlinear least squares routines:
 
-1. More information reporting to the user (see levmar code for examples) such as:
-   - number of function evaluations
-   - number of Jacobian evaluations
+1. Support for constraints
 
-2. Support for constraints
+2. robust nonlinear least squares and robust ridge regression
 
-3. robust fitting
+3. covariance matrices for ridge regression

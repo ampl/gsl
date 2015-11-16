@@ -27,7 +27,7 @@ The functions described in this chapter are declared in the header file
 
 @node Chebyshev Definitions
 @section Definitions
-@tpindex gsl_cheb_series
+@tindex gsl_cheb_series
 A Chebyshev series  is stored using the following structure,
 
 @example

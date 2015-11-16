@@ -20,34 +20,54 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <gsl/gsl_histogram.h>
+
+void
+print_help(void)
+{
+  fprintf (stderr, "Usage: gsl-histogram [-u] xmin xmax [n]\n");
+  fprintf (stderr, "Computes a histogram of the data on stdin using n bins from xmin to xmax.\n"
+                   "If n is unspecified then bins of integer width are used.\n"
+                   "If -u is given, histogram is normalized so that sum of all bins is unity.\n");
+}
 
 int
 main (int argc, char **argv)
 {
   double a = 0.0, b = 1.0;
   size_t n = 10;
+  int unit = 0;
+  int c;
 
-  if (argc != 3 && argc !=4)
+  while ((c = getopt(argc, argv, "u")) != (-1))
     {
-      printf ("Usage: gsl-histogram xmin xmax [n]\n");
-      printf (
-"Computes a histogram of the data on stdin using n bins from xmin to xmax.\n"
-"If n is unspecified then bins of integer width are used.\n");
-      exit (0);
+      switch (c)
+        {
+          case 'u':
+            unit = 1;
+            break;
+
+          default:
+            print_help();
+            exit(0);
+            break;
+        }
     }
 
-  a = atof (argv[1]);
-  b = atof (argv[2]);
-
-  if (argc == 4) 
+  if (argc - optind < 2)
     {
-      n = atoi (argv[3]);
+      print_help();
+      exit(0);
     }
+
+  a = atof (argv[optind++]);
+  b = atof (argv[optind++]);
+
+  if (argc - optind > 0)
+    n = atoi (argv[optind++]);
   else
-    {
-      n = (int)(b - a) ;
-    }
+    n = (int)(b - a) ;
 
   {
     double x;
@@ -68,6 +88,15 @@ main (int argc, char **argv)
       fprintf (stdout, "# sigma = %g\n", sigma);
     }
 #endif
+
+    /* normalize histogram if needed */
+    if (unit)
+      {
+        double sum = gsl_histogram_sum(h);
+
+        if (sum > 0.0)
+          gsl_histogram_scale(h, 1.0 / sum);
+      }
 
     gsl_histogram_fprintf (stdout, h, "%g", "%g");
 

@@ -183,6 +183,7 @@ compute_newton_bound (const gsl_matrix * r, const gsl_vector * x,
     }
 }
 
+/* compute scaled gradient g = D^{-1} J^T f (see More' eq 7.2) */
 static void
 compute_gradient_direction (const gsl_matrix * r, const gsl_permutation * p,
                             const gsl_vector * qtf, const gsl_vector * diag,
@@ -207,6 +208,28 @@ compute_gradient_direction (const gsl_matrix * r, const gsl_permutation * p,
 
         gsl_vector_set (g, j, sum / dpj);
       }
+    }
+}
+
+/* compute gradient g = J^T f */
+static void
+compute_gradient (const gsl_matrix * r, const gsl_vector * qtf,
+                  gsl_vector * g)
+{
+  const size_t n = r->size2;
+
+  size_t i, j;
+
+  for (j = 0; j < n; j++)
+    {
+      double sum = 0;
+
+      for (i = 0; i <= j; i++)
+        {
+          sum += gsl_matrix_get (r, i, j) * gsl_vector_get (qtf, i);
+        }
+
+      gsl_vector_set (g, j, sum);
     }
 }
 

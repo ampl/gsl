@@ -115,10 +115,10 @@ algorithm and can be reused for different problems.
 
 @deftypefun {gsl_multimin_fdfminimizer *} gsl_multimin_fdfminimizer_alloc (const gsl_multimin_fdfminimizer_type * @var{T}, size_t @var{n})
 @deftypefunx {gsl_multimin_fminimizer *} gsl_multimin_fminimizer_alloc (const gsl_multimin_fminimizer_type * @var{T}, size_t @var{n})
-@tpindex gsl_multimin_fdfminimizer
-@tpindex gsl_multimin_fminimizer
-@tpindex gsl_multimin_fdfminimizer_type
-@tpindex gsl_multimin_fminimizer_type
+@tindex gsl_multimin_fdfminimizer
+@tindex gsl_multimin_fminimizer
+@tindex gsl_multimin_fdfminimizer_type
+@tindex gsl_multimin_fminimizer_type
 This function returns a pointer to a newly allocated instance of a
 minimizer of type @var{T} for an @var{n}-dimension function.  If there
 is insufficient memory to create the minimizer then the function returns
@@ -525,7 +525,7 @@ terminates when the norm of the gradient has been reduced below
 0.001. The output of the program is shown below,
 
 @example
-@verbatiminclude examples/multimin.out
+@verbatiminclude examples/multimin.txt
 @end example
 
 @noindent
@@ -555,7 +555,7 @@ The minimum search stops when the Simplex size drops to 0.01. The output is
 shown below.
 
 @example
-@verbatiminclude examples/nmsimplex.out
+@verbatiminclude examples/nmsimplex.txt
 @end example
 
 @noindent

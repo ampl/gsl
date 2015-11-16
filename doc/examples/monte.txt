@@ -1,0 +1,22 @@
+plain ==================
+result =  1.412209
+sigma  =  0.013436
+exact  =  1.393204
+error  =  0.019005 = 1.4 sigma
+miser ==================
+result =  1.391322
+sigma  =  0.003461
+exact  =  1.393204
+error  = -0.001882 = 0.54 sigma
+vegas warm-up ==================
+result =  1.392673
+sigma  =  0.003410
+exact  =  1.393204
+error  = -0.000531 = 0.16 sigma
+converging...
+result =  1.393281 sigma =  0.000362 chisq/dof = 1.5
+vegas final ==================
+result =  1.393281
+sigma  =  0.000362
+exact  =  1.393204
+error  =  0.000077 = 0.21 sigma

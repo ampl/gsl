@@ -195,7 +195,7 @@ The functions described in this section are declared in the header file
 @file{gsl_monte_plain.h}.
 
 @deftypefun {gsl_monte_plain_state *} gsl_monte_plain_alloc (size_t @var{dim})
-@tpindex gsl_monte_plain_state
+@tindex gsl_monte_plain_state
 This function allocates and initializes a workspace for Monte Carlo
 integration in @var{dim} dimensions.  
 @end deftypefun
@@ -295,7 +295,7 @@ The functions described in this section are declared in the header file
 @file{gsl_monte_miser.h}.
 
 @deftypefun {gsl_monte_miser_state *} gsl_monte_miser_alloc (size_t @var{dim})
-@tpindex gsl_monte_miser_state
+@tindex gsl_monte_miser_state
 This function allocates and initializes a workspace for Monte Carlo
 integration in @var{dim} dimensions.  The workspace is used to maintain
 the state of the integration.
@@ -485,7 +485,7 @@ kind variance reduction (rather than importance sampling).
 
 
 @deftypefun {gsl_monte_vegas_state *} gsl_monte_vegas_alloc (size_t @var{dim})
-@tpindex gsl_monte_vegas_state
+@tindex gsl_monte_vegas_state
 This function allocates and initializes a workspace for Monte Carlo
 integration in @var{dim} dimensions.  The workspace is used to maintain
 the state of the integration.

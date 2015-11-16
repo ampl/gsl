@@ -1,0 +1,4 @@
+The dataset is 0.00645272, 0.0074002, 0.0120706, 0.0207256, 0.0227282, ...
+0.25 quartile: exact = 0.75766, estimated = 0.75580, error = -2.450209e-03
+0.50 quartile: exact = 1.17508, estimated = 1.17438, error = -5.995912e-04
+0.75 quartile: exact = 1.65347, estimated = 1.65696, error = 2.110571e-03

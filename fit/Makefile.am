@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslfit.la
 
 pkginclude_HEADERS = gsl_fit.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslfit_la_SOURCES = linear.c
 

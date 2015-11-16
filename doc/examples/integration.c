@@ -29,7 +29,7 @@ main (void)
   printf ("exact result    = % .18f\n", expected);
   printf ("estimated error = % .18f\n", error);
   printf ("actual error    = % .18f\n", result - expected);
-  printf ("intervals =  %d\n", w->size);
+  printf ("intervals       = %zu\n", w->size);
 
   gsl_integration_workspace_free (w);
 

@@ -55,45 +55,35 @@ compute_actual_reduction (double fnorm, double fnorm1)
 static void
 compute_diag (const gsl_matrix * J, gsl_vector * diag)
 {
-  size_t i, j, n = J->size1, p = J->size2;
+  size_t j, p = J->size2;
 
   for (j = 0; j < p; j++)
     {
-      double sum = 0;
+      gsl_vector_const_view v = gsl_matrix_const_column(J, j);
+      double norm = gsl_blas_dnrm2(&v.vector);
 
-      for (i = 0; i < n; i++)
-        {
-          double Jij = gsl_matrix_get (J, i, j);
-          sum += Jij * Jij;
-        }
-      if (sum == 0)
-        sum = 1.0;
+      if (norm == 0)
+        norm = 1.0;
 
-      gsl_vector_set (diag, j, sqrt (sum));
+      gsl_vector_set (diag, j, norm);
     }
 }
 
 static void
 update_diag (const gsl_matrix * J, gsl_vector * diag)
 {
-  size_t i, j, n = diag->size;
+  size_t j, p = J->size2;
 
-  for (j = 0; j < n; j++)
+  for (j = 0; j < p; j++)
     {
-      double cnorm, diagj, sum = 0;
-      for (i = 0; i < n; i++)
-        {
-          double Jij = gsl_matrix_get (J, i, j);
-          sum += Jij * Jij;
-        }
-      if (sum == 0)
-        sum = 1.0;
+      gsl_vector_const_view v = gsl_matrix_const_column(J, j);
+      double norm = gsl_blas_dnrm2(&v.vector);
+      double *diagj = gsl_vector_ptr(diag, j);
 
-      cnorm = sqrt (sum);
-      diagj = gsl_vector_get (diag, j);
+      if (norm == 0)
+        norm = 1.0;
 
-      if (cnorm > diagj)
-        gsl_vector_set (diag, j, cnorm);
+      *diagj = GSL_MAX(*diagj, norm);
     }
 }
 

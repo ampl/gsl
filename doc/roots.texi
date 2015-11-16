@@ -116,8 +116,8 @@ the function visually by plotting before searching for a root.
 @section Initializing the Solver
 
 @deftypefun {gsl_root_fsolver *} gsl_root_fsolver_alloc (const gsl_root_fsolver_type * @var{T})
-@tpindex gsl_root_fsolver
-@tpindex gsl_root_fsolver_type
+@tindex gsl_root_fsolver
+@tindex gsl_root_fsolver_type
 This function returns a pointer to a newly allocated instance of a
 solver of type @var{T}.  For example, the following code creates an
 instance of a bisection solver,
@@ -135,8 +135,8 @@ code of @code{GSL_ENOMEM}.
 @end deftypefun
 
 @deftypefun {gsl_root_fdfsolver *} gsl_root_fdfsolver_alloc (const gsl_root_fdfsolver_type * @var{T})
-@tpindex gsl_root_fdfsolver
-@tpindex gsl_root_fdfsolver_type
+@tindex gsl_root_fdfsolver
+@tindex gsl_root_fdfsolver_type
 This function returns a pointer to a newly allocated instance of a
 derivative-based solver of type @var{T}.  For example, the following
 code creates an instance of a Newton-Raphson solver,

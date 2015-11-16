@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libgslderiv.la
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslderiv_la_SOURCES = deriv.c
 

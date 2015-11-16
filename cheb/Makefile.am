@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslcheb.la
 
 pkginclude_HEADERS = gsl_chebyshev.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslcheb_la_SOURCES =  deriv.c eval.c init.c integ.c
 

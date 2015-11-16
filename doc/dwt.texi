@@ -114,13 +114,13 @@ referred to as the @dfn{fast wavelet transform}.
 @node DWT Initialization
 @section Initialization
 @cindex DWT initialization
-@tpindex gsl_wavelet_type
+@tindex gsl_wavelet_type
 
 The @code{gsl_wavelet} structure contains the filter coefficients
 defining the wavelet and any associated offset parameters.
 
 @deftypefun {gsl_wavelet *} gsl_wavelet_alloc (const gsl_wavelet_type * @var{T}, size_t @var{k})
-@tpindex gsl_wavelet
+@tindex gsl_wavelet
 This function allocates and initializes a wavelet object of type
 @var{T}.  The parameter @var{k} selects the specific member of the
 wavelet family.  A null pointer is returned if insufficient memory is
@@ -179,7 +179,7 @@ same size as the input data and is used to hold intermediate results
 during the transform.
 
 @deftypefun {gsl_wavelet_workspace *} gsl_wavelet_workspace_alloc (size_t @var{n})
-@tpindex gsl_wavelet_workspace
+@tindex gsl_wavelet_workspace
 This function allocates a workspace for the discrete wavelet transform.
 To perform a one-dimensional transform on @var{n} elements, a workspace
 of size @var{n} must be provided.  For two-dimensional transforms of
@@ -347,8 +347,8 @@ transform, while setting the others to zero.
 The output can be used with the @sc{gnu} plotutils @code{graph} program,
 
 @example
-$ ./a.out ecg.dat > dwt.dat
-$ graph -T ps -x 0 256 32 -h 0.3 -a dwt.dat > dwt.ps
+$ ./a.out ecg.dat > dwt.txt
+$ graph -T ps -x 0 256 32 -h 0.3 -a dwt.txt > dwt.ps
 @end example
 
 @iftex

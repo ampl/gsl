@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libgsldiff.la
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgsldiff_la_SOURCES = diff.c
 

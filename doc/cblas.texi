@@ -510,5 +510,5 @@ from the program,
 
 @example
 $ ./a.out
-@verbatiminclude examples/cblas.out
+@verbatiminclude examples/cblas.txt
 @end example

@@ -142,25 +142,24 @@ change of sign @math{n \to -n}.
 @comment Exceptional Return Values: GSL_EDOM
 @end deftypefun
 
-@deftypefun double gsl_sf_ellint_D (double @var{phi}, double @var{k}, double @var{n}, gsl_mode_t @var{mode})
-@deftypefunx int gsl_sf_ellint_D_e (double @var{phi}, double @var{k}, double @var{n}, gsl_mode_t @var{mode}, gsl_sf_result * @var{result})
+@deftypefun double gsl_sf_ellint_D (double @var{phi}, double @var{k}, gsl_mode_t @var{mode})
+@deftypefunx int gsl_sf_ellint_D_e (double @var{phi}, double @var{k}, gsl_mode_t @var{mode}, gsl_sf_result * @var{result})
 These functions compute the incomplete elliptic integral
 @math{D(\phi,k)} which is defined through the Carlson form @math{RD(x,y,z)}
 by the following relation, 
 @tex
 \beforedisplay
 $$
-D(\phi,k,n) = {1 \over 3} (\sin \phi)^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
+D(\phi,k) = {1 \over 3} (\sin \phi)^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
 $$
 \afterdisplay
 @end tex
 @ifinfo
 
 @example
-D(\phi,k,n) = (1/3)(\sin(\phi))^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
+D(\phi,k) = (1/3)(\sin(\phi))^3 RD (1-\sin^2(\phi), 1-k^2 \sin^2(\phi), 1).
 @end example
 @end ifinfo
-The argument @var{n} is not used and will be removed in a future release.
 
 @comment Exceptional Return Values: GSL_EDOM
 @end deftypefun

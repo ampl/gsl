@@ -19,8 +19,6 @@ reproducible, and that all relevant information is supplied)
 
 ** Incomplete Fermi-Dirac functions
 
-** General Legendre functions
-
 ** Spheroidal wave functions
 
 ** Weierstrass elliptic functions
@@ -56,11 +54,28 @@ Break binary compatibility, but keep source compatibility.
 vs _inverse). Also adopt a convection for functions which can operate
 in place vs use of workspace (e.g linalg_solve functions).
 
-** gsl_sf_ellint_D  - remove useless argument n?
-
 ** gsl_roots doesn't store function value, so testing the residual requires function to be recomputed
 Generally all the iterative routines should follow a consistent approach
 to outputting everything that is necessary for the next iteration 
+
+** gsl_roots - consider having two returns from solvers - GSL_SUCCESS
+if a root has been found or GSL_CONTINUE if further iterations may
+be needed.
+
+** mathieu functions - bring functional interfaces into line with GSL
+conventions for special functions.
+
+** rewriting the spherical Bessel routines (there are
+around 3 separate bug reports for these)
+
+** the nonlinear least squares Levenberg-Marquardt solver should be 
+rewritten from scratch - the current version is filled with goto 
+statements, and while its supposed to be based on MINPACK, I've found 
+numerous examples where GSL fails to converge when MINPACK succeeds, so 
+something was not implemented correctly.
+
+** import 2D interpolation code; 3d or nd linear interpolation?
+
 * Other tasks
 
 ** Remove use of long double internally, e.g. as an accumulator in

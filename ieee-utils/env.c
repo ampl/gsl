@@ -31,11 +31,20 @@ gsl_ieee_env_setup (void)
 
   int comma = 0 ;
 
+#if defined( _MSC_VER )
+
+    extern const char *fp_env_string;
+    p = fp_env_string;
+
+#else
+
   if (p == 0)  /* GSL_IEEE_MODE environment variable is not set */
     return ;
 
   if (*p == '\0') /* GSL_IEEE_MODE environment variable is empty */
     return ;
+
+#endif
 
   gsl_ieee_read_mode_string (p, &precision, &rounding, &exception_mask) ;
 

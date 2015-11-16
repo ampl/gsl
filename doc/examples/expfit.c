@@ -3,7 +3,6 @@
 struct data {
   size_t n;
   double * y;
-  double * sigma;
 };
 
 int
@@ -12,7 +11,6 @@ expb_f (const gsl_vector * x, void *data,
 {
   size_t n = ((struct data *)data)->n;
   double *y = ((struct data *)data)->y;
-  double *sigma = ((struct data *) data)->sigma;
 
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
@@ -25,7 +23,7 @@ expb_f (const gsl_vector * x, void *data,
       /* Model Yi = A * exp(-lambda * i) + b */
       double t = i;
       double Yi = A * exp (-lambda * t) + b;
-      gsl_vector_set (f, i, (Yi - y[i])/sigma[i]);
+      gsl_vector_set (f, i, Yi - y[i]);
     }
 
   return GSL_SUCCESS;
@@ -36,7 +34,6 @@ expb_df (const gsl_vector * x, void *data,
          gsl_matrix * J)
 {
   size_t n = ((struct data *)data)->n;
-  double *sigma = ((struct data *) data)->sigma;
 
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
@@ -50,21 +47,10 @@ expb_df (const gsl_vector * x, void *data,
       /*       Yi = A * exp(-lambda * i) + b  */
       /* and the xj are the parameters (A,lambda,b) */
       double t = i;
-      double s = sigma[i];
       double e = exp(-lambda * t);
-      gsl_matrix_set (J, i, 0, e/s); 
-      gsl_matrix_set (J, i, 1, -t * A * e/s);
-      gsl_matrix_set (J, i, 2, 1/s);
+      gsl_matrix_set (J, i, 0, e); 
+      gsl_matrix_set (J, i, 1, -t * A * e);
+      gsl_matrix_set (J, i, 2, 1.0);
     }
-  return GSL_SUCCESS;
-}
-
-int
-expb_fdf (const gsl_vector * x, void *data,
-          gsl_vector * f, gsl_matrix * J)
-{
-  expb_f (x, data, f);
-  expb_df (x, data, J);
-
   return GSL_SUCCESS;
 }

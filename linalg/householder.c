@@ -26,6 +26,26 @@
 
 #include <gsl/gsl_linalg.h>
 
+/*
+gsl_linalg_householder_transform()
+  Compute a householder transformation (tau,v) of a vector
+x so that P x = [ I - tau*v*v' ] x annihilates x(1:n-1)
+
+Inputs: v - on input, x vector
+            on output, householder vector v
+
+Notes:
+1) on output, v is normalized so that v[0] = 1. The 1 is
+not actually stored; instead v[0] = -sign(x[0])*||x|| so
+that:
+
+P x = v[0] * e_1
+
+Therefore external routines should take care when applying
+the projection matrix P to vectors, taking into account
+that v[0] should be 1 when doing so.
+*/
+
 double
 gsl_linalg_householder_transform (gsl_vector * v)
 {
@@ -223,23 +243,21 @@ gsl_linalg_householder_hv (double tau, const gsl_vector * v, gsl_vector * w)
   {
     /* compute d = v'w */
 
-    double d0 = gsl_vector_get(w,0);
+    double w0 = gsl_vector_get(w,0);
     double d1, d;
 
     gsl_vector_const_view v1 = gsl_vector_const_subvector(v, 1, N-1);
     gsl_vector_view w1 = gsl_vector_subvector(w, 1, N-1);
 
+    /* compute d1 = v(2:n)'w(2:n) */
     gsl_blas_ddot (&v1.vector, &w1.vector, &d1);
-    
-    d = d0 + d1;
+
+    /* compute d = v'w = w(1) + d1 since v(1) = 1 */
+    d = w0 + d1;
 
     /* compute w = w - tau (v) (v'w) */
-  
-    {
-      double w0 = gsl_vector_get (w,0);
-      gsl_vector_set (w, 0, w0 - tau * d);
-    }
-    
+
+    gsl_vector_set (w, 0, w0 - tau * d);
     gsl_blas_daxpy (-tau * d, &v1.vector, &w1.vector);
   }
   

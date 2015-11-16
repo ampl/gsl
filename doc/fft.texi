@@ -436,7 +436,7 @@ The mixed radix algorithms require additional working space to hold
 the intermediate steps of the transform.
 
 @deftypefun {gsl_fft_complex_workspace *} gsl_fft_complex_workspace_alloc (size_t @var{n})
-@tpindex gsl_fft_complex_workspace
+@tindex gsl_fft_complex_workspace
 This function allocates a workspace for a complex transform of length
 @var{n}.
 @end deftypefun
@@ -778,8 +778,8 @@ All these functions are declared in the header files
 
 @deftypefun {gsl_fft_real_wavetable *} gsl_fft_real_wavetable_alloc (size_t @var{n})
 @deftypefunx {gsl_fft_halfcomplex_wavetable *} gsl_fft_halfcomplex_wavetable_alloc (size_t @var{n})
-@tpindex gsl_fft_real_wavetable
-@tpindex gsl_fft_halfcomplex_wavetable
+@tindex gsl_fft_real_wavetable
+@tindex gsl_fft_halfcomplex_wavetable
 These functions prepare trigonometric lookup tables for an FFT of size
 @math{n} real elements.  The functions return a pointer to the newly
 allocated struct if no errors were detected, and a null pointer in the
@@ -810,7 +810,7 @@ The mixed radix algorithms require additional working space to hold
 the intermediate steps of the transform,
 
 @deftypefun {gsl_fft_real_workspace *} gsl_fft_real_workspace_alloc (size_t @var{n})
-@tpindex gsl_fft_real_workspace
+@tindex gsl_fft_real_workspace
 This function allocates a workspace for a real transform of length
 @var{n}.  The same workspace can be used for both forward real and inverse
 halfcomplex transforms.

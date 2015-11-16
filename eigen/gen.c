@@ -94,7 +94,6 @@ static inline size_t gen_get_submatrix(const gsl_matrix *A,
 
 /*FIX**/
 inline static double normF (gsl_matrix * A);
-inline static void create_givens (const double a, const double b, double *c, double *s);
 
 /*
 gsl_eigen_gen_alloc()
@@ -703,7 +702,7 @@ gen_qzstep(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
   temp = scale1*gsl_matrix_get(H, 0, 0) - wr1*gsl_matrix_get(R, 0, 0);
   temp2 = scale1*gsl_matrix_get(H, 1, 0);
 
-  create_givens(temp, temp2, &cs, &sn);
+  gsl_linalg_givens(temp, temp2, &cs, &sn);
   sn = -sn;
 
   for (j = 0; j < N - 1; ++j)
@@ -712,7 +711,7 @@ gen_qzstep(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
         {
           temp = gsl_matrix_get(H, j, j - 1);
           temp2 = gsl_matrix_get(H, j + 1, j - 1);
-          create_givens(temp, temp2, &cs, &sn);
+          gsl_linalg_givens(temp, temp2, &cs, &sn);
           sn = -sn;
 
           /* apply to column (j - 1) */
@@ -760,7 +759,7 @@ gen_qzstep(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
 
       temp = gsl_matrix_get(R, j + 1, j + 1);
       temp2 = gsl_matrix_get(R, j + 1, j);
-      create_givens(temp, temp2, &cs, &sn);
+      gsl_linalg_givens(temp, temp2, &cs, &sn);
 
       rows = GSL_MIN(j + 3, N);
 
@@ -1238,10 +1237,10 @@ gen_tri_split_top(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
 
   j = 0;
 
-  create_givens(gsl_matrix_get(H, j, j),
-                gsl_matrix_get(H, j + 1, j),
-                &cs,
-                &sn);
+  gsl_linalg_givens(gsl_matrix_get(H, j, j),
+                    gsl_matrix_get(H, j + 1, j),
+                    &cs,
+                    &sn);
   sn = -sn;
 
   if (w->compute_s)
@@ -1305,10 +1304,10 @@ gen_tri_chase_zero(gsl_matrix *H, gsl_matrix *R, size_t q,
 
   for (j = q; j < N - 1; ++j)
     {
-      create_givens(gsl_matrix_get(R, j, j + 1),
-                    gsl_matrix_get(R, j + 1, j + 1),
-                    &cs,
-                    &sn);
+      gsl_linalg_givens(gsl_matrix_get(R, j, j + 1),
+                        gsl_matrix_get(R, j + 1, j + 1),
+                        &cs,
+                        &sn);
       sn = -sn;
 
       if (w->compute_t)
@@ -1346,10 +1345,10 @@ gen_tri_chase_zero(gsl_matrix *H, gsl_matrix *R, size_t q,
           gsl_blas_drot(&xv.vector, &yv.vector, cs, sn);
         }
 
-      create_givens(gsl_matrix_get(H, j + 1, j),
-                    gsl_matrix_get(H, j + 1, j - 1),
-                    &cs,
-                    &sn);
+      gsl_linalg_givens(gsl_matrix_get(H, j + 1, j),
+                        gsl_matrix_get(H, j + 1, j - 1),
+                        &cs,
+                        &sn);
       sn = -sn;
 
       if (w->compute_s)
@@ -1407,10 +1406,10 @@ gen_tri_zero_H(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
   if (w->needtop)
     top = gen_get_submatrix(w->H, H);
 
-  create_givens(gsl_matrix_get(H, N - 1, N - 1),
-                gsl_matrix_get(H, N - 1, N - 2),
-                &cs,
-                &sn);
+  gsl_linalg_givens(gsl_matrix_get(H, N - 1, N - 1),
+                    gsl_matrix_get(H, N - 1, N - 2),
+                    &cs,
+                    &sn);
   sn = -sn;
 
   if (w->compute_s)
@@ -2085,32 +2084,4 @@ normF (gsl_matrix * A)
   sum = scale * sqrt (ssq);
 
   return sum;
-}
-
-/* Generate a Givens rotation (cos,sin) which takes v=(x,y) to (|v|,0) 
-
-   From Golub and Van Loan, "Matrix Computations", Section 5.1.8 */
-
-inline static void
-create_givens (const double a, const double b, double *c, double *s)
-{
-  if (b == 0)
-    {
-      *c = 1;
-      *s = 0;
-    }
-  else if (fabs (b) > fabs (a))
-    {
-      double t = -a / b;
-      double s1 = 1.0 / sqrt (1 + t * t);
-      *s = s1;
-      *c = s1 * t;
-    }
-  else
-    {
-      double t = -b / a;
-      double c1 = 1.0 / sqrt (1 + t * t);
-      *c = c1;
-      *s = c1 * t;
-    }
 }

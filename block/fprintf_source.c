@@ -161,7 +161,9 @@ FUNCTION (gsl_block, raw_fscanf) (FILE * stream,
           data [MULTIPLICITY * i * stride + k] = tmp;
 
           if (status != 1)
-            GSL_ERROR ("fscanf failed", GSL_EFAILED);
+            {
+              GSL_ERROR ("fscanf failed", GSL_EFAILED);
+            }
         }
     }
 

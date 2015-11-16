@@ -2,11 +2,11 @@ noinst_LTLIBRARIES = libgsllinalg.la
 
 pkginclude_HEADERS = gsl_linalg.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
-libgsllinalg_la_SOURCES = multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c
+libgsllinalg_la_SOURCES = multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c inline.c
 
-noinst_HEADERS =  givens.c apply_givens.c svdstep.c tridiag.h 
+noinst_HEADERS = apply_givens.c svdstep.c tridiag.h 
 
 TESTS = $(check_PROGRAMS)
 

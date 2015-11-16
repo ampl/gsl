@@ -1,3 +1,9 @@
+2013-10-13  Rhys Ulerich <rhys.ulerich@gmail.com>
+
+	* test.c Update stale names from "gsl_poly_eval_dp" to
+	"gsl_poly_eval_derivs" in the test log.  Thanks to Mark
+	Jourdain for pointing out the inconsistency.
+
 2011-04-13  Brian Gough  <bjg@network-theory.co.uk>
 
 	* solve_quadratic.c (gsl_poly_solve_quadratic): simplify the case

@@ -7,6 +7,7 @@ int
 func (double t, const double y[], double f[],
       void *params)
 {
+  (void)(t); /* avoid unused parameter warning */
   double mu = *(double *)params;
   f[0] = y[1];
   f[1] = -y[0] - mu*y[1]*(y[0]*y[0] - 1);
@@ -17,6 +18,7 @@ int
 jac (double t, const double y[], double *dfdy, 
      double dfdt[], void *params)
 {
+  (void)(t); /* avoid unused parameter warning */
   double mu = *(double *)params;
   gsl_matrix_view dfdy_mat 
     = gsl_matrix_view_array (dfdy, 2, 2);

@@ -38,7 +38,7 @@ accuracy,@footnote{The last few digits may vary slightly depending on
 the compiler and platform used---this is normal.}
 
 @example
-@verbatiminclude examples/intro.out
+@verbatiminclude examples/intro.txt
 @end example
 
 @noindent
@@ -235,8 +235,8 @@ have the prefix @code{gsl_}, while exported macros have the prefix
 
 @node Inline functions
 @section Inline functions
-@vrindex @code{HAVE_INLINE}
-@vrindex @code{GSL_C99_INLINE}
+@vindex @code{HAVE_INLINE}
+@vindex @code{GSL_C99_INLINE}
 @cindex inline functions
 @cindex HAVE_INLINE
 @cindex GSL_C99_INLINE

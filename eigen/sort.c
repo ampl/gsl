@@ -26,15 +26,6 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 
-/* Compares real parts of a and b and returns nonzero if they are not
- * approximately equal and Re(a) < Re(b); otherwise returns Im(a) < Im(b). */
-static INLINE_DECL int
-complex_less(gsl_complex a, gsl_complex b)
-{
-  return gsl_fcmp(GSL_REAL(a), GSL_REAL(b), GSL_DBL_EPSILON) == 0 ?
-    GSL_IMAG(a) < GSL_IMAG(b) : GSL_REAL(a) < GSL_REAL(b);
-}
-
 /* The eigen_sort below is not very good, but it is simple and
  * self-contained. We can always implement an improved sort later.  */
 
@@ -217,11 +208,7 @@ gsl_eigen_nonsymmv_sort (gsl_vector_complex * eval,
                   test = (gsl_complex_abs (ej) > gsl_complex_abs (ek));
                   break;
                 case GSL_EIGEN_SORT_VAL_ASC:
-                  test = complex_less(ej, ek);
-                  break;
                 case GSL_EIGEN_SORT_VAL_DESC:
-                  test = complex_less(ek, ej);
-                  break;
                 default:
                   GSL_ERROR ("invalid sort type", GSL_EINVAL);
                 }

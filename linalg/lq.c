@@ -28,7 +28,6 @@
 
 #include <gsl/gsl_linalg.h>
 
-#include "givens.c"
 #include "apply_givens.c"
 
 /* Note: The standard in numerical linear algebra is to solve A x = b
@@ -501,8 +500,8 @@ gsl_linalg_LQ_update (gsl_matrix * Q, gsl_matrix * L,
           double wk = gsl_vector_get (w, k);
           double wkm1 = gsl_vector_get (w, k - 1);
 
-          create_givens (wkm1, wk, &c, &s);
-          apply_givens_vec (w, k - 1, k, c, s);
+          gsl_linalg_givens (wkm1, wk, &c, &s);
+          gsl_linalg_givens_gv (w, k - 1, k, c, s);
           apply_givens_lq (M, N, Q, L, k - 1, k, c, s);
        }
 
@@ -526,7 +525,7 @@ gsl_linalg_LQ_update (gsl_matrix * Q, gsl_matrix * L,
           double diag = gsl_matrix_get (L, k - 1, k - 1);
           double offdiag = gsl_matrix_get (L, k - 1 , k);
 
-          create_givens (diag, offdiag, &c, &s);
+          gsl_linalg_givens (diag, offdiag, &c, &s);
           apply_givens_lq (M, N, Q, L, k - 1, k, c, s);
 
           gsl_matrix_set (L, k - 1, k, 0.0);    /* exact zero of G^T */

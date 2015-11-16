@@ -39,9 +39,9 @@ main (void)
   wavetable = gsl_fft_complex_wavetable_alloc (n);
   workspace = gsl_fft_complex_workspace_alloc (n);
 
-  for (i = 0; i < wavetable->nf; i++)
+  for (i = 0; i < (int) wavetable->nf; i++)
     {
-       printf ("# factor %d: %d\n", i, 
+       printf ("# factor %d: %zu\n", i, 
                wavetable->factor[i]);
     }
 

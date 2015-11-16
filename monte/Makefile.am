@@ -4,7 +4,7 @@ libgslmonte_la_SOURCES =  miser.c plain.c gsl_monte_vegas.h gsl_monte_miser.h gs
 
 pkginclude_HEADERS = gsl_monte.h gsl_monte_vegas.h gsl_monte_miser.h gsl_monte_plain.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 TESTS = $(check_PROGRAMS)
 

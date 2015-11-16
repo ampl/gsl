@@ -27,7 +27,8 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 
-static int fdjac(const gsl_vector *x, gsl_multifit_function_fdf *fdf,
+static int fdjac(const gsl_vector *x, const gsl_vector *wts,
+                 gsl_multifit_function_fdf *fdf,
                  const gsl_vector *f, gsl_matrix *J);
 
 /*
@@ -35,6 +36,7 @@ fdjac()
   Compute approximate Jacobian using forward differences
 
 Inputs: x   - parameter vector
+        wts - data weights
         fdf - fdf struct
         f   - (input) vector of function values f_i(x)
         J   - (output) Jacobian matrix
@@ -43,8 +45,8 @@ Return: success or error
 */
 
 static int
-fdjac(const gsl_vector *x, gsl_multifit_function_fdf *fdf,
-      const gsl_vector *f, gsl_matrix *J)
+fdjac(const gsl_vector *x, const gsl_vector *wts,
+      gsl_multifit_function_fdf *fdf, const gsl_vector *f, gsl_matrix *J)
 {
   int status = 0;
   size_t i, j;
@@ -66,7 +68,7 @@ fdjac(const gsl_vector *x, gsl_multifit_function_fdf *fdf,
       /* perturb x_j to compute forward difference */
       gsl_vector_set((gsl_vector *) x, j, xj + h);
 
-      status += GSL_MULTIFIT_FN_EVAL_F (fdf, x, &v.vector);
+      status += gsl_multifit_eval_wf (fdf, x, wts, &v.vector);
       if (status)
         return status;
 
@@ -91,6 +93,7 @@ gsl_multifit_fdfsolver_dif_df()
   Compute approximate Jacobian using finite differences
 
 Inputs: x   - parameter vector
+        wts - data weights (set to NULL if not needed)
         fdf - fdf
         f   - (input) function values f_i(x)
         J   - (output) approximate Jacobian matrix
@@ -99,11 +102,14 @@ Return: success or error
 */
 
 int
-gsl_multifit_fdfsolver_dif_df(const gsl_vector *x, gsl_multifit_function_fdf *fdf,
+gsl_multifit_fdfsolver_dif_df(const gsl_vector *x, const gsl_vector *wts,
+                              gsl_multifit_function_fdf *fdf,
                               const gsl_vector *f, gsl_matrix *J)
 {
-  return fdjac(x, fdf, f, J);
+  return fdjac(x, wts, fdf, f, J);
 } /* gsl_multifit_fdfsolver_dif_df() */
+
+#ifndef GSL_DISABLE_DEPRECATED
 
 /*
 gsl_multifit_fdfsolver_dif_fdf()
@@ -119,18 +125,21 @@ Return: success or error
 */
 
 int
-gsl_multifit_fdfsolver_dif_fdf(const gsl_vector *x, gsl_multifit_function_fdf *fdf,
+gsl_multifit_fdfsolver_dif_fdf(const gsl_vector *x,
+                               gsl_multifit_function_fdf *fdf,
                                gsl_vector *f, gsl_matrix *J)
 {
   int status = 0;
 
-  status = GSL_MULTIFIT_FN_EVAL_F(fdf, x, f);
+  status = gsl_multifit_eval_wf(fdf, x, NULL, f);
   if (status)
     return status;
 
-  status = fdjac(x, fdf, f, J);
+  status = fdjac(x, NULL, fdf, f, J);
   if (status)
     return status;
 
   return status;
 } /* gsl_multifit_fdfsolver_dif_fdf() */
+
+#endif /* !GSL_DISABLE_DEPRECATED */

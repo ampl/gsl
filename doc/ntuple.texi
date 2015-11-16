@@ -33,7 +33,7 @@ All the ntuple functions are defined in the header file
 
 @node The ntuple struct
 @section The ntuple struct
-@tpindex gsl_ntuple
+@tindex gsl_ntuple
 Ntuples are manipulated using the @code{gsl_ntuple} struct. This struct
 contains information on the file where the ntuple data is stored, a
 pointer to the current ntuple data row and the size of the user-defined
@@ -109,7 +109,7 @@ value function both accept the ntuple row as a first argument and other
 parameters as a second argument.
 
 @cindex selection function, ntuples
-@tpindex gsl_ntuple_select_fn
+@tindex gsl_ntuple_select_fn
 The @dfn{selection function} determines which ntuple rows are selected
 for histogramming.  It is defined by the following struct,
 
@@ -125,7 +125,7 @@ The struct component @var{function} should return a non-zero value for
 each ntuple row that is to be included in the histogram.
 
 @cindex value function, ntuples
-@tpindex gsl_ntuple_value_fn
+@tindex gsl_ntuple_value_fn
 The @dfn{value function} computes scalar values for those ntuple rows
 selected by the selection function,
 

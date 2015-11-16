@@ -6,6 +6,7 @@
 int
 main (int argc, char **argv)
 {
+  (void)(argc); /* avoid unused parameter warning */
   int i, n = 256, nc = 20;
   double *data = malloc (n * sizeof (double));
   double *abscoeff = malloc (n * sizeof (double));

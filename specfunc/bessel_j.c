@@ -52,12 +52,9 @@ int gsl_sf_bessel_j0_e(const double x, gsl_sf_result * result)
     return GSL_SUCCESS;
   }
   else {
-    gsl_sf_result sin_result;
-    const int stat = gsl_sf_sin_e(x, &sin_result);
-    result->val  = sin_result.val/x;
-    result->err  = fabs(sin_result.err/x);
-    result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
-    return stat;
+    result->val = sin(x) / x;
+    result->err = 2.0 * GSL_DBL_EPSILON * fabs(result->val);
+    return GSL_SUCCESS;
   }
 }
 
@@ -89,17 +86,12 @@ int gsl_sf_bessel_j1_e(const double x, gsl_sf_result * result)
     return GSL_SUCCESS;
   }
   else {
-    gsl_sf_result cos_result;
-    gsl_sf_result sin_result;
-    const int stat_cos = gsl_sf_cos_e(x, &cos_result);
-    const int stat_sin = gsl_sf_sin_e(x, &sin_result);
-    const double cos_x = cos_result.val;
-    const double sin_x = sin_result.val;
+    const double cos_x = cos(x);
+    const double sin_x = sin(x);
     result->val  = (sin_x/x - cos_x)/x;
-    result->err  = (fabs(sin_result.err/x) + fabs(cos_result.err))/fabs(x);
-    result->err += 2.0 * GSL_DBL_EPSILON * (fabs(sin_x/(x*x)) + fabs(cos_x/x));
+    result->err  = 2.0 * GSL_DBL_EPSILON * (fabs(sin_x/(x*x)) + fabs(cos_x/x));
     result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
-    return GSL_ERROR_SELECT_2(stat_cos, stat_sin);
+    return GSL_SUCCESS;
   }
 }
 
@@ -211,8 +203,9 @@ gsl_sf_bessel_jl_e(const int l, const double x, gsl_sf_result * result)
     double ratio;
     /* The CF1 call will hit 10000 iterations for x > 10000 + l */
     int stat_CF1 = gsl_sf_bessel_J_CF1(l+0.5, x, &ratio, &sgn);
-    double jellp1 = GSL_SQRT_DBL_EPSILON * ratio;
-    double jell   = GSL_SQRT_DBL_EPSILON;
+    const double BESSEL_J_SMALL = GSL_DBL_MIN / GSL_DBL_EPSILON;
+    double jellp1 = BESSEL_J_SMALL * ratio;
+    double jell   = BESSEL_J_SMALL;
     double jellm1;
     int ell;
     for(ell = l; ell > 0; ell--) {
@@ -224,7 +217,7 @@ gsl_sf_bessel_jl_e(const int l, const double x, gsl_sf_result * result)
     if(fabs(jell) > fabs(jellp1)) {
       gsl_sf_result j0_result;
       int stat_j0  = gsl_sf_bessel_j0_e(x, &j0_result);
-      double pre   = GSL_SQRT_DBL_EPSILON / jell;
+      double pre   = BESSEL_J_SMALL / jell;
       result->val  = j0_result.val * pre;
       result->err  = j0_result.err * fabs(pre);
       result->err += 4.0 * GSL_DBL_EPSILON * (0.5*l + 1.0) * fabs(result->val);
@@ -233,7 +226,7 @@ gsl_sf_bessel_jl_e(const int l, const double x, gsl_sf_result * result)
     else {
       gsl_sf_result j1_result;
       int stat_j1  = gsl_sf_bessel_j1_e(x, &j1_result);
-      double pre   = GSL_SQRT_DBL_EPSILON / jellp1;
+      double pre   = BESSEL_J_SMALL / jellp1;
       result->val  = j1_result.val * pre;
       result->err  = j1_result.err * fabs(pre);
       result->err += 4.0 * GSL_DBL_EPSILON * (0.5*l + 1.0) * fabs(result->val);

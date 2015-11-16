@@ -449,7 +449,7 @@ gsl_sf_ellint_P_e(double phi, double k, double n, gsl_mode_t mode, gsl_sf_result
 
 /* [Carlson, Numer. Math. 33 (1979) 1, (4.4)] */
 int
-gsl_sf_ellint_D_e(double phi, double k, double n, gsl_mode_t mode, gsl_sf_result * result)
+gsl_sf_ellint_D_e(double phi, double k, gsl_mode_t mode, gsl_sf_result * result)
 {
   /* Angular reduction to -pi/2 < phi < pi/2 (we should really use an
      exact reduction but this will have to do for now) BJG */
@@ -625,9 +625,9 @@ double gsl_sf_ellint_P(double phi, double k, double n, gsl_mode_t mode)
   EVAL_RESULT(gsl_sf_ellint_P_e(phi, k, n, mode, &result));
 }
 
-double gsl_sf_ellint_D(double phi, double k, double n, gsl_mode_t mode)
+double gsl_sf_ellint_D(double phi, double k, gsl_mode_t mode)
 {
-  EVAL_RESULT(gsl_sf_ellint_D_e(phi, k, n, mode, &result));
+  EVAL_RESULT(gsl_sf_ellint_D_e(phi, k, mode, &result));
 }
 
 double gsl_sf_ellint_RC(double x, double y, gsl_mode_t mode)

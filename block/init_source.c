@@ -36,7 +36,7 @@ FUNCTION (gsl_block, alloc) (const size_t n)
                         GSL_ENOMEM, 0);
     }
 
-  b->data = (ATOMIC *) calloc (1, MULTIPLICITY * n * sizeof (ATOMIC));
+  b->data = (ATOMIC *) malloc (MULTIPLICITY * n * sizeof (ATOMIC));
 
   if (b->data == 0)
     {
@@ -61,7 +61,8 @@ FUNCTION (gsl_block, calloc) (const size_t n)
   if (b == 0)
     return 0;
 
-  /* initialize block to zero */
+  /* initialize block to zero; the memset call takes care of padding bytes */
+  memset(b->data, 0, MULTIPLICITY * n * sizeof(ATOMIC));
 
   for (i = 0; i < MULTIPLICITY * n; i++)
     {

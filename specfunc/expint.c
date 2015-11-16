@@ -377,7 +377,7 @@ int expint_E2_impl(const double x, gsl_sf_result * result, const int scale)
     OVERFLOW_ERROR(result);
   }
   else if (x == 0.0) {
-    result->val = (scale ? 1.0 : 1.0);
+    result->val = 1.0;
     result->err = 0.0;
     return GSL_SUCCESS;
   } else if(x < 100.0) {

@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libgslfft.la
 
 pkginclude_HEADERS = gsl_fft.h gsl_fft_complex.h gsl_fft_halfcomplex.h gsl_fft_real.h gsl_dft_complex.h gsl_dft_complex_float.h gsl_fft_complex_float.h gsl_fft_halfcomplex_float.h gsl_fft_real_float.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 libgslfft_la_SOURCES =  dft.c fft.c
 

@@ -55,7 +55,7 @@ Corresponding types exist for the @code{gsl_vector} and
 
 @node Blocks
 @section Blocks
-@tpindex gsl_block
+@tindex gsl_block
 For consistency all memory is allocated through a @code{gsl_block}
 structure.  The structure contains two components, the size of an area of
 memory and a pointer to the memory.  The @code{gsl_block} structure looks
@@ -174,7 +174,7 @@ The following program shows how to allocate a block,
 Here is the output from the program,
 
 @example
-@verbatiminclude examples/block.out
+@verbatiminclude examples/block.txt
 @end example
 @comment
 
@@ -188,7 +188,7 @@ slice of a block.  Different vectors can be created which point to the
 same block.  A vector slice is a set of equally-spaced elements of an
 area of memory.
 
-@tpindex gsl_vector
+@tindex gsl_vector
 The @code{gsl_vector} structure contains five components, the
 @dfn{size}, the @dfn{stride}, a pointer to the memory where the elements
 are stored, @var{data}, a pointer to the block owned by the vector,
@@ -293,7 +293,7 @@ eliminate function-call overhead.  You must compile your program with
 the preprocessor macro @code{HAVE_INLINE} defined to use these
 functions.
 
-@vrindex @code{GSL_RANGE_CHECK_OFF}
+@vindex @code{GSL_RANGE_CHECK_OFF}
 If necessary you can turn off range checking completely without
 modifying any source files by recompiling your program with the
 preprocessor definition @code{GSL_RANGE_CHECK_OFF}.  Provided your
@@ -304,14 +304,14 @@ checking is to replace calls to @code{gsl_vector_get(v,i)} by
 penalty for using the range checking functions when range checking is
 turned off.
 
-@vrindex @code{GSL_C99_INLINE}
+@vindex @code{GSL_C99_INLINE}
 If you use a C99 compiler which requires inline functions in header
 files to be declared @code{inline} instead of @code{extern inline},
 define the macro @code{GSL_C99_INLINE} (@pxref{Inline functions}).
 With GCC this is selected automatically when compiling in C99 mode
 (@code{-std=c99}).
 
-@vrindex gsl_check_range
+@vindex gsl_check_range
 If inline functions are not used, calls to the functions
 @code{gsl_vector_get} and @code{gsl_vector_set} will link to the
 compiled versions of these functions in the library itself.  The range
@@ -321,13 +321,13 @@ disable it, set @code{gsl_check_range} to zero.  Due to function-call
 overhead, there is less benefit in disabling range checking here than
 for inline functions.
 
-@deftypefun double gsl_vector_get (const gsl_vector * @var{v}, size_t @var{i})
+@deftypefun double gsl_vector_get (const gsl_vector * @var{v}, const size_t @var{i})
 This function returns the @var{i}-th element of a vector @var{v}.  If
 @var{i} lies outside the allowed range of 0 to @math{@var{n}-1} then the error
 handler is invoked and 0 is returned.  @inlinefn{}
 @end deftypefun
 
-@deftypefun void gsl_vector_set (gsl_vector * @var{v}, size_t @var{i}, double @var{x})
+@deftypefun void gsl_vector_set (gsl_vector * @var{v}, const size_t @var{i}, double @var{x})
 This function sets the value of the @var{i}-th element of a vector
 @var{v} to @var{x}.  If @var{i} lies outside the allowed range of 0 to
 @math{@var{n}-1} then the error handler is invoked.  @inlinefn{}
@@ -410,8 +410,8 @@ subvector of another vector can be described with a view, or two views
 can be made which provide access to the even and odd elements of a
 vector.
 
-@tpindex gsl_vector_view
-@tpindex gsl_vector_const_view
+@tindex gsl_vector_view
+@tindex gsl_vector_const_view
 A vector view is a temporary object, stored on the stack, which can be
 used to operate on a subset of vector elements.  Vector views can be
 defined for both constant and non-constant vectors, using separate types
@@ -843,7 +843,7 @@ Matrices are defined by a @code{gsl_matrix} structure which describes a
 generalized slice of a block.  Like a vector it represents a set of
 elements in an area of memory, but uses two indices instead of one.
 
-@tpindex gsl_matrix
+@tindex gsl_matrix
 The @code{gsl_matrix} structure contains six components, the two
 dimensions of the matrix, a physical dimension, a pointer to the memory
 where the elements of the matrix are stored, @var{data}, a pointer to
@@ -974,14 +974,14 @@ m->data[i * m->tda + j]
 @noindent
 where @var{tda} is the physical row-length of the matrix.
 
-@deftypefun double gsl_matrix_get (const gsl_matrix * @var{m}, size_t @var{i}, size_t @var{j})
+@deftypefun double gsl_matrix_get (const gsl_matrix * @var{m}, const size_t @var{i}, const size_t @var{j})
 This function returns the @math{(i,j)}-th element of a matrix
 @var{m}.  If @var{i} or @var{j} lie outside the allowed range of 0 to
 @math{@var{n1}-1} and 0 to @math{@var{n2}-1} then the error handler is invoked and 0
 is returned.  @inlinefn{}
 @end deftypefun
 
-@deftypefun void gsl_matrix_set (gsl_matrix * @var{m}, size_t @var{i}, size_t @var{j}, double @var{x})
+@deftypefun void gsl_matrix_set (gsl_matrix * @var{m}, const size_t @var{i}, const size_t @var{j}, double @var{x})
 This function sets the value of the @math{(i,j)}-th element of a
 matrix @var{m} to @var{x}.  If @var{i} or @var{j} lies outside the
 allowed range of 0 to @math{@var{n1}-1} and 0 to @math{@var{n2}-1} then the error
@@ -1066,8 +1066,8 @@ numbers to read.  The function returns 0 for success and
 
 @node Matrix views
 @subsection Matrix views
-@tpindex gsl_matrix_view
-@tpindex gsl_matrix_const_view
+@tindex gsl_matrix_view
+@tindex gsl_matrix_const_view
 
 A matrix view is a temporary object, stored on the stack, which can be
 used to operate on a subset of matrix elements.  Matrix views can be
@@ -1663,7 +1663,7 @@ Here is the output of the program,
 
 @example
 $ ./a.out
-@verbatiminclude examples/vectorview.out
+@verbatiminclude examples/vectorview.txt
 @end example
 
 @noindent

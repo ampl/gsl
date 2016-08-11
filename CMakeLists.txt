@@ -3,7 +3,8 @@
 # Use CMake 2.8.3 for CMakeParseArguments.
 cmake_minimum_required(VERSION 2.8.3)
 
-include(init.cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(init)
 
 project(GSL)
 

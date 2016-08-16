@@ -26,9 +26,9 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 
-/* Compares real parts of a and b and returns nonzero if they are not
- * approximately equal and Re(a) < Re(b); otherwise returns Im(a) < Im(b). */
-static INLINE_DECL int
+/* Compares real parts of a and b and, if they are not approximately equal,
+ * returns Re(a) < Re(b); otherwise returns Im(a) < Im(b). */
+static int
 complex_less(gsl_complex a, gsl_complex b)
 {
   return gsl_fcmp(GSL_REAL(a), GSL_REAL(b), GSL_DBL_EPSILON) == 0 ?

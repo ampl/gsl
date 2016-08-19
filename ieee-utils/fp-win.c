@@ -37,7 +37,9 @@ gsl_ieee_set_mode (int precision, int rounding, int exception_mask)
     case GSL_IEEE_DOUBLE_PRECISION:
     default:							mode |= _PC_53;
 	}
+#ifndef _M_AMD64
 	mask |= _MCW_PC;
+#endif
 
 	switch(rounding)
     {

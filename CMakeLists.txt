@@ -533,6 +533,24 @@ if (GSL_DISABLE_WARNINGS)
   endif ()
 endif ()
 
+option(MSVC_RUNTIME_DYNAMIC "Use dynamically-linked runtime: /MD(d)" OFF)
+
+if (MSVC_RUNTIME_DYNAMIC)
+  set(CMAKE_COMPILER_FLAGS_VARIABLES
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_MINSIZEREL
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_C_FLAGS_RELWITHDEBINFO
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_MINSIZEREL
+    CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_RELWITHDEBINFO
+  )
+  foreach(variable ${CMAKE_COMPILER_FLAGS_VARIABLES})
+    string(REGEX REPLACE "/MT" "/MD" ${variable} "${${variable}}")
+  endforeach()
+endif ()
+
 enable_testing()
 
 # Adds a GSL test. Usage:

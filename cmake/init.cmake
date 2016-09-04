@@ -47,7 +47,7 @@ function (override var file)
   endif ()
 endfunction ()
 
-# Use static MSVC runtime.
+# Set compiler options (MSVC)
 # This should be done before the project command.
 override(CMAKE_USER_MAKE_RULES_OVERRIDE
   ${CMAKE_CURRENT_LIST_DIR}/c_flag_overrides.cmake)

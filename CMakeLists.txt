@@ -533,6 +533,24 @@ if (GSL_DISABLE_WARNINGS)
   endif ()
 endif ()
 
+option(MSVC_RUNTIME_DYNAMIC "Use dynamically-linked runtime: /MD(d)" OFF)
+
+if (MSVC_RUNTIME_DYNAMIC)
+  set(CMAKE_COMPILER_FLAGS_VARIABLES
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_MINSIZEREL
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_C_FLAGS_RELWITHDEBINFO
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_MINSIZEREL
+    CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_RELWITHDEBINFO
+  )
+  foreach(variable ${CMAKE_COMPILER_FLAGS_VARIABLES})
+    string(REGEX REPLACE "/MT" "/MD" ${variable} "${${variable}}")
+  endforeach()
+endif ()
+
 enable_testing()
 
 # Adds a GSL test. Usage:
@@ -654,11 +672,21 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
         RUNTIME DESTINATION bin/${config}
         ARCHIVE DESTINATION lib/${config})
     endforeach ()
+    install(FILES ${PROJECT_BINARY_DIR}/Debug/gsl.pdb
+                  ${PROJECT_BINARY_DIR}/Debug/gslcblas.pdb
+          DESTINATION lib/Debug
+          CONFIGURATIONS Debug)
   else ()
     install(TARGETS gsl gslcblas
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin
       ARCHIVE DESTINATION lib)
+    if (MSVC)
+      install(FILES ${PROJECT_BINARY_DIR}/Debug/gsl.pdb
+                    ${PROJECT_BINARY_DIR}/Debug/gslcblas.pdb
+            DESTINATION lib
+            CONFIGURATIONS Debug)
+    endif ()
   endif ()
   install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)
   set(PC_FILE ${CMAKE_BINARY_DIR}/gsl.pc)

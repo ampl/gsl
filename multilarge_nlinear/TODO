@@ -1,0 +1,2 @@
+1. finite difference J and fvv for cholesky solver
+2. Fix biggs test x0 and dogleg / ddogleg convergence issue

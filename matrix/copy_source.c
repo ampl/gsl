@@ -84,5 +84,76 @@ FUNCTION (gsl_matrix, swap) (TYPE (gsl_matrix) * dest, TYPE (gsl_matrix) * src)
 }
 
 
+int
+FUNCTION (gsl_matrix, tricpy) (const char uplo_src,
+                               const int copy_diag, TYPE (gsl_matrix) * dest,
+                               const TYPE (gsl_matrix) * src)
+{
+  const size_t src_size1 = src->size1;
+  const size_t src_size2 = src->size2;
+  const size_t dest_size1 = dest->size1;
+  const size_t dest_size2 = dest->size2;
+
+  if (src_size1 != dest_size1 || src_size2 != dest_size2)
+    {
+      GSL_ERROR ("matrix sizes are different", GSL_EBADLEN);
+    }
+
+  {
+    const size_t src_tda = src->tda ;
+    const size_t dest_tda = dest->tda ;
+    size_t i, j, k;
+
+    if (uplo_src == 'L')
+      {
+        for (i = 0; i < src_size1 ; i++)
+          {
+            for (j = 0; j < i; j++)
+              {
+                for (k = 0; k < MULTIPLICITY; k++)
+                  {
+                    size_t e1 = (i *  dest_tda + j) * MULTIPLICITY + k ;
+                    size_t e2 = (i *  src_tda + j) * MULTIPLICITY + k ;
+                    dest->data[e1] = src->data[e2];
+                  }
+              }
+          }
+      }
+    else if (uplo_src == 'U')
+      {
+        for (i = 0; i < src_size1 ; i++)
+          {
+            for (j = i + 1; j < src_size2; j++)
+              {
+                for (k = 0; k < MULTIPLICITY; k++)
+                  {
+                    size_t e1 = (i *  dest_tda + j) * MULTIPLICITY + k ;
+                    size_t e2 = (i *  src_tda + j) * MULTIPLICITY + k ;
+                    dest->data[e1] = src->data[e2];
+                  }
+              }
+          }
+      }
+    else
+      {
+        GSL_ERROR ("invalid uplo parameters", GSL_EINVAL);
+      }
+
+    if (copy_diag)
+      {
+        for (i = 0; i < src_size1 ; i++)
+          {
+            for (k = 0; k < MULTIPLICITY; k++)
+              {
+                size_t e1 = (i *  dest_tda + i) * MULTIPLICITY + k ;
+                size_t e2 = (i *  src_tda + i) * MULTIPLICITY + k ;
+                dest->data[e1] = src->data[e2];
+              }
+          }
+      }
+  }
+
+  return GSL_SUCCESS;
+}
 
 

@@ -180,28 +180,6 @@ test_nonlinear(void)
   const double ftol = 0.0;
   size_t i, j;
 
-  /* test weighted nonlinear least squares */
-
-  /* internal weighting in _f and _df functions */
-  test_fdf(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
-           wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
-  test_fdf(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
-           wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
-  test_fdfridge(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
-                wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
-  test_fdfridge(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
-                wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
-
-  /* weighting through fdfsolver_wset */
-  test_fdf(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
-           wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
-  test_fdf(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
-           wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
-  test_fdfridge(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
-                wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
-  test_fdfridge(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
-                wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
-
   /* Nielsen tests */
   for (i = 0; test_fdf_nielsen[i] != NULL; ++i)
     {
@@ -306,6 +284,28 @@ test_nonlinear(void)
       test_fdf(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
                epsrel, 1.0, problem, NULL);
     }
+
+  /* test weighted nonlinear least squares */
+
+  /* internal weighting in _f and _df functions */
+  test_fdf(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
+           wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
+  test_fdf(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
+           wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
+  test_fdfridge(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
+                wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
+  test_fdfridge(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
+                wnlin_epsrel, 1.0, &wnlin_problem1, NULL);
+
+  /* weighting through fdfsolver_wset */
+  test_fdf(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
+           wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
+  test_fdf(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
+           wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
+  test_fdfridge(gsl_multifit_fdfsolver_lmsder, xtol, gtol, ftol,
+                wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
+  test_fdfridge(gsl_multifit_fdfsolver_lmniel, xtol, gtol, ftol,
+                wnlin_epsrel, 1.0, &wnlin_problem2, wnlin_W);
 }
 
 /*

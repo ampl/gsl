@@ -134,6 +134,29 @@ test_random_matrix(gsl_matrix *m, const gsl_rng *r,
     }
 }
 
+/* generate Vandermonde matrix using equally spaced input points
+ * on [0,1] */
+static void
+test_vander_matrix(gsl_matrix * m)
+{
+  const size_t M = m->size1;
+  const size_t N = m->size2;
+  const double dt = 1.0 / (M - 1.0);
+  size_t i, j;
+
+  for (i = 0; i < M; ++i)
+    {
+      double ti = i * dt;
+      double mij = 1.0;
+
+      for (j = 0; j < N; ++j)
+        {
+          gsl_matrix_set(m, i, j, mij);
+          mij *= ti;
+        }
+    }
+}
+
 static void
 test_random_vector_noise(const gsl_rng *r, gsl_vector *y)
 {
@@ -313,7 +336,7 @@ test_multilarge_solve(const gsl_multilarge_linear_type * T, const double lambda,
 }
 
 static void
-test_system(const gsl_multilarge_linear_type * T,
+test_random(const gsl_multilarge_linear_type * T,
             const size_t n, const size_t p,
             const double tol,
             const gsl_rng * r)
@@ -363,7 +386,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, NULL, NULL, NULL, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, NULL, NULL, NULL, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s unweighted stdform n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s unweighted stdform n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -376,7 +399,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, w, diagL, NULL, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, w, diagL, NULL, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s weighted diag(L) n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s weighted diag(L) n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -389,7 +412,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, NULL, diagL, NULL, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, NULL, diagL, NULL, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s unweighted diag(L) n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s unweighted diag(L) n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -402,7 +425,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, w, NULL, Lsqr, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, w, NULL, Lsqr, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s weighted Lsqr n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s weighted Lsqr n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -415,7 +438,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, NULL, NULL, Lsqr, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, NULL, NULL, Lsqr, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s unweighted Lsqr n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s unweighted Lsqr n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -428,7 +451,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, w, NULL, Ltall, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, w, NULL, Ltall, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s weighted Ltall n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s weighted Ltall n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -441,7 +464,7 @@ test_system(const gsl_multilarge_linear_type * T,
         test_multifit_solve(lambda, X, y, NULL, NULL, Ltall, &rnorm0, &snorm0, c0);
         test_multilarge_solve(T, lambda, X, y, NULL, NULL, Ltall, &rnorm1, &snorm1, c1);
 
-        sprintf(str, "%s unweighted Ltall n=%zu p=%zu lambda=%g",
+        sprintf(str, "random %s unweighted Ltall n=%zu p=%zu lambda=%g",
                 T->name, n, p, lambda);
         test_compare_vectors(tol, c0, c1, str);
 
@@ -469,8 +492,8 @@ main (void)
   gsl_ieee_env_setup();
 
   {
-    const double tol1 = 1.0e-7;
-    const double tol2 = 1.0e-10;
+    const double tol1 = 1.0e-8;
+    const double tol2 = 1.0e-11;
     const size_t n_vals[] = { 40, 356, 501 };
     const size_t p_vals[] = { 40, 213, 345 };
     size_t i;
@@ -480,8 +503,9 @@ main (void)
         size_t n = n_vals[i];
         size_t p = p_vals[i];
 
-        test_system(gsl_multilarge_linear_normal, n, p, tol1, r);
-        test_system(gsl_multilarge_linear_tsqr, n, p, tol2, r);
+        /* generate random ill-conditioned LS system and test */
+        test_random(gsl_multilarge_linear_normal, n, p, tol1, r);
+        test_random(gsl_multilarge_linear_tsqr, n, p, tol2, r);
       }
   }
 

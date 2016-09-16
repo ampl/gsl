@@ -1,0 +1,118 @@
+#define lin1_N         11  /* can be anything >= p */
+#define lin1_P         5
+
+static double lin1_x0[lin1_P] = { 1.0, 1.0, 1.0, 1.0, 1.0 };
+static double lin1_epsrel = 1.0e-10;
+
+static double lin1_J[lin1_N * lin1_P];
+
+static void
+lin1_checksol(const double x[], const double sumsq,
+              const double epsrel, const char *sname,
+              const char *pname)
+{
+  size_t i;
+  const double sumsq_exact = (double) (lin1_N - lin1_P);
+
+  gsl_test_rel(sumsq, sumsq_exact, epsrel, "%s/%s sumsq",
+               sname, pname);
+
+  for (i = 0; i < lin1_P; ++i)
+    {
+      gsl_test_rel(x[i], -1.0, epsrel, "%s/%s i=%zu",
+                   sname, pname, i);
+    }
+}
+
+static int
+lin1_f (const gsl_vector * x, void *params, gsl_vector * f)
+{
+  size_t i, j;
+
+  for (i = 0; i < lin1_N; ++i)
+    {
+      double fi = 0.0;
+
+      for (j = 0; j < lin1_P; ++j)
+        {
+          double xj = gsl_vector_get(x, j);
+          double Aij = (i == j) ? 1.0 : 0.0;
+          Aij -= 2.0 / lin1_N;
+          fi += Aij * xj;
+        }
+
+      fi -= 1.0;
+      gsl_vector_set(f, i, fi);
+    }
+
+  (void)params; /* avoid unused parameter warning */
+
+  return GSL_SUCCESS;
+}
+
+static int
+lin1_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
+         const gsl_vector * u, void * params, gsl_vector * v,
+         gsl_matrix * JTJ)
+{
+  gsl_matrix_view J = gsl_matrix_view_array(lin1_J, lin1_N, lin1_P);
+  size_t i, j;
+
+  for (i = 0; i < lin1_N; ++i)
+    {
+      for (j = 0; j < lin1_P; ++j)
+        {
+          double Jij = (i == j) ? 1.0 : 0.0;
+          Jij -= 2.0 / lin1_N;
+          gsl_matrix_set(&J.matrix, i, j, Jij);
+        }
+    }
+
+  if (v)
+    gsl_blas_dgemv(TransJ, 1.0, &J.matrix, u, 0.0, v);
+
+  if (JTJ)
+    gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, &J.matrix, 0.0, JTJ);
+
+  (void)x;      /* avoid unused parameter warning */
+  (void)params; /* avoid unused parameter warning */
+
+  return GSL_SUCCESS;
+}
+
+static int
+lin1_fvv (const gsl_vector * x, const gsl_vector * v,
+          void *params, gsl_vector * fvv)
+{
+  (void)x; /* avoid unused parameter warnings */
+  (void)v;
+  (void)params;
+
+  gsl_vector_set_zero(fvv);
+
+  return GSL_SUCCESS;
+}
+
+static gsl_multilarge_nlinear_fdf lin1_func =
+{
+  lin1_f,
+  lin1_df,
+  lin1_fvv,
+  lin1_N,
+  lin1_P,
+  NULL,
+  0,
+  0,
+  0,
+  0
+};
+
+static test_fdf_problem lin1_problem =
+{
+  "linear_full",
+  lin1_x0,
+  NULL,
+  &lin1_epsrel,
+  &lin1_checksol,
+  &lin1_func
+};

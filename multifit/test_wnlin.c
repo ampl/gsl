@@ -4,7 +4,7 @@
 #define wnlin_NTRIES    1
 
 static double wnlin_x0[wnlin_P] = { 1.0, 0.0, 0.0 };
-static double wnlin_epsrel = 1.0e-9;
+static double wnlin_epsrel = 1.0e-8;
 
 static int wnlin_internal_weight = 1;
 

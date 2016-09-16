@@ -1,8 +1,10 @@
 #include <config.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_permute.h>
 #include <gsl/gsl_permute_vector.h>
+#include <gsl/gsl_permute_matrix.h>
 
 #define BASE_GSL_COMPLEX_LONG
 #include "templates_on.h"

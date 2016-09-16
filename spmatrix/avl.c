@@ -591,6 +591,7 @@ avl_destroy (struct avl_table *tree, avl_item_func *destroy)
 static void *
 avl_malloc (size_t size, void *param)
 {
+  (void)param; /* avoid unused parameter warning */
   return malloc (size);
 }
 
@@ -598,6 +599,7 @@ avl_malloc (size_t size, void *param)
 static void
 avl_free (void *block, void *param)
 {
+  (void)param; /* avoid unused parameter warning */
   free (block);
 }
 

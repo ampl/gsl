@@ -185,6 +185,15 @@ the @math{@var{p}_j}-th column of the identity matrix. The permutation @var{p}
 and the vector @var{v} must have the same length.
 @end deftypefun
 
+@deftypefun int gsl_permute_matrix (const gsl_permutation * @var{p}, gsl_matrix * @var{A})
+This function applies the permutation @var{p} to the matrix @var{A} from
+the right, @math{A' = A P}.  The @math{j}-th column of the
+permutation matrix @math{P} is given by the @math{@var{p}_j}-th column of the
+identity matrix. This effectively permutes the columns of @var{A} according
+to the permutation @var{p}, and so the number of columns of @var{A} must
+equal the size of the permutation @var{p}.
+@end deftypefun
+
 @deftypefun int gsl_permutation_mul (gsl_permutation * @var{p}, const gsl_permutation * @var{pa}, const gsl_permutation * @var{pb})
 This function combines the two permutations @var{pa} and @var{pb} into a
 single permutation @var{p}, where @c{$@var{p} = @var{pa} \ast @var{pb}$}

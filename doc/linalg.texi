@@ -16,9 +16,12 @@ The functions described in this chapter are declared in the header file
 @menu
 * LU Decomposition::            
 * QR Decomposition::            
-* QR Decomposition with Column Pivoting::  
+* QR Decomposition with Column Pivoting::
+* Complete Orthogonal Decomposition::
 * Singular Value Decomposition::  
 * Cholesky Decomposition::      
+* Pivoted Cholesky Decomposition::      
+* Modified Cholesky Decomposition::      
 * Tridiagonal Decomposition of Real Symmetric Matrices::  
 * Tridiagonal Decomposition of Hermitian Matrices::  
 * Hessenberg Decomposition of Real Matrices::
@@ -27,7 +30,8 @@ The functions described in this chapter are declared in the header file
 * Givens Rotations::  
 * Householder Transformations::  
 * Householder solver for linear systems::  
-* Tridiagonal Systems::         
+* Tridiagonal Systems::
+* Triangular Systems::
 * Balancing::
 * Linear Algebra Examples::     
 * Linear Algebra References and Further Reading::  
@@ -299,8 +303,8 @@ replaced by the solution on output.
 @section QR Decomposition with Column Pivoting
 @cindex QR decomposition with column pivoting
 
-The @math{QR} decomposition can be extended to the rank deficient case
-by introducing a column permutation @math{P},
+The @math{QR} decomposition of an @math{M}-by-@math{N} matrix @math{A}
+can be extended to the rank deficient case by introducing a column permutation @math{P},
 @tex
 \beforedisplay
 $$
@@ -322,7 +326,58 @@ decomposition can also be used to convert the linear system @math{A x =
 b} into the triangular system @math{R y = Q^T b, x = P y}, which can be
 solved by back-substitution and permutation.  We denote the @math{QR}
 decomposition with column pivoting by @math{QRP^T} since @math{A = Q R
-P^T}.
+P^T}. When @math{A} is rank deficient with @math{r = {\rm rank}(A)}, the matrix
+@math{R} can be partitioned as
+@tex
+\beforedisplay
+$$
+R = \left(
+\matrix{
+R_{11} & R_{12} \cr
+0 & R_{22} \cr
+}
+\right) \approx
+\left(
+\matrix{
+R_{11} & R_{12} \cr
+0 & 0 \cr
+}
+\right)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+R = [ R11 R12; 0 R22 ] =~ [ R11 R12; 0 0 ]
+@end example
+
+@end ifinfo
+where @math{R_{11}} is @math{r}-by-@math{r} and nonsingular. In this case,
+a ``basic'' least squares solution for the overdetermined system @math{A x = b}
+can be obtained as
+@tex
+\beforedisplay
+$$
+x = P \left(
+\matrix{
+R_{11}^{-1} c_1 \cr
+0 \cr
+}
+\right)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+x = P [ R11^-1 c1 ; 0 ]
+@end example
+
+@end ifinfo
+where @math{c_1} consists of the first @math{r} elements of @math{Q^T b}.
+This basic solution is not guaranteed to be the minimum norm solution unless
+@math{R_{12} = 0} (see @ref{Complete Orthogonal Decomposition}).
 
 @deftypefun int gsl_linalg_QRPT_decomp (gsl_matrix * @var{A}, gsl_vector * @var{tau}, gsl_permutation * @var{p}, int * @var{signum}, gsl_vector * @var{norm})
 This function factorizes the @math{M}-by-@math{N} matrix @var{A} into
@@ -366,6 +421,30 @@ This function solves the square system @math{A x = b} in-place using the
 right-hand side @math{b}, which is replaced by the solution on output.
 @end deftypefun
 
+@deftypefun int gsl_linalg_QRPT_lssolve (const gsl_matrix * @var{QR}, const gsl_vector * @var{tau}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x}, gsl_vector * @var{residual})
+This function finds the least squares solution to the overdetermined
+system @math{A x = b} where the matrix @var{A} has more rows than
+columns and is assumed to have full rank. The least squares solution minimizes
+the Euclidean norm of the residual, @math{||b - A x||}. The routine requires as input 
+the @math{QR} decomposition of @math{A} into (@var{QR}, @var{tau}, @var{p}) given by
+@code{gsl_linalg_QRPT_decomp}.  The solution is returned in @var{x}.  The
+residual is computed as a by-product and stored in @var{residual}. For rank
+deficient matrices, @code{gsl_linalg_QRPT_lssolve2} should be used instead.
+@end deftypefun
+
+@deftypefun int gsl_linalg_QRPT_lssolve2 (const gsl_matrix * @var{QR}, const gsl_vector * @var{tau}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, const size_t @var{rank}, gsl_vector * @var{x}, gsl_vector * @var{residual})
+This function finds the least squares solution to the overdetermined
+system @math{A x = b} where the matrix @var{A} has more rows than
+columns and has rank given by the input @var{rank}. If the user does not
+know the rank of @math{A}, the routine @code{gsl_linalg_QRPT_rank} can be
+called to estimate it. The least squares solution is
+the so-called ``basic'' solution discussed above and may not be the minimum
+norm solution. The routine requires as input 
+the @math{QR} decomposition of @math{A} into (@var{QR}, @var{tau}, @var{p}) given by
+@code{gsl_linalg_QRPT_decomp}.  The solution is returned in @var{x}.  The
+residual is computed as a by-product and stored in @var{residual}.
+@end deftypefun
+
 @deftypefun int gsl_linalg_QRPT_QRsolve (const gsl_matrix * @var{Q}, const gsl_matrix * @var{R}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x})
 This function solves the square system @math{R P^T x = Q^T b} for
 @var{x}. It can be used when the @math{QR} decomposition of a matrix is
@@ -390,6 +469,115 @@ This function solves the triangular system @math{R P^T x = b} in-place
 for the @math{N}-by-@math{N} matrix @math{R} contained in @var{QR}. On
 input @var{x} should contain the right-hand side @math{b}, which is
 replaced by the solution on output.
+@end deftypefun
+
+@deftypefun size_t gsl_linalg_QRPT_rank (const gsl_matrix * @var{QR}, const double @var{tol})
+This function estimates the rank of the triangular matrix @math{R} contained in @var{QR}.
+The algorithm simply counts the number of diagonal elements of @math{R} whose absolute value
+is greater than the specified tolerance @var{tol}. If the input @var{tol} is negative,
+a default value of @math{20 (M + N) eps(max(|diag(R)|))} is used.
+@end deftypefun
+
+@deftypefun int gsl_linalg_QRPT_rcond (const gsl_matrix * @var{QR}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the @math{R} factor,
+stored in the upper triangle of @var{QR}. The reciprocal condition number estimate, defined as
+@math{1 / (||R||_1 \cdot ||R^{-1}||_1)}, is stored in @var{rcond}.
+Additional workspace of size @math{3 N} is required in @var{work}.
+@end deftypefun
+
+@node Complete Orthogonal Decomposition
+@section Complete Orthogonal Decomposition
+
+The complete orthogonal decomposition of a @math{M}-by-@math{N} matrix
+@math{A} is a generalization of the QR decomposition with column pivoting, given by
+@tex
+\beforedisplay
+$$
+A P = Q
+\left(
+\matrix{
+R_{11} & 0 \cr
+0 & 0 \cr
+}
+\right) Z
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+A P = Q [ R11 0 ] Z
+        [  0  0 ]
+@end example
+
+@end ifinfo
+@noindent
+where @math{P} is a @math{N}-by-@math{N} permutation matrix,
+@math{Q} is @math{M}-by-@math{M} orthogonal, @math{R_{11}} is
+@math{r}-by-@math{r} upper triangular, with @math{r = {\rm rank}(A)},
+and @math{Z} is @math{N}-by-@math{N} orthogonal. If @math{A}
+has full rank, then @math{R_{11} = R}, @math{Z = I} and this reduces to the
+QR decomposition with column pivoting. The advantage of using
+the complete orthogonal decomposition for rank deficient matrices
+is the ability to compute the minimum norm solution to the linear
+least squares problem @math{Ax = b}, which is given by
+@tex
+\beforedisplay
+$$
+x = P Z^T
+\left(
+\matrix{
+R_{11}^{-1} c_1 \cr
+0 \cr
+}
+\right)
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+x = P Z^T [ R11^-1 c1 ]
+          [    0      ]
+@end example
+
+@end ifinfo
+and the vector @math{c_1} is the first @math{r} elements of @math{Q^T b}.
+
+@deftypefun int gsl_linalg_COD_decomp (gsl_matrix * @var{A}, gsl_vector * @var{tau_Q}, gsl_vector * @var{tau_Z}, gsl_permutation * @var{p}, size_t * @var{rank}, gsl_vector * @var{work})
+@deftypefunx int gsl_linalg_COD_decomp_e (gsl_matrix * @var{A}, gsl_vector * @var{tau_Q}, gsl_vector * @var{tau_Z}, gsl_permutation * @var{p}, double @var{tol}, size_t * @var{rank}, gsl_vector * @var{work})
+These functions factor the @math{M}-by-@math{N} matrix @var{A} into the decomposition @math{A = Q R Z P^T}. The rank of @var{A}
+is computed as the number of diagonal elements of @math{R} greater than the tolerance @var{tol} and output in @var{rank}.
+If @var{tol} is not specified, a default value is used (see @code{gsl_linalg_QRPT_rank}). On output, the permutation
+matrix @math{P} is stored in @var{p}. The matrix @math{R_{11}} is stored in the upper @var{rank}-by-@var{rank} block of @var{A}.
+The matrices @math{Q} and @math{Z} are encoded in packed storage in @var{A} on output. The vectors @var{tau_Q} and @var{tau_Z}
+contain the Householder scalars corresponding to the matrices @math{Q} and @math{Z} respectively and must be
+of length @math{k = \min(M,N)}. The vector @var{work} is additional workspace of length @math{N}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_COD_lssolve (const gsl_matrix * @var{QRZ}, const gsl_vector * @var{tau_Q}, const gsl_vector * @var{tau_Z}, const gsl_permutation * @var{p}, const size_t @var{rank}, const gsl_vector * @var{b}, gsl_vector * @var{x}, gsl_vector * @var{residual})
+This function finds the least squares solution to the overdetermined
+system @math{A x = b} where the matrix @var{A} has more rows than
+columns.  The least squares solution minimizes the Euclidean norm of the
+residual, @math{||b - A x||}.  The routine requires as input 
+the @math{QRZ} decomposition of @math{A} into (@var{QRZ}, @var{tau_Q}, @var{tau_Z}, @var{p}, @var{rank})
+given by @code{gsl_linalg_COD_decomp}.  The solution is returned in @var{x}.  The
+residual is computed as a by-product and stored in @var{residual}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_COD_unpack (const gsl_matrix * @var{QRZ}, const gsl_vector * @var{tau_Q}, const gsl_vector * @var{tau_Z}, const size_t @var{rank}, gsl_matrix * @var{Q}, gsl_matrix * @var{R}, gsl_matrix * @var{Z})
+This function unpacks the encoded @math{QRZ} decomposition
+(@var{QRZ}, @var{tau_Q}, @var{tau_Z}, @var{rank}) into the matrices
+@var{Q}, @var{R}, and @var{Z}, where @var{Q} is @math{M}-by-@math{M},
+@var{R} is @math{M}-by-@math{N}, and @var{Z} is @math{N}-by-@math{N}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_COD_matZ (const gsl_matrix * @var{QRZ}, const gsl_vector * @var{tau_Z}, const size_t @var{rank}, gsl_matrix * @var{A}, gsl_vector * @var{work})
+This function multiplies the input matrix @var{A} on the right by @var{Z},
+@math{A' = A Z} using the encoded @math{QRZ} decomposition
+(@var{QRZ}, @var{tau_Z}, @var{rank}). @var{A} must have @math{N} columns but may
+have any number of rows. Additional workspace of length @math{M} is provided
+in @var{work}.
 @end deftypefun
 
 @node Singular Value Decomposition
@@ -531,21 +719,47 @@ the linear system @math{A x = b} into a pair of triangular systems
 (@math{L y = b}, @math{L^T x = y}), which can be solved by forward and
 back-substitution.
 
-@deftypefun int gsl_linalg_cholesky_decomp (gsl_matrix * @var{A})
+If the matrix @math{A} is near singular, it is sometimes possible to reduce
+the condition number and recover a more accurate solution vector @math{x}
+by scaling as
+@tex
+\beforedisplay
+$$
+\left( S A S \right) \left( S^{-1} x \right) = S b
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+( S A S ) ( S^(-1) x ) = S b
+@end example
+
+@end ifinfo
+where @math{S} is a diagonal matrix whose elements are given by
+@math{S_{ii} = 1/\sqrt{A_{ii}}}. This scaling is also known as
+Jacobi preconditioning. There are routines below to solve
+both the scaled and unscaled systems.
+
+@deftypefun int gsl_linalg_cholesky_decomp1 (gsl_matrix * @var{A})
 @deftypefunx int gsl_linalg_complex_cholesky_decomp (gsl_matrix_complex * @var{A})
 These functions factorize the symmetric, positive-definite square matrix
 @var{A} into the Cholesky decomposition @math{A = L L^T} (or
 @c{$A = L L^{\dagger}$}
 @math{A = L L^H}
-for the complex case). On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are used (the upper triangular part is ignored).  On output the diagonal and lower triangular part of the input
-matrix @var{A} contain the matrix @math{L}, while the upper triangular part
-of the input matrix is overwritten with @math{L^T} (the diagonal terms being
-identical for both @math{L} and @math{L^T}).  If the matrix is not
+for the complex case). On input, the values from the diagonal and lower-triangular
+part of the matrix @var{A} are used (the upper triangular part is ignored).  On output
+the diagonal and lower triangular part of the input matrix @var{A} contain the matrix
+@math{L}, while the upper triangular part is unmodified.  If the matrix is not
 positive-definite then the decomposition will fail, returning the
 error code @code{GSL_EDOM}.  
 
 When testing whether a matrix is positive-definite, disable the error
 handler first to avoid triggering an error.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_decomp (gsl_matrix * @var{A})
+This function is now deprecated and is provided only for backward compatibility.
 @end deftypefun
 
 @deftypefun int gsl_linalg_cholesky_solve (const gsl_matrix * @var{cholesky}, const gsl_vector * @var{b}, gsl_vector * @var{x})
@@ -574,6 +788,233 @@ decomposition @var{cholesky}, which must have been previously computed
 by @code{gsl_linalg_cholesky_decomp} or
 @code{gsl_linalg_complex_cholesky_decomp}.  On output, the inverse is
 stored in-place in @var{cholesky}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_decomp2 (gsl_matrix * @var{A}, gsl_vector * @var{S})
+This function calculates a diagonal scaling transformation @math{S} for
+the symmetric, positive-definite square matrix @var{A}, and then
+computes the Cholesky decomposition @math{S A S = L L^T}.
+On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are
+used (the upper triangular part is ignored).  On output the diagonal and lower triangular part
+of the input matrix @var{A} contain the matrix @math{L}, while the upper triangular part
+of the input matrix is overwritten with @math{L^T} (the diagonal terms being
+identical for both @math{L} and @math{L^T}).  If the matrix is not
+positive-definite then the decomposition will fail, returning the
+error code @code{GSL_EDOM}. The diagonal scale factors are stored in @var{S}
+on output.
+
+When testing whether a matrix is positive-definite, disable the error
+handler first to avoid triggering an error.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_solve2 (const gsl_matrix * @var{cholesky}, const gsl_vector * @var{S}, const gsl_vector * @var{b}, gsl_vector * @var{x})
+This function solves the system @math{(S A S) (S^{-1} x) = S b} using the Cholesky
+decomposition of @math{S A S} held in the matrix @var{cholesky} which must
+have been previously computed by @code{gsl_linalg_cholesky_decomp2}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_svx2 (const gsl_matrix * @var{cholesky}, const gsl_vector * @var{S}, gsl_vector * @var{x})
+This function solves the system @math{(S A S) (S^{-1} x) = S b} in-place using the
+Cholesky decomposition of @math{S A S} held in the matrix @var{cholesky}
+which must have been previously computed by
+@code{gsl_linalg_cholesky_decomp2}.  On input @var{x} should
+contain the right-hand side @math{b}, which is replaced by the
+solution on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_scale (const gsl_matrix * @var{A}, gsl_vector * @var{S})
+This function calculates a diagonal scaling transformation of the
+symmetric, positive definite matrix @var{A}, such that
+@math{S A S} has a condition number within a factor of @math{N}
+of the matrix of smallest possible condition number over all
+possible diagonal scalings. On output, @var{S} contains the
+scale factors, given by @math{S_i = 1/\sqrt{A_{ii}}}.
+For any @math{A_{ii} \le 0}, the corresponding scale factor @math{S_i}
+is set to @math{1}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_scale_apply (gsl_matrix * @var{A}, const gsl_vector * @var{S})
+This function applies the scaling transformation @var{S} to the matrix @var{A}. On output,
+@var{A} is replaced by @math{S A S}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_cholesky_rcond (const gsl_matrix * @var{cholesky}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the symmetric positive
+definite matrix @math{A}, using its Cholesky decomposition provided in @var{cholesky}.
+The reciprocal condition number estimate, defined as @math{1 / (||A||_1 \cdot ||A^{-1}||_1)}, is stored
+in @var{rcond}.  Additional workspace of size @math{3 N} is required in @var{work}.
+@end deftypefun
+
+@node Pivoted Cholesky Decomposition
+@section Pivoted Cholesky Decomposition
+@cindex Cholesky decomposition, pivoted
+@cindex Pivoted Cholesky Decomposition
+
+A symmetric, positive definite square matrix @math{A} has an alternate
+Cholesky decomposition into a product of a lower unit triangular matrix @math{L},
+a diagonal matrix @math{D} and @math{L^T}, given by @math{L D L^T}. This is
+equivalent to the Cholesky formulation discussed above, with
+the standard Cholesky lower triangular factor given by @math{L D^{1 \over 2}}.
+For ill-conditioned matrices, it can help to use a pivoting strategy to
+prevent the entries of @math{D} and @math{L} from growing too large, and also
+ensure @math{D_1 \ge D_2 \ge \cdots \ge D_n > 0}, where @math{D_i} are
+the diagonal entries of @math{D}. The final decomposition is given by
+@tex
+\beforedisplay
+$$
+P A P^T = L D L^T
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+P A P^T = L D L^T
+@end example
+
+@end ifinfo
+where @math{P} is a permutation matrix.
+
+@deftypefun int gsl_linalg_pcholesky_decomp (gsl_matrix * @var{A}, gsl_permutation * @var{p})
+This function factors the symmetric, positive-definite square matrix
+@var{A} into the Pivoted Cholesky decomposition @math{P A P^T = L D L^T}.
+On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are
+used to construct the factorization. On output the diagonal of the input matrix @var{A} stores
+the diagonal elements of @math{D}, and the lower triangular portion of @var{A}
+contains the matrix @math{L}. Since @math{L} has ones on its diagonal these
+do not need to be explicitely stored. The upper triangular portion of @var{A} is
+unmodified. The permutation matrix @math{P} is stored in @var{p} on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_solve (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x})
+This function solves the system @math{A x = b} using the Pivoted Cholesky
+decomposition of @math{A} held in the matrix @var{LDLT} and permutation
+@var{p} which must have been previously computed by @code{gsl_linalg_pcholesky_decomp}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_svx (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, gsl_vector * @var{x})
+This function solves the system @math{A x = b} in-place using the Pivoted Cholesky
+decomposition of @math{A} held in the matrix @var{LDLT} and permutation
+@var{p} which must have been previously computed by @code{gsl_linalg_pcholesky_decomp}.
+On input, @var{x} contains the right hand side vector @math{b} which is
+replaced by the solution vector on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_decomp2 (gsl_matrix * @var{A}, gsl_permutation * @var{p}, gsl_vector * @var{S})
+This function computes the pivoted Cholesky factorization of the matrix
+@math{S A S}, where the input matrix @var{A} is symmetric and positive
+definite, and the diagonal scaling matrix @var{S} is computed to reduce the
+condition number of @var{A} as much as possible. See
+@ref{Cholesky Decomposition} for more information on the matrix @var{S}.
+The Pivoted Cholesky decomposition satisfies @math{P S A S P^T = L D L^T}.
+On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are
+used to construct the factorization.  On output the diagonal of the input matrix @var{A} stores the diagonal
+elements of @math{D}, and the lower triangular portion of @var{A}
+contains the matrix @math{L}. Since @math{L} has ones on its diagonal these
+do not need to be explicitely stored. The upper triangular portion of @var{A}
+is unmodified. The permutation matrix @math{P} is stored in @var{p} on output.
+The diagonal scaling transformation is stored in @var{S} on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_solve2 (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, const gsl_vector * @var{S}, const gsl_vector * @var{b}, gsl_vector * @var{x})
+This function solves the system @math{(S A S) (S^{-1} x) = S b} using the Pivoted Cholesky
+decomposition of @math{S A S} held in the matrix @var{LDLT}, permutation
+@var{p}, and vector @var{S}, which must have been previously computed by
+@code{gsl_linalg_pcholesky_decomp2}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_svx2 (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, const gsl_vector * @var{S}, gsl_vector * @var{x})
+This function solves the system @math{(S A S) (S^{-1} x) = S b} in-place using the Pivoted Cholesky
+decomposition of @math{S A S} held in the matrix @var{LDLT}, permutation
+@var{p} and vector @var{S}, which must have been previously computed by
+@code{gsl_linalg_pcholesky_decomp2}.
+On input, @var{x} contains the right hand side vector @math{b} which is
+replaced by the solution vector on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_invert (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, gsl_matrix * @var{Ainv})
+This function computes the inverse of the matrix @math{A}, using the Pivoted
+Cholesky decomposition stored in @var{LDLT} and @var{p}. On output, the
+matrix @var{Ainv} contains @math{A^{-1}}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_pcholesky_rcond (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the symmetric positive
+definite matrix @math{A}, using its pivoted Cholesky decomposition provided in @var{LDLT}.
+The reciprocal condition number estimate, defined as @math{1 / (||A||_1 \cdot ||A^{-1}||_1)}, is stored
+in @var{rcond}.  Additional workspace of size @math{3 N} is required in @var{work}.
+@end deftypefun
+
+@node Modified Cholesky Decomposition
+@section Modified Cholesky Decomposition
+@cindex Cholesky decomposition, modified
+@cindex Modified Cholesky Decomposition
+
+The modified Cholesky decomposition is suitable for solving systems
+@math{A x = b} where @math{A} is a symmetric indefinite matrix. Such
+matrices arise in nonlinear optimization algorithms. The standard
+Cholesky decomposition requires a positive definite matrix and would
+fail in this case. Instead of resorting to a method like QR or SVD,
+which do not take into account the symmetry of the matrix, we can
+instead introduce a small perturbation to the matrix @math{A} to
+make it positive definite, and then use a Cholesky decomposition on
+the perturbed matrix. The resulting decomposition satisfies
+@tex
+\beforedisplay
+$$
+P (A + E) P^T = L D L^T
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+P (A + E) P^T = L D L^T
+@end example
+
+@end ifinfo
+where @math{P} is a permutation matrix, @math{E} is a diagonal
+perturbation matrix, @math{L} is unit lower triangular, and
+@math{D} is diagonal. If @math{A} is sufficiently positive
+definite, then the perturbation matrix @math{E} will be zero
+and this method is equivalent to the pivoted Cholesky algorithm.
+For indefinite matrices, the perturbation matrix @math{E} is
+computed to ensure that @math{A + E} is positive definite and
+well conditioned.
+
+@deftypefun int gsl_linalg_mcholesky_decomp (gsl_matrix * @var{A}, gsl_permutation * @var{p}, gsl_vector * @var{E})
+This function factors the symmetric, indefinite square matrix
+@var{A} into the Modified Cholesky decomposition @math{P (A + E) P^T = L D L^T}.
+On input, the values from the diagonal and lower-triangular part of the matrix @var{A} are
+used to construct the factorization. On output the diagonal of the input matrix @var{A} stores the diagonal
+elements of @math{D}, and the lower triangular portion of @var{A}
+contains the matrix @math{L}. Since @math{L} has ones on its diagonal these
+do not need to be explicitely stored. The upper triangular portion of @var{A}
+is unmodified. The permutation matrix @math{P} is
+stored in @var{p} on output. The diagonal perturbation matrix is stored in
+@var{E} on output. The parameter @var{E} may be set to NULL if it is not
+required.
+@end deftypefun
+
+@deftypefun int gsl_linalg_mcholesky_solve (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x})
+This function solves the perturbed system @math{(A + E) x = b} using the Cholesky
+decomposition of @math{A + E} held in the matrix @var{LDLT} and permutation
+@var{p} which must have been previously computed by @code{gsl_linalg_mcholesky_decomp}.
+@end deftypefun
+
+@deftypefun int gsl_linalg_mcholesky_svx (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, gsl_vector * @var{x})
+This function solves the perturbed system @math{(A + E) x = b} in-place using the Cholesky
+decomposition of @math{A + E} held in the matrix @var{LDLT} and permutation
+@var{p} which must have been previously computed by @code{gsl_linalg_mcholesky_decomp}.
+On input, @var{x} contains the right hand side vector @math{b} which is
+replaced by the solution vector on output.
+@end deftypefun
+
+@deftypefun int gsl_linalg_mcholesky_rcond (const gsl_matrix * @var{LDLT}, const gsl_permutation * @var{p}, double * @var{rcond}, gsl_vector * @var{work})
+This function estimates the reciprocal condition number (using the 1-norm) of the perturbed matrix
+@math{A + E}, using its pivoted Cholesky decomposition provided in @var{LDLT}.
+The reciprocal condition number estimate, defined as @math{1 / (||A + E||_1 \cdot ||(A + E)^{-1}||_1)}, is stored
+in @var{rcond}.  Additional workspace of size @math{3 N} is required in @var{work}.
 @end deftypefun
 
 @node Tridiagonal Decomposition of Real Symmetric Matrices
@@ -1123,6 +1564,29 @@ A = ( d_0 e_0  0  e_3 )
 @end ifinfo
 @end deftypefun
 
+@node Triangular Systems
+@section Triangular Systems
+@cindex triangular systems
+
+@deftypefun int gsl_linalg_tri_upper_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_lower_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_upper_unit_invert (gsl_matrix * @var{T})
+@deftypefunx int gsl_linalg_tri_lower_unit_invert (gsl_matrix * @var{T})
+These functions calculate the in-place inverse of the triangular matrix @var{T}. When
+the @code{upper} prefix is specified, then the upper triangle of @var{T} is used, and when
+the @code{lower} prefix is specified, the lower triangle is used. If the @code{unit}
+prefix is specified, then the diagonal elements of the matrix @var{T} are taken as
+unity and are not referenced. Otherwise the diagonal elements are used in the inversion.
+@end deftypefun
+
+@deftypefun int gsl_linalg_tri_upper_rcond (const gsl_matrix * @var{T}, double * @var{rcond}, gsl_vector * @var{work})
+@deftypefunx int gsl_linalg_tri_lower_rcond (const gsl_matrix * @var{T}, double * @var{rcond}, gsl_vector * @var{work})
+These functions estimate the reciprocal condition number, in the 1-norm, of the upper or lower
+@math{N}-by-@math{N} triangular matrix @var{T}. The reciprocal condition number
+is stored in @var{rcond} on output, and is defined by @math{1 / (||T||_1 \cdot ||T^{-1}||_1)}.
+Additional workspace of size @math{3 N} is required in @var{work}.
+@end deftypefun
+
 @node Balancing
 @section Balancing
 @cindex balancing matrices
@@ -1292,5 +1756,13 @@ from netlib, @uref{http://www.netlib.org/lapack/} in the @code{lawns} or
 @code{lawnspdf} directories.
 @end itemize
 
+@noindent
+The algorithm for estimating a matrix condition number is described in
+the following paper,
 
-
+@itemize @w{}
+@item
+N. J. Higham, "FORTRAN codes for estimating the one-norm of
+a real or complex matrix, with applications to condition estimation",
+ACM Trans. Math. Soft., vol. 14, no. 4, pp. 381-396, December 1988.
+@end itemize

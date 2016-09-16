@@ -1,4 +1,83 @@
-* What is new in gsl-2.1:
+* What is new in gsl-2.2.1:
+
+** reverted gsl_linalg_cholesky_decomp to its previous behavior
+   so it is backward compatible; new cholesky routine is
+   gsl_linalg_cholesky_decomp1
+
+* What was new in gsl-2.2:
+
+** updated gsl_linalg_cholesky_invert to use Level-2 BLAS
+   and added function gsl_linalg_pcholesky_invert
+
+** added functions gsl_linalg_tri_*_invert for inverting
+   triangular matrices
+
+** fix GSL_EIGEN_SORT_VAL_{ASC,DESC} for nonsymmetric
+   eigensystems (Victor Zverovich)
+
+** added complete orthogonal decomposition routines
+   (gsl_linalg_COD)
+
+** bug fix where median calculation wasn't reset in
+   gsl_rstat_reset(); added gsl_rstat_quantile_reset() function
+   (reported by Pedro Donato)
+
+** added multivariate Gaussian random distribution
+   gsl_ran_multivariate_gaussian (Timothée Flutre)
+
+** added functions to estimate the 1-norm reciprocal condition
+   number for various matrix factorizations:
+     * gsl_linalg_cholesky_rcond
+     * gsl_linalg_QRPT_rcond
+
+** added functions gsl_linalg_QRPT_{lssolve,lssolve2} to
+   compute least squares solutions with the QRPT decomposition
+
+** added function gsl_permute_matrix()
+
+** added modified Cholesky factorization (gsl_linalg_mcholesky)
+   to handle symmetric indefinite matrices
+
+** added pivoted Cholesky factorization (gsl_linalg_pcholesky)
+   for ill-conditioned matrices
+
+** rewrote (real) Cholesky decomposition to use
+   a Level-2 blas algorithm instead of Level-1. Flop
+   count is about the same but the code is much simpler
+   and easier to follow
+
+** completely rewritten nonlinear least squares module,
+   including support for large problems; the user may
+   now control the linear solver used, the trust region
+   updating strategy, and the scaling method. In addition,
+   support has been added for the geodesic acceleration
+   step (Transtrum 2011) which can speed up convergence
+   on a wide class of problems.
+
+** added gsl_rstat_rms() for root mean square
+
+** optimized lmniel nonlinear least squares solver
+   (bug #46369)
+
+** improved precision in Bessel K0/K1 near x = 2
+   (Pavel Holoborodko, bug #47401)
+
+** added support for compressed row storage sparse
+   matrices (Alexis Tantet)
+
+** bug fix in convergence check of hypergeometric 2F1
+   function (bug #45926)
+
+** added gsl_multilarge_linear_lcurve() to compute
+   the L-curve for large linear systems
+
+** updated multilarge normal equations method to use
+   new Cholesky scaling for better numerical stability
+
+** added scaling to Cholesky routines to reduce the
+   condition number prior to factorization
+
+* What was new in gsl-2.1:
 
 ** added test suite for example programs
 

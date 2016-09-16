@@ -63,6 +63,19 @@ gsl_spmatrix_get(const gsl_spmatrix *m, const size_t i, const size_t j)
                 return m->data[p];
             }
         }
+      else if (GSL_SPMATRIX_ISCRS(m))
+        {
+          const size_t *mj = m->i;
+          const size_t *mp = m->p;
+          size_t p;
+
+          /* loop over row i and search for column index j */
+          for (p = mp[i]; p < mp[i + 1]; ++p)
+            {
+              if (mj[p] == j)
+                return m->data[p];
+            }
+        }
       else
         {
           GSL_ERROR_VAL("unknown sparse matrix type", GSL_EINVAL, 0.0);
@@ -145,6 +158,61 @@ gsl_spmatrix_set(gsl_spmatrix *m, const size_t i, const size_t j,
       return s;
     }
 } /* gsl_spmatrix_set() */
+
+double *
+gsl_spmatrix_ptr(gsl_spmatrix *m, const size_t i, const size_t j)
+{
+  if (i >= m->size1)
+    {
+      GSL_ERROR_NULL("first index out of range", GSL_EINVAL);
+    }
+  else if (j >= m->size2)
+    {
+      GSL_ERROR_NULL("second index out of range", GSL_EINVAL);
+    }
+  else
+    {
+      if (GSL_SPMATRIX_ISTRIPLET(m))
+        {
+          /* traverse binary tree to search for (i,j) element */
+          void *ptr = tree_find(m, i, j);
+          return (double *) ptr;
+        }
+      else if (GSL_SPMATRIX_ISCCS(m))
+        {
+          const size_t *mi = m->i;
+          const size_t *mp = m->p;
+          size_t p;
+
+          /* loop over column j and search for row index i */
+          for (p = mp[j]; p < mp[j + 1]; ++p)
+            {
+              if (mi[p] == i)
+                return &(m->data[p]);
+            }
+        }
+      else if (GSL_SPMATRIX_ISCRS(m))
+        {
+          const size_t *mj = m->i;
+          const size_t *mp = m->p;
+          size_t p;
+
+          /* loop over row i and search for column index j */
+          for (p = mp[i]; p < mp[i + 1]; ++p)
+            {
+              if (mj[p] == j)
+                return &(m->data[p]);
+            }
+        }
+      else
+        {
+          GSL_ERROR_NULL("unknown sparse matrix type", GSL_EINVAL);
+        }
+
+      /* element not found; return 0 */
+      return NULL;
+    }
+} /* gsl_spmatrix_ptr() */
 
 /*
 tree_find()

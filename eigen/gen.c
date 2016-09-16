@@ -605,7 +605,7 @@ gen_qzstep(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
          temp2;
   size_t j;               /* looping */
   gsl_vector_view xv, yv; /* temporary views */
-  size_t top;
+  size_t top = 0;
   size_t rows;
 
   if (w->n_iter % 10 == 0)
@@ -825,7 +825,7 @@ gen_qzstep_d(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
   gsl_matrix_view m;      /* temporary view */
   double tmp;
   size_t q, r;
-  size_t top;             /* location of H in original matrix */
+  size_t top = 0;         /* location of H in original matrix */
   double scale;
   double AB11,            /* various matrix element ratios */
          AB22,
@@ -1228,7 +1228,7 @@ static void
 gen_tri_split_top(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
 {
   const size_t N = H->size1;
-  size_t j, top;
+  size_t j, top = 0;
   double cs, sn;
   gsl_vector_view xv, yv;
 
@@ -1295,7 +1295,7 @@ gen_tri_chase_zero(gsl_matrix *H, gsl_matrix *R, size_t q,
                    gsl_eigen_gen_workspace *w)
 {
   const size_t N = H->size1;
-  size_t j, top;
+  size_t j, top = 0;
   double cs, sn;
   gsl_vector_view xv, yv;
 
@@ -1399,7 +1399,7 @@ static inline void
 gen_tri_zero_H(gsl_matrix *H, gsl_matrix *R, gsl_eigen_gen_workspace *w)
 {
   const size_t N = H->size1;
-  size_t top;
+  size_t top = 0;
   double cs, sn;
   gsl_vector_view xv, yv;
 
@@ -1554,7 +1554,7 @@ gen_schur_standardize1(gsl_matrix *A, gsl_matrix *B, double *alphar,
                        double *beta, gsl_eigen_gen_workspace *w)
 {
   size_t i;
-  size_t top;
+  size_t top = 0;
 
   /*
    * it is a 1-by-1 block - the only requirement is that
@@ -1634,7 +1634,7 @@ gen_schur_standardize2(gsl_matrix *A, gsl_matrix *B, gsl_complex *alpha1,
   gsl_vector_view sv = gsl_vector_view_array(datS, 2);
   gsl_vector_view wv = gsl_vector_view_array(work, 2);
   double B11, B22;
-  size_t top;
+  size_t top = 0;
   double det;
   double cr, sr, cl, sl;
   gsl_vector_view xv, yv;

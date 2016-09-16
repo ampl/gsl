@@ -97,9 +97,9 @@ FUNCTION (gsl_sf_legendre, array_e)
  const double csphase, OUTPUT_ARG)
 {
   int s;
+  const size_t nlm = gsl_sf_legendre_nlm(lmax);
 #if !defined(LEGENDRE_DERIV_ALT)
   size_t i;
-  const size_t nlm = gsl_sf_legendre_nlm(lmax);
 #if defined(LEGENDRE_DERIV) || defined(LEGENDRE_DERIV2)
   const double u = sqrt((1.0 - x) * (1.0 + x));
   const double uinv = 1.0 / u;
@@ -108,7 +108,7 @@ FUNCTION (gsl_sf_legendre, array_e)
   const double uinv2 = uinv * uinv;
 #endif
 #endif
-  double fac1, fac2; /* normalization factors */
+  double fac1 = 0.0, fac2 = 0.0; /* normalization factors */
 
   if (norm == GSL_SF_LEGENDRE_NONE)
     {
@@ -139,7 +139,9 @@ FUNCTION (gsl_sf_legendre, array_e)
 
   /* apply scaling for requested normalization */
   if (norm == GSL_SF_LEGENDRE_SCHMIDT || norm == GSL_SF_LEGENDRE_NONE)
-    return s;
+    {
+      return s;
+    }
   else if (norm == GSL_SF_LEGENDRE_SPHARM)
     {
       fac1 = 1.0 / sqrt(4.0 * M_PI);
@@ -159,7 +161,6 @@ FUNCTION (gsl_sf_legendre, array_e)
   {
     size_t l, m;
     size_t twoellp1 = 1; /* 2l + 1 */
-    size_t nlm = gsl_sf_legendre_nlm(lmax);
     double *sqrts = &(result_array[nlm]);
 
     for (l = 0; l <= lmax; ++l)

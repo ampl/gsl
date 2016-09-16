@@ -110,7 +110,7 @@ test_dgemv(const size_t N, const size_t M, const double alpha,
            const gsl_rng *r)
 {
   gsl_spmatrix *A = create_random_sparse(M, N, 0.2, r);
-  gsl_spmatrix *C;
+  gsl_spmatrix *B, *C;
   gsl_matrix *A_dense = gsl_matrix_alloc(M, N);
   gsl_vector *x, *y, *y_gsl, *y_sp;
   size_t lenX, lenY;
@@ -150,16 +150,24 @@ test_dgemv(const size_t N, const size_t M, const double alpha,
   /* test y_sp = y_gsl */
   test_vectors(y_sp, y_gsl, 1.0e-10, "test_dgemv: triplet format");
 
-  /* compute y = alpha*op(A)*x + beta*y0 with spblas/compcol */
-  C = gsl_spmatrix_compcol(A);
+  /* compute y = alpha*op(A)*x + beta*y0 with spblas/CCS */
+  B = gsl_spmatrix_ccs(A);
+  gsl_vector_memcpy(y_sp, y);
+  gsl_spblas_dgemv(TransA, alpha, B, x, beta, y_sp);
+
+  /* test y_sp = y_gsl */
+  test_vectors(y_sp, y_gsl, 1.0e-10, "test_dgemv: CCS format");
+
+  /* compute y = alpha*op(A)*x + beta*y0 with spblas/CRS */
+  C = gsl_spmatrix_crs(A);
   gsl_vector_memcpy(y_sp, y);
   gsl_spblas_dgemv(TransA, alpha, C, x, beta, y_sp);
 
   /* test y_sp = y_gsl */
-  test_vectors(y_sp, y_gsl, 1.0e-10,
-               "test_dgemv: compressed column format");
+  test_vectors(y_sp, y_gsl, 1.0e-10, "test_dgemv: CRS format");
 
   gsl_spmatrix_free(A);
+  gsl_spmatrix_free(B);
   gsl_spmatrix_free(C);
   gsl_matrix_free(A_dense);
   gsl_vector_free(x);
@@ -185,8 +193,8 @@ test_dgemm(const double alpha, const size_t M, const size_t N,
       gsl_matrix_view Bd = gsl_matrix_submatrix(B_dense, 0, 0, k, N);
       gsl_spmatrix *TA = create_random_sparse(M, k, 0.2, r);
       gsl_spmatrix *TB = create_random_sparse(k, N, 0.2, r);
-      gsl_spmatrix *A = gsl_spmatrix_compcol(TA);
-      gsl_spmatrix *B = gsl_spmatrix_compcol(TB);
+      gsl_spmatrix *A = gsl_spmatrix_ccs(TA);
+      gsl_spmatrix *B = gsl_spmatrix_ccs(TB);
 
       gsl_spmatrix_set_zero(C);
       gsl_spblas_dgemm(alpha, A, B, C);

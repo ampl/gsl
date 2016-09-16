@@ -20,13 +20,9 @@ two-parameter regression and multiple-parameter fits.
 * Multi-parameter regression::
 * Regularized regression::
 * Robust linear regression::
-* Large Linear Systems::
+* Large Dense Linear Systems::
 * Troubleshooting::
-* Fitting Examples for linear regression::
-* Fitting Examples for multi-parameter linear regression::
-* Fitting Examples for regularized linear regression::
-* Fitting Examples for robust linear regression::
-* Fitting Examples for large linear systems::
+* Fitting Examples::
 * Fitting References and Further Reading::  
 @end menu
 
@@ -633,7 +629,7 @@ of length @math{p}. The original least squares matrix and observation vector are
 @var{w} must also be supplied.
 @end deftypefun
 
-@deftypefun int gsl_multifit_linear_applyW (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, gsl_matrix * @var{WX}, gsl_vector * @var{Wy}, gsl_multifit_linear_workspace * @var{work})
+@deftypefun int gsl_multifit_linear_applyW (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, gsl_matrix * @var{WX}, gsl_vector * @var{Wy})
 For weighted least squares systems with @math{L = I}, this function may be used to
 convert the system to standard form by applying the weight matrix @math{W =} diag(@var{w})
 to the least squares matrix @var{X} and observation vector @var{y}. On output, @var{WX}
@@ -708,8 +704,8 @@ operator of order @math{k}. This regularization norm can be useful in applicatio
 it is necessary to smooth several derivatives of the solution. @var{p} is the number of
 model parameters, @var{kmax} is the highest derivative to include in the summation above, and
 @var{alpha} is the vector of weights of size @var{kmax} + 1, where @var{alpha}[k] = @math{\alpha_k}
-is the weight assigned to the derivative of order @math{k}.  The output matrix @var{L} is of size
-@var{p}-by-@var{p}.
+is the weight assigned to the derivative of order @math{k}.  The output matrix @var{L} is size
+@var{p}-by-@var{p} and upper triangular.
 @end deftypefun
 
 @deftypefun double gsl_multifit_linear_rcond (const gsl_multifit_linear_workspace * @var{work})
@@ -1070,9 +1066,9 @@ in a reasonable way.
 @end itemize
 @end deftypefun
 
-@node Large Linear Systems
-@section Large linear systems
-@cindex large linear least squares
+@node Large Dense Linear Systems
+@section Large dense linear systems
+@cindex large dense linear least squares
 @cindex linear least squares, large
 
 This module is concerned with solving large dense least squares systems
@@ -1152,6 +1148,15 @@ y_k \cr
 $$
 \afterdisplay
 @end tex
+@ifinfo
+@example
+[ X_1 ] c = [ y_1 ]
+[ X_2 ]     [ y_2 ]
+[ X_3 ]     [ y_3 ]
+[ ... ]     [ ... ]
+[ X_k ]     [ y_k ]
+@end example
+@end ifinfo
 into @math{k} blocks, where each block (@math{X_i,y_i}) may have
 any number of rows, but each @math{X_i} has @math{p} columns.
 The sections below describe the methods available for solving
@@ -1159,13 +1164,13 @@ this partitioned system. The functions are declared in
 the header file @file{gsl_multilarge.h}.
 
 @menu
-* Large Linear Systems Normal Equations::
-* Large Linear Systems TSQR::
-* Large Linear Systems Solution Steps::
-* Large Linear Systems Routines::
+* Large Dense Linear Systems Normal Equations::
+* Large Dense Linear Systems TSQR::
+* Large Dense Linear Systems Solution Steps::
+* Large Dense Linear Systems Routines::
 @end menu
 
-@node Large Linear Systems Normal Equations
+@node Large Dense Linear Systems Normal Equations
 @subsection Normal Equations Approach
 @cindex large linear least squares, normal equations
 
@@ -1207,14 +1212,19 @@ Since the matrix @math{X^T X} is symmetric, only half of it
 needs to be calculated. Once all of the blocks (@math{X_i,y_i})
 have been accumulated into the final @math{X^T X} and @math{X^T y},
 the system can be solved with a Cholesky factorization of the
-@math{X^T X} matrix. The normal equations approach is the fastest
-method for solving the large least squares problem, and is accurate
-for well-conditioned matricies @math{X}. However, for ill-conditioned
-matrices, as is often the case for large systems, this method
-suffers from numerical instabilities (see Trefethen and Bau, 1997).
-The number of operations for this method is @math{O(np^2 + p^3/3)}.
+@math{X^T X} matrix. If the Cholesky factorization fails (occasionally
+due to numerical rounding errors), a QR decomposition is then used.
+In both cases, the @math{X^T X} matrix is first transformed via
+a diagonal scaling transformation to attempt to reduce its condition
+number as much as possible to recover a more accurate solution vector.
+The normal equations approach is the fastest method for solving the
+large least squares problem, and is accurate for well-conditioned
+matrices @math{X}. However, for ill-conditioned matrices, as is often
+the case for large systems, this method can suffer from numerical
+instabilities (see Trefethen and Bau, 1997).  The number of operations
+for this method is @math{O(np^2 + {1 \over 3}p^3)}.
 
-@node Large Linear Systems TSQR
+@node Large Dense Linear Systems TSQR
 @subsection Tall Skinny QR (TSQR) Approach
 @cindex large linear least squares, TSQR
 
@@ -1311,8 +1321,8 @@ the sparse structure of @math{R_{i-1}}. See Demmel et al, 2008 for
 more details on how this is accomplished. The number
 of operations for this method is @math{O(2np^2 - {2 \over 3}p^3)}.
 
-@node Large Linear Systems Solution Steps
-@subsection Large Linear Systems Solution Steps
+@node Large Dense Linear Systems Solution Steps
+@subsection Large Dense Linear Systems Solution Steps
 @cindex large linear least squares, steps
 The typical steps required to solve large regularized linear least
 squares problems are as follows:
@@ -1343,8 +1353,8 @@ original solution vector @math{c}.
 
 @end enumerate
 
-@node Large Linear Systems Routines
-@subsection Large Linear Least Squares Routines
+@node Large Dense Linear Systems Routines
+@subsection Large Dense Linear Least Squares Routines
 @cindex large linear least squares, routines
 
 @deftypefun {gsl_multilarge_linear_workspace *} gsl_multilarge_linear_alloc (const gsl_multilarge_linear_type * @var{T}, const size_t @var{p})
@@ -1460,13 +1470,31 @@ to recover the solution vector of the original problem, which is stored in @var{
 of length @math{p}.
 @end deftypefun
 
+@deftypefun int gsl_multilarge_linear_lcurve (gsl_vector * @var{reg_param}, gsl_vector * @var{rho}, gsl_vector * @var{eta}, gsl_multilarge_linear_workspace * @var{work})
+This function computes the L-curve for a large least squares system
+after it has been fully accumulated into the workspace @var{work}.
+The output vectors @var{reg_param}, @var{rho}, and @var{eta} must all
+be the same size, and will contain the regularization parameters
+@math{\lambda_i}, residual norms @math{||y - X c_i||}, and solution
+norms @math{|| L c_i ||} which compose the L-curve, where @math{c_i}
+is the regularized solution vector corresponding to @math{\lambda_i}.
+The user may determine the number of points on the L-curve by
+adjusting the size of these input arrays. For the TSQR method,
+the regularization parameters @math{\lambda_i} are estimated from the
+singular values of the triangular @math{R} factor. For the normal
+equations method, they are estimated from the eigenvalues of the
+@math{X^T X} matrix.
+@end deftypefun
+
 @deftypefun int gsl_multilarge_linear_rcond (double * @var{rcond}, gsl_multilarge_linear_workspace * @var{work})
 This function computes the reciprocal condition number, stored in
 @var{rcond}, of the least squares matrix after it has been accumulated
 into the workspace @var{work}. For the TSQR algorithm, this is
 accomplished by calculating the SVD of the @math{R} factor, which
-has the same singular values as the matrix @math{X}. This routine
-is currently not implemented for the normal equations method.
+has the same singular values as the matrix @math{X}. For the normal
+equations method, this is done by computing the eigenvalues of
+@math{X^T X}, which could be inaccurate for ill-conditioned matrices
+@math{X}.
 @end deftypefun
 
 @node Troubleshooting
@@ -1494,8 +1522,21 @@ x' = (x - mu)/sigma
 @noindent
 and then construct the @math{X} matrix using the transformed values @math{x'}.
 
-@node Fitting Examples for linear regression
-@section Examples for linear regression
+@node Fitting Examples
+@section Examples
+
+The example programs in this section demonstrate the various linear regression methods.
+
+@menu
+* Fitting linear regression example::
+* Fitting multi-parameter linear regression example::
+* Fitting regularized linear regression example::
+* Fitting robust linear regression example::
+* Fitting large linear systems example::
+@end menu
+
+@node Fitting linear regression example
+@subsection Simple Linear Regression Example
 
 The following program computes a least squares straight-line fit to a
 simple dataset, and outputs the best-fit line and its
@@ -1531,8 +1572,8 @@ $ graph -T X -X x -Y y -y 0 20 -m 0 -S 2 -Ie data
 @center @image{fit-wlinear,3.0in}
 @end iftex
 
-@node Fitting Examples for multi-parameter linear regression
-@section Fitting Examples for multi-parameter linear regression
+@node Fitting multi-parameter linear regression example
+@subsection Multi-parameter Linear Regression Example
 
 The following program performs a quadratic fit @math{y = c_0 + c_1 x + c_2
 x^2} to a weighted dataset using the generalised linear fitting function
@@ -1626,8 +1667,8 @@ of freedom is 1.4, indicating a reasonable fit to the data.
 @center @image{fit-wlinear2,3.0in}
 @end iftex
 
-@node Fitting Examples for regularized linear regression
-@section Fitting Examples for regularized linear regression
+@node Fitting regularized linear regression example
+@subsection Regularized Linear Regression Example
 
 The next program demonstrates the difference between ordinary and
 regularized least squares when the design matrix is near-singular.
@@ -1670,8 +1711,8 @@ finding its corner. The L-curve and its computed corner are plotted below.
 @verbatiminclude examples/fitreg.c
 @end example
 
-@node Fitting Examples for robust linear regression
-@section Fitting Examples for robust linear regression
+@node Fitting robust linear regression example
+@subsection Robust Linear Regression Example
 
 The next program demonstrates the advantage of robust least squares on
 a dataset with outliers. The program generates linear @math{(x,y)}
@@ -1691,29 +1732,39 @@ The output from the program is shown in the following plot.
 @center @image{robust,3.0in}
 @end iftex
 
-@node Fitting Examples for large linear systems
-@section Fitting Examples for large linear systems
+@node Fitting large linear systems example
+@subsection Large Dense Linear Regression Example
 
-The following program demostrates the large linear least squares
+The following program demostrates the large dense linear least squares
 solvers. This example is adapted from Trefethen and Bau,
-and fits the function @math{f(t) = \exp{(\sin{4(t - 10)}})} on
-the interval @math{[10,11]} with a degree 14 polynomial. The
+and fits the function @math{f(t) = \exp{(\sin^3{(10t)}})} on
+the interval @math{[0,1]} with a degree 15 polynomial. The
 program generates @math{n = 50000} equally spaced points
 @math{t_i} on this interval, calculates the function value
 and adds random noise to determine the observation value
 @math{y_i}. The entries of the least squares matrix are
 @math{X_{ij} = t_i^j}, representing a polynomial fit. The
-matrix is highly ill-conditioned, and we accumulate the
+matrix is highly ill-conditioned, with a condition number
+of about @math{1.4 \cdot 10^{11}}. The program accumulates the
 matrix into the least squares system in 5 blocks, each with
 10000 rows. This way the full matrix @math{X} is never
 stored in memory. We solve the system with both the
 normal equations and TSQR methods. The results are shown
-in the plot below. In the left plot, we see the unregularized
-normal equations solution has large error due to
-the ill-conditioning of the matrix, while TSQR provides
-a good fit. In the right panel, we add regularization
-with @math{\lambda = 1} which allows the normal equations
-method to converge to a good solution.
+in the plot below. In the top left plot, we see the unregularized
+normal equations solution has larger error than TSQR due to
+the ill-conditioning of the matrix. In the bottom left plot,
+we show the L-curve, which exhibits multiple corners.
+In the top right panel, we plot a regularized solution using
+@math{\lambda = 10^{-6}}. The TSQR and normal solutions now agree,
+however they are unable to provide a good fit due to the damping.
+This indicates that for some ill-conditioned
+problems, regularizing the normal equations does not improve the
+solution. This is further illustrated in the bottom right panel,
+where we plot the L-curve calculated from the normal equations.
+The curve agrees with the TSQR curve for larger damping parameters,
+but for small @math{\lambda}, the normal equations approach cannot
+provide accurate solution vectors leading to numerical
+inaccuracies in the left portion of the curve.
 
 @iftex
 @sp 1

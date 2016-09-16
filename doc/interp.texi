@@ -380,8 +380,8 @@ Astron. Astrophys. 239, 443-450, 1990.
 @node 2D Introduction to Interpolation
 @section Introduction to 2D Interpolation
 
-Given two sets of equally spaced grid points: @math{x_1,...,x_m} with
-spacing @math{\delta x}, and @math{y_1,...,y_n} with spacing @math{\delta y},
+Given a set of @math{x} coordinates @math{x_1,...,x_m} and a set of
+@math{y} coordinates @math{y_1,...,y_n}, each in increasing order,
 plus a set of function values @math{z_{ij}}
 for each grid point @math{(x_i,y_j)}, the routines described in this
 section compute a continuous interpolation function @math{z(x,y)} such

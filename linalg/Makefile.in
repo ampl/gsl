@@ -95,11 +95,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgsllinalg_la_LIBADD =
-am_libgsllinalg_la_OBJECTS = multiply.lo exponential.lo tridiag.lo \
-	lu.lo luc.lo hh.lo qr.lo qrpt.lo lq.lo ptlq.lo svd.lo \
-	householder.lo householdercomplex.lo hessenberg.lo hesstri.lo \
-	cholesky.lo choleskyc.lo symmtd.lo hermtd.lo bidiag.lo \
-	balance.lo balancemat.lo inline.lo
+am_libgsllinalg_la_OBJECTS = cod.lo condest.lo invtri.lo multiply.lo \
+	exponential.lo tridiag.lo lu.lo luc.lo hh.lo qr.lo qrpt.lo \
+	lq.lo ptlq.lo svd.lo householder.lo householdercomplex.lo \
+	hessenberg.lo hesstri.lo cholesky.lo choleskyc.lo mcholesky.lo \
+	pcholesky.lo symmtd.lo hermtd.lo bidiag.lo balance.lo \
+	balancemat.lo inline.lo
 libgsllinalg_la_OBJECTS = $(am_libgsllinalg_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -112,7 +113,8 @@ test_DEPENDENCIES = libgsllinalg.la ../blas/libgslblas.la \
 	../matrix/libgslmatrix.la ../vector/libgslvector.la \
 	../block/libgslblock.la ../complex/libgslcomplex.la \
 	../ieee-utils/libgslieeeutils.la ../err/libgslerr.la \
-	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la \
+	../rng/libgslrng.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -527,11 +529,11 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgsllinalg.la 
 pkginclude_HEADERS = gsl_linalg.h
 AM_CPPFLAGS = -I$(top_srcdir)
-libgsllinalg_la_SOURCES = multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c inline.c
-noinst_HEADERS = apply_givens.c svdstep.c tridiag.h 
+libgsllinalg_la_SOURCES = cod.c condest.c invtri.c multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c mcholesky.c pcholesky.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c inline.c
+noinst_HEADERS = apply_givens.c cholesky_common.c svdstep.c tridiag.h test_cholesky.c
 TESTS = $(check_PROGRAMS)
-test_LDADD = libgsllinalg.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../permutation/libgslpermutation.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la ../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
 test_SOURCES = test.c
+test_LDADD = libgsllinalg.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../permutation/libgslpermutation.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la ../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la ../rng/libgslrng.la
 all: all-am
 
 .SUFFIXES:
@@ -605,6 +607,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bidiag.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/choleskyc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cod.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/condest.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponential.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hermtd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hessenberg.Plo@am__quote@
@@ -613,10 +617,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/householder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/householdercomplex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invtri.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/luc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multiply.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptlq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qrpt.Plo@am__quote@

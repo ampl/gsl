@@ -20,6 +20,8 @@
 #ifndef __GSL_RANDIST_H__
 #define __GSL_RANDIST_H__
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -92,6 +94,20 @@ double gsl_ran_ugaussian_tail_pdf (const double x, const double a);
 
 void gsl_ran_bivariate_gaussian (const gsl_rng * r, double sigma_x, double sigma_y, double rho, double *x, double *y);
 double gsl_ran_bivariate_gaussian_pdf (const double x, const double y, const double sigma_x, const double sigma_y, const double rho);
+
+int gsl_ran_multivariate_gaussian (const gsl_rng * r, const gsl_vector * mu, const gsl_matrix * L, gsl_vector * result);
+int gsl_ran_multivariate_gaussian_log_pdf (const gsl_vector * x,
+                                           const gsl_vector * mu,
+                                           const gsl_matrix * L,
+                                           double * result,
+                                           gsl_vector * work);
+int gsl_ran_multivariate_gaussian_pdf (const gsl_vector * x,
+                                       const gsl_vector * mu,
+                                       const gsl_matrix * L,
+                                       double * result,
+                                       gsl_vector * work);
+int gsl_ran_multivariate_gaussian_mean (const gsl_matrix * X, gsl_vector * mu_hat);
+int gsl_ran_multivariate_gaussian_vcov (const gsl_matrix * X, gsl_matrix * sigma_hat);
 
 double gsl_ran_landau (const gsl_rng * r);
 double gsl_ran_landau_pdf (const double x);

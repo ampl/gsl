@@ -413,10 +413,10 @@ gsl_ref_TEXINFOS = err.texi cblas.texi blas.texi min.texi fft.texi \
 	sum.texi intro.texi usage.texi dwt.texi dht.texi interp.texi \
 	poly.texi linalg.texi eigen.texi multiroots.texi sort.texi \
 	permutation.texi combination.texi multiset.texi complex.texi \
-	math.texi fitting.texi multifit.texi const.texi ntuple.texi \
-	diff.texi qrng.texi cheb.texi multimin.texi gpl.texi fdl.texi \
-	autoconf.texi bspline.texi spblas.texi spmatrix.texi \
-	splinalg.texi
+	math.texi fitting.texi multifit-nlinear.texi const.texi \
+	ntuple.texi diff.texi qrng.texi cheb.texi multimin.texi \
+	gpl.texi fdl.texi autoconf.texi bspline.texi spblas.texi \
+	spmatrix.texi splinalg.texi
 man_MANS = gsl.3 gsl-config.1 gsl-randist.1 gsl-histogram.1
 figures = multimin.eps siman-test.eps siman-energy.eps 12-cities.eps \
 	initial-route.eps final-route.eps fft-complex-radix2-f.eps \
@@ -426,13 +426,14 @@ figures = multimin.eps siman-test.eps siman-energy.eps 12-cities.eps \
 	roots-secant-method.eps histogram.eps histogram2d.eps \
 	min-interval.eps fit-wlinear.eps fit-wlinear2.eps fit-exp.eps \
 	ntuple.eps qrng.eps cheb.eps vdp.eps interp2.eps interp2d.eps \
-	rand-beta.tex rand-binomial.tex rand-cauchy.tex rand-chisq.tex \
-	rand-erlang.tex rand-exponential.tex rand-fdist.tex \
-	rand-flat.tex rand-gamma.tex rand-gaussian.tex \
-	rand-geometric.tex rand-laplace.tex rand-logarithmic.tex \
-	rand-logistic.tex rand-lognormal.tex rand-pareto.tex \
-	rand-poisson.tex rand-hypergeometric.tex rand-nbinomial.tex \
-	rand-pascal.tex rand-bivariate-gaussian.tex rand-rayleigh.tex \
+	nlfit2.eps nlfit3.eps rand-beta.tex rand-binomial.tex \
+	rand-cauchy.tex rand-chisq.tex rand-erlang.tex \
+	rand-exponential.tex rand-fdist.tex rand-flat.tex \
+	rand-gamma.tex rand-gaussian.tex rand-geometric.tex \
+	rand-laplace.tex rand-logarithmic.tex rand-logistic.tex \
+	rand-lognormal.tex rand-pareto.tex rand-poisson.tex \
+	rand-hypergeometric.tex rand-nbinomial.tex rand-pascal.tex \
+	rand-bivariate-gaussian.tex rand-rayleigh.tex \
 	rand-rayleigh-tail.tex rand-tdist.tex rand-weibull.tex \
 	random-walk.tex randplots.gnp rand-exppow.tex rand-levy.tex \
 	rand-levyskew.tex rand-gumbel.tex rand-bernoulli.tex \

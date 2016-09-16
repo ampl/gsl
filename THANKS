@@ -13,7 +13,7 @@ Tru64, AIX, IRIX, fixes for odes, and testing
 * Thomas Walter <walter@pctc.chemie.uni-erlangen.de> for heapsort
 routines, cholesky decomposition, bug reports and useful suggestions
 
-* Jorma Olavi Tähtinen <jotahtin@cc.hut.fi> for complex arithmetic
+* Jorma Olavi TÃ¤htinen <jotahtin@cc.hut.fi> for complex arithmetic
 functions
 
 * Barak Pearlmutter <bap@cs.unm.edu>
@@ -140,7 +140,7 @@ reliable implementation of gamma_inc, multifit bug fixes
 
 * Vladimir Savichev <vlad@ariel.phys.wesleyan.edu> bug reports
 
-* Jochen Küpper <jochen@jochen-kuepper.de> doc bug fixes, additional
+* Jochen KÃ¼pper <jochen@jochen-kuepper.de> doc bug fixes, additional
 constants
 
 * John Ketchum <johnk@qualcomm.com> for bug reports for the blas library
@@ -297,7 +297,7 @@ gsl_ran_hypergeometric_pdf
 
 * James Scott <j.scott@runbox.com> fix for linalg tests on MSVC
 
-* Rémi Butel <r.butel@epoc.u-bordeaux1.fr> fixes for multimin overflow
+* RÃ©mi Butel <r.butel@epoc.u-bordeaux1.fr> fixes for multimin overflow
 conditions
 
 * Andris Pavenis <pavenis@latnet.lv> Makefile fix for EXEEXT
@@ -336,7 +336,7 @@ histogram range calculations
 * Dirk Eddelbuettel <edd@debian.org> for bug reports and testing, and
 maintaining the Debian package for GSL.
 
-* Jari Häkkinen <jari@chiralcomp.com> for svd bug reports, rng bug reports
+* Jari HÃ¤kkinen <jari@chiralcomp.com> for svd bug reports, rng bug reports
 
 * Marco Canini <marco.canini@fastwebnet.it> patch for IXP2400 Xscale
 
@@ -424,7 +424,7 @@ function
 * Justin Lenzo <j-lenzo@northwestern.edu> bug reports for
 vector/matrix tests.
 
-* Sebastian Queißer <sebastian@queisser-net.de> bug report for
+* Sebastian QueiÃŸer <sebastian@queisser-net.de> bug report for
 gsl_cdf_beta_Pinv
 
 * Andries Brouwer <Andries.Brouwer@cwi.nl> bug report for
@@ -464,7 +464,7 @@ evaluation and ode improvements
 
 * Marco Maggi <mrc.mgg@gmail.com> bug fix for gsl_blas_drotm
 
-* Mateus Araújo Santos - bug fix for LM set
+* Mateus AraÃºjo Santos - bug fix for LM set
 
 * James Howse - quad_golden minimisation algorithm
 
@@ -484,7 +484,7 @@ evaluation and ode improvements
 
 * Sam Mason <sam@samason.me.uk> - bug fix for gsl_pow_int
 
-* José Luis García Pallero <jgpallero@gmail.com> - error checking for GSL cblas
+* JosÃ© Luis GarcÃ­a Pallero <jgpallero@gmail.com> - error checking for GSL cblas
 
 * Teemu Ikonen <tpikonen@gmail.com> patch for gsl_ran_chisq_pdf
 

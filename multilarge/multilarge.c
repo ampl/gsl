@@ -110,8 +110,21 @@ gsl_multilarge_linear_lcurve(gsl_vector * reg_param, gsl_vector * rho,
                              gsl_vector * eta,
                              gsl_multilarge_linear_workspace * w)
 {
-  int status = w->type->lcurve(reg_param, rho, eta, w->state);
-  return status;
+  const size_t len = reg_param->size;
+
+  if (len != rho->size)
+    {
+      GSL_ERROR ("reg_param and rho have different sizes", GSL_EBADLEN);
+    }
+  else if (len != eta->size)
+    {
+      GSL_ERROR ("reg_param and eta have different sizes", GSL_EBADLEN);
+    }
+  else
+    {
+      int status = w->type->lcurve(reg_param, rho, eta, w->state);
+      return status;
+    }
 }
 
 /*

@@ -89,6 +89,7 @@ gsl_multifit_robust_alloc(const gsl_multifit_robust_type *T,
   w->multifit_p = gsl_multifit_linear_alloc(n, p);
   if (w->multifit_p == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for multifit_linear struct",
                     GSL_ENOMEM, 0);
     }
@@ -96,6 +97,7 @@ gsl_multifit_robust_alloc(const gsl_multifit_robust_type *T,
   w->r = gsl_vector_alloc(n);
   if (w->r == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for residuals",
                     GSL_ENOMEM, 0);
     }
@@ -103,18 +105,21 @@ gsl_multifit_robust_alloc(const gsl_multifit_robust_type *T,
   w->weights = gsl_vector_alloc(n);
   if (w->weights == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for weights", GSL_ENOMEM, 0);
     }
 
   w->c_prev = gsl_vector_alloc(p);
   if (w->c_prev == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for c_prev", GSL_ENOMEM, 0);
     }
 
   w->resfac = gsl_vector_alloc(n);
   if (w->resfac == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for residual factors",
                     GSL_ENOMEM, 0);
     }
@@ -122,30 +127,35 @@ gsl_multifit_robust_alloc(const gsl_multifit_robust_type *T,
   w->psi = gsl_vector_alloc(n);
   if (w->psi == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for psi", GSL_ENOMEM, 0);
     }
 
   w->dpsi = gsl_vector_alloc(n);
   if (w->dpsi == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for dpsi", GSL_ENOMEM, 0);
     }
 
   w->QSI = gsl_matrix_alloc(p, p);
   if (w->QSI == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for QSI", GSL_ENOMEM, 0);
     }
 
   w->D = gsl_vector_alloc(p);
   if (w->D == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for D", GSL_ENOMEM, 0);
     }
 
   w->workn = gsl_vector_alloc(n);
   if (w->workn == 0)
     {
+      gsl_multifit_robust_free(w);
       GSL_ERROR_VAL("failed to allocate space for workn", GSL_ENOMEM, 0);
     }
 

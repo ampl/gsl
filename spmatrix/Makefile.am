@@ -4,7 +4,7 @@ check_PROGRAMS = test
 
 pkginclude_HEADERS = gsl_spmatrix.h
 
-libgslspmatrix_la_SOURCES = spcompress.c spcopy.c spgetset.c spmatrix.c spoper.c spprop.c spswap.c
+libgslspmatrix_la_SOURCES = spcompress.c spcopy.c spgetset.c spio.c spmatrix.c spoper.c spprop.c spswap.c
 
 AM_CPPFLAGS = -I$(top_srcdir)
 

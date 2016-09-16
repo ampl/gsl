@@ -51,8 +51,15 @@ test_basic(const size_t n, const double data[], const double tol)
   const double expected_sd = gsl_stats_sd(data, 1, n);
   const double expected_skew = gsl_stats_skew(data, 1, n);
   const double expected_kurtosis = gsl_stats_kurtosis(data, 1, n);
-  double mean, var, sd, skew, kurtosis;
+  double expected_rms = 0.0;
+  double mean, var, sd, rms, skew, kurtosis;
   size_t i;
+
+  /* compute expected rms */
+  for (i = 0; i < n; ++i)
+    expected_rms += data[i] * data[i];
+
+  expected_rms = sqrt(expected_rms / n);
 
   /* add data to rstat workspace */
   for (i = 0; i < n; ++i)
@@ -61,17 +68,19 @@ test_basic(const size_t n, const double data[], const double tol)
   mean = gsl_rstat_mean(rstat_workspace_p);
   var = gsl_rstat_variance(rstat_workspace_p);
   sd = gsl_rstat_sd(rstat_workspace_p);
+  rms = gsl_rstat_rms(rstat_workspace_p);
   skew = gsl_rstat_skew(rstat_workspace_p);
   kurtosis = gsl_rstat_kurtosis(rstat_workspace_p);
 
   gsl_test_rel(mean, expected_mean, tol, "mean n=%zu", n);
   gsl_test_rel(var, expected_var, tol, "variance n=%zu", n);
   gsl_test_rel(sd, expected_sd, tol, "stddev n=%zu", n);
+  gsl_test_rel(rms, expected_rms, tol, "rms n=%zu", n);
   gsl_test_rel(skew, expected_skew, tol, "skew n=%zu", n);
   gsl_test_rel(kurtosis, expected_kurtosis, tol, "kurtosis n=%zu", n);
 
   gsl_rstat_free(rstat_workspace_p);
-} /* test_basic() */
+}
 
 void
 test_quantile(const double p, const double data[], const size_t n,
@@ -92,7 +101,7 @@ test_quantile(const double p, const double data[], const size_t n,
     gsl_test_rel(result, expected, tol, "%s p=%g", desc, p);
 
   gsl_rstat_quantile_free(w);
-} /* test_quantile() */
+}
 
 int
 main()
@@ -109,6 +118,7 @@ main()
     double data2[] = { 4.0, 7.0, 13.0, 16.0 };
     size_t i;
 
+    test_basic(2, data, tol1);
     test_basic(100, data, tol1);
     test_basic(1000, data, tol1);
     test_basic(10000, data, tol1);

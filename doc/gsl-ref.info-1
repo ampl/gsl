@@ -2,8 +2,8 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
-Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+The GSL Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -29,7 +29,7 @@ GSL
 
 This file documents the GNU Scientific Library (GSL), a collection of
 numerical routines for scientific computing.  It corresponds to release
-2.1 of the library.  Please report any errors in this manual to
+2.2.1 of the library.  Please report any errors in this manual to
 <bug-gsl@gnu.org>.
 
    More information about GSL can be found at the project homepage,
@@ -43,8 +43,8 @@ from sales of the manual helps support the development of GSL.
 project homepage thanks to Daisuke Tominaga.
 
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
-Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+The GSL Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -7106,6 +7106,15 @@ File: gsl-ref.info,  Node: Applying Permutations,  Next: Reading and writing per
      The j-th column of the permutation matrix P is given by the P_j-th
      column of the identity matrix.  The permutation P and the vector V
      must have the same length.
+
+ -- Function: int gsl_permute_matrix (const gsl_permutation * P,
+          gsl_matrix * A)
+     This function applies the permutation P to the matrix A from the
+     right, A' = A P.  The j-th column of the permutation matrix P is
+     given by the P_j-th column of the identity matrix.  This
+     effectively permutes the columns of A according to the permutation
+     P, and so the number of columns of A must equal the size of the
+     permutation P.
 
  -- Function: int gsl_permutation_mul (gsl_permutation * P, const
           gsl_permutation * PA, const gsl_permutation * PB)

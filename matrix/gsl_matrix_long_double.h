@@ -216,12 +216,14 @@ int gsl_matrix_long_double_fprintf (FILE * stream, const gsl_matrix_long_double 
  
 int gsl_matrix_long_double_memcpy(gsl_matrix_long_double * dest, const gsl_matrix_long_double * src);
 int gsl_matrix_long_double_swap(gsl_matrix_long_double * m1, gsl_matrix_long_double * m2);
+int gsl_matrix_long_double_tricpy(const char uplo_src, const int copy_diag, gsl_matrix_long_double * dest, const gsl_matrix_long_double * src);
 
 int gsl_matrix_long_double_swap_rows(gsl_matrix_long_double * m, const size_t i, const size_t j);
 int gsl_matrix_long_double_swap_columns(gsl_matrix_long_double * m, const size_t i, const size_t j);
 int gsl_matrix_long_double_swap_rowcol(gsl_matrix_long_double * m, const size_t i, const size_t j);
 int gsl_matrix_long_double_transpose (gsl_matrix_long_double * m);
 int gsl_matrix_long_double_transpose_memcpy (gsl_matrix_long_double * dest, const gsl_matrix_long_double * src);
+int gsl_matrix_long_double_transpose_tricpy (const char uplo_src, const int copy_diag, gsl_matrix_long_double * dest, const gsl_matrix_long_double * src);
 
 long double gsl_matrix_long_double_max (const gsl_matrix_long_double * m);
 long double gsl_matrix_long_double_min (const gsl_matrix_long_double * m);

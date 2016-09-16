@@ -28,8 +28,6 @@
 
 #include <gsl/gsl_linalg.h>
 
-#define REAL double
-
 #include "apply_givens.c"
 
 /* Factorise a general M x N matrix A into
@@ -302,6 +300,87 @@ gsl_linalg_QRPT_svx (const gsl_matrix * QR,
     }
 }
 
+/* Find the least squares solution to the overdetermined system 
+ *
+ *   A x = b 
+ *  
+ * for M >= N using the QRPT factorization A P = Q R. Assumes
+ * A has full column rank.
+ */
+
+int
+gsl_linalg_QRPT_lssolve (const gsl_matrix * QR, const gsl_vector * tau, const gsl_permutation * p,
+                         const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
+{
+  const size_t N = QR->size2;
+  int status = gsl_linalg_QRPT_lssolve2(QR, tau, p, b, N, x, residual);
+  return status;
+}
+
+/* Find the least squares solution to the overdetermined system 
+ *
+ *   A x = b 
+ *  
+ * for M >= N using the QRPT factorization A P = Q R, where A
+ * is assumed rank deficient with a given rank.
+ */
+
+int
+gsl_linalg_QRPT_lssolve2 (const gsl_matrix * QR, const gsl_vector * tau, const gsl_permutation * p,
+                          const gsl_vector * b, const size_t rank, gsl_vector * x, gsl_vector * residual)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+
+  if (M < N)
+    {
+      GSL_ERROR ("QR matrix must have M>=N", GSL_EBADLEN);
+    }
+  else if (M != b->size)
+    {
+      GSL_ERROR ("matrix size must match b size", GSL_EBADLEN);
+    }
+  else if (rank == 0 || rank > N)
+    {
+      GSL_ERROR ("rank must have 0 < rank <= N", GSL_EBADLEN);
+    }
+  else if (N != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else if (M != residual->size)
+    {
+      GSL_ERROR ("matrix size must match residual size", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_const_view R11 = gsl_matrix_const_submatrix (QR, 0, 0, rank, rank);
+      gsl_vector_view QTb1 = gsl_vector_subvector(residual, 0, rank);
+      gsl_vector_view x1 = gsl_vector_subvector(x, 0, rank);
+      size_t i;
+
+      /* compute work = Q^T b */
+      gsl_vector_memcpy(residual, b);
+      gsl_linalg_QR_QTvec (QR, tau, residual);
+
+      /* solve R_{11} x(1:r) = [Q^T b](1:r) */
+      gsl_vector_memcpy(&(x1.vector), &(QTb1.vector));
+      gsl_blas_dtrsv (CblasUpper, CblasNoTrans, CblasNonUnit, &(R11.matrix), &(x1.vector));
+
+      /* x(r+1:N) = 0 */
+      for (i = rank; i < N; ++i)
+        gsl_vector_set(x, i, 0.0);
+
+      /* compute x = P y */
+      gsl_permute_vector_inverse (p, x);
+
+      /* compute residual = b - A x = Q (Q^T b - R x) */
+      gsl_vector_set_zero(&(QTb1.vector));
+      gsl_linalg_QR_Qvec(QR, tau, residual);
+
+      return GSL_SUCCESS;
+    }
+}
 
 int
 gsl_linalg_QRPT_QRsolve (const gsl_matrix * Q, const gsl_matrix * R,
@@ -488,5 +567,77 @@ gsl_linalg_QRPT_update (gsl_matrix * Q, gsl_matrix * R,
         }
 
       return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_QRPT_rank()
+  Estimate rank of triangular matrix from QRPT decomposition
+
+Inputs: QR  - QRPT decomposed matrix
+        tol - tolerance for rank determination; if < 0,
+              a default value is used:
+              20 * (M + N) * eps(max(|diag(R)|))
+
+Return: rank estimate
+*/
+
+size_t
+gsl_linalg_QRPT_rank (const gsl_matrix * QR, const double tol)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+  gsl_vector_const_view diag = gsl_matrix_const_diagonal(QR);
+  double eps;
+  size_t i;
+  size_t r = 0;
+
+  if (tol < 0.0)
+    {
+      double min, max, absmax;
+      int ee;
+
+      gsl_vector_minmax(&diag.vector, &min, &max);
+      absmax = GSL_MAX(fabs(min), fabs(max));
+      ee = (int) log2(absmax);
+
+      eps = 20.0 * (M + N) * pow(2.0, (double) ee) * GSL_DBL_EPSILON;
+    }
+  else
+    eps = tol;
+
+  /* count number of diagonal elements with |di| > eps */
+  for (i = 0; i < GSL_MIN(M, N); ++i)
+    {
+      double di = gsl_vector_get(&diag.vector, i);
+      if (fabs(di) > eps)
+        ++r;
+    }
+
+  return r;
+}
+
+int
+gsl_linalg_QRPT_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+
+  if (M < N)
+    {
+      GSL_ERROR ("M must be >= N", GSL_EBADLEN);
+    }
+  else if (work->size != 3 * N)
+    {
+      GSL_ERROR ("work vector must have length 3*N", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_const_view R = gsl_matrix_const_submatrix (QR, 0, 0, N, N);
+      int status;
+
+      status = gsl_linalg_tri_upper_rcond(&R.matrix, rcond, work);
+
+      return status;
     }
 }

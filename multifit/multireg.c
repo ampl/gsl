@@ -101,8 +101,11 @@ gsl_multifit_linear_applyW(const gsl_matrix * X,
     {
       size_t i;
 
-      gsl_matrix_memcpy(WX, X);
-      gsl_vector_memcpy(Wy, y);
+      /* copy WX = X; Wy = y if distinct pointers */
+      if (WX != X)
+        gsl_matrix_memcpy(WX, X);
+      if (Wy != y)
+        gsl_vector_memcpy(Wy, y);
 
       if (w != NULL)
         {
@@ -1139,7 +1142,8 @@ by computing the Cholesky factor of L^T L
 Inputs: p     - number of columns of L
         kmax  - maximum derivative order (< p)
         alpha - vector of weights; alpha_k multiplies L_k, size kmax + 1
-        L     - (output) Sobolev matrix p-by-p
+        L     - (output) upper triangular Sobolev matrix p-by-p,
+                stored in upper triangle
         work  - workspace
 
 Notes:
@@ -1201,7 +1205,9 @@ gsl_multifit_linear_Lsobolev(const size_t p, const size_t kmax,
       if (s)
         return s;
 
-      /* zero out lower triangle */
+      /* copy Cholesky factor to upper triangle and zero out bottom */
+      gsl_matrix_transpose_tricpy('L', 1, L, L);
+
       for (j = 0; j < p; ++j)
         {
           for (k = 0; k < j; ++k)

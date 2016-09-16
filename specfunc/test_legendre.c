@@ -331,7 +331,7 @@ test_legendre_norm(const gsl_sf_legendre_t norm_type, const size_t lmax,
   double *p_schmidt, *dp_schmidt, *d2p_schmidt;
   double *p, *dp, *d2p;
   size_t dim;
-  double (*factor)(const size_t l, const size_t m);
+  double (*factor)(const size_t l, const size_t m) = NULL;
 
   dim = gsl_sf_legendre_array_n(lmax);
   p = malloc(sizeof(double) * dim);
@@ -342,7 +342,9 @@ test_legendre_norm(const gsl_sf_legendre_t norm_type, const size_t lmax,
   d2p_schmidt = malloc(sizeof(double) * dim);
 
   if (norm_type == GSL_SF_LEGENDRE_SPHARM)
-    factor = &test_factor_spharm;
+    {
+      factor = &test_factor_spharm;
+    }
   else if (norm_type == GSL_SF_LEGENDRE_FULL)
     {
       factor = &test_factor_full;

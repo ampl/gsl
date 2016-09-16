@@ -40,13 +40,31 @@ gsl_rstat_quantile_workspace *
 gsl_rstat_quantile_alloc(const double p)
 {
   gsl_rstat_quantile_workspace *w;
-  int i;
 
   w = calloc(1, sizeof(gsl_rstat_quantile_workspace));
   if (w == 0)
     {
       GSL_ERROR_NULL ("failed to allocate space for workspace", GSL_ENOMEM);
     }
+
+  w->p = p;
+
+  gsl_rstat_quantile_reset(w);
+
+  return w;
+} /* gsl_rstat_quantile_alloc() */
+
+void
+gsl_rstat_quantile_free(gsl_rstat_quantile_workspace *w)
+{
+  free(w);
+} /* gsl_rstat_quantile_free() */
+
+int
+gsl_rstat_quantile_reset(gsl_rstat_quantile_workspace *w)
+{
+  const double p = w->p;
+  size_t i;
 
   /* initialize positions n */
   for (i = 0; i < 5; ++i)
@@ -67,16 +85,9 @@ gsl_rstat_quantile_alloc(const double p)
   w->dnp[4] = 1.0;
 
   w->n = 0;
-  w->p = p;
 
-  return w;
-} /* gsl_rstat_quantile_alloc() */
-
-void
-gsl_rstat_quantile_free(gsl_rstat_quantile_workspace *w)
-{
-  free(w);
-} /* gsl_rstat_quantile_free() */
+  return GSL_SUCCESS;
+}
 
 int
 gsl_rstat_quantile_add(const double x, gsl_rstat_quantile_workspace *w)

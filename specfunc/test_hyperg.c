@@ -632,6 +632,10 @@ TEST_SF(s, gsl_sf_hyperg_U_e, (2, -6.4, 1, &r),1.2141502795806162484648638e-02
   /* Didier Pinchon also bug #24812 */
   TEST_SF(s, gsl_sf_hyperg_2F1_e, (11, -1, 11.0/2.0, 0.125 , &r), 0.75, TEST_TOL2, GSL_SUCCESS);
 
+  /* Bill Maier - bug #45926 */
+  TEST_SF(s, gsl_sf_hyperg_2F1_e, (-0.2, 8.8, 10.0, 0.8, &r), 0.77998971427681563, TEST_TOL1, GSL_SUCCESS);
+  TEST_SF(s, gsl_sf_hyperg_2F1_e, (-0.2, 9.8, 11.0, 0.8, &r), 0.77574573497387267, TEST_TOL0, GSL_SUCCESS);
+
 #if 0 /* XXX - bug #39056 */
   /* Test case from Hatef Monajemi <monajemi@stanford.edu> */
 

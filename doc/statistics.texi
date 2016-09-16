@@ -336,7 +336,7 @@ This function computes the lag-1 autocorrelation of the dataset @var{data}.
 @tex
 \beforedisplay
 $$
-a_1 = {\sum_{i = 1}^{n} (x_{i} - \Hat\mu) (x_{i-1} - \Hat\mu)
+a_1 = {\sum_{i = 2}^{n} (x_{i} - \Hat\mu) (x_{i-1} - \Hat\mu)
 \over
 \sum_{i = 1}^{n} (x_{i} - \Hat\mu) (x_{i} - \Hat\mu)}
 $$
@@ -345,7 +345,7 @@ $$
 @ifinfo
 
 @example
-a_1 = @{\sum_@{i = 1@}^@{n@} (x_@{i@} - \Hat\mu) (x_@{i-1@} - \Hat\mu)
+a_1 = @{\sum_@{i = 2@}^@{n@} (x_@{i@} - \Hat\mu) (x_@{i-1@} - \Hat\mu)
        \over
        \sum_@{i = 1@}^@{n@} (x_@{i@} - \Hat\mu) (x_@{i@} - \Hat\mu)@}
 @end example

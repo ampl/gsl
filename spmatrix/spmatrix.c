@@ -67,7 +67,7 @@ gsl_spmatrix_alloc_nzmax()
 Inputs: n1     - number of rows
         n2     - number of columns
         nzmax  - maximum number of matrix elements
-        sptype - type of matrix (triplet, compressed column)
+        sptype - type of matrix (triplet, CCS, CRS)
 
 Notes: if (n1,n2) are not known at allocation time, they can each be
 set to 1, and they will be expanded as elements are added to the matrix
@@ -81,20 +81,20 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
 
   if (n1 == 0)
     {
-      GSL_ERROR_VAL ("matrix dimension n1 must be positive integer",
-                     GSL_EINVAL, 0);
+      GSL_ERROR_NULL ("matrix dimension n1 must be positive integer",
+                      GSL_EINVAL);
     }
   else if (n2 == 0)
     {
-      GSL_ERROR_VAL ("matrix dimension n2 must be positive integer",
-                     GSL_EINVAL, 0);
+      GSL_ERROR_NULL ("matrix dimension n2 must be positive integer",
+                      GSL_EINVAL);
     }
 
   m = calloc(1, sizeof(gsl_spmatrix));
   if (!m)
     {
-      GSL_ERROR_VAL("failed to allocate space for spmatrix struct",
-                    GSL_ENOMEM, 0);
+      GSL_ERROR_NULL("failed to allocate space for spmatrix struct",
+                     GSL_ENOMEM);
     }
 
   m->size1 = n1;
@@ -107,8 +107,8 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
   if (!m->i)
     {
       gsl_spmatrix_free(m);
-      GSL_ERROR_VAL("failed to allocate space for row indices",
-                    GSL_ENOMEM, 0);
+      GSL_ERROR_NULL("failed to allocate space for row indices",
+                     GSL_ENOMEM);
     }
 
   if (sptype == GSL_SPMATRIX_TRIPLET)
@@ -117,8 +117,8 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
       if (!m->tree_data)
         {
           gsl_spmatrix_free(m);
-          GSL_ERROR_VAL("failed to allocate space for AVL tree struct",
-                        GSL_ENOMEM, 0);
+          GSL_ERROR_NULL("failed to allocate space for AVL tree struct",
+                         GSL_ENOMEM);
         }
 
       m->tree_data->n = 0;
@@ -129,8 +129,8 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
       if (!m->tree_data->tree)
         {
           gsl_spmatrix_free(m);
-          GSL_ERROR_VAL("failed to allocate space for AVL tree",
-                        GSL_ENOMEM, 0);
+          GSL_ERROR_NULL("failed to allocate space for AVL tree",
+                         GSL_ENOMEM);
         }
 
       /* preallocate nzmax tree nodes */
@@ -138,16 +138,16 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
       if (!m->tree_data->node_array)
         {
           gsl_spmatrix_free(m);
-          GSL_ERROR_VAL("failed to allocate space for AVL tree nodes",
-                        GSL_ENOMEM, 0);
+          GSL_ERROR_NULL("failed to allocate space for AVL tree nodes",
+                         GSL_ENOMEM);
         }
 
       m->p = malloc(m->nzmax * sizeof(size_t));
       if (!m->p)
         {
           gsl_spmatrix_free(m);
-          GSL_ERROR_VAL("failed to allocate space for column indices",
-                        GSL_ENOMEM, 0);
+          GSL_ERROR_NULL("failed to allocate space for column indices",
+                         GSL_ENOMEM);
         }
     }
   else if (sptype == GSL_SPMATRIX_CCS)
@@ -158,8 +158,20 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
       if (!m->p || !m->work)
         {
           gsl_spmatrix_free(m);
-          GSL_ERROR_VAL("failed to allocate space for column pointers",
-                        GSL_ENOMEM, 0);
+          GSL_ERROR_NULL("failed to allocate space for column pointers",
+                         GSL_ENOMEM);
+        }
+    }
+  else if (sptype == GSL_SPMATRIX_CRS)
+    {
+      m->p = malloc((n1 + 1) * sizeof(size_t));
+      m->work = malloc(GSL_MAX(n1, n2) *
+                       GSL_MAX(sizeof(size_t), sizeof(double)));
+      if (!m->p || !m->work)
+        {
+          gsl_spmatrix_free(m);
+          GSL_ERROR_NULL("failed to allocate space for row pointers",
+                         GSL_ENOMEM);
         }
     }
 
@@ -167,8 +179,8 @@ gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
   if (!m->data)
     {
       gsl_spmatrix_free(m);
-      GSL_ERROR_VAL("failed to allocate space for data",
-                    GSL_ENOMEM, 0);
+      GSL_ERROR_NULL("failed to allocate space for data",
+                     GSL_ENOMEM);
     }
 
   return m;
@@ -311,15 +323,6 @@ gsl_spmatrix_nnz(const gsl_spmatrix *m)
   return m->nz;
 } /* gsl_spmatrix_nnz() */
 
-int
-gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
-                     const char *format)
-{
-  int s = 0;
-
-  return s;
-} /* gsl_spmatrix_fprintf() */
-
 /*
 gsl_spmatrix_compare_idx()
   Comparison function for searching binary tree in triplet
@@ -362,6 +365,44 @@ gsl_spmatrix_compare_idx(const size_t ia, const size_t ja,
         return 1;
       else
         return 0; /* row and column indices are equal */
+    }
+}
+
+/*
+gsl_spmatrix_tree_rebuild()
+  When reading a triplet matrix from disk, or when
+copying a triplet matrix, it is necessary to rebuild the
+binary tree for element searches.
+
+Inputs: m - triplet matrix
+*/
+
+int
+gsl_spmatrix_tree_rebuild(gsl_spmatrix * m)
+{
+  if (!GSL_SPMATRIX_ISTRIPLET(m))
+    {
+      GSL_ERROR("m must be in triplet format", GSL_EINVAL);
+    }
+  else
+    {
+      size_t n;
+
+      /* reset tree to empty state, but don't free root tree ptr */
+      avl_empty(m->tree_data->tree, NULL);
+      m->tree_data->n = 0;
+
+      /* insert all tree elements */
+      for (n = 0; n < m->nz; ++n)
+        {
+          void *ptr = avl_insert(m->tree_data->tree, &m->data[n]);
+          if (ptr != NULL)
+            {
+              GSL_ERROR("detected duplicate entry", GSL_EINVAL);
+            }
+        }
+
+      return GSL_SUCCESS;
     }
 }
 
@@ -439,6 +480,8 @@ avl_spmalloc (size_t size, void *param)
 static void
 avl_spfree (void *block, void *param)
 {
+  (void)block;
+  (void)param;
   /*
    * do nothing - instead of allocating/freeing individual nodes,
    * we malloc and free nzmax nodes at a time

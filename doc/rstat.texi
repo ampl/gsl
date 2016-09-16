@@ -110,6 +110,25 @@ This function returns the standard deviation of all data added to the
 accumulator, defined as the square root of the variance given above.
 @end deftypefun
 
+@deftypefun double gsl_rstat_rms (gsl_rstat_workspace * @var{w})
+This function returns the root mean square of all data added to the
+accumulator, defined as
+@tex
+\beforedisplay
+$$
+rms = \sqrt{{1 \over N} \sum x_i^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+rms = \sqrt ( 1/N \sum x_i^2 )
+@end example
+
+@end ifinfo
+@end deftypefun
+
 @deftypefun double gsl_rstat_skew (gsl_rstat_workspace * @var{w})
 This function returns the skewness of all data added to the accumulator,
 defined as
@@ -177,6 +196,11 @@ is @math{O(1)}.
 
 @deftypefun void gsl_rstat_quantile_free (gsl_rstat_quantile_workspace * @var{w})
 This function frees the memory associated with the workspace @var{w}.
+@end deftypefun
+
+@deftypefun int gsl_rstat_quantile_reset (gsl_rstat_quantile_workspace * @var{w})
+This function resets the workspace @var{w} to its initial state,
+so it can begin working on a new set of data.
 @end deftypefun
 
 @deftypefun int gsl_rstat_quantile_add (const double @var{x}, gsl_rstat_quantile_workspace * @var{w})

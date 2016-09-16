@@ -161,3 +161,25 @@ FUNCTION (gsl_permute_vector,inverse) (const gsl_permutation * p, TYPE (gsl_vect
 
   return GSL_SUCCESS;
 }
+
+int
+TYPE (gsl_permute_matrix) (const gsl_permutation * p, TYPE (gsl_matrix) * A)
+{
+  if (A->size2 != p->size)
+    {
+      GSL_ERROR ("matrix columns and permutation must be the same length", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      for (i = 0; i < A->size1; ++i)
+        {
+          QUALIFIED_VIEW (gsl_vector, view) r = FUNCTION (gsl_matrix, row) (A, i);
+
+          TYPE (gsl_permute_vector) (p, &r.vector);
+        }
+
+      return GSL_SUCCESS;
+    }
+}

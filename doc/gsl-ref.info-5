@@ -2,8 +2,8 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
-Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+The GSL Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -20,6 +20,2390 @@ INFO-DIR-SECTION Software libraries
 START-INFO-DIR-ENTRY
 * gsl-ref: (gsl-ref).                   GNU Scientific Library - Reference
 END-INFO-DIR-ENTRY
+
+
+File: gsl-ref.info,  Node: Nonlinear Least-Squares Large Example,  Prev: Nonlinear Least-Squares Comparison Example,  Up: Nonlinear Least-Squares Examples
+
+39.12.4 Large Nonlinear Least Squares Example
+---------------------------------------------
+
+The following program illustrates the large nonlinear least squares
+solvers on a system with significant sparse structure in the Jacobian.
+The cost function is given by
+
+     \Phi(x) &= 1/2 \sum_{i=1}^{p+1} f_i^2
+     f_i &= \sqrt{\alpha} (x_i - 1), 1 \le i \le p
+     f_{p+1} &= ||x||^2 - 1/4
+
+   with \alpha = 10^{-5}.  The residual f_{p+1} imposes a constraint on
+the p parameters x, to ensure that ||x||^2 \approx {1 \over 4}.  The
+(p+1)-by-p Jacobian for this system is given by
+
+     J(x) = [ \sqrt{alpha} I_p; 2 x^T ]
+
+   and the normal equations matrix is given by
+
+     J^T J = [ \alpha I_p + 4 x x^T ]
+
+Finally, the second directional derivative of f for the geodesic
+acceleration method is given by
+
+     fvv = [ 0; 2 ||v||^2 ]
+
+Since the upper p-by-p block of J is diagonal, this sparse structure
+should be exploited in the nonlinear solver.  For comparison, the
+following program solves the system for p = 2000 using the dense direct
+Cholesky solver based on the normal equations matrix J^T J, as well as
+the iterative Steihaug-Toint solver, based on sparse matrix-vector
+products J u and J^T u.  The program output is shown below.
+
+Method                    NITER NFEV NJUEV NJTJEV NAEV Init Cost  Final cost cond(J) Final |x|^2 Time (s)
+levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  45.73
+levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.82
+dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.83  2.5044e-01  56.84
+double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.68  2.5044e-01  53.89
+steihaug-toint            35    88   345   0      0    7.1218e+18 1.9555e-02 inf     2.5044e-01  0.09
+
+The first four rows use methods based on factoring the dense J^T J
+matrix while the last row uses the iterative Steihaug-Toint method.
+While the number of Jacobian matrix-vector products (NJUEV) is less for
+the dense methods, the added time to construct and factor the J^T J
+matrix (NJTJEV) results in a much larger runtime than the iterative
+method (see last column).
+
+The program is given below.
+
+     #include <stdlib.h>
+     #include <stdio.h>
+     #include <sys/time.h>
+     #include <gsl/gsl_vector.h>
+     #include <gsl/gsl_matrix.h>
+     #include <gsl/gsl_blas.h>
+     #include <gsl/gsl_multilarge_nlinear.h>
+     #include <gsl/gsl_spblas.h>
+     #include <gsl/gsl_spmatrix.h>
+
+     /* parameters for functions */
+     struct model_params
+     {
+       double alpha;
+       gsl_spmatrix *J;
+     };
+
+     /* penalty function */
+     int
+     penalty_f (const gsl_vector * x, void *params, gsl_vector * f)
+     {
+       struct model_params *par = (struct model_params *) params;
+       const double sqrt_alpha = sqrt(par->alpha);
+       const size_t p = x->size;
+       size_t i;
+       double sum = 0.0;
+
+       for (i = 0; i < p; ++i)
+         {
+           double xi = gsl_vector_get(x, i);
+
+           gsl_vector_set(f, i, sqrt_alpha*(xi - 1.0));
+
+           sum += xi * xi;
+         }
+
+       gsl_vector_set(f, p, sum - 0.25);
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     penalty_df (CBLAS_TRANSPOSE_t TransJ, const gsl_vector * x,
+                 const gsl_vector * u, void * params, gsl_vector * v,
+                 gsl_matrix * JTJ)
+     {
+       struct model_params *par = (struct model_params *) params;
+       const size_t p = x->size;
+       size_t j;
+
+       /* store 2*x in last row of J */
+       for (j = 0; j < p; ++j)
+         {
+           double xj = gsl_vector_get(x, j);
+           gsl_spmatrix_set(par->J, p, j, 2.0 * xj);
+         }
+
+       /* compute v = op(J) u */
+       if (v)
+         gsl_spblas_dgemv(TransJ, 1.0, par->J, u, 0.0, v);
+
+       if (JTJ)
+         {
+           gsl_vector_view diag = gsl_matrix_diagonal(JTJ);
+
+           /* compute J^T J = [ alpha*I_p + 4 x x^T ] */
+           gsl_matrix_set_zero(JTJ);
+
+           /* store 4 x x^T in lower half of JTJ */
+           gsl_blas_dsyr(CblasLower, 4.0, x, JTJ);
+
+           /* add alpha to diag(JTJ) */
+           gsl_vector_add_constant(&diag.vector, par->alpha);
+         }
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     penalty_fvv (const gsl_vector * x, const gsl_vector * v,
+                  void *params, gsl_vector * fvv)
+     {
+       const size_t p = x->size;
+       double normv = gsl_blas_dnrm2(v);
+
+       gsl_vector_set_zero(fvv);
+       gsl_vector_set(fvv, p, 2.0 * normv * normv);
+
+       (void)params; /* avoid unused parameter warning */
+
+       return GSL_SUCCESS;
+     }
+
+     void
+     solve_system(const gsl_vector *x0, gsl_multilarge_nlinear_fdf *fdf,
+                  gsl_multilarge_nlinear_parameters *params)
+     {
+       const gsl_multilarge_nlinear_type *T = gsl_multilarge_nlinear_trust;
+       const size_t max_iter = 200;
+       const double xtol = 1.0e-8;
+       const double gtol = 1.0e-8;
+       const double ftol = 1.0e-8;
+       const size_t n = fdf->n;
+       const size_t p = fdf->p;
+       gsl_multilarge_nlinear_workspace *work =
+         gsl_multilarge_nlinear_alloc(T, params, n, p);
+       gsl_vector * f = gsl_multilarge_nlinear_residual(work);
+       gsl_vector * x = gsl_multilarge_nlinear_position(work);
+       int info;
+       double chisq0, chisq, rcond, xsq;
+       struct timeval tv0, tv1;
+
+       gettimeofday(&tv0, NULL);
+
+       /* initialize solver */
+       gsl_multilarge_nlinear_init(x0, fdf, work);
+
+       /* store initial cost */
+       gsl_blas_ddot(f, f, &chisq0);
+
+       /* iterate until convergence */
+       gsl_multilarge_nlinear_driver(max_iter, xtol, gtol, ftol,
+                                     NULL, NULL, &info, work);
+
+       gettimeofday(&tv1, NULL);
+
+       /* store final cost */
+       gsl_blas_ddot(f, f, &chisq);
+
+       /* compute final ||x||^2 */
+       gsl_blas_ddot(x, x, &xsq);
+
+       /* store cond(J(x)) */
+       gsl_multilarge_nlinear_rcond(&rcond, work);
+
+       /* print summary */
+       fprintf(stderr, "%-25s %-5zu %-4zu %-5zu %-6zu %-4zu %-10.4e %-10.4e %-7.2f %-11.4e %.2f\n",
+               gsl_multilarge_nlinear_trs_name(work),
+               gsl_multilarge_nlinear_niter(work),
+               fdf->nevalf,
+               fdf->nevaldfu,
+               fdf->nevaldf2,
+               fdf->nevalfvv,
+               chisq0,
+               chisq,
+               1.0 / rcond,
+               xsq,
+               (tv1.tv_sec - tv0.tv_sec) + 1.0e-6 * (tv1.tv_usec - tv0.tv_usec));
+
+       gsl_multilarge_nlinear_free(work);
+     }
+
+     int
+     main (void)
+     {
+       const size_t p = 2000;
+       const size_t n = p + 1;
+       gsl_vector *f = gsl_vector_alloc(n);
+       gsl_vector *x = gsl_vector_alloc(p);
+
+       /* allocate sparse Jacobian matrix with 2*p non-zero elements in triplet format */
+       gsl_spmatrix *J = gsl_spmatrix_alloc_nzmax(n, p, 2 * p, GSL_SPMATRIX_TRIPLET);
+
+       gsl_multilarge_nlinear_fdf fdf;
+       gsl_multilarge_nlinear_parameters fdf_params =
+         gsl_multilarge_nlinear_default_parameters();
+       struct model_params params;
+       size_t i;
+
+       params.alpha = 1.0e-5;
+       params.J = J;
+
+       /* define function to be minimized */
+       fdf.f = penalty_f;
+       fdf.df = penalty_df;
+       fdf.fvv = penalty_fvv;
+       fdf.n = n;
+       fdf.p = p;
+       fdf.params = &params;
+
+       for (i = 0; i < p; ++i)
+         {
+           /* starting point */
+           gsl_vector_set(x, i, i + 1.0);
+
+           /* store sqrt(alpha)*I_p in upper p-by-p block of J */
+           gsl_spmatrix_set(J, i, i, sqrt(params.alpha));
+         }
+
+       fprintf(stderr, "%-25s %-4s %-4s %-5s %-6s %-4s %-10s %-10s %-7s %-11s %-10s\n",
+               "Method", "NITER", "NFEV", "NJUEV", "NJTJEV", "NAEV", "Init Cost",
+               "Final cost", "cond(J)", "Final |x|^2", "Time (s)");
+
+       fdf_params.scale = gsl_multilarge_nlinear_scale_levenberg;
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_lm;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_lmaccel;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_dogleg;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_ddogleg;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_cgst;
+       solve_system(x, &fdf, &fdf_params);
+
+       gsl_vector_free(f);
+       gsl_vector_free(x);
+       gsl_spmatrix_free(J);
+
+       return 0;
+     }
+
+
+File: gsl-ref.info,  Node: Nonlinear Least-Squares References and Further Reading,  Prev: Nonlinear Least-Squares Examples,  Up: Nonlinear Least-Squares Fitting
+
+39.13 References and Further Reading
+====================================
+
+The following publications are relevant to the algorithms described in
+this section,
+
+     J.J. More', 'The Levenberg-Marquardt Algorithm: Implementation and
+     Theory', Lecture Notes in Mathematics, v630 (1978), ed G. Watson.
+
+     H. B. Nielsen, "Damping Parameter in Marquardt's Method", IMM
+     Department of Mathematical Modeling, DTU, Tech.  Report
+     IMM-REP-1999-05 (1999).
+
+     K. Madsen and H. B. Nielsen, "Introduction to Optimization and Data
+     Fitting", IMM Department of Mathematical Modeling, DTU, 2010.
+
+     J. E. Dennis and R. B. Schnabel, Numerical Methods for
+     Unconstrained Optimization and Nonlinear Equations, SIAM, 1996.
+
+     M. K. Transtrum, B. B. Machta, and J. P. Sethna, Geometry of
+     nonlinear least squares with applications to sloppy models and
+     optimization, Phys.  Rev.  E 83, 036701, 2011.
+
+     M. K. Transtrum and J. P. Sethna, Improvements to the
+     Levenberg-Marquardt algorithm for nonlinear least-squares
+     minimization, arXiv:1201.5885, 2012.
+
+     J.J. More', B.S. Garbow, K.E. Hillstrom, "Testing Unconstrained
+     Optimization Software", ACM Transactions on Mathematical Software,
+     Vol 7, No 1 (1981), p 17-41.
+
+     H. B. Nielsen, "UCTP Test Problems for Unconstrained Optimization",
+     IMM Department of Mathematical Modeling, DTU, Tech.  Report
+     IMM-REP-2000-17 (2000).
+
+
+File: gsl-ref.info,  Node: Basis Splines,  Next: Sparse Matrices,  Prev: Nonlinear Least-Squares Fitting,  Up: Top
+
+40 Basis Splines
+****************
+
+This chapter describes functions for the computation of smoothing basis
+splines (B-splines).  A smoothing spline differs from an interpolating
+spline in that the resulting curve is not required to pass through each
+datapoint.  *Note Interpolation::, for information about interpolating
+splines.
+
+   The header file 'gsl_bspline.h' contains the prototypes for the
+bspline functions and related declarations.
+
+* Menu:
+
+* Overview of B-splines::
+* Initializing the B-splines solver::
+* Constructing the knots vector::
+* Evaluation of B-spline basis functions::
+* Evaluation of B-spline basis function derivatives::
+* Working with the Greville abscissae::
+* Example programs for B-splines::
+* B-Spline References and Further Reading::
+
+
+File: gsl-ref.info,  Node: Overview of B-splines,  Next: Initializing the B-splines solver,  Up: Basis Splines
+
+40.1 Overview
+=============
+
+B-splines are commonly used as basis functions to fit smoothing curves
+to large data sets.  To do this, the abscissa axis is broken up into
+some number of intervals, where the endpoints of each interval are
+called "breakpoints".  These breakpoints are then converted to "knots"
+by imposing various continuity and smoothness conditions at each
+interface.  Given a nondecreasing knot vector t = {t_0, t_1, ...,
+t_{n+k-1}}, the n basis splines of order k are defined by
+
+     B_(i,1)(x) = (1, t_i <= x < t_(i+1)
+                  (0, else
+     B_(i,k)(x) = [(x - t_i)/(t_(i+k-1) - t_i)] B_(i,k-1)(x)
+                   + [(t_(i+k) - x)/(t_(i+k) - t_(i+1))] B_(i+1,k-1)(x)
+
+for i = 0, ..., n-1.  The common case of cubic B-splines is given by k =
+4.  The above recurrence relation can be evaluated in a numerically
+stable way by the de Boor algorithm.
+
+   If we define appropriate knots on an interval [a,b] then the B-spline
+basis functions form a complete set on that interval.  Therefore we can
+expand a smoothing function as
+
+     f(x) = \sum_i c_i B_(i,k)(x)
+
+given enough (x_j, f(x_j)) data pairs.  The coefficients c_i can be
+readily obtained from a least-squares fit.
+
+
+File: gsl-ref.info,  Node: Initializing the B-splines solver,  Next: Constructing the knots vector,  Prev: Overview of B-splines,  Up: Basis Splines
+
+40.2 Initializing the B-splines solver
+======================================
+
+The computation of B-spline functions requires a preallocated workspace
+of type 'gsl_bspline_workspace'.
+
+ -- Function: gsl_bspline_workspace * gsl_bspline_alloc (const size_t K,
+          const size_t NBREAK)
+     This function allocates a workspace for computing B-splines of
+     order K.  The number of breakpoints is given by NBREAK.  This leads
+     to n = nbreak + k - 2 basis functions.  Cubic B-splines are
+     specified by k = 4.  The size of the workspace is O(2k^2 + 5k +
+     nbreak).
+
+ -- Function: void gsl_bspline_free (gsl_bspline_workspace * W)
+     This function frees the memory associated with the workspace W.
+
+
+File: gsl-ref.info,  Node: Constructing the knots vector,  Next: Evaluation of B-spline basis functions,  Prev: Initializing the B-splines solver,  Up: Basis Splines
+
+40.3 Constructing the knots vector
+==================================
+
+ -- Function: int gsl_bspline_knots (const gsl_vector * BREAKPTS,
+          gsl_bspline_workspace * W)
+     This function computes the knots associated with the given
+     breakpoints and stores them internally in 'w->knots'.
+
+ -- Function: int gsl_bspline_knots_uniform (const double A, const
+          double B, gsl_bspline_workspace * W)
+     This function assumes uniformly spaced breakpoints on [a,b] and
+     constructs the corresponding knot vector using the previously
+     specified NBREAK parameter.  The knots are stored in 'w->knots'.
+
+
+File: gsl-ref.info,  Node: Evaluation of B-spline basis functions,  Next: Evaluation of B-spline basis function derivatives,  Prev: Constructing the knots vector,  Up: Basis Splines
+
+40.4 Evaluation of B-splines
+============================
+
+ -- Function: int gsl_bspline_eval (const double X, gsl_vector * B,
+          gsl_bspline_workspace * W)
+     This function evaluates all B-spline basis functions at the
+     position X and stores them in the vector B, so that the i-th
+     element is B_i(x).  The vector B must be of length n = nbreak + k -
+     2.  This value may also be obtained by calling
+     'gsl_bspline_ncoeffs'.  Computing all the basis functions at once
+     is more efficient than computing them individually, due to the
+     nature of the defining recurrence relation.
+
+ -- Function: int gsl_bspline_eval_nonzero (const double X, gsl_vector *
+          BK, size_t * ISTART, size_t * IEND, gsl_bspline_workspace * W)
+     This function evaluates all potentially nonzero B-spline basis
+     functions at the position X and stores them in the vector BK, so
+     that the i-th element is B_(istart+i)(x).  The last element of BK
+     is B_(iend)(x).  The vector BK must be of length k.  By returning
+     only the nonzero basis functions, this function allows quantities
+     involving linear combinations of the B_i(x) to be computed without
+     unnecessary terms (such linear combinations occur, for example,
+     when evaluating an interpolated function).
+
+ -- Function: size_t gsl_bspline_ncoeffs (gsl_bspline_workspace * W)
+     This function returns the number of B-spline coefficients given by
+     n = nbreak + k - 2.
+
+
+File: gsl-ref.info,  Node: Evaluation of B-spline basis function derivatives,  Next: Working with the Greville abscissae,  Prev: Evaluation of B-spline basis functions,  Up: Basis Splines
+
+40.5 Evaluation of B-spline derivatives
+=======================================
+
+ -- Function: int gsl_bspline_deriv_eval (const double X, const size_t
+          NDERIV, gsl_matrix * DB, gsl_bspline_workspace * W)
+     This function evaluates all B-spline basis function derivatives of
+     orders 0 through nderiv (inclusive) at the position X and stores
+     them in the matrix DB.  The (i,j)-th element of DB is
+     d^jB_i(x)/dx^j.  The matrix DB must be of size n = nbreak + k - 2
+     by nderiv + 1.  The value n may also be obtained by calling
+     'gsl_bspline_ncoeffs'.  Note that function evaluations are included
+     as the zeroth order derivatives in DB.  Computing all the basis
+     function derivatives at once is more efficient than computing them
+     individually, due to the nature of the defining recurrence
+     relation.
+
+ -- Function: int gsl_bspline_deriv_eval_nonzero (const double X, const
+          size_t NDERIV, gsl_matrix * DB, size_t * ISTART, size_t *
+          IEND, gsl_bspline_workspace * W)
+     This function evaluates all potentially nonzero B-spline basis
+     function derivatives of orders 0 through nderiv (inclusive) at the
+     position X and stores them in the matrix DB.  The (i,j)-th element
+     of DB is d^j/dx^j B_(istart+i)(x).  The last row of DB contains
+     d^j/dx^j B_(iend)(x).  The matrix DB must be of size k by at least
+     nderiv + 1.  Note that function evaluations are included as the
+     zeroth order derivatives in DB.  By returning only the nonzero
+     basis functions, this function allows quantities involving linear
+     combinations of the B_i(x) and their derivatives to be computed
+     without unnecessary terms.
+
+
+File: gsl-ref.info,  Node: Working with the Greville abscissae,  Next: Example programs for B-splines,  Prev: Evaluation of B-spline basis function derivatives,  Up: Basis Splines
+
+40.6 Working with the Greville abscissae
+========================================
+
+The Greville abscissae are defined to be the mean location of k-1
+consecutive knots in the knot vector for each basis spline function of
+order k.  With the first and last knots in the 'gsl_bspline_workspace'
+knot vector excluded, there are 'gsl_bspline_ncoeffs' Greville abscissae
+for any given B-spline basis.  These values are often used in B-spline
+collocation applications and may also be called Marsden-Schoenberg
+points.
+
+ -- Function: double gsl_bspline_greville_abscissa (size_t I,
+          gsl_bspline_workspace *W);
+     Returns the location of the i-th Greville abscissa for the given
+     B-spline basis.  For the ill-defined case when k=1, the
+     implementation chooses to return breakpoint interval midpoints.
+
+
+File: gsl-ref.info,  Node: Example programs for B-splines,  Next: B-Spline References and Further Reading,  Prev: Working with the Greville abscissae,  Up: Basis Splines
+
+40.7 Examples
+=============
+
+The following program computes a linear least squares fit to data using
+cubic B-spline basis functions with uniform breakpoints.  The data is
+generated from the curve y(x) = \cos{(x)} \exp{(-x/10)} on the interval
+[0, 15] with Gaussian noise added.
+
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <math.h>
+     #include <gsl/gsl_bspline.h>
+     #include <gsl/gsl_multifit.h>
+     #include <gsl/gsl_rng.h>
+     #include <gsl/gsl_randist.h>
+     #include <gsl/gsl_statistics.h>
+
+     /* number of data points to fit */
+     #define N        200
+
+     /* number of fit coefficients */
+     #define NCOEFFS  12
+
+     /* nbreak = ncoeffs + 2 - k = ncoeffs - 2 since k = 4 */
+     #define NBREAK   (NCOEFFS - 2)
+
+     int
+     main (void)
+     {
+       const size_t n = N;
+       const size_t ncoeffs = NCOEFFS;
+       const size_t nbreak = NBREAK;
+       size_t i, j;
+       gsl_bspline_workspace *bw;
+       gsl_vector *B;
+       double dy;
+       gsl_rng *r;
+       gsl_vector *c, *w;
+       gsl_vector *x, *y;
+       gsl_matrix *X, *cov;
+       gsl_multifit_linear_workspace *mw;
+       double chisq, Rsq, dof, tss;
+
+       gsl_rng_env_setup();
+       r = gsl_rng_alloc(gsl_rng_default);
+
+       /* allocate a cubic bspline workspace (k = 4) */
+       bw = gsl_bspline_alloc(4, nbreak);
+       B = gsl_vector_alloc(ncoeffs);
+
+       x = gsl_vector_alloc(n);
+       y = gsl_vector_alloc(n);
+       X = gsl_matrix_alloc(n, ncoeffs);
+       c = gsl_vector_alloc(ncoeffs);
+       w = gsl_vector_alloc(n);
+       cov = gsl_matrix_alloc(ncoeffs, ncoeffs);
+       mw = gsl_multifit_linear_alloc(n, ncoeffs);
+
+       printf("#m=0,S=0\n");
+       /* this is the data to be fitted */
+       for (i = 0; i < n; ++i)
+         {
+           double sigma;
+           double xi = (15.0 / (N - 1)) * i;
+           double yi = cos(xi) * exp(-0.1 * xi);
+
+           sigma = 0.1 * yi;
+           dy = gsl_ran_gaussian(r, sigma);
+           yi += dy;
+
+           gsl_vector_set(x, i, xi);
+           gsl_vector_set(y, i, yi);
+           gsl_vector_set(w, i, 1.0 / (sigma * sigma));
+
+           printf("%f %f\n", xi, yi);
+         }
+
+       /* use uniform breakpoints on [0, 15] */
+       gsl_bspline_knots_uniform(0.0, 15.0, bw);
+
+       /* construct the fit matrix X */
+       for (i = 0; i < n; ++i)
+         {
+           double xi = gsl_vector_get(x, i);
+
+           /* compute B_j(xi) for all j */
+           gsl_bspline_eval(xi, B, bw);
+
+           /* fill in row i of X */
+           for (j = 0; j < ncoeffs; ++j)
+             {
+               double Bj = gsl_vector_get(B, j);
+               gsl_matrix_set(X, i, j, Bj);
+             }
+         }
+
+       /* do the fit */
+       gsl_multifit_wlinear(X, w, y, c, cov, &chisq, mw);
+
+       dof = n - ncoeffs;
+       tss = gsl_stats_wtss(w->data, 1, y->data, 1, y->size);
+       Rsq = 1.0 - chisq / tss;
+
+       fprintf(stderr, "chisq/dof = %e, Rsq = %f\n",
+                        chisq / dof, Rsq);
+
+       /* output the smoothed curve */
+       {
+         double xi, yi, yerr;
+
+         printf("#m=1,S=0\n");
+         for (xi = 0.0; xi < 15.0; xi += 0.1)
+           {
+             gsl_bspline_eval(xi, B, bw);
+             gsl_multifit_linear_est(B, c, cov, &yi, &yerr);
+             printf("%f %f\n", xi, yi);
+           }
+       }
+
+       gsl_rng_free(r);
+       gsl_bspline_free(bw);
+       gsl_vector_free(B);
+       gsl_vector_free(x);
+       gsl_vector_free(y);
+       gsl_matrix_free(X);
+       gsl_vector_free(c);
+       gsl_vector_free(w);
+       gsl_matrix_free(cov);
+       gsl_multifit_linear_free(mw);
+
+       return 0;
+     } /* main() */
+
+   The output can be plotted with GNU 'graph'.
+
+     $ ./a.out > bspline.txt
+     chisq/dof = 1.118217e+00, Rsq = 0.989771
+     $ graph -T ps -X x -Y y -x 0 15 -y -1 1.3 < bspline.txt > bspline.ps
+
+
+File: gsl-ref.info,  Node: B-Spline References and Further Reading,  Prev: Example programs for B-splines,  Up: Basis Splines
+
+40.8 B-Spline References and Further Reading
+============================================
+
+Further information on the algorithms described in this section can be
+found in the following book,
+
+     C. de Boor, 'A Practical Guide to Splines' (1978), Springer-Verlag,
+     ISBN 0-387-90356-9.
+
+   Further information of Greville abscissae and B-spline collocation
+can be found in the following paper,
+
+     Richard W. Johnson, Higher order B-spline collocation at the
+     Greville abscissae.  'Applied Numerical Mathematics'.  vol. 52,
+     2005, 63-75.
+
+A large collection of B-spline routines is available in the PPPACK
+library available at <http://www.netlib.org/pppack>, which is also part
+of SLATEC.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices,  Next: Sparse BLAS Support,  Prev: Basis Splines,  Up: Top
+
+41 Sparse Matrices
+******************
+
+This chapter describes functions for the construction and manipulation
+of sparse matrices, matrices which are populated primarily with zeros
+and contain only a few non-zero elements.  Sparse matrices often appear
+in the solution of partial differential equations.  It is beneficial to
+use specialized data structures and algorithms for storing and working
+with sparse matrices, since dense matrix algorithms and structures can
+be very slow and use huge amounts of memory when applied to sparse
+matrices.
+
+The header file 'gsl_spmatrix.h' contains the prototypes for the sparse
+matrix functions and related declarations.
+
+* Menu:
+
+* Sparse Matrices Overview::
+* Sparse Matrices Allocation::
+* Sparse Matrices Accessing Elements::
+* Sparse Matrices Initializing Elements::
+* Sparse Matrices Reading and Writing::
+* Sparse Matrices Copying::
+* Sparse Matrices Exchanging Rows and Columns::
+* Sparse Matrices Operations::
+* Sparse Matrices Properties::
+* Sparse Matrices Finding Maximum and Minimum Elements::
+* Sparse Matrices Compressed Format::
+* Sparse Matrices Conversion Between Sparse and Dense::
+* Sparse Matrices Examples::
+* Sparse Matrices References and Further Reading::
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Overview,  Next: Sparse Matrices Allocation,  Up: Sparse Matrices
+
+41.1 Overview
+=============
+
+These routines provide support for constructing and manipulating sparse
+matrices in GSL, using an API similar to 'gsl_matrix'.  The basic
+structure is called 'gsl_spmatrix'.  There are three supported storage
+formats for sparse matrices: the triplet, compressed column storage
+(CCS) and compressed row storage (CRS) formats.  The triplet format
+stores triplets (i,j,x) for each non-zero element of the matrix.  This
+notation means that the (i,j) element of the matrix A is A_{ij} = x.
+Compressed column storage stores each column of non-zero values in the
+sparse matrix in a continuous memory block, keeping pointers to the
+beginning of each column in that memory block, and storing the row
+indices of each non-zero element.  Compressed row storage stores each
+row of non-zero values in a continuous memory block, keeping pointers to
+the beginning of each row in the block and storing the column indices of
+each non-zero element.  The triplet format is ideal for adding elements
+to the sparse matrix structure while it is being constructed, while the
+compressed storage formats are better suited for matrix-matrix
+multiplication or linear solvers.
+
+The 'gsl_spmatrix' structure is defined as
+
+     typedef struct
+     {
+       size_t size1;
+       size_t size2;
+       size_t *i;
+       double *data;
+       size_t *p;
+       size_t nzmax;
+       size_t nz;
+       gsl_spmatrix_tree *tree_data;
+       void *work;
+       size_t sptype;
+     } gsl_spmatrix;
+
+This defines a SIZE1-by-SIZE2 sparse matrix.  The number of non-zero
+elements currently in the matrix is given by NZ.  For the triplet
+representation, I, P, and DATA are arrays of size NZ which contain the
+row indices, column indices, and element value, respectively.  So if
+data[k] = A(i,j), then i = i[k] and j = p[k].
+
+For compressed column storage, I and DATA are arrays of size NZ
+containing the row indices and element values, identical to the triplet
+case.  P is an array of size size2 + 1 where p[j] points to the index in
+DATA of the start of column J.  Thus, if data[k] = A(i,j), then i = i[k]
+and p[j] <= k < p[j+1].
+
+For compressed row storage, I and DATA are arrays of size NZ containing
+the column indices and element values, identical to the triplet case.  P
+is an array of size size1 + 1 where p[i] points to the index in DATA of
+the start of row I.  Thus, if data[k] = A(i,j), then j = i[k] and p[i]
+<= k < p[i+1].
+
+The parameter TREE_DATA is a binary tree structure used in the triplet
+representation, specifically a balanced AVL tree.  This speeds up
+element searches and duplicate detection during the matrix assembly
+process.  The parameter WORK is additional workspace needed for various
+operations like converting from triplet to compressed storage.  SPTYPE
+indicates the type of storage format being used (triplet, CCS or CRS).
+
+The compressed storage format defined above makes it very simple to
+interface with sophisticated external linear solver libraries which
+accept compressed storage input.  The user can simply pass the arrays I,
+P, and DATA as the inputs to external libraries.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Allocation,  Next: Sparse Matrices Accessing Elements,  Prev: Sparse Matrices Overview,  Up: Sparse Matrices
+
+41.2 Allocation
+===============
+
+The functions for allocating memory for a sparse matrix follow the style
+of 'malloc' and 'free'.  They also perform their own error checking.  If
+there is insufficient memory available to allocate a matrix then the
+functions call the GSL error handler with an error code of 'GSL_ENOMEM'
+in addition to returning a null pointer.
+
+ -- Function: gsl_spmatrix * gsl_spmatrix_alloc (const size_t N1, const
+          size_t N2)
+     This function allocates a sparse matrix of size N1-by-N2 and
+     initializes it to all zeros.  If the size of the matrix is not
+     known at allocation time, both N1 and N2 may be set to 1, and they
+     will automatically grow as elements are added to the matrix.  This
+     function sets the matrix to the triplet representation, which is
+     the easiest for adding and accessing matrix elements.  This
+     function tries to make a reasonable guess for the number of
+     non-zero elements (NZMAX) which will be added to the matrix by
+     assuming a sparse density of 10\%.  The function
+     'gsl_spmatrix_alloc_nzmax' can be used if this number is known more
+     accurately.  The workspace is of size O(nzmax).
+
+ -- Function: gsl_spmatrix * gsl_spmatrix_alloc_nzmax (const size_t N1,
+          const size_t N2, const size_t NZMAX, const size_t SPTYPE)
+     This function allocates a sparse matrix of size N1-by-N2 and
+     initializes it to all zeros.  If the size of the matrix is not
+     known at allocation time, both N1 and N2 may be set to 1, and they
+     will automatically grow as elements are added to the matrix.  The
+     parameter NZMAX specifies the maximum number of non-zero elements
+     which will be added to the matrix.  It does not need to be
+     precisely known in advance, since storage space will automatically
+     grow using 'gsl_spmatrix_realloc' if NZMAX is not large enough.
+     Accurate knowledge of this parameter reduces the number of
+     reallocation calls required.  The parameter SPTYPE specifies the
+     storage format of the sparse matrix.  Possible values are
+     'GSL_SPMATRIX_TRIPLET'
+          This flag specifies triplet storage.
+
+     'GSL_SPMATRIX_CCS'
+          This flag specifies compressed column storage.
+
+     'GSL_SPMATRIX_CRS'
+          This flag specifies compressed row storage.
+     The allocated 'gsl_spmatrix' structure is of size O(nzmax).
+
+ -- Function: int gsl_spmatrix_realloc (const size_t NZMAX, gsl_spmatrix
+          * M)
+     This function reallocates the storage space for M to accomodate
+     NZMAX non-zero elements.  It is typically called internally by
+     'gsl_spmatrix_set' if the user wants to add more elements to the
+     sparse matrix than the previously specified NZMAX.
+
+ -- Function: void gsl_spmatrix_free (gsl_spmatrix * M)
+     This function frees the memory associated with the sparse matrix M.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Accessing Elements,  Next: Sparse Matrices Initializing Elements,  Prev: Sparse Matrices Allocation,  Up: Sparse Matrices
+
+41.3 Accessing Matrix Elements
+==============================
+
+ -- Function: double gsl_spmatrix_get (const gsl_spmatrix * M, const
+          size_t I, const size_t J)
+     This function returns element (I,J) of the matrix M.  The matrix
+     may be in triplet or compressed format.
+
+ -- Function: int gsl_spmatrix_set (gsl_spmatrix * M, const size_t I,
+          const size_t J, const double X)
+     This function sets element (I,J) of the matrix M to the value X.
+     The matrix must be in triplet representation.
+
+ -- Function: double * gsl_spmatrix_ptr (gsl_spmatrix * M, const size_t
+          I, const size_t J)
+     This function returns a pointer to the (I,J) element of the matrix
+     M.  If the (I,J) element is not explicitly stored in the matrix, a
+     null pointer is returned.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Initializing Elements,  Next: Sparse Matrices Reading and Writing,  Prev: Sparse Matrices Accessing Elements,  Up: Sparse Matrices
+
+41.4 Initializing Matrix Elements
+=================================
+
+Since the sparse matrix format only stores the non-zero elements, it is
+automatically initialized to zero upon allocation.  The function
+'gsl_spmatrix_set_zero' may be used to re-initialize a matrix to zero
+after elements have been added to it.
+
+ -- Function: int gsl_spmatrix_set_zero (gsl_spmatrix * M)
+     This function sets (or resets) all the elements of the matrix M to
+     zero.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Reading and Writing,  Next: Sparse Matrices Copying,  Prev: Sparse Matrices Initializing Elements,  Up: Sparse Matrices
+
+41.5 Reading and Writing Matrices
+=================================
+
+ -- Function: int gsl_spmatrix_fwrite (FILE * STREAM, const gsl_spmatrix
+          * M)
+     This function writes the elements of the matrix M to the stream
+     STREAM in binary format.  The return value is 0 for success and
+     'GSL_EFAILED' if there was a problem writing to the file.  Since
+     the data is written in the native binary format it may not be
+     portable between different architectures.
+
+ -- Function: int gsl_spmatrix_fread (FILE * STREAM, gsl_spmatrix * M)
+     This function reads into the matrix M from the open stream STREAM
+     in binary format.  The matrix M must be preallocated with the
+     correct storage format, dimensions and have a sufficiently large
+     'nzmax' in order to read in all matrix elements, otherwise
+     'GSL_EBADLEN' is returned.  The return value is 0 for success and
+     'GSL_EFAILED' if there was a problem reading from the file.  The
+     data is assumed to have been written in the native binary format on
+     the same architecture.
+
+ -- Function: int gsl_spmatrix_fprintf (FILE * STREAM, const
+          gsl_spmatrix * M, const char * FORMAT)
+     This function writes the elements of the matrix M line-by-line to
+     the stream STREAM using the format specifier FORMAT, which should
+     be one of the '%g', '%e' or '%f' formats for floating point
+     numbers.  The function returns 0 for success and 'GSL_EFAILED' if
+     there was a problem writing to the file.  The input matrix M may be
+     in any storage format, and the output file will be written in
+     MatrixMarket format.
+
+ -- Function: gsl_spmatrix * gsl_spmatrix_fscanf (FILE * STREAM)
+     This function reads sparse matrix data in the MatrixMarket format
+     from the stream STREAM and stores it in a newly allocated matrix
+     which is returned in triplet format.  The function returns 0 for
+     success and 'GSL_EFAILED' if there was a problem reading from the
+     file.  The user should free the returned matrix when it is no
+     longer needed.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Copying,  Next: Sparse Matrices Exchanging Rows and Columns,  Prev: Sparse Matrices Reading and Writing,  Up: Sparse Matrices
+
+41.6 Copying Matrices
+=====================
+
+ -- Function: int gsl_spmatrix_memcpy (gsl_spmatrix * DEST, const
+          gsl_spmatrix * SRC)
+     This function copies the elements of the sparse matrix SRC into
+     DEST.  The two matrices must have the same dimensions and be in the
+     same storage format.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Exchanging Rows and Columns,  Next: Sparse Matrices Operations,  Prev: Sparse Matrices Copying,  Up: Sparse Matrices
+
+41.7 Exchanging Rows and Columns
+================================
+
+ -- Function: int gsl_spmatrix_transpose_memcpy (gsl_spmatrix * DEST,
+          const gsl_spmatrix * SRC)
+     This function copies the transpose of the sparse matrix SRC into
+     DEST.  The dimensions of DEST must match the transpose of the
+     matrix SRC.  Also, both matrices must use the same sparse storage
+     format.
+
+ -- Function: int gsl_spmatrix_transpose (gsl_spmatrix * M)
+     This function replaces the matrix M by its transpose, preserving
+     the storage format of the input matrix.  Currently, only triplet
+     matrix inputs are supported.
+
+ -- Function: int gsl_spmatrix_transpose2 (gsl_spmatrix * M)
+     This function replaces the matrix M by its transpose, but changes
+     the storage format for compressed matrix inputs.  Since compressed
+     column storage is the transpose of compressed row storage, this
+     function simply converts a CCS matrix to CRS and vice versa.  This
+     is the most efficient way to transpose a compressed storage matrix,
+     but the user should note that the storage format of their
+     compressed matrix will change on output.  For triplet matrices, the
+     output matrix is also in triplet storage.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Operations,  Next: Sparse Matrices Properties,  Prev: Sparse Matrices Exchanging Rows and Columns,  Up: Sparse Matrices
+
+41.8 Matrix Operations
+======================
+
+ -- Function: int gsl_spmatrix_add (gsl_spmatrix * C, const gsl_spmatrix
+          * A, const gsl_spmatrix * B)
+     This function computes the sum c = a + b.  The three matrices must
+     have the same dimensions and be stored in a compressed format.
+
+ -- Function: int gsl_spmatrix_scale (gsl_spmatrix * M, const double X)
+     This function scales all elements of the matrix M by the constant
+     factor X.  The result m(i,j) \leftarrow x m(i,j) is stored in M.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Properties,  Next: Sparse Matrices Finding Maximum and Minimum Elements,  Prev: Sparse Matrices Operations,  Up: Sparse Matrices
+
+41.9 Matrix Properties
+======================
+
+ -- Function: size_t gsl_spmatrix_nnz (const gsl_spmatrix * M)
+     This function returns the number of non-zero elements in M.
+
+ -- Function: int gsl_spmatrix_equal (const gsl_spmatrix * A, const
+          gsl_spmatrix * B)
+     This function returns 1 if the matrices A and B are equal (by
+     comparison of element values) and 0 otherwise.  The matrices A and
+     B must be in the same sparse storage format for comparison.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Finding Maximum and Minimum Elements,  Next: Sparse Matrices Compressed Format,  Prev: Sparse Matrices Properties,  Up: Sparse Matrices
+
+41.10 Finding Maximum and Minimum Elements
+==========================================
+
+ -- Function: int gsl_spmatrix_minmax (const gsl_spmatrix * M, double *
+          MIN_OUT, double * MAX_OUT)
+     This function returns the minimum and maximum elements of the
+     matrix M, storing them in MIN_OUT and MAX_OUT, and searching only
+     the non-zero values.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Compressed Format,  Next: Sparse Matrices Conversion Between Sparse and Dense,  Prev: Sparse Matrices Finding Maximum and Minimum Elements,  Up: Sparse Matrices
+
+41.11 Compressed Format
+=======================
+
+GSL supports compressed column storage (CCS) and compressed row storage
+(CRS) formats.
+
+ -- Function: gsl_spmatrix * gsl_spmatrix_ccs (const gsl_spmatrix * T)
+     This function creates a sparse matrix in compressed column format
+     from the input sparse matrix T which must be in triplet format.  A
+     pointer to a newly allocated matrix is returned.  The calling
+     function should free the newly allocated matrix when it is no
+     longer needed.
+
+ -- Function: gsl_spmatrix * gsl_spmatrix_crs (const gsl_spmatrix * T)
+     This function creates a sparse matrix in compressed row format from
+     the input sparse matrix T which must be in triplet format.  A
+     pointer to a newly allocated matrix is returned.  The calling
+     function should free the newly allocated matrix when it is no
+     longer needed.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Conversion Between Sparse and Dense,  Next: Sparse Matrices Examples,  Prev: Sparse Matrices Compressed Format,  Up: Sparse Matrices
+
+41.12 Conversion Between Sparse and Dense Matrices
+==================================================
+
+The 'gsl_spmatrix' structure can be converted into the dense
+'gsl_matrix' format and vice versa with the following routines.
+
+ -- Function: int gsl_spmatrix_d2sp (gsl_spmatrix * S, const gsl_matrix
+          * A)
+     This function converts the dense matrix A into sparse triplet
+     format and stores the result in S.
+
+ -- Function: int gsl_spmatrix_sp2d (gsl_matrix * A, const gsl_spmatrix
+          * S)
+     This function converts the sparse matrix S into a dense matrix and
+     stores the result in A.  S must be in triplet format.
+
+
+File: gsl-ref.info,  Node: Sparse Matrices Examples,  Next: Sparse Matrices References and Further Reading,  Prev: Sparse Matrices Conversion Between Sparse and Dense,  Up: Sparse Matrices
+
+41.13 Examples
+==============
+
+The following example program builds a 5-by-4 sparse matrix and prints
+it in triplet, compressed column, and compressed row format.  The matrix
+which is constructed is The output of the program is
+
+     printing all matrix elements:
+     A(0,0) = 0
+     A(0,1) = 0
+     A(0,2) = 3.1
+     A(0,3) = 4.6
+     A(1,0) = 1
+     .
+     .
+     .
+     A(4,0) = 4.1
+     A(4,1) = 0
+     A(4,2) = 0
+     A(4,3) = 0
+     matrix in triplet format (i,j,Aij):
+     (0, 2, 3.1)
+     (0, 3, 4.6)
+     (1, 0, 1.0)
+     (1, 2, 7.2)
+     (3, 0, 2.1)
+     (3, 1, 2.9)
+     (3, 3, 8.5)
+     (4, 0, 4.1)
+     matrix in compressed column format:
+     i = [ 1, 3, 4, 3, 0, 1, 0, 3, ]
+     p = [ 0, 3, 4, 6, 8, ]
+     d = [ 1, 2.1, 4.1, 2.9, 3.1, 7.2, 4.6, 8.5, ]
+     matrix in compressed row format:
+     i = [ 2, 3, 0, 2, 0, 1, 3, 0, ]
+     p = [ 0, 2, 4, 4, 7, 8, ]
+     d = [ 3.1, 4.6, 1, 7.2, 2.1, 2.9, 8.5, 4.1, ]
+We see in the compressed column output, the data array stores each
+column contiguously, the array i stores the row index of the
+corresponding data element, and the array p stores the index of the
+start of each column in the data array.  Similarly, for the compressed
+row output, the data array stores each row contiguously, the array i
+stores the column index of the corresponding data element, and the p
+array stores the index of the start of each row in the data array.
+
+     #include <stdio.h>
+     #include <stdlib.h>
+
+     #include <gsl/gsl_spmatrix.h>
+
+     int
+     main()
+     {
+       gsl_spmatrix *A = gsl_spmatrix_alloc(5, 4); /* triplet format */
+       gsl_spmatrix *B, *C;
+       size_t i, j;
+
+       /* build the sparse matrix */
+       gsl_spmatrix_set(A, 0, 2, 3.1);
+       gsl_spmatrix_set(A, 0, 3, 4.6);
+       gsl_spmatrix_set(A, 1, 0, 1.0);
+       gsl_spmatrix_set(A, 1, 2, 7.2);
+       gsl_spmatrix_set(A, 3, 0, 2.1);
+       gsl_spmatrix_set(A, 3, 1, 2.9);
+       gsl_spmatrix_set(A, 3, 3, 8.5);
+       gsl_spmatrix_set(A, 4, 0, 4.1);
+
+       printf("printing all matrix elements:\n");
+       for (i = 0; i < 5; ++i)
+         for (j = 0; j < 4; ++j)
+           printf("A(%zu,%zu) = %g\n", i, j,
+                  gsl_spmatrix_get(A, i, j));
+
+       /* print out elements in triplet format */
+       printf("matrix in triplet format (i,j,Aij):\n");
+       gsl_spmatrix_fprintf(stdout, A, "%.1f");
+
+       /* convert to compressed column format */
+       B = gsl_spmatrix_ccs(A);
+
+       printf("matrix in compressed column format:\n");
+       printf("i = [ ");
+       for (i = 0; i < B->nz; ++i)
+         printf("%zu, ", B->i[i]);
+       printf("]\n");
+
+       printf("p = [ ");
+       for (i = 0; i < B->size2 + 1; ++i)
+         printf("%zu, ", B->p[i]);
+       printf("]\n");
+
+       printf("d = [ ");
+       for (i = 0; i < B->nz; ++i)
+         printf("%g, ", B->data[i]);
+       printf("]\n");
+
+       /* convert to compressed row format */
+       C = gsl_spmatrix_crs(A);
+
+       printf("matrix in compressed row format:\n");
+       printf("i = [ ");
+       for (i = 0; i < C->nz; ++i)
+         printf("%zu, ", C->i[i]);
+       printf("]\n");
+
+       printf("p = [ ");
+       for (i = 0; i < C->size1 + 1; ++i)
+         printf("%zu, ", C->p[i]);
+       printf("]\n");
+
+       printf("d = [ ");
+       for (i = 0; i < C->nz; ++i)
+         printf("%g, ", C->data[i]);
+       printf("]\n");
+
+       gsl_spmatrix_free(A);
+       gsl_spmatrix_free(B);
+       gsl_spmatrix_free(C);
+
+       return 0;
+     }
+
+
+File: gsl-ref.info,  Node: Sparse Matrices References and Further Reading,  Prev: Sparse Matrices Examples,  Up: Sparse Matrices
+
+41.14 References and Further Reading
+====================================
+
+The algorithms used by these functions are described in the following
+sources:
+
+     T. A. Davis, Direct Methods for Sparse Linear Systems, SIAM, 2006.
+
+     CSparse software library,
+     <https://www.cise.ufl.edu/research/sparse/CSparse>
+
+
+File: gsl-ref.info,  Node: Sparse BLAS Support,  Next: Sparse Linear Algebra,  Prev: Sparse Matrices,  Up: Top
+
+42 Sparse BLAS Support
+**********************
+
+The Sparse Basic Linear Algebra Subprograms (BLAS) define a set of
+fundamental operations on vectors and sparse matrices which can be used
+to create optimized higher-level linear algebra functionality.  GSL
+supports a limited number of BLAS operations for sparse matrices.
+
+The header file 'gsl_spblas.h' contains the prototypes for the sparse
+BLAS functions and related declarations.
+
+* Menu:
+
+* Sparse BLAS operations::
+* Sparse BLAS References and Further Reading::
+
+
+File: gsl-ref.info,  Node: Sparse BLAS operations,  Next: Sparse BLAS References and Further Reading,  Up: Sparse BLAS Support
+
+42.1 Sparse BLAS operations
+===========================
+
+ -- Function: int gsl_spblas_dgemv (const CBLAS_TRANSPOSE_t TransA,
+          const double ALPHA, const gsl_spmatrix * A, const gsl_vector *
+          X, const double BETA, gsl_vector * Y)
+     This function computes the matrix-vector product and sum y
+     \leftarrow \alpha op(A) x + \beta y, where op(A) = A, A^T for
+     TRANSA = 'CblasNoTrans', 'CblasTrans'.  In-place computations are
+     not supported, so X and Y must be distinct vectors.  The matrix A
+     may be in triplet or compressed format.
+
+ -- Function: int gsl_spblas_dgemm (const double ALPHA, const
+          gsl_spmatrix * A, const gsl_spmatrix * B, gsl_spmatrix * C)
+     This function computes the sparse matrix-matrix product C = \alpha
+     A B.  The matrices must be in compressed format.
+
+
+File: gsl-ref.info,  Node: Sparse BLAS References and Further Reading,  Prev: Sparse BLAS operations,  Up: Sparse BLAS Support
+
+42.2 References and Further Reading
+===================================
+
+The algorithms used by these functions are described in the following
+sources:
+
+     T. A. Davis, Direct Methods for Sparse Linear Systems, SIAM, 2006.
+
+     CSparse software library,
+     <https://www.cise.ufl.edu/research/sparse/CSparse>
+
+
+File: gsl-ref.info,  Node: Sparse Linear Algebra,  Next: Physical Constants,  Prev: Sparse BLAS Support,  Up: Top
+
+43 Sparse Linear Algebra
+************************
+
+This chapter describes functions for solving sparse linear systems of
+equations.  The library provides linear algebra routines which operate
+directly on the 'gsl_spmatrix' and 'gsl_vector' objects.
+
+The functions described in this chapter are declared in the header file
+'gsl_splinalg.h'.
+
+* Menu:
+
+* Overview of Sparse Linear Algebra::
+* Sparse Iterative Solvers::
+* Sparse Linear Algebra Examples::
+* Sparse Linear Algebra References and Further Reading::
+
+
+File: gsl-ref.info,  Node: Overview of Sparse Linear Algebra,  Next: Sparse Iterative Solvers,  Up: Sparse Linear Algebra
+
+43.1 Overview
+=============
+
+This chapter is primarily concerned with the solution of the linear
+system
+     A x = b
+   where A is a general square n-by-n non-singular sparse matrix, x is
+an unknown n-by-1 vector, and b is a given n-by-1 right hand side
+vector.  There exist many methods for solving such sparse linear
+systems, which broadly fall into either direct or iterative categories.
+Direct methods include LU and QR decompositions, while iterative methods
+start with an initial guess for the vector x and update the guess
+through iteration until convergence.  GSL does not currently provide any
+direct sparse solvers.
+
+
+File: gsl-ref.info,  Node: Sparse Iterative Solvers,  Next: Sparse Linear Algebra Examples,  Prev: Overview of Sparse Linear Algebra,  Up: Sparse Linear Algebra
+
+43.2 Sparse Iterative Solvers
+=============================
+
+* Menu:
+
+* Sparse Iterative Solver Overview::
+* Sparse Iterative Solvers Types::
+* Iterating the Sparse Linear System::
+
+
+File: gsl-ref.info,  Node: Sparse Iterative Solver Overview,  Next: Sparse Iterative Solvers Types,  Up: Sparse Iterative Solvers
+
+43.2.1 Overview
+---------------
+
+Many practical iterative methods of solving large n-by-n sparse linear
+systems involve projecting an approximate solution for X onto a subspace
+of {\bf R}^n.  If we define a m-dimensional subspace {\cal K} as the
+subspace of approximations to the solution X, then m constraints must be
+imposed to determine the next approximation.  These m constraints define
+another m-dimensional subspace denoted by {\cal L}.  The subspace
+dimension m is typically chosen to be much smaller than n in order to
+reduce the computational effort needed to generate the next approximate
+solution vector.  The many iterative algorithms which exist differ
+mainly in their choice of {\cal K} and {\cal L}.
+
+
+File: gsl-ref.info,  Node: Sparse Iterative Solvers Types,  Next: Iterating the Sparse Linear System,  Prev: Sparse Iterative Solver Overview,  Up: Sparse Iterative Solvers
+
+43.2.2 Types of Sparse Iterative Solvers
+----------------------------------------
+
+The sparse linear algebra library provides the following types of
+iterative solvers:
+
+ -- Sparse Iterative Type: gsl_splinalg_itersolve_gmres
+     This specifies the Generalized Minimum Residual Method (GMRES).
+     This is a projection method using {\cal K} = {\cal K}_m and {\cal
+     L} = A {\cal K}_m where {\cal K}_m is the m-th Krylov subspace
+          K_m = span( r_0, A r_0, ..., A^(m-1) r_0)
+     and r_0 = b - A x_0 is the residual vector of the initial guess
+     x_0.  If m is set equal to n, then the Krylov subspace is {\bf R}^n
+     and GMRES will provide the exact solution X.  However, the goal is
+     for the method to arrive at a very good approximation to X using a
+     much smaller subspace {\cal K}_m.  By default, the GMRES method
+     selects m = MIN(n,10) but the user may specify a different value
+     for m.  The GMRES storage requirements grow as O(n(m+1)) and the
+     number of flops grow as O(4 m^2 n - 4 m^3 / 3).
+
+     In the below function 'gsl_splinalg_itersolve_iterate', one GMRES
+     iteration is defined as projecting the approximate solution vector
+     onto each Krylov subspace {\cal K}_1, ..., {\cal K}_m, and so m can
+     be kept smaller by "restarting" the method and calling
+     'gsl_splinalg_itersolve_iterate' multiple times, providing the
+     updated approximation X to each new call.  If the method is not
+     adequately converging, the user may try increasing the parameter m.
+
+     GMRES is considered a robust general purpose iterative solver,
+     however there are cases where the method stagnates if the matrix is
+     not positive-definite and fails to reduce the residual until the
+     very last projection onto the subspace {\cal K}_n = {\bf R}^n.  In
+     these cases, preconditioning the linear system can help, but GSL
+     does not currently provide any preconditioners.
+
+
+File: gsl-ref.info,  Node: Iterating the Sparse Linear System,  Prev: Sparse Iterative Solvers Types,  Up: Sparse Iterative Solvers
+
+43.2.3 Iterating the Sparse Linear System
+-----------------------------------------
+
+The following functions are provided to allocate storage for the sparse
+linear solvers and iterate the system to a solution.
+
+ -- Function: gsl_splinalg_itersolve * gsl_splinalg_itersolve_alloc
+          (const gsl_splinalg_itersolve_type * T, const size_t N, const
+          size_t M)
+     This function allocates a workspace for the iterative solution of
+     N-by-N sparse matrix systems.  The iterative solver type is
+     specified by T.  The argument M specifies the size of the solution
+     candidate subspace {\cal K}_m.  The dimension M may be set to 0 in
+     which case a reasonable default value is used.
+
+ -- Function: void gsl_splinalg_itersolve_free (gsl_splinalg_itersolve *
+          W)
+     This function frees the memory associated with the workspace W.
+
+ -- Function: const char * gsl_splinalg_itersolve_name (const
+          gsl_splinalg_itersolve * W)
+     This function returns a string pointer to the name of the solver.
+
+ -- Function: int gsl_splinalg_itersolve_iterate (const gsl_spmatrix *A,
+          const gsl_vector *B, const double TOL, gsl_vector *X,
+          gsl_splinalg_itersolve *W)
+     This function performs one iteration of the iterative method for
+     the sparse linear system specfied by the matrix A, right hand side
+     vector B and solution vector X.  On input, X must be set to an
+     initial guess for the solution.  On output, X is updated to give
+     the current solution estimate.  The parameter TOL specifies the
+     relative tolerance between the residual norm and norm of B in order
+     to check for convergence.  When the following condition is
+     satisfied:
+          || A x - b || <= tol * || b ||
+     the method has converged, the function returns 'GSL_SUCCESS' and
+     the final solution is provided in X.  Otherwise, the function
+     returns 'GSL_CONTINUE' to signal that more iterations are required.
+     Here, || \cdot || represents the Euclidean norm.  The input matrix
+     A may be in triplet or compressed column format.
+
+ -- Function: double gsl_splinalg_itersolve_normr (const
+          gsl_splinalg_itersolve *W)
+     This function returns the current residual norm ||r|| = ||A x -
+     b||, which is updated after each call to
+     'gsl_splinalg_itersolve_iterate'.
+
+
+File: gsl-ref.info,  Node: Sparse Linear Algebra Examples,  Next: Sparse Linear Algebra References and Further Reading,  Prev: Sparse Iterative Solvers,  Up: Sparse Linear Algebra
+
+43.3 Examples
+=============
+
+This example program demonstrates the sparse linear algebra routines on
+the solution of a simple 1D Poisson equation on [0,1]:
+     u''(x) = f(x) = -\pi^2 \sin(\pi x)
+   with boundary conditions u(0) = u(1) = 0.  The analytic solution of
+this simple problem is u(x) = \sin{\pi x}.  We will solve this problem
+by finite differencing the left hand side to give
+     1/h^2 ( u_(i+1) - 2 u_i + u_(i-1) ) = f_i
+   Defining a grid of N points, h = 1/(N-1).  In the finite difference
+equation above, u_0 = u_{N-1} = 0 are known from the boundary
+conditions, so we will only put the equations for i = 1, ..., N-2 into
+the matrix system.  The resulting (N-2) \times (N-2) matrix equation is
+An example program which constructs and solves this system is given
+below.  The system is solved using the iterative GMRES solver.  Here is
+the output of the program:
+
+     iter 0 residual = 4.297275996844e-11
+     Converged
+showing that the method converged in a single iteration.  The calculated
+solution is shown in the following plot.
+
+     #include <stdio.h>
+     #include <stdlib.h>
+     #include <math.h>
+
+     #include <gsl/gsl_math.h>
+     #include <gsl/gsl_vector.h>
+     #include <gsl/gsl_spmatrix.h>
+     #include <gsl/gsl_splinalg.h>
+
+     int
+     main()
+     {
+       const size_t N = 100;                       /* number of grid points */
+       const size_t n = N - 2;                     /* subtract 2 to exclude boundaries */
+       const double h = 1.0 / (N - 1.0);           /* grid spacing */
+       gsl_spmatrix *A = gsl_spmatrix_alloc(n ,n); /* triplet format */
+       gsl_spmatrix *C;                            /* compressed format */
+       gsl_vector *f = gsl_vector_alloc(n);        /* right hand side vector */
+       gsl_vector *u = gsl_vector_alloc(n);        /* solution vector */
+       size_t i;
+
+       /* construct the sparse matrix for the finite difference equation */
+
+       /* construct first row */
+       gsl_spmatrix_set(A, 0, 0, -2.0);
+       gsl_spmatrix_set(A, 0, 1, 1.0);
+
+       /* construct rows [1:n-2] */
+       for (i = 1; i < n - 1; ++i)
+         {
+           gsl_spmatrix_set(A, i, i + 1, 1.0);
+           gsl_spmatrix_set(A, i, i, -2.0);
+           gsl_spmatrix_set(A, i, i - 1, 1.0);
+         }
+
+       /* construct last row */
+       gsl_spmatrix_set(A, n - 1, n - 1, -2.0);
+       gsl_spmatrix_set(A, n - 1, n - 2, 1.0);
+
+       /* scale by h^2 */
+       gsl_spmatrix_scale(A, 1.0 / (h * h));
+
+       /* construct right hand side vector */
+       for (i = 0; i < n; ++i)
+         {
+           double xi = (i + 1) * h;
+           double fi = -M_PI * M_PI * sin(M_PI * xi);
+           gsl_vector_set(f, i, fi);
+         }
+
+       /* convert to compressed column format */
+       C = gsl_spmatrix_ccs(A);
+
+       /* now solve the system with the GMRES iterative solver */
+       {
+         const double tol = 1.0e-6;  /* solution relative tolerance */
+         const size_t max_iter = 10; /* maximum iterations */
+         const gsl_splinalg_itersolve_type *T = gsl_splinalg_itersolve_gmres;
+         gsl_splinalg_itersolve *work =
+           gsl_splinalg_itersolve_alloc(T, n, 0);
+         size_t iter = 0;
+         double residual;
+         int status;
+
+         /* initial guess u = 0 */
+         gsl_vector_set_zero(u);
+
+         /* solve the system A u = f */
+         do
+           {
+             status = gsl_splinalg_itersolve_iterate(C, f, tol, u, work);
+
+             /* print out residual norm ||A*u - f|| */
+             residual = gsl_splinalg_itersolve_normr(work);
+             fprintf(stderr, "iter %zu residual = %.12e\n", iter, residual);
+
+             if (status == GSL_SUCCESS)
+               fprintf(stderr, "Converged\n");
+           }
+         while (status == GSL_CONTINUE && ++iter < max_iter);
+
+         /* output solution */
+         for (i = 0; i < n; ++i)
+           {
+             double xi = (i + 1) * h;
+             double u_exact = sin(M_PI * xi);
+             double u_gsl = gsl_vector_get(u, i);
+
+             printf("%f %.12e %.12e\n", xi, u_gsl, u_exact);
+           }
+
+         gsl_splinalg_itersolve_free(work);
+       }
+
+       gsl_spmatrix_free(A);
+       gsl_spmatrix_free(C);
+       gsl_vector_free(f);
+       gsl_vector_free(u);
+
+       return 0;
+     } /* main() */
+
+
+File: gsl-ref.info,  Node: Sparse Linear Algebra References and Further Reading,  Prev: Sparse Linear Algebra Examples,  Up: Sparse Linear Algebra
+
+43.4 References and Further Reading
+===================================
+
+The implementation of the GMRES iterative solver closely follows the
+publications
+
+     H. F. Walker, Implementation of the GMRES method using Householder
+     transformations, SIAM J. Sci.  Stat.  Comput.  9(1), 1988.
+
+     Y. Saad, Iterative methods for sparse linear systems, 2nd edition,
+     SIAM, 2003.
+
+
+File: gsl-ref.info,  Node: Physical Constants,  Next: IEEE floating-point arithmetic,  Prev: Sparse Linear Algebra,  Up: Top
+
+44 Physical Constants
+*********************
+
+This chapter describes macros for the values of physical constants, such
+as the speed of light, c, and gravitational constant, G.  The values are
+available in different unit systems, including the standard MKSA system
+(meters, kilograms, seconds, amperes) and the CGSM system (centimeters,
+grams, seconds, gauss), which is commonly used in Astronomy.
+
+   The definitions of constants in the MKSA system are available in the
+file 'gsl_const_mksa.h'.  The constants in the CGSM system are defined
+in 'gsl_const_cgsm.h'.  Dimensionless constants, such as the fine
+structure constant, which are pure numbers are defined in
+'gsl_const_num.h'.
+
+* Menu:
+
+* Fundamental Constants::       
+* Astronomy and Astrophysics::  
+* Atomic and Nuclear Physics::  
+* Measurement of Time::         
+* Imperial Units ::             
+* Speed and Nautical Units::    
+* Printers Units::              
+* Volume Area and Length::      
+* Mass and Weight ::            
+* Thermal Energy and Power::    
+* Pressure::                    
+* Viscosity::                   
+* Light and Illumination::      
+* Radioactivity::               
+* Force and Energy::            
+* Prefixes::                    
+* Physical Constant Examples::  
+* Physical Constant References and Further Reading::  
+
+   The full list of constants is described briefly below.  Consult the
+header files themselves for the values of the constants used in the
+library.
+
+
+File: gsl-ref.info,  Node: Fundamental Constants,  Next: Astronomy and Astrophysics,  Up: Physical Constants
+
+44.1 Fundamental Constants
+==========================
+
+'GSL_CONST_MKSA_SPEED_OF_LIGHT'
+     The speed of light in vacuum, c.
+
+'GSL_CONST_MKSA_VACUUM_PERMEABILITY'
+     The permeability of free space, \mu_0.  This constant is defined in
+     the MKSA system only.
+
+'GSL_CONST_MKSA_VACUUM_PERMITTIVITY'
+     The permittivity of free space, \epsilon_0.  This constant is
+     defined in the MKSA system only.
+
+'GSL_CONST_MKSA_PLANCKS_CONSTANT_H'
+     Planck's constant, h.
+
+'GSL_CONST_MKSA_PLANCKS_CONSTANT_HBAR'
+     Planck's constant divided by 2\pi, \hbar.
+
+'GSL_CONST_NUM_AVOGADRO'
+     Avogadro's number, N_a.
+
+'GSL_CONST_MKSA_FARADAY'
+     The molar charge of 1 Faraday.
+
+'GSL_CONST_MKSA_BOLTZMANN'
+     The Boltzmann constant, k.
+
+'GSL_CONST_MKSA_MOLAR_GAS'
+     The molar gas constant, R_0.
+
+'GSL_CONST_MKSA_STANDARD_GAS_VOLUME'
+     The standard gas volume, V_0.
+
+'GSL_CONST_MKSA_STEFAN_BOLTZMANN_CONSTANT'
+     The Stefan-Boltzmann radiation constant, \sigma.
+
+'GSL_CONST_MKSA_GAUSS'
+     The magnetic field of 1 Gauss.
+
+
+File: gsl-ref.info,  Node: Astronomy and Astrophysics,  Next: Atomic and Nuclear Physics,  Prev: Fundamental Constants,  Up: Physical Constants
+
+44.2 Astronomy and Astrophysics
+===============================
+
+'GSL_CONST_MKSA_ASTRONOMICAL_UNIT'
+     The length of 1 astronomical unit (mean earth-sun distance), au.
+
+'GSL_CONST_MKSA_GRAVITATIONAL_CONSTANT'
+     The gravitational constant, G.
+
+'GSL_CONST_MKSA_LIGHT_YEAR'
+     The distance of 1 light-year, ly.
+
+'GSL_CONST_MKSA_PARSEC'
+     The distance of 1 parsec, pc.
+
+'GSL_CONST_MKSA_GRAV_ACCEL'
+     The standard gravitational acceleration on Earth, g.
+
+'GSL_CONST_MKSA_SOLAR_MASS'
+     The mass of the Sun.
+
+
+File: gsl-ref.info,  Node: Atomic and Nuclear Physics,  Next: Measurement of Time,  Prev: Astronomy and Astrophysics,  Up: Physical Constants
+
+44.3 Atomic and Nuclear Physics
+===============================
+
+'GSL_CONST_MKSA_ELECTRON_CHARGE'
+     The charge of the electron, e.
+
+'GSL_CONST_MKSA_ELECTRON_VOLT'
+     The energy of 1 electron volt, eV.
+
+'GSL_CONST_MKSA_UNIFIED_ATOMIC_MASS'
+     The unified atomic mass, amu.
+
+'GSL_CONST_MKSA_MASS_ELECTRON'
+     The mass of the electron, m_e.
+
+'GSL_CONST_MKSA_MASS_MUON'
+     The mass of the muon, m_\mu.
+
+'GSL_CONST_MKSA_MASS_PROTON'
+     The mass of the proton, m_p.
+
+'GSL_CONST_MKSA_MASS_NEUTRON'
+     The mass of the neutron, m_n.
+
+'GSL_CONST_NUM_FINE_STRUCTURE'
+     The electromagnetic fine structure constant \alpha.
+
+'GSL_CONST_MKSA_RYDBERG'
+     The Rydberg constant, Ry, in units of energy.  This is related to
+     the Rydberg inverse wavelength R_\infty by Ry = h c R_\infty.
+
+'GSL_CONST_MKSA_BOHR_RADIUS'
+     The Bohr radius, a_0.
+
+'GSL_CONST_MKSA_ANGSTROM'
+     The length of 1 angstrom.
+
+'GSL_CONST_MKSA_BARN'
+     The area of 1 barn.
+
+'GSL_CONST_MKSA_BOHR_MAGNETON'
+     The Bohr Magneton, \mu_B.
+
+'GSL_CONST_MKSA_NUCLEAR_MAGNETON'
+     The Nuclear Magneton, \mu_N.
+
+'GSL_CONST_MKSA_ELECTRON_MAGNETIC_MOMENT'
+     The absolute value of the magnetic moment of the electron, \mu_e.
+     The physical magnetic moment of the electron is negative.
+
+'GSL_CONST_MKSA_PROTON_MAGNETIC_MOMENT'
+     The magnetic moment of the proton, \mu_p.
+
+'GSL_CONST_MKSA_THOMSON_CROSS_SECTION'
+     The Thomson cross section, \sigma_T.
+
+'GSL_CONST_MKSA_DEBYE'
+     The electric dipole moment of 1 Debye, D.
+
+
+File: gsl-ref.info,  Node: Measurement of Time,  Next: Imperial Units,  Prev: Atomic and Nuclear Physics,  Up: Physical Constants
+
+44.4 Measurement of Time
+========================
+
+'GSL_CONST_MKSA_MINUTE'
+     The number of seconds in 1 minute.
+
+'GSL_CONST_MKSA_HOUR'
+     The number of seconds in 1 hour.
+
+'GSL_CONST_MKSA_DAY'
+     The number of seconds in 1 day.
+
+'GSL_CONST_MKSA_WEEK'
+     The number of seconds in 1 week.
+
+
+File: gsl-ref.info,  Node: Imperial Units,  Next: Speed and Nautical Units,  Prev: Measurement of Time,  Up: Physical Constants
+
+44.5 Imperial Units
+===================
+
+'GSL_CONST_MKSA_INCH'
+     The length of 1 inch.
+
+'GSL_CONST_MKSA_FOOT'
+     The length of 1 foot.
+
+'GSL_CONST_MKSA_YARD'
+     The length of 1 yard.
+
+'GSL_CONST_MKSA_MILE'
+     The length of 1 mile.
+
+'GSL_CONST_MKSA_MIL'
+     The length of 1 mil (1/1000th of an inch).
+
+
+File: gsl-ref.info,  Node: Speed and Nautical Units,  Next: Printers Units,  Prev: Imperial Units,  Up: Physical Constants
+
+44.6 Speed and Nautical Units
+=============================
+
+'GSL_CONST_MKSA_KILOMETERS_PER_HOUR'
+     The speed of 1 kilometer per hour.
+
+'GSL_CONST_MKSA_MILES_PER_HOUR'
+     The speed of 1 mile per hour.
+
+'GSL_CONST_MKSA_NAUTICAL_MILE'
+     The length of 1 nautical mile.
+
+'GSL_CONST_MKSA_FATHOM'
+     The length of 1 fathom.
+
+'GSL_CONST_MKSA_KNOT'
+     The speed of 1 knot.
+
+
+File: gsl-ref.info,  Node: Printers Units,  Next: Volume Area and Length,  Prev: Speed and Nautical Units,  Up: Physical Constants
+
+44.7 Printers Units
+===================
+
+'GSL_CONST_MKSA_POINT'
+     The length of 1 printer's point (1/72 inch).
+
+'GSL_CONST_MKSA_TEXPOINT'
+     The length of 1 TeX point (1/72.27 inch).
+
+
+File: gsl-ref.info,  Node: Volume Area and Length,  Next: Mass and Weight,  Prev: Printers Units,  Up: Physical Constants
+
+44.8 Volume, Area and Length
+============================
+
+'GSL_CONST_MKSA_MICRON'
+     The length of 1 micron.
+
+'GSL_CONST_MKSA_HECTARE'
+     The area of 1 hectare.
+
+'GSL_CONST_MKSA_ACRE'
+     The area of 1 acre.
+
+'GSL_CONST_MKSA_LITER'
+     The volume of 1 liter.
+
+'GSL_CONST_MKSA_US_GALLON'
+     The volume of 1 US gallon.
+
+'GSL_CONST_MKSA_CANADIAN_GALLON'
+     The volume of 1 Canadian gallon.
+
+'GSL_CONST_MKSA_UK_GALLON'
+     The volume of 1 UK gallon.
+
+'GSL_CONST_MKSA_QUART'
+     The volume of 1 quart.
+
+'GSL_CONST_MKSA_PINT'
+     The volume of 1 pint.
+
+
+File: gsl-ref.info,  Node: Mass and Weight,  Next: Thermal Energy and Power,  Prev: Volume Area and Length,  Up: Physical Constants
+
+44.9 Mass and Weight
+====================
+
+'GSL_CONST_MKSA_POUND_MASS'
+     The mass of 1 pound.
+
+'GSL_CONST_MKSA_OUNCE_MASS'
+     The mass of 1 ounce.
+
+'GSL_CONST_MKSA_TON'
+     The mass of 1 ton.
+
+'GSL_CONST_MKSA_METRIC_TON'
+     The mass of 1 metric ton (1000 kg).
+
+'GSL_CONST_MKSA_UK_TON'
+     The mass of 1 UK ton.
+
+'GSL_CONST_MKSA_TROY_OUNCE'
+     The mass of 1 troy ounce.
+
+'GSL_CONST_MKSA_CARAT'
+     The mass of 1 carat.
+
+'GSL_CONST_MKSA_GRAM_FORCE'
+     The force of 1 gram weight.
+
+'GSL_CONST_MKSA_POUND_FORCE'
+     The force of 1 pound weight.
+
+'GSL_CONST_MKSA_KILOPOUND_FORCE'
+     The force of 1 kilopound weight.
+
+'GSL_CONST_MKSA_POUNDAL'
+     The force of 1 poundal.
+
+
+File: gsl-ref.info,  Node: Thermal Energy and Power,  Next: Pressure,  Prev: Mass and Weight,  Up: Physical Constants
+
+44.10 Thermal Energy and Power
+==============================
+
+'GSL_CONST_MKSA_CALORIE'
+     The energy of 1 calorie.
+
+'GSL_CONST_MKSA_BTU'
+     The energy of 1 British Thermal Unit, btu.
+
+'GSL_CONST_MKSA_THERM'
+     The energy of 1 Therm.
+
+'GSL_CONST_MKSA_HORSEPOWER'
+     The power of 1 horsepower.
+
+
+File: gsl-ref.info,  Node: Pressure,  Next: Viscosity,  Prev: Thermal Energy and Power,  Up: Physical Constants
+
+44.11 Pressure
+==============
+
+'GSL_CONST_MKSA_BAR'
+     The pressure of 1 bar.
+
+'GSL_CONST_MKSA_STD_ATMOSPHERE'
+     The pressure of 1 standard atmosphere.
+
+'GSL_CONST_MKSA_TORR'
+     The pressure of 1 torr.
+
+'GSL_CONST_MKSA_METER_OF_MERCURY'
+     The pressure of 1 meter of mercury.
+
+'GSL_CONST_MKSA_INCH_OF_MERCURY'
+     The pressure of 1 inch of mercury.
+
+'GSL_CONST_MKSA_INCH_OF_WATER'
+     The pressure of 1 inch of water.
+
+'GSL_CONST_MKSA_PSI'
+     The pressure of 1 pound per square inch.
+
+
+File: gsl-ref.info,  Node: Viscosity,  Next: Light and Illumination,  Prev: Pressure,  Up: Physical Constants
+
+44.12 Viscosity
+===============
+
+'GSL_CONST_MKSA_POISE'
+     The dynamic viscosity of 1 poise.
+
+'GSL_CONST_MKSA_STOKES'
+     The kinematic viscosity of 1 stokes.
+
+
+File: gsl-ref.info,  Node: Light and Illumination,  Next: Radioactivity,  Prev: Viscosity,  Up: Physical Constants
+
+44.13 Light and Illumination
+============================
+
+'GSL_CONST_MKSA_STILB'
+     The luminance of 1 stilb.
+
+'GSL_CONST_MKSA_LUMEN'
+     The luminous flux of 1 lumen.
+
+'GSL_CONST_MKSA_LUX'
+     The illuminance of 1 lux.
+
+'GSL_CONST_MKSA_PHOT'
+     The illuminance of 1 phot.
+
+'GSL_CONST_MKSA_FOOTCANDLE'
+     The illuminance of 1 footcandle.
+
+'GSL_CONST_MKSA_LAMBERT'
+     The luminance of 1 lambert.
+
+'GSL_CONST_MKSA_FOOTLAMBERT'
+     The luminance of 1 footlambert.
+
+
+File: gsl-ref.info,  Node: Radioactivity,  Next: Force and Energy,  Prev: Light and Illumination,  Up: Physical Constants
+
+44.14 Radioactivity
+===================
+
+'GSL_CONST_MKSA_CURIE'
+     The activity of 1 curie.
+
+'GSL_CONST_MKSA_ROENTGEN'
+     The exposure of 1 roentgen.
+
+'GSL_CONST_MKSA_RAD'
+     The absorbed dose of 1 rad.
+
+
+File: gsl-ref.info,  Node: Force and Energy,  Next: Prefixes,  Prev: Radioactivity,  Up: Physical Constants
+
+44.15 Force and Energy
+======================
+
+'GSL_CONST_MKSA_NEWTON'
+     The SI unit of force, 1 Newton.
+
+'GSL_CONST_MKSA_DYNE'
+     The force of 1 Dyne = 10^-5 Newton.
+
+'GSL_CONST_MKSA_JOULE'
+     The SI unit of energy, 1 Joule.
+
+'GSL_CONST_MKSA_ERG'
+     The energy 1 erg = 10^-7 Joule.
+
+
+File: gsl-ref.info,  Node: Prefixes,  Next: Physical Constant Examples,  Prev: Force and Energy,  Up: Physical Constants
+
+44.16 Prefixes
+==============
+
+These constants are dimensionless scaling factors.
+
+'GSL_CONST_NUM_YOTTA'
+     10^24
+
+'GSL_CONST_NUM_ZETTA'
+     10^21
+
+'GSL_CONST_NUM_EXA'
+     10^18
+
+'GSL_CONST_NUM_PETA'
+     10^15
+
+'GSL_CONST_NUM_TERA'
+     10^12
+
+'GSL_CONST_NUM_GIGA'
+     10^9
+
+'GSL_CONST_NUM_MEGA'
+     10^6
+
+'GSL_CONST_NUM_KILO'
+     10^3
+
+'GSL_CONST_NUM_MILLI'
+     10^-3
+
+'GSL_CONST_NUM_MICRO'
+     10^-6
+
+'GSL_CONST_NUM_NANO'
+     10^-9
+
+'GSL_CONST_NUM_PICO'
+     10^-12
+
+'GSL_CONST_NUM_FEMTO'
+     10^-15
+
+'GSL_CONST_NUM_ATTO'
+     10^-18
+
+'GSL_CONST_NUM_ZEPTO'
+     10^-21
+
+'GSL_CONST_NUM_YOCTO'
+     10^-24
+
+
+File: gsl-ref.info,  Node: Physical Constant Examples,  Next: Physical Constant References and Further Reading,  Prev: Prefixes,  Up: Physical Constants
+
+44.17 Examples
+==============
+
+The following program demonstrates the use of the physical constants in
+a calculation.  In this case, the goal is to calculate the range of
+light-travel times from Earth to Mars.
+
+   The required data is the average distance of each planet from the Sun
+in astronomical units (the eccentricities and inclinations of the orbits
+will be neglected for the purposes of this calculation).  The average
+radius of the orbit of Mars is 1.52 astronomical units, and for the
+orbit of Earth it is 1 astronomical unit (by definition).  These values
+are combined with the MKSA values of the constants for the speed of
+light and the length of an astronomical unit to produce a result for the
+shortest and longest light-travel times in seconds.  The figures are
+converted into minutes before being displayed.
+
+     #include <stdio.h>
+     #include <gsl/gsl_const_mksa.h>
+
+     int
+     main (void)
+     {
+       double c  = GSL_CONST_MKSA_SPEED_OF_LIGHT;
+       double au = GSL_CONST_MKSA_ASTRONOMICAL_UNIT;
+       double minutes = GSL_CONST_MKSA_MINUTE;
+
+       /* distance stored in meters */
+       double r_earth = 1.00 * au;
+       double r_mars  = 1.52 * au;
+
+       double t_min, t_max;
+
+       t_min = (r_mars - r_earth) / c;
+       t_max = (r_mars + r_earth) / c;
+
+       printf ("light travel time from Earth to Mars:\n");
+       printf ("minimum = %.1f minutes\n", t_min / minutes);
+       printf ("maximum = %.1f minutes\n", t_max / minutes);
+
+       return 0;
+     }
+
+Here is the output from the program,
+
+     light travel time from Earth to Mars:
+     minimum = 4.3 minutes
+     maximum = 21.0 minutes
+
+
+File: gsl-ref.info,  Node: Physical Constant References and Further Reading,  Prev: Physical Constant Examples,  Up: Physical Constants
+
+44.18 References and Further Reading
+====================================
+
+The authoritative sources for physical constants are the 2006 CODATA
+recommended values, published in the article below.  Further information
+on the values of physical constants is also available from the NIST
+website.
+
+     P.J. Mohr, B.N. Taylor, D.B. Newell, "CODATA Recommended Values of
+     the Fundamental Physical Constants: 2006", Reviews of Modern
+     Physics, 80(2), pp.  633-730 (2008).
+     <http://www.physics.nist.gov/cuu/Constants/index.html>
+     <http://physics.nist.gov/Pubs/SP811/appenB9.html>
+
+
+File: gsl-ref.info,  Node: IEEE floating-point arithmetic,  Next: Debugging Numerical Programs,  Prev: Physical Constants,  Up: Top
+
+45 IEEE floating-point arithmetic
+*********************************
+
+This chapter describes functions for examining the representation of
+floating point numbers and controlling the floating point environment of
+your program.  The functions described in this chapter are declared in
+the header file 'gsl_ieee_utils.h'.
+
+* Menu:
+
+* Representation of floating point numbers::  
+* Setting up your IEEE environment::  
+* IEEE References and Further Reading::  
+
+
+File: gsl-ref.info,  Node: Representation of floating point numbers,  Next: Setting up your IEEE environment,  Up: IEEE floating-point arithmetic
+
+45.1 Representation of floating point numbers
+=============================================
+
+The IEEE Standard for Binary Floating-Point Arithmetic defines binary
+formats for single and double precision numbers.  Each number is
+composed of three parts: a "sign bit" (s), an "exponent" (E) and a
+"fraction" (f).  The numerical value of the combination (s,E,f) is given
+by the following formula,
+
+     (-1)^s (1.fffff...) 2^E
+
+The sign bit is either zero or one.  The exponent ranges from a minimum
+value E_min to a maximum value E_max depending on the precision.  The
+exponent is converted to an unsigned number e, known as the "biased
+exponent", for storage by adding a "bias" parameter, e = E + bias.  The
+sequence fffff... represents the digits of the binary fraction f.  The
+binary digits are stored in "normalized form", by adjusting the exponent
+to give a leading digit of 1.  Since the leading digit is always 1 for
+normalized numbers it is assumed implicitly and does not have to be
+stored.  Numbers smaller than 2^(E_min) are be stored in "denormalized
+form" with a leading zero,
+
+     (-1)^s (0.fffff...) 2^(E_min)
+
+This allows gradual underflow down to 2^(E_min - p) for p bits of
+precision.  A zero is encoded with the special exponent of 2^(E_min - 1)
+and infinities with the exponent of 2^(E_max + 1).
+
+The format for single precision numbers uses 32 bits divided in the
+following way,
+
+     seeeeeeeefffffffffffffffffffffff
+
+     s = sign bit, 1 bit
+     e = exponent, 8 bits  (E_min=-126, E_max=127, bias=127)
+     f = fraction, 23 bits
+
+The format for double precision numbers uses 64 bits divided in the
+following way,
+
+     seeeeeeeeeeeffffffffffffffffffffffffffffffffffffffffffffffffffff
+
+     s = sign bit, 1 bit
+     e = exponent, 11 bits  (E_min=-1022, E_max=1023, bias=1023)
+     f = fraction, 52 bits
+
+It is often useful to be able to investigate the behavior of a
+calculation at the bit-level and the library provides functions for
+printing the IEEE representations in a human-readable form.
+
+ -- Function: void gsl_ieee_fprintf_float (FILE * STREAM, const float *
+          X)
+ -- Function: void gsl_ieee_fprintf_double (FILE * STREAM, const double
+          * X)
+     These functions output a formatted version of the IEEE
+     floating-point number pointed to by X to the stream STREAM.  A
+     pointer is used to pass the number indirectly, to avoid any
+     undesired promotion from 'float' to 'double'.  The output takes one
+     of the following forms,
+
+     'NaN'
+          the Not-a-Number symbol
+
+     'Inf, -Inf'
+          positive or negative infinity
+
+     '1.fffff...*2^E, -1.fffff...*2^E'
+          a normalized floating point number
+
+     '0.fffff...*2^E, -0.fffff...*2^E'
+          a denormalized floating point number
+
+     '0, -0'
+          positive or negative zero
+
+     The output can be used directly in GNU Emacs Calc mode by preceding
+     it with '2#' to indicate binary.
+
+ -- Function: void gsl_ieee_printf_float (const float * X)
+ -- Function: void gsl_ieee_printf_double (const double * X)
+     These functions output a formatted version of the IEEE
+     floating-point number pointed to by X to the stream 'stdout'.
+
+The following program demonstrates the use of the functions by printing
+the single and double precision representations of the fraction 1/3.
+For comparison the representation of the value promoted from single to
+double precision is also printed.
+
+     #include <stdio.h>
+     #include <gsl/gsl_ieee_utils.h>
+
+     int
+     main (void)
+     {
+       float f = 1.0/3.0;
+       double d = 1.0/3.0;
+
+       double fd = f; /* promote from float to double */
+
+       printf (" f="); gsl_ieee_printf_float(&f);
+       printf ("\n");
+
+       printf ("fd="); gsl_ieee_printf_double(&fd);
+       printf ("\n");
+
+       printf (" d="); gsl_ieee_printf_double(&d);
+       printf ("\n");
+
+       return 0;
+     }
+
+The binary representation of 1/3 is 0.01010101... .  The output below
+shows that the IEEE format normalizes this fraction to give a leading
+digit of 1,
+
+      f= 1.01010101010101010101011*2^-2
+     fd= 1.0101010101010101010101100000000000000000000000000000*2^-2
+      d= 1.0101010101010101010101010101010101010101010101010101*2^-2
+
+The output also shows that a single-precision number is promoted to
+double-precision by adding zeros in the binary representation.
+
+
+File: gsl-ref.info,  Node: Setting up your IEEE environment,  Next: IEEE References and Further Reading,  Prev: Representation of floating point numbers,  Up: IEEE floating-point arithmetic
+
+45.2 Setting up your IEEE environment
+=====================================
+
+The IEEE standard defines several "modes" for controlling the behavior
+of floating point operations.  These modes specify the important
+properties of computer arithmetic: the direction used for rounding (e.g.
+whether numbers should be rounded up, down or to the nearest number),
+the rounding precision and how the program should handle arithmetic
+exceptions, such as division by zero.
+
+   Many of these features can now be controlled via standard functions
+such as 'fpsetround', which should be used whenever they are available.
+Unfortunately in the past there has been no universal API for
+controlling their behavior--each system has had its own low-level way of
+accessing them.  To help you write portable programs GSL allows you to
+specify modes in a platform-independent way using the environment
+variable 'GSL_IEEE_MODE'.  The library then takes care of all the
+necessary machine-specific initializations for you when you call the
+function 'gsl_ieee_env_setup'.
+
+ -- Function: void gsl_ieee_env_setup ()
+     This function reads the environment variable 'GSL_IEEE_MODE' and
+     attempts to set up the corresponding specified IEEE modes.  The
+     environment variable should be a list of keywords, separated by
+     commas, like this,
+
+          'GSL_IEEE_MODE' = "KEYWORD,KEYWORD,..."
+
+     where KEYWORD is one of the following mode-names,
+
+          'single-precision'
+          'double-precision'
+          'extended-precision'
+          'round-to-nearest'
+          'round-down'
+          'round-up'
+          'round-to-zero'
+          'mask-all'
+          'mask-invalid'
+          'mask-denormalized'
+          'mask-division-by-zero'
+          'mask-overflow'
+          'mask-underflow'
+          'trap-inexact'
+          'trap-common'
+
+     If 'GSL_IEEE_MODE' is empty or undefined then the function returns
+     immediately and no attempt is made to change the system's IEEE
+     mode.  When the modes from 'GSL_IEEE_MODE' are turned on the
+     function prints a short message showing the new settings to remind
+     you that the results of the program will be affected.
+
+     If the requested modes are not supported by the platform being used
+     then the function calls the error handler and returns an error code
+     of 'GSL_EUNSUP'.
+
+     When options are specified using this method, the resulting mode is
+     based on a default setting of the highest available precision
+     (double precision or extended precision, depending on the platform)
+     in round-to-nearest mode, with all exceptions enabled apart from
+     the INEXACT exception.  The INEXACT exception is generated whenever
+     rounding occurs, so it must generally be disabled in typical
+     scientific calculations.  All other floating-point exceptions are
+     enabled by default, including underflows and the use of
+     denormalized numbers, for safety.  They can be disabled with the
+     individual 'mask-' settings or together using 'mask-all'.
+
+     The following adjusted combination of modes is convenient for many
+     purposes,
+
+          GSL_IEEE_MODE="double-precision,"\
+                          "mask-underflow,"\
+                            "mask-denormalized"
+
+     This choice ignores any errors relating to small numbers (either
+     denormalized, or underflowing to zero) but traps overflows,
+     division by zero and invalid operations.
+
+     Note that on the x86 series of processors this function sets both
+     the original x87 mode and the newer MXCSR mode, which controls SSE
+     floating-point operations.  The SSE floating-point units do not
+     have a precision-control bit, and always work in double-precision.
+     The single-precision and extended-precision keywords have no effect
+     in this case.
+
+To demonstrate the effects of different rounding modes consider the
+following program which computes e, the base of natural logarithms, by
+summing a rapidly-decreasing series,
+
+     e = 1 + 1/2! + 1/3! + 1/4! + ...
+       = 2.71828182846...
+
+     #include <stdio.h>
+     #include <gsl/gsl_math.h>
+     #include <gsl/gsl_ieee_utils.h>
+
+     int
+     main (void)
+     {
+       double x = 1, oldsum = 0, sum = 0;
+       int i = 0;
+
+       gsl_ieee_env_setup (); /* read GSL_IEEE_MODE */
+
+       do
+         {
+           i++;
+
+           oldsum = sum;
+           sum += x;
+           x = x / i;
+
+           printf ("i=%2d sum=%.18f error=%g\n",
+                   i, sum, sum - M_E);
+
+           if (i > 30)
+              break;
+         }
+       while (sum != oldsum);
+
+       return 0;
+     }
+
+Here are the results of running the program in 'round-to-nearest' mode.
+This is the IEEE default so it isn't really necessary to specify it
+here,
+
+     $ GSL_IEEE_MODE="round-to-nearest" ./a.out
+     i= 1 sum=1.000000000000000000 error=-1.71828
+     i= 2 sum=2.000000000000000000 error=-0.718282
+     ....
+     i=18 sum=2.718281828459045535 error=4.44089e-16
+     i=19 sum=2.718281828459045535 error=4.44089e-16
+
+After nineteen terms the sum converges to within 4 \times 10^-16 of the
+correct value.  If we now change the rounding mode to 'round-down' the
+final result is less accurate,
+
+     $ GSL_IEEE_MODE="round-down" ./a.out
+     i= 1 sum=1.000000000000000000 error=-1.71828
+     ....
+     i=19 sum=2.718281828459041094 error=-3.9968e-15
+
+The result is about 4 \times 10^-15 below the correct value, an order of
+magnitude worse than the result obtained in the 'round-to-nearest' mode.
+
+   If we change to rounding mode to 'round-up' then the final result is
+higher than the correct value (when we add each term to the sum the
+final result is always rounded up, which increases the sum by at least
+one tick until the added term underflows to zero).  To avoid this
+problem we would need to use a safer converge criterion, such as 'while
+(fabs(sum - oldsum) > epsilon)', with a suitably chosen value of
+epsilon.
+
+   Finally we can see the effect of computing the sum using
+single-precision rounding, in the default 'round-to-nearest' mode.  In
+this case the program thinks it is still using double precision numbers
+but the CPU rounds the result of each floating point operation to
+single-precision accuracy.  This simulates the effect of writing the
+program using single-precision 'float' variables instead of 'double'
+variables.  The iteration stops after about half the number of
+iterations and the final result is much less accurate,
+
+     $ GSL_IEEE_MODE="single-precision" ./a.out
+     ....
+     i=12 sum=2.718281984329223633 error=1.5587e-07
+
+with an error of O(10^-7), which corresponds to single precision
+accuracy (about 1 part in 10^7).  Continuing the iterations further does
+not decrease the error because all the subsequent results are rounded to
+the same value.
 
 
 File: gsl-ref.info,  Node: IEEE References and Further Reading,  Prev: Setting up your IEEE environment,  Up: IEEE floating-point arithmetic
@@ -3929,21 +6313,45 @@ Function Index
 * gsl_linalg_bidiag_unpack2:             Bidiagonalization.   (line  35)
 * gsl_linalg_bidiag_unpack_B:            Bidiagonalization.   (line  42)
 * gsl_linalg_cholesky_decomp:            Cholesky Decomposition.
-                                                              (line  19)
+                                                              (line  45)
+* gsl_linalg_cholesky_decomp1:           Cholesky Decomposition.
+                                                              (line  29)
+* gsl_linalg_cholesky_decomp2:           Cholesky Decomposition.
+                                                              (line  78)
 * gsl_linalg_cholesky_invert:            Cholesky Decomposition.
-                                                              (line  56)
+                                                              (line  69)
+* gsl_linalg_cholesky_rcond:             Cholesky Decomposition.
+                                                              (line 126)
+* gsl_linalg_cholesky_scale:             Cholesky Decomposition.
+                                                              (line 111)
+* gsl_linalg_cholesky_scale_apply:       Cholesky Decomposition.
+                                                              (line 121)
 * gsl_linalg_cholesky_solve:             Cholesky Decomposition.
-                                                              (line  36)
+                                                              (line  49)
+* gsl_linalg_cholesky_solve2:            Cholesky Decomposition.
+                                                              (line  95)
 * gsl_linalg_cholesky_svx:               Cholesky Decomposition.
-                                                              (line  46)
+                                                              (line  59)
+* gsl_linalg_cholesky_svx2:              Cholesky Decomposition.
+                                                              (line 103)
+* gsl_linalg_COD_decomp:                 Complete Orthogonal Decomposition.
+                                                              (line  25)
+* gsl_linalg_COD_decomp_e:               Complete Orthogonal Decomposition.
+                                                              (line  28)
+* gsl_linalg_COD_lssolve:                Complete Orthogonal Decomposition.
+                                                              (line  43)
+* gsl_linalg_COD_matZ:                   Complete Orthogonal Decomposition.
+                                                              (line  62)
+* gsl_linalg_COD_unpack:                 Complete Orthogonal Decomposition.
+                                                              (line  55)
 * gsl_linalg_complex_cholesky_decomp:    Cholesky Decomposition.
-                                                              (line  20)
+                                                              (line  30)
 * gsl_linalg_complex_cholesky_invert:    Cholesky Decomposition.
-                                                              (line  57)
+                                                              (line  70)
 * gsl_linalg_complex_cholesky_solve:     Cholesky Decomposition.
-                                                              (line  38)
+                                                              (line  51)
 * gsl_linalg_complex_cholesky_svx:       Cholesky Decomposition.
-                                                              (line  48)
+                                                              (line  61)
 * gsl_linalg_complex_householder_hm:     Householder Transformations.
                                                               (line  31)
 * gsl_linalg_complex_householder_hv:     Householder Transformations.
@@ -3998,22 +6406,54 @@ Function Index
 * gsl_linalg_LU_sgndet:                  LU Decomposition.    (line  99)
 * gsl_linalg_LU_solve:                   LU Decomposition.    (line  40)
 * gsl_linalg_LU_svx:                     LU Decomposition.    (line  49)
-* gsl_linalg_QRPT_decomp:                QR Decomposition with Column Pivoting.
-                                                              (line  18)
-* gsl_linalg_QRPT_decomp2:               QR Decomposition with Column Pivoting.
+* gsl_linalg_mcholesky_decomp:           Modified Cholesky Decomposition.
+                                                              (line  25)
+* gsl_linalg_mcholesky_rcond:            Modified Cholesky Decomposition.
+                                                              (line  55)
+* gsl_linalg_mcholesky_solve:            Modified Cholesky Decomposition.
                                                               (line  39)
+* gsl_linalg_mcholesky_svx:              Modified Cholesky Decomposition.
+                                                              (line  47)
+* gsl_linalg_pcholesky_decomp:           Pivoted Cholesky Decomposition.
+                                                              (line  20)
+* gsl_linalg_pcholesky_decomp2:          Pivoted Cholesky Decomposition.
+                                                              (line  48)
+* gsl_linalg_pcholesky_invert:           Pivoted Cholesky Decomposition.
+                                                              (line  83)
+* gsl_linalg_pcholesky_rcond:            Pivoted Cholesky Decomposition.
+                                                              (line  89)
+* gsl_linalg_pcholesky_solve:            Pivoted Cholesky Decomposition.
+                                                              (line  32)
+* gsl_linalg_pcholesky_solve2:           Pivoted Cholesky Decomposition.
+                                                              (line  65)
+* gsl_linalg_pcholesky_svx:              Pivoted Cholesky Decomposition.
+                                                              (line  40)
+* gsl_linalg_pcholesky_svx2:             Pivoted Cholesky Decomposition.
+                                                              (line  73)
+* gsl_linalg_QRPT_decomp:                QR Decomposition with Column Pivoting.
+                                                              (line  31)
+* gsl_linalg_QRPT_decomp2:               QR Decomposition with Column Pivoting.
+                                                              (line  52)
+* gsl_linalg_QRPT_lssolve:               QR Decomposition with Column Pivoting.
+                                                              (line  73)
+* gsl_linalg_QRPT_lssolve2:              QR Decomposition with Column Pivoting.
+                                                              (line  86)
 * gsl_linalg_QRPT_QRsolve:               QR Decomposition with Column Pivoting.
-                                                              (line  60)
+                                                              (line 100)
+* gsl_linalg_QRPT_rank:                  QR Decomposition with Column Pivoting.
+                                                              (line 127)
+* gsl_linalg_QRPT_rcond:                 QR Decomposition with Column Pivoting.
+                                                              (line 135)
 * gsl_linalg_QRPT_Rsolve:                QR Decomposition with Column Pivoting.
-                                                              (line  76)
+                                                              (line 116)
 * gsl_linalg_QRPT_Rsvx:                  QR Decomposition with Column Pivoting.
-                                                              (line  81)
+                                                              (line 121)
 * gsl_linalg_QRPT_solve:                 QR Decomposition with Column Pivoting.
-                                                              (line  46)
+                                                              (line  59)
 * gsl_linalg_QRPT_svx:                   QR Decomposition with Column Pivoting.
-                                                              (line  53)
+                                                              (line  66)
 * gsl_linalg_QRPT_update:                QR Decomposition with Column Pivoting.
-                                                              (line  67)
+                                                              (line 107)
 * gsl_linalg_QR_decomp:                  QR Decomposition.    (line  19)
 * gsl_linalg_QR_lssolve:                 QR Decomposition.    (line  50)
 * gsl_linalg_QR_QRsolve:                 QR Decomposition.    (line 102)
@@ -4048,6 +6488,12 @@ Function Index
                                                               (line  24)
 * gsl_linalg_symmtd_unpack_T:            Tridiagonal Decomposition of Real Symmetric Matrices.
                                                               (line  32)
+* gsl_linalg_tri_lower_invert:           Triangular Systems.  (line   7)
+* gsl_linalg_tri_lower_rcond:            Triangular Systems.  (line  20)
+* gsl_linalg_tri_lower_unit_invert:      Triangular Systems.  (line   9)
+* gsl_linalg_tri_upper_invert:           Triangular Systems.  (line   6)
+* gsl_linalg_tri_upper_rcond:            Triangular Systems.  (line  18)
+* gsl_linalg_tri_upper_unit_invert:      Triangular Systems.  (line   8)
 * gsl_log1p:                             Elementary Functions.
                                                               (line  12)
 * gsl_matrix_add:                        Matrix operations.   (line   8)
@@ -4222,83 +6668,6 @@ Function Index
 * gsl_monte_vegas_params_get:            VEGAS.               (line 131)
 * gsl_monte_vegas_params_set:            VEGAS.               (line 136)
 * gsl_monte_vegas_runval:                VEGAS.               (line 122)
-* gsl_multifit_covar:                    Computing the covariance matrix of best fit parameters.
-                                                              (line  11)
-* gsl_multifit_fdfridge_alloc:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  35)
-* gsl_multifit_fdfridge_driver:          High Level Driver.   (line  20)
-* gsl_multifit_fdfridge_free:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 119)
-* gsl_multifit_fdfridge_iterate:         Iteration of the Minimization Algorithm.
-                                                              (line  16)
-* gsl_multifit_fdfridge_name:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 127)
-* gsl_multifit_fdfridge_niter:           Iteration of the Minimization Algorithm.
-                                                              (line  59)
-* gsl_multifit_fdfridge_position:        Iteration of the Minimization Algorithm.
-                                                              (line  43)
-* gsl_multifit_fdfridge_residual:        Iteration of the Minimization Algorithm.
-                                                              (line  50)
-* gsl_multifit_fdfridge_set:             Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  64)
-* gsl_multifit_fdfridge_set2:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  81)
-* gsl_multifit_fdfridge_set3:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  99)
-* gsl_multifit_fdfridge_wset:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  67)
-* gsl_multifit_fdfridge_wset2:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  84)
-* gsl_multifit_fdfridge_wset3:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 102)
-* gsl_multifit_fdfsolver_alloc:          Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  16)
-* gsl_multifit_fdfsolver_dif_df:         Finite Difference Jacobian.
-                                                              (line  15)
-* gsl_multifit_fdfsolver_dif_fdf:        Finite Difference Jacobian.
-                                                              (line  26)
-* gsl_multifit_fdfsolver_driver:         High Level Driver.   (line  17)
-* gsl_multifit_fdfsolver_free:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 117)
-* gsl_multifit_fdfsolver_iterate:        Iteration of the Minimization Algorithm.
-                                                              (line  14)
-* gsl_multifit_fdfsolver_jac:            Computing the covariance matrix of best fit parameters.
-                                                              (line   6)
-* gsl_multifit_fdfsolver_lmder:          Minimization Algorithms using Derivatives.
-                                                              (line  70)
-* gsl_multifit_fdfsolver_lmniel:         Minimization Algorithms using Derivatives.
-                                                              (line  78)
-* gsl_multifit_fdfsolver_lmsder:         Minimization Algorithms using Derivatives.
-                                                              (line  12)
-* gsl_multifit_fdfsolver_name:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 125)
-* gsl_multifit_fdfsolver_niter:          Iteration of the Minimization Algorithm.
-                                                              (line  57)
-* gsl_multifit_fdfsolver_position:       Iteration of the Minimization Algorithm.
-                                                              (line  41)
-* gsl_multifit_fdfsolver_residual:       Iteration of the Minimization Algorithm.
-                                                              (line  48)
-* gsl_multifit_fdfsolver_set:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  50)
-* gsl_multifit_fdfsolver_test:           Search Stopping Parameters for Minimization Algorithms.
-                                                              (line  19)
-* gsl_multifit_fdfsolver_wset:           Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  52)
-* gsl_multifit_fsolver_alloc:            Initializing the Nonlinear Least-Squares Solver.
-                                                              (line   6)
-* gsl_multifit_fsolver_driver:           High Level Driver.   (line   9)
-* gsl_multifit_fsolver_free:             Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 116)
-* gsl_multifit_fsolver_iterate:          Iteration of the Minimization Algorithm.
-                                                              (line  12)
-* gsl_multifit_fsolver_name:             Initializing the Nonlinear Least-Squares Solver.
-                                                              (line 123)
-* gsl_multifit_fsolver_position:         Iteration of the Minimization Algorithm.
-                                                              (line  39)
-* gsl_multifit_fsolver_set:              Initializing the Nonlinear Least-Squares Solver.
-                                                              (line  45)
-* gsl_multifit_gradient:                 Search Stopping Parameters for Minimization Algorithms.
-                                                              (line  84)
 * gsl_multifit_linear:                   Multi-parameter regression.
                                                               (line  65)
 * gsl_multifit_linear_alloc:             Multi-parameter regression.
@@ -4345,6 +6714,38 @@ Function Index
                                                               (line  88)
 * gsl_multifit_linear_wstdform2:         Regularized regression.
                                                               (line 123)
+* gsl_multifit_nlinear_alloc:            Nonlinear Least-Squares Initialization.
+                                                              (line   6)
+* gsl_multifit_nlinear_covar:            Nonlinear Least-Squares Covariance Matrix.
+                                                              (line   6)
+* gsl_multifit_nlinear_default_parameters: Nonlinear Least-Squares Initialization.
+                                                              (line  43)
+* gsl_multifit_nlinear_driver:           Nonlinear Least-Squares High Level Driver.
+                                                              (line   9)
+* gsl_multifit_nlinear_free:             Nonlinear Least-Squares Initialization.
+                                                              (line  73)
+* gsl_multifit_nlinear_init:             Nonlinear Least-Squares Initialization.
+                                                              (line  52)
+* gsl_multifit_nlinear_iterate:          Nonlinear Least-Squares Iteration.
+                                                              (line  10)
+* gsl_multifit_nlinear_jac:              Nonlinear Least-Squares Iteration.
+                                                              (line  54)
+* gsl_multifit_nlinear_name:             Nonlinear Least-Squares Initialization.
+                                                              (line  80)
+* gsl_multifit_nlinear_niter:            Nonlinear Least-Squares Iteration.
+                                                              (line  60)
+* gsl_multifit_nlinear_position:         Nonlinear Least-Squares Iteration.
+                                                              (line  39)
+* gsl_multifit_nlinear_rcond:            Nonlinear Least-Squares Iteration.
+                                                              (line  68)
+* gsl_multifit_nlinear_residual:         Nonlinear Least-Squares Iteration.
+                                                              (line  46)
+* gsl_multifit_nlinear_test:             Nonlinear Least-Squares Testing for Convergence.
+                                                              (line  19)
+* gsl_multifit_nlinear_trs_name:         Nonlinear Least-Squares Initialization.
+                                                              (line  92)
+* gsl_multifit_nlinear_winit:            Nonlinear Least-Squares Initialization.
+                                                              (line  55)
 * gsl_multifit_robust:                   Robust linear regression.
                                                               (line 178)
 * gsl_multifit_robust_alloc:             Robust linear regression.
@@ -4379,50 +6780,79 @@ Function Index
                                                               (line 166)
 * gsl_multifit_robust_welsch:            Robust linear regression.
                                                               (line 134)
-* gsl_multifit_test_delta:               Search Stopping Parameters for Minimization Algorithms.
-                                                              (line  58)
-* gsl_multifit_test_gradient:            Search Stopping Parameters for Minimization Algorithms.
-                                                              (line  70)
 * gsl_multifit_wlinear:                  Multi-parameter regression.
                                                               (line  85)
-* gsl_multilarge_linear_accumulate:      Large Linear Systems Routines.
+* gsl_multilarge_linear_accumulate:      Large Dense Linear Systems Routines.
                                                               (line  89)
-* gsl_multilarge_linear_alloc:           Large Linear Systems Routines.
+* gsl_multilarge_linear_alloc:           Large Dense Linear Systems Routines.
                                                               (line   6)
-* gsl_multilarge_linear_free:            Large Linear Systems Routines.
+* gsl_multilarge_linear_free:            Large Dense Linear Systems Routines.
                                                               (line  29)
-* gsl_multilarge_linear_genform1:        Large Linear Systems Routines.
+* gsl_multilarge_linear_genform1:        Large Dense Linear Systems Routines.
                                                               (line 107)
-* gsl_multilarge_linear_genform2:        Large Linear Systems Routines.
+* gsl_multilarge_linear_genform2:        Large Dense Linear Systems Routines.
                                                               (line 117)
-* gsl_multilarge_linear_L_decomp:        Large Linear Systems Routines.
-                                                              (line  63)
-* gsl_multilarge_linear_name:            Large Linear Systems Routines.
-                                                              (line  33)
-* gsl_multilarge_linear_normal:          Large Linear Systems Routines.
-                                                              (line  15)
-* gsl_multilarge_linear_rcond:           Large Linear Systems Routines.
+* gsl_multilarge_linear_lcurve:          Large Dense Linear Systems Routines.
                                                               (line 125)
-* gsl_multilarge_linear_reset:           Large Linear Systems Routines.
+* gsl_multilarge_linear_L_decomp:        Large Dense Linear Systems Routines.
+                                                              (line  63)
+* gsl_multilarge_linear_name:            Large Dense Linear Systems Routines.
+                                                              (line  33)
+* gsl_multilarge_linear_normal:          Large Dense Linear Systems Routines.
+                                                              (line  15)
+* gsl_multilarge_linear_rcond:           Large Dense Linear Systems Routines.
+                                                              (line 141)
+* gsl_multilarge_linear_reset:           Large Dense Linear Systems Routines.
                                                               (line  38)
-* gsl_multilarge_linear_solve:           Large Linear Systems Routines.
+* gsl_multilarge_linear_solve:           Large Dense Linear Systems Routines.
                                                               (line  97)
-* gsl_multilarge_linear_stdform1:        Large Linear Systems Routines.
+* gsl_multilarge_linear_stdform1:        Large Dense Linear Systems Routines.
                                                               (line  43)
-* gsl_multilarge_linear_stdform2:        Large Linear Systems Routines.
+* gsl_multilarge_linear_stdform2:        Large Dense Linear Systems Routines.
                                                               (line  71)
-* gsl_multilarge_linear_tsqr:            Large Linear Systems Routines.
+* gsl_multilarge_linear_tsqr:            Large Dense Linear Systems Routines.
                                                               (line  22)
-* gsl_multilarge_linear_wstdform1:       Large Linear Systems Routines.
+* gsl_multilarge_linear_wstdform1:       Large Dense Linear Systems Routines.
                                                               (line  46)
-* gsl_multilarge_linear_wstdform2:       Large Linear Systems Routines.
+* gsl_multilarge_linear_wstdform2:       Large Dense Linear Systems Routines.
                                                               (line  75)
+* gsl_multilarge_nlinear_alloc:          Nonlinear Least-Squares Initialization.
+                                                              (line  10)
+* gsl_multilarge_nlinear_covar:          Nonlinear Least-Squares Covariance Matrix.
+                                                              (line   8)
+* gsl_multilarge_nlinear_default_parameters: Nonlinear Least-Squares Initialization.
+                                                              (line  45)
+* gsl_multilarge_nlinear_driver:         Nonlinear Least-Squares High Level Driver.
+                                                              (line  14)
+* gsl_multilarge_nlinear_free:           Nonlinear Least-Squares Initialization.
+                                                              (line  75)
+* gsl_multilarge_nlinear_init:           Nonlinear Least-Squares Initialization.
+                                                              (line  58)
+* gsl_multilarge_nlinear_iterate:        Nonlinear Least-Squares Iteration.
+                                                              (line  12)
+* gsl_multilarge_nlinear_name:           Nonlinear Least-Squares Initialization.
+                                                              (line  82)
+* gsl_multilarge_nlinear_niter:          Nonlinear Least-Squares Iteration.
+                                                              (line  62)
+* gsl_multilarge_nlinear_position:       Nonlinear Least-Squares Iteration.
+                                                              (line  41)
+* gsl_multilarge_nlinear_rcond:          Nonlinear Least-Squares Iteration.
+                                                              (line  70)
+* gsl_multilarge_nlinear_residual:       Nonlinear Least-Squares Iteration.
+                                                              (line  48)
+* gsl_multilarge_nlinear_test:           Nonlinear Least-Squares Testing for Convergence.
+                                                              (line  22)
+* gsl_multilarge_nlinear_trs_name:       Nonlinear Least-Squares Initialization.
+                                                              (line  94)
+* gsl_multilarge_nlinear_winit:          Nonlinear Least-Squares Initialization.
+                                                              (line  61)
 * gsl_multimin_fdfminimizer_alloc:       Initializing the Multidimensional Minimizer.
                                                               (line  10)
 * gsl_multimin_fdfminimizer_conjugate_fr: Multimin Algorithms with Derivatives.
                                                               (line  11)
 * gsl_multimin_fdfminimizer_conjugate_pr: Multimin Algorithms with Derivatives.
                                                               (line  28)
+* gsl_multimin_fdfminimizer_dx:          Multimin Iteration.  (line  36)
 * gsl_multimin_fdfminimizer_free:        Initializing the Multidimensional Minimizer.
                                                               (line  46)
 * gsl_multimin_fdfminimizer_gradient:    Multimin Iteration.  (line  34)
@@ -4430,7 +6860,7 @@ Function Index
 * gsl_multimin_fdfminimizer_minimum:     Multimin Iteration.  (line  30)
 * gsl_multimin_fdfminimizer_name:        Initializing the Multidimensional Minimizer.
                                                               (line  52)
-* gsl_multimin_fdfminimizer_restart:     Multimin Iteration.  (line  42)
+* gsl_multimin_fdfminimizer_restart:     Multimin Iteration.  (line  45)
 * gsl_multimin_fdfminimizer_set:         Initializing the Multidimensional Minimizer.
                                                               (line  21)
 * gsl_multimin_fdfminimizer_steepest_descent: Multimin Algorithms with Derivatives.
@@ -4456,7 +6886,7 @@ Function Index
                                                               (line  49)
 * gsl_multimin_fminimizer_set:           Initializing the Multidimensional Minimizer.
                                                               (line  24)
-* gsl_multimin_fminimizer_size:          Multimin Iteration.  (line  36)
+* gsl_multimin_fminimizer_size:          Multimin Iteration.  (line  38)
 * gsl_multimin_fminimizer_x:             Multimin Iteration.  (line  28)
 * gsl_multimin_test_gradient:            Multimin Stopping Criteria.
                                                               (line  18)
@@ -4639,7 +7069,7 @@ Function Index
 * gsl_permutation_memcpy:                Permutation allocation.
                                                               (line  26)
 * gsl_permutation_mul:                   Applying Permutations.
-                                                              (line  35)
+                                                              (line  44)
 * gsl_permutation_next:                  Permutation functions.
                                                               (line  14)
 * gsl_permutation_prev:                  Permutation functions.
@@ -4656,6 +7086,8 @@ Function Index
                                                               (line   6)
 * gsl_permute_inverse:                   Applying Permutations.
                                                               (line  11)
+* gsl_permute_matrix:                    Applying Permutations.
+                                                              (line  35)
 * gsl_permute_vector:                    Applying Permutations.
                                                               (line  16)
 * gsl_permute_vector_inverse:            Applying Permutations.
@@ -4856,6 +7288,16 @@ Function Index
                                                               (line  34)
 * gsl_ran_multinomial_pdf:               The Multinomial Distribution.
                                                               (line  28)
+* gsl_ran_multivariate_gaussian:         The Multivariate Gaussian Distribution.
+                                                              (line   6)
+* gsl_ran_multivariate_gaussian_log_pdf: The Multivariate Gaussian Distribution.
+                                                              (line  23)
+* gsl_ran_multivariate_gaussian_mean:    The Multivariate Gaussian Distribution.
+                                                              (line  31)
+* gsl_ran_multivariate_gaussian_pdf:     The Multivariate Gaussian Distribution.
+                                                              (line  20)
+* gsl_ran_multivariate_gaussian_vcov:    The Multivariate Gaussian Distribution.
+                                                              (line  43)
 * gsl_ran_negative_binomial:             The Negative Binomial Distribution.
                                                               (line   6)
 * gsl_ran_negative_binomial_pdf:         The Negative Binomial Distribution.
@@ -5071,31 +7513,35 @@ Function Index
 * gsl_rstat_free:                        Running Statistics Initializing the Accumulator.
                                                               (line  10)
 * gsl_rstat_kurtosis:                    Running Statistics Current Statistics.
-                                                              (line  35)
+                                                              (line  41)
 * gsl_rstat_max:                         Running Statistics Current Statistics.
                                                               (line   9)
 * gsl_rstat_mean:                        Running Statistics Current Statistics.
                                                               (line  12)
 * gsl_rstat_median:                      Running Statistics Current Statistics.
-                                                              (line  41)
+                                                              (line  47)
 * gsl_rstat_min:                         Running Statistics Current Statistics.
                                                               (line   6)
 * gsl_rstat_n:                           Running Statistics Adding Data to the Accumulator.
                                                               (line  12)
 * gsl_rstat_quantile_add:                Running Statistics Quantiles.
-                                                              (line  23)
+                                                              (line  28)
 * gsl_rstat_quantile_alloc:              Running Statistics Quantiles.
                                                               (line  13)
 * gsl_rstat_quantile_free:               Running Statistics Quantiles.
                                                               (line  19)
 * gsl_rstat_quantile_get:                Running Statistics Quantiles.
-                                                              (line  28)
+                                                              (line  33)
+* gsl_rstat_quantile_reset:              Running Statistics Quantiles.
+                                                              (line  23)
 * gsl_rstat_reset:                       Running Statistics Initializing the Accumulator.
                                                               (line  13)
+* gsl_rstat_rms:                         Running Statistics Current Statistics.
+                                                              (line  29)
 * gsl_rstat_sd:                          Running Statistics Current Statistics.
                                                               (line  24)
 * gsl_rstat_skew:                        Running Statistics Current Statistics.
-                                                              (line  29)
+                                                              (line  35)
 * gsl_rstat_variance:                    Running Statistics Current Statistics.
                                                               (line  18)
 * GSL_SET_COMPLEX:                       Representation of complex numbers.
@@ -6052,40 +8498,56 @@ Function Index
                                                               (line  23)
 * gsl_spline_name:                       1D Higher-level Interface.
                                                               (line  21)
-* gsl_spmatrix_add:                      Sparse matrix operations.
+* gsl_spmatrix_add:                      Sparse Matrices Operations.
                                                               (line   6)
-* gsl_spmatrix_alloc:                    Sparse matrix allocation.
+* gsl_spmatrix_alloc:                    Sparse Matrices Allocation.
                                                               (line  12)
-* gsl_spmatrix_alloc_nzmax:              Sparse matrix allocation.
+* gsl_spmatrix_alloc_nzmax:              Sparse Matrices Allocation.
                                                               (line  26)
-* gsl_spmatrix_compcol:                  Sparse matrix compressed format.
+* gsl_spmatrix_ccs:                      Sparse Matrices Compressed Format.
                                                               (line   9)
-* gsl_spmatrix_d2sp:                     Conversion between sparse and dense matrices.
+* gsl_spmatrix_crs:                      Sparse Matrices Compressed Format.
+                                                              (line  16)
+* gsl_spmatrix_d2sp:                     Sparse Matrices Conversion Between Sparse and Dense.
                                                               (line   9)
-* gsl_spmatrix_equal:                    Sparse matrix properties.
+* gsl_spmatrix_equal:                    Sparse Matrices Properties.
                                                               (line   9)
-* gsl_spmatrix_free:                     Sparse matrix allocation.
-                                                              (line  53)
-* gsl_spmatrix_get:                      Accessing sparse matrix elements.
-                                                              (line   6)
-* gsl_spmatrix_memcpy:                   Copying sparse matrices.
-                                                              (line   6)
-* gsl_spmatrix_minmax:                   Finding maximum and minimum elements of sparse matrices.
-                                                              (line   6)
-* gsl_spmatrix_nnz:                      Sparse matrix properties.
-                                                              (line   6)
-* gsl_spmatrix_realloc:                  Sparse matrix allocation.
-                                                              (line  46)
-* gsl_spmatrix_scale:                    Sparse matrix operations.
-                                                              (line  11)
-* gsl_spmatrix_set:                      Accessing sparse matrix elements.
-                                                              (line  11)
-* gsl_spmatrix_set_zero:                 Initializing sparse matrix elements.
-                                                              (line  11)
-* gsl_spmatrix_sp2d:                     Conversion between sparse and dense matrices.
+* gsl_spmatrix_fprintf:                  Sparse Matrices Reading and Writing.
+                                                              (line  24)
+* gsl_spmatrix_fread:                    Sparse Matrices Reading and Writing.
                                                               (line  14)
-* gsl_spmatrix_transpose_memcpy:         Copying sparse matrices.
-                                                              (line  12)
+* gsl_spmatrix_free:                     Sparse Matrices Allocation.
+                                                              (line  56)
+* gsl_spmatrix_fscanf:                   Sparse Matrices Reading and Writing.
+                                                              (line  34)
+* gsl_spmatrix_fwrite:                   Sparse Matrices Reading and Writing.
+                                                              (line   6)
+* gsl_spmatrix_get:                      Sparse Matrices Accessing Elements.
+                                                              (line   6)
+* gsl_spmatrix_memcpy:                   Sparse Matrices Copying.
+                                                              (line   6)
+* gsl_spmatrix_minmax:                   Sparse Matrices Finding Maximum and Minimum Elements.
+                                                              (line   6)
+* gsl_spmatrix_nnz:                      Sparse Matrices Properties.
+                                                              (line   6)
+* gsl_spmatrix_ptr:                      Sparse Matrices Accessing Elements.
+                                                              (line  16)
+* gsl_spmatrix_realloc:                  Sparse Matrices Allocation.
+                                                              (line  49)
+* gsl_spmatrix_scale:                    Sparse Matrices Operations.
+                                                              (line  11)
+* gsl_spmatrix_set:                      Sparse Matrices Accessing Elements.
+                                                              (line  11)
+* gsl_spmatrix_set_zero:                 Sparse Matrices Initializing Elements.
+                                                              (line  11)
+* gsl_spmatrix_sp2d:                     Sparse Matrices Conversion Between Sparse and Dense.
+                                                              (line  14)
+* gsl_spmatrix_transpose:                Sparse Matrices Exchanging Rows and Columns.
+                                                              (line  13)
+* gsl_spmatrix_transpose2:               Sparse Matrices Exchanging Rows and Columns.
+                                                              (line  18)
+* gsl_spmatrix_transpose_memcpy:         Sparse Matrices Exchanging Rows and Columns.
+                                                              (line   6)
 * gsl_stats_absdev:                      Absolute deviation.  (line   6)
 * gsl_stats_absdev_m:                    Absolute deviation.  (line  19)
 * gsl_stats_correlation:                 Correlation.         (line   6)

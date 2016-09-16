@@ -285,10 +285,11 @@ functions,
 @deftypefunx double gsl_multimin_fdfminimizer_minimum (const gsl_multimin_fdfminimizer * @var{s})
 @deftypefunx double gsl_multimin_fminimizer_minimum (const gsl_multimin_fminimizer * @var{s})
 @deftypefunx {gsl_vector *} gsl_multimin_fdfminimizer_gradient (const gsl_multimin_fdfminimizer * @var{s})
+@deftypefunx {gsl_vector *} gsl_multimin_fdfminimizer_dx (const gsl_multimin_fdfminimizer * @var{s})
 @deftypefunx double gsl_multimin_fminimizer_size (const gsl_multimin_fminimizer * @var{s})
 These functions return the current best estimate of the location of the
-minimum, the value of the function at that point, its gradient, 
-and minimizer specific characteristic size for the minimizer @var{s}.
+minimum, the value of the function at that point, its gradient, the last
+step increment of the estimate, and minimizer specific characteristic size for the minimizer @var{s}.
 @end deftypefun
 
 @deftypefun int gsl_multimin_fdfminimizer_restart (gsl_multimin_fdfminimizer * @var{s})

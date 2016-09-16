@@ -474,7 +474,7 @@ test_reg_sobolev(const size_t p, const size_t kmax, const gsl_rng *r)
 {
   const double tol = 1.0e-12;
   size_t i, j, k;
-  gsl_matrix *L = gsl_matrix_alloc(p, p);
+  gsl_matrix *L = gsl_matrix_calloc(p, p);
   gsl_matrix *LTL = gsl_matrix_alloc(p, p);   /* Sobolov L^T L */
   gsl_matrix *LTL2 = gsl_matrix_alloc(p, p);  /* alternate L^T L */
   gsl_matrix *Li = gsl_matrix_alloc(p, p);

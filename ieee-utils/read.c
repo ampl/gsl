@@ -79,23 +79,29 @@ gsl_ieee_read_mode_string (const char * description,
     status = lookup_string (p, &new_precision, &new_rounding, &new_exception) ;
 
     if (status)
-      GSL_ERROR ("unrecognized GSL_IEEE_MODE string.\nValid settings are:\n\n" 
-                 "  single-precision double-precision extended-precision\n"
-                 "  round-to-nearest round-down round-up round-to-zero\n"
-                 "  mask-invalid mask-denormalized mask-division-by-zero\n"
-                 "  mask-overflow mask-underflow mask-all\n"
-                 "  trap-common trap-inexact\n"
-                 "\n"
-                 "separated by commas. "
-                 "(e.g. GSL_IEEE_MODE=\"round-down,mask-underflow\")",
-                 GSL_EINVAL) ;
+      {
+        free(start);
+        GSL_ERROR ("unrecognized GSL_IEEE_MODE string.\nValid settings are:\n\n" 
+                   "  single-precision double-precision extended-precision\n"
+                   "  round-to-nearest round-down round-up round-to-zero\n"
+                   "  mask-invalid mask-denormalized mask-division-by-zero\n"
+                   "  mask-overflow mask-underflow mask-all\n"
+                   "  trap-common trap-inexact\n"
+                   "\n"
+                   "separated by commas. "
+                   "(e.g. GSL_IEEE_MODE=\"round-down,mask-underflow\")",
+                   GSL_EINVAL) ;
+      }
 
     if (new_precision) 
       {
         *precision = new_precision ;
         precision_count ++ ;
         if (precision_count > 1)
-          GSL_ERROR ("attempted to set IEEE precision twice", GSL_EINVAL) ;
+          {
+            free(start);
+            GSL_ERROR ("attempted to set IEEE precision twice", GSL_EINVAL) ;
+          }
       }
 
     if (new_rounding) 
@@ -103,7 +109,10 @@ gsl_ieee_read_mode_string (const char * description,
         *rounding = new_rounding ;
         rounding_count ++ ;
         if (rounding_count > 1)
-          GSL_ERROR ("attempted to set IEEE rounding mode twice", GSL_EINVAL) ;
+          {
+            free(start);
+            GSL_ERROR ("attempted to set IEEE rounding mode twice", GSL_EINVAL) ;
+          }
       }
 
     if (new_exception) 

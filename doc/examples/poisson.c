@@ -49,7 +49,7 @@ main()
     }
 
   /* convert to compressed column format */
-  C = gsl_spmatrix_compcol(A);
+  C = gsl_spmatrix_ccs(A);
 
   /* now solve the system with the GMRES iterative solver */
   {

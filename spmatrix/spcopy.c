@@ -84,6 +84,19 @@ gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
               dest->p[n] = src->p[n];
             }
         }
+      else if (GSL_SPMATRIX_ISCRS(src))
+        {
+          for (n = 0; n < src->nz; ++n)
+            {
+              dest->i[n] = src->i[n];
+              dest->data[n] = src->data[n];
+            }
+
+          for (n = 0; n < src->size1 + 1; ++n)
+            {
+              dest->p[n] = src->p[n];
+            }
+        }
       else
         {
           GSL_ERROR("invalid matrix type for src", GSL_EINVAL);

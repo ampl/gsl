@@ -41,6 +41,7 @@ overflow.
 * The Gaussian Distribution::   
 * The Gaussian Tail Distribution::  
 * The Bivariate Gaussian Distribution::  
+* The Multivariate Gaussian Distribution::  
 * The Exponential Distribution::  
 * The Laplace Distribution::    
 * The Exponential Power Distribution::  
@@ -364,6 +365,87 @@ deviations @var{sigma_x}, @var{sigma_y} and correlation coefficient
 @tex
 \centerline{\input rand-bivariate-gaussian.tex}
 @end tex
+
+@page
+@node The Multivariate Gaussian Distribution
+@section The Multivariate Gaussian Distribution
+
+@deftypefun int gsl_ran_multivariate_gaussian (const gsl_rng * @var{r}, const gsl_vector * @var{mu}, const gsl_matrix * @var{L}, gsl_vector * @var{result})
+@cindex Bivariate Gaussian distribution
+@cindex two dimensional Gaussian distribution
+@cindex Gaussian distribution, bivariate
+This function generates a random vector satisfying the @math{k}-dimensional multivariate Gaussian
+distribution with mean @math{\mu} and variance-covariance matrix
+@math{\Sigma}. On input, the @math{k}-vector @math{\mu} is given in @var{mu}, and
+the Cholesky factor of the @math{k}-by-@math{k} matrix @math{\Sigma = L L^T} is
+given in the lower triangle of @var{L}, as output from @code{gsl_linalg_cholesky_decomp}.
+The random vector is stored in @var{result} on output. The probability distribution
+for multivariate Gaussian random variates is
+@tex
+\beforedisplay
+$$
+p(x_1,\dots,x_k) dx_1 \dots dx_k = {1 \over \sqrt{(2 \pi)^k |\Sigma|}} \exp \left(-{1 \over 2} (x - \mu)^T \Sigma^{-1} (x - \mu)\right) dx_1 \dots dx_k
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+p(x_1,...,x_k) dx_1 ... dx_k = @{1 \over \sqrt@{(2 \pi)^k |\Sigma|@} \exp \left(-@{1 \over 2@} (x - \mu)^T \Sigma^@{-1@} (x - \mu)\right) dx_1 \dots dx_k
+@end example
+
+@end ifinfo
+@end deftypefun
+
+@deftypefun int gsl_ran_multivariate_gaussian_pdf (const gsl_vector * @var{x}, const gsl_vector * @var{mu}, const gsl_matrix * @var{L}, double * @var{result}, gsl_vector * @var{work})
+@deftypefunx int gsl_ran_multivariate_gaussian_log_pdf (const gsl_vector * @var{x}, const gsl_vector * @var{mu}, const gsl_matrix * @var{L}, double * @var{result}, gsl_vector * @var{work})
+These functions compute @math{p(x)} or @math{\log{p(x)}} at the point @var{x}, using mean vector
+@var{mu} and variance-covariance matrix specified by its Cholesky factor @var{L} using the formula
+above. Additional workspace of length @math{k} is required in @var{work}.
+@end deftypefun
+
+@deftypefun int gsl_ran_multivariate_gaussian_mean (const gsl_matrix * @var{X}, gsl_vector * @var{mu_hat})
+Given a set of @math{n} samples @math{X_j} from a @math{k}-dimensional multivariate Gaussian distribution,
+this function computes the maximum likelihood estimate of the mean of the distribution, given by
+@tex
+\beforedisplay
+$$
+\Hat{\mu} = {1 \over n} \sum_{j=1}^n X_j
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\Hat@{\mu@} = @{1 \over n@} \sum_@{j=1@}^n X_j
+@end example
+
+@end ifinfo
+The samples @math{X_1,X_2,\dots,X_n} are given in the @math{n}-by-@math{k} matrix @var{X}, and the maximum
+likelihood estimate of the mean is stored in @var{mu_hat} on output.
+@end deftypefun
+
+@deftypefun int gsl_ran_multivariate_gaussian_vcov (const gsl_matrix * @var{X}, gsl_matrix * @var{sigma_hat})
+Given a set of @math{n} samples @math{X_j} from a @math{k}-dimensional multivariate Gaussian distribution,
+this function computes the maximum likelihood estimate of the variance-covariance matrix of the distribution,
+given by
+@tex
+\beforedisplay
+$$
+\Hat{\Sigma} = {1 \over n} \sum_{j=1}^n \left( X_j - \Hat{\mu} \right) \left( X_j - \Hat{\mu} \right)^T
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+\Hat@{\Sigma@} = @{1 \over n@} \sum_@{j=1@}^n \left( X_j - \Hat@{\mu@} \right) \left( X_j - \Hat@{\mu@} \right)^T
+@end example
+
+@end ifinfo
+The samples @math{X_1,X_2,\dots,X_n} are given in the @math{n}-by-@math{k} matrix @var{X} and the maximum
+likelihood estimate of the variance-covariance matrix is stored in @var{sigma_hat} on output.
+@end deftypefun
 
 @page
 @node The Exponential Distribution

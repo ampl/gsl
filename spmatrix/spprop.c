@@ -67,7 +67,7 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
       else if (GSL_SPMATRIX_ISCCS(a))
         {
           /*
-           * for compressed column, both matrices should have everything
+           * for CCS, both matrices should have everything
            * in the same order
            */
 
@@ -80,6 +80,27 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
 
           /* check column pointers */
           for (n = 0; n < a->size2 + 1; ++n)
+            {
+              if (a->p[n] != b->p[n])
+                return 0;
+            }
+        }
+      else if (GSL_SPMATRIX_ISCRS(a))
+        {
+          /*
+           * for CRS, both matrices should have everything
+           * in the same order
+           */
+
+          /* check column indices and data */
+          for (n = 0; n < nz; ++n)
+            {
+              if ((a->i[n] != b->i[n]) || (a->data[n] != b->data[n]))
+                return 0;
+            }
+
+          /* check row pointers */
+          for (n = 0; n < a->size1 + 1; ++n)
             {
               if (a->p[n] != b->p[n])
                 return 0;

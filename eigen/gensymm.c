@@ -136,7 +136,7 @@ gsl_eigen_gensymm (gsl_matrix * A, gsl_matrix * B, gsl_vector * eval,
       int s;
 
       /* compute Cholesky factorization of B */
-      s = gsl_linalg_cholesky_decomp(B);
+      s = gsl_linalg_cholesky_decomp1(B);
       if (s != GSL_SUCCESS)
         return s; /* B is not positive definite */
 

@@ -47,6 +47,7 @@ hyperg_2F1_series(const double a, const double b, const double c,
   double del_pos = 1.0;
   double del_neg = 0.0;
   double del = 1.0;
+  double del_prev;
   double k = 0.0;
   int i = 0;
 
@@ -64,6 +65,7 @@ hyperg_2F1_series(const double a, const double b, const double c,
       result->err += 2.0 * GSL_DBL_EPSILON * (2.0*sqrt(k)+1.0) * fabs(result->val);
       GSL_ERROR ("error", GSL_EMAXITER);
     }
+    del_prev = del;
     del *= (a+k)*(b+k) * x / ((c+k) * (k+1.0));  /* Gauss series */
 
     if(del > 0.0) {
@@ -81,6 +83,16 @@ hyperg_2F1_series(const double a, const double b, const double c,
       del_neg  = -del;
       sum_neg -=  del;
     }
+
+    /*
+     * This stopping criteria is taken from the thesis
+     * "Computation of Hypergeometic Functions" by J. Pearson, pg. 31
+     * (http://people.maths.ox.ac.uk/porterm/research/pearson_final.pdf)
+     * and fixes bug #45926
+     */
+    if (fabs(del_prev / (sum_pos - sum_neg)) < GSL_DBL_EPSILON &&
+        fabs(del / (sum_pos - sum_neg)) < GSL_DBL_EPSILON)
+      break;
 
     k += 1.0;
   } while(fabs((del_pos + del_neg)/(sum_pos-sum_neg)) > GSL_DBL_EPSILON);

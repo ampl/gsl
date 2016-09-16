@@ -109,6 +109,22 @@ gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
       double *Cd;
       size_t j, p;
       size_t nz = 0; /* number of non-zeros in c */
+      size_t inner_size, outer_size;
+
+      if (GSL_SPMATRIX_ISCCS(a))
+        {
+          inner_size = M;
+          outer_size = N;
+        }
+      else if (GSL_SPMATRIX_ISCRS(a))
+        {
+          inner_size = N;
+          outer_size = M;
+        }
+      else
+        {
+          GSL_ERROR("unknown sparse matrix type", GSL_EINVAL);
+        }
 
       if (c->nzmax < a->nz + b->nz)
         {
@@ -118,21 +134,21 @@ gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
         }
 
       /* initialize w = 0 */
-      for (j = 0; j < M; ++j)
+      for (j = 0; j < inner_size; ++j)
         w[j] = 0;
 
       Ci = c->i;
       Cp = c->p;
       Cd = c->data;
 
-      for (j = 0; j < N; ++j)
+      for (j = 0; j < outer_size; ++j)
         {
           Cp[j] = nz;
 
-          /* x += A(:,j) */
+          /* CCS: x += A(:,j); CRS: x += A(j,:) */
           nz = gsl_spblas_scatter(a, j, 1.0, w, x, j + 1, c, nz);
 
-          /* x += B(:,j) */
+          /* CCS: x += B(:,j); CRS: x += B(j,:) */
           nz = gsl_spblas_scatter(b, j, 1.0, w, x, j + 1, c, nz);
 
           for (p = Cp[j]; p < nz; ++p)
@@ -140,7 +156,7 @@ gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
         }
 
       /* finalize last column of c */
-      Cp[N] = nz;
+      Cp[j] = nz;
       c->nz = nz;
 
       return status;

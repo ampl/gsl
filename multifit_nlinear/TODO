@@ -1,0 +1,7 @@
+1. cleanup trust.c (scale_Jg)
+2. rewrite qrsolv
+3. More/Sorensen method for mu calculation
+4. better condition estimate for svd
+5. fix subspace2D
+6. Revisit h_fvv = 0.01 vs 0.02 (originally 0.01)
+7. fdfvv test currently disabled in test_fdf.c - on MacOS, the lmaccel/box3d/fdfvv test fails

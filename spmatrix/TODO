@@ -1,1 +1,2 @@
-sparse fread/fwrite/fprintf routines
+1. extend transpose to CCS/CRS (in-place)
+2. extend spblas_dgemm to CRS

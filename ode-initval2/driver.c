@@ -37,8 +37,14 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
      another function.
    */
 
-  gsl_odeiv2_driver *state =
-    (gsl_odeiv2_driver *) malloc (sizeof (gsl_odeiv2_driver));
+  gsl_odeiv2_driver *state;
+
+  if (sys == NULL)
+    {
+      GSL_ERROR_NULL ("gsl_odeiv2_system must be defined", GSL_EINVAL);
+    }
+
+  state = (gsl_odeiv2_driver *) calloc (1, sizeof (gsl_odeiv2_driver));
 
   if (state == NULL)
     {
@@ -46,16 +52,12 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
                       GSL_ENOMEM);
     }
 
-  if (sys == NULL)
-    {
-      GSL_ERROR_NULL ("gsl_odeiv2_system must be defined", GSL_EINVAL);
-    }
-
   {
     const size_t dim = sys->dimension;
 
     if (dim == 0)
       {
+        gsl_odeiv2_driver_free(state);
         GSL_ERROR_NULL
           ("gsl_odeiv2_system dimension must be a positive integer",
            GSL_EINVAL);
@@ -67,7 +69,7 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
 
     if (state->s == NULL)
       {
-        free (state);
+        gsl_odeiv2_driver_free(state);
         GSL_ERROR_NULL ("failed to allocate step object", GSL_ENOMEM);
       }
 
@@ -76,8 +78,7 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
 
   if (state->e == NULL)
     {
-      gsl_odeiv2_step_free (state->s);
-      free (state);
+      gsl_odeiv2_driver_free(state);
       GSL_ERROR_NULL ("failed to allocate evolve object", GSL_ENOMEM);
     }
 
@@ -87,6 +88,7 @@ driver_alloc (const gsl_odeiv2_system * sys, const double hstart,
     }
   else
     {
+      gsl_odeiv2_driver_free(state);
       GSL_ERROR_NULL ("invalid hstart", GSL_EINVAL);
     }
 
@@ -479,12 +481,14 @@ gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * d, const double hstart)
 void
 gsl_odeiv2_driver_free (gsl_odeiv2_driver * state)
 {
-  if (state->c != NULL)
-    {
-      gsl_odeiv2_control_free (state->c);
-    }
+  if (state->c)
+    gsl_odeiv2_control_free (state->c);
 
-  gsl_odeiv2_evolve_free (state->e);
-  gsl_odeiv2_step_free (state->s);
+  if (state->e)
+    gsl_odeiv2_evolve_free (state->e);
+
+  if (state->s)
+    gsl_odeiv2_step_free (state->s);
+
   free (state);
 }

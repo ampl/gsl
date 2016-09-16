@@ -2,8 +2,8 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
-Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+The GSL Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -22,9 +22,589 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gsl-ref.info,  Node: Quasi-random number generator algorithms,  Next: Quasi-random number generator examples,  Prev: Saving and restoring quasi-random number generator state,  Up: Quasi-Random Sequences
+
+19.5 Quasi-random number generator algorithms
+=============================================
+
+The following quasi-random sequence algorithms are available,
+
+ -- Generator: gsl_qrng_niederreiter_2
+     This generator uses the algorithm described in Bratley, Fox,
+     Niederreiter, 'ACM Trans. Model. Comp. Sim.' 2, 195 (1992).  It is
+     valid up to 12 dimensions.
+
+ -- Generator: gsl_qrng_sobol
+     This generator uses the Sobol sequence described in Antonov,
+     Saleev, 'USSR Comput. Maths. Math. Phys.' 19, 252 (1980).  It is
+     valid up to 40 dimensions.
+
+ -- Generator: gsl_qrng_halton
+ -- Generator: gsl_qrng_reversehalton
+     These generators use the Halton and reverse Halton sequences
+     described in J.H. Halton, 'Numerische Mathematik' 2, 84-90 (1960)
+     and B. Vandewoestyne and R. Cools 'Computational and Applied
+     Mathematics' 189, 1&2, 341-361 (2006).  They are valid up to 1229
+     dimensions.
+
+
+File: gsl-ref.info,  Node: Quasi-random number generator examples,  Next: Quasi-random number references,  Prev: Quasi-random number generator algorithms,  Up: Quasi-Random Sequences
+
+19.6 Examples
+=============
+
+The following program prints the first 1024 points of the 2-dimensional
+Sobol sequence.
+
+     #include <stdio.h>
+     #include <gsl/gsl_qrng.h>
+
+     int
+     main (void)
+     {
+       int i;
+       gsl_qrng * q = gsl_qrng_alloc (gsl_qrng_sobol, 2);
+
+       for (i = 0; i < 1024; i++)
+         {
+           double v[2];
+           gsl_qrng_get (q, v);
+           printf ("%.5f %.5f\n", v[0], v[1]);
+         }
+
+       gsl_qrng_free (q);
+       return 0;
+     }
+
+Here is the output from the program,
+
+     $ ./a.out
+     0.50000 0.50000
+     0.75000 0.25000
+     0.25000 0.75000
+     0.37500 0.37500
+     0.87500 0.87500
+     0.62500 0.12500
+     0.12500 0.62500
+     ....
+
+It can be seen that successive points progressively fill-in the spaces
+between previous points.
+
+
+File: gsl-ref.info,  Node: Quasi-random number references,  Prev: Quasi-random number generator examples,  Up: Quasi-Random Sequences
+
+19.7 References
+===============
+
+The implementations of the quasi-random sequence routines are based on
+the algorithms described in the following paper,
+
+     P. Bratley and B.L. Fox and H. Niederreiter, "Algorithm 738:
+     Programs to Generate Niederreiter's Low-discrepancy Sequences",
+     'ACM Transactions on Mathematical Software', Vol. 20, No. 4,
+     December, 1994, p. 494-495.
+
+
+File: gsl-ref.info,  Node: Random Number Distributions,  Next: Statistics,  Prev: Quasi-Random Sequences,  Up: Top
+
+20 Random Number Distributions
+******************************
+
+This chapter describes functions for generating random variates and
+computing their probability distributions.  Samples from the
+distributions described in this chapter can be obtained using any of the
+random number generators in the library as an underlying source of
+randomness.
+
+   In the simplest cases a non-uniform distribution can be obtained
+analytically from the uniform distribution of a random number generator
+by applying an appropriate transformation.  This method uses one call to
+the random number generator.  More complicated distributions are created
+by the "acceptance-rejection" method, which compares the desired
+distribution against a distribution which is similar and known
+analytically.  This usually requires several samples from the generator.
+
+   The library also provides cumulative distribution functions and
+inverse cumulative distribution functions, sometimes referred to as
+quantile functions.  The cumulative distribution functions and their
+inverses are computed separately for the upper and lower tails of the
+distribution, allowing full accuracy to be retained for small results.
+
+   The functions for random variates and probability density functions
+described in this section are declared in 'gsl_randist.h'.  The
+corresponding cumulative distribution functions are declared in
+'gsl_cdf.h'.
+
+   Note that the discrete random variate functions always return a value
+of type 'unsigned int', and on most platforms this has a maximum value
+of 2^32-1 ~=~ 4.29e9.  They should only be called with a safe range of
+parameters (where there is a negligible probability of a variate
+exceeding this limit) to prevent incorrect results due to overflow.
+
+* Menu:
+
+* Random Number Distribution Introduction::  
+* The Gaussian Distribution::   
+* The Gaussian Tail Distribution::  
+* The Bivariate Gaussian Distribution::  
+* The Multivariate Gaussian Distribution::  
+* The Exponential Distribution::  
+* The Laplace Distribution::    
+* The Exponential Power Distribution::  
+* The Cauchy Distribution::     
+* The Rayleigh Distribution::   
+* The Rayleigh Tail Distribution::  
+* The Landau Distribution::     
+* The Levy alpha-Stable Distributions::  
+* The Levy skew alpha-Stable Distribution::  
+* The Gamma Distribution::      
+* The Flat (Uniform) Distribution::  
+* The Lognormal Distribution::  
+* The Chi-squared Distribution::  
+* The F-distribution::          
+* The t-distribution::          
+* The Beta Distribution::       
+* The Logistic Distribution::   
+* The Pareto Distribution::     
+* Spherical Vector Distributions::  
+* The Weibull Distribution::    
+* The Type-1 Gumbel Distribution::  
+* The Type-2 Gumbel Distribution::  
+* The Dirichlet Distribution::  
+* General Discrete Distributions::  
+* The Poisson Distribution::    
+* The Bernoulli Distribution::  
+* The Binomial Distribution::   
+* The Multinomial Distribution::  
+* The Negative Binomial Distribution::  
+* The Pascal Distribution::     
+* The Geometric Distribution::  
+* The Hypergeometric Distribution::  
+* The Logarithmic Distribution::  
+* Shuffling and Sampling::      
+* Random Number Distribution Examples::  
+* Random Number Distribution References and Further Reading::  
+
+
+File: gsl-ref.info,  Node: Random Number Distribution Introduction,  Next: The Gaussian Distribution,  Up: Random Number Distributions
+
+20.1 Introduction
+=================
+
+Continuous random number distributions are defined by a probability
+density function, p(x), such that the probability of x occurring in the
+infinitesimal range x to x+dx is p dx.
+
+   The cumulative distribution function for the lower tail P(x) is
+defined by the integral,
+
+     P(x) = \int_{-\infty}^{x} dx' p(x')
+
+and gives the probability of a variate taking a value less than x.
+
+   The cumulative distribution function for the upper tail Q(x) is
+defined by the integral,
+
+     Q(x) = \int_{x}^{+\infty} dx' p(x')
+
+and gives the probability of a variate taking a value greater than x.
+
+   The upper and lower cumulative distribution functions are related by
+P(x) + Q(x) = 1 and satisfy 0 <= P(x) <= 1, 0 <= Q(x) <= 1.
+
+   The inverse cumulative distributions, x=P^{-1}(P) and x=Q^{-1}(Q)
+give the values of x which correspond to a specific value of P or Q.
+They can be used to find confidence limits from probability values.
+
+   For discrete distributions the probability of sampling the integer
+value k is given by p(k), where \sum_k p(k) = 1.  The cumulative
+distribution for the lower tail P(k) of a discrete distribution is
+defined as,
+
+     P(k) = \sum_{i <= k} p(i)
+
+where the sum is over the allowed range of the distribution less than or
+equal to k.
+
+   The cumulative distribution for the upper tail of a discrete
+distribution Q(k) is defined as
+
+     Q(k) = \sum_{i > k} p(i)
+
+giving the sum of probabilities for all values greater than k.  These
+two definitions satisfy the identity P(k)+Q(k)=1.
+
+   If the range of the distribution is 1 to n inclusive then P(n)=1,
+Q(n)=0 while P(1) = p(1), Q(1)=1-p(1).
+
+
+File: gsl-ref.info,  Node: The Gaussian Distribution,  Next: The Gaussian Tail Distribution,  Prev: Random Number Distribution Introduction,  Up: Random Number Distributions
+
+20.2 The Gaussian Distribution
+==============================
+
+ -- Function: double gsl_ran_gaussian (const gsl_rng * R, double SIGMA)
+     This function returns a Gaussian random variate, with mean zero and
+     standard deviation SIGMA.  The probability distribution for
+     Gaussian random variates is,
+
+          p(x) dx = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2) dx
+
+     for x in the range -\infty to +\infty.  Use the transformation z =
+     \mu + x on the numbers returned by 'gsl_ran_gaussian' to obtain a
+     Gaussian distribution with mean \mu.  This function uses the
+     Box-Muller algorithm which requires two calls to the random number
+     generator R.
+
+ -- Function: double gsl_ran_gaussian_pdf (double X, double SIGMA)
+     This function computes the probability density p(x) at X for a
+     Gaussian distribution with standard deviation SIGMA, using the
+     formula given above.
+
+
+ -- Function: double gsl_ran_gaussian_ziggurat (const gsl_rng * R,
+          double SIGMA)
+ -- Function: double gsl_ran_gaussian_ratio_method (const gsl_rng * R,
+          double SIGMA)
+     This function computes a Gaussian random variate using the
+     alternative Marsaglia-Tsang ziggurat and Kinderman-Monahan-Leva
+     ratio methods.  The Ziggurat algorithm is the fastest available
+     algorithm in most cases.
+
+ -- Function: double gsl_ran_ugaussian (const gsl_rng * R)
+ -- Function: double gsl_ran_ugaussian_pdf (double X)
+ -- Function: double gsl_ran_ugaussian_ratio_method (const gsl_rng * R)
+     These functions compute results for the unit Gaussian distribution.
+     They are equivalent to the functions above with a standard
+     deviation of one, SIGMA = 1.
+
+ -- Function: double gsl_cdf_gaussian_P (double X, double SIGMA)
+ -- Function: double gsl_cdf_gaussian_Q (double X, double SIGMA)
+ -- Function: double gsl_cdf_gaussian_Pinv (double P, double SIGMA)
+ -- Function: double gsl_cdf_gaussian_Qinv (double Q, double SIGMA)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the Gaussian distribution with standard
+     deviation SIGMA.
+
+ -- Function: double gsl_cdf_ugaussian_P (double X)
+ -- Function: double gsl_cdf_ugaussian_Q (double X)
+ -- Function: double gsl_cdf_ugaussian_Pinv (double P)
+ -- Function: double gsl_cdf_ugaussian_Qinv (double Q)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the unit Gaussian distribution.
+
+
+File: gsl-ref.info,  Node: The Gaussian Tail Distribution,  Next: The Bivariate Gaussian Distribution,  Prev: The Gaussian Distribution,  Up: Random Number Distributions
+
+20.3 The Gaussian Tail Distribution
+===================================
+
+ -- Function: double gsl_ran_gaussian_tail (const gsl_rng * R, double A,
+          double SIGMA)
+     This function provides random variates from the upper tail of a
+     Gaussian distribution with standard deviation SIGMA.  The values
+     returned are larger than the lower limit A, which must be positive.
+     The method is based on Marsaglia's famous rectangle-wedge-tail
+     algorithm (Ann.  Math.  Stat.  32, 894-899 (1961)), with this
+     aspect explained in Knuth, v2, 3rd ed, p139,586 (exercise 11).
+
+     The probability distribution for Gaussian tail random variates is,
+
+          p(x) dx = {1 \over N(a;\sigma) \sqrt{2 \pi \sigma^2}} \exp (- x^2/(2 \sigma^2)) dx
+
+     for x > a where N(a;\sigma) is the normalization constant,
+
+          N(a;\sigma) = (1/2) erfc(a / sqrt(2 sigma^2)).
+
+ -- Function: double gsl_ran_gaussian_tail_pdf (double X, double A,
+          double SIGMA)
+     This function computes the probability density p(x) at X for a
+     Gaussian tail distribution with standard deviation SIGMA and lower
+     limit A, using the formula given above.
+
+
+ -- Function: double gsl_ran_ugaussian_tail (const gsl_rng * R, double
+          A)
+ -- Function: double gsl_ran_ugaussian_tail_pdf (double X, double A)
+     These functions compute results for the tail of a unit Gaussian
+     distribution.  They are equivalent to the functions above with a
+     standard deviation of one, SIGMA = 1.
+
+
+File: gsl-ref.info,  Node: The Bivariate Gaussian Distribution,  Next: The Multivariate Gaussian Distribution,  Prev: The Gaussian Tail Distribution,  Up: Random Number Distributions
+
+20.4 The Bivariate Gaussian Distribution
+========================================
+
+ -- Function: void gsl_ran_bivariate_gaussian (const gsl_rng * R, double
+          SIGMA_X, double SIGMA_Y, double RHO, double * X, double * Y)
+     This function generates a pair of correlated Gaussian variates,
+     with mean zero, correlation coefficient RHO and standard deviations
+     SIGMA_X and SIGMA_Y in the x and y directions.  The probability
+     distribution for bivariate Gaussian random variates is,
+
+          p(x,y) dx dy = {1 \over 2 \pi \sigma_x \sigma_y \sqrt{1-\rho^2}} \exp (-(x^2/\sigma_x^2 + y^2/\sigma_y^2 - 2 \rho x y/(\sigma_x\sigma_y))/2(1-\rho^2)) dx dy
+
+     for x,y in the range -\infty to +\infty.  The correlation
+     coefficient RHO should lie between 1 and -1.
+
+ -- Function: double gsl_ran_bivariate_gaussian_pdf (double X, double Y,
+          double SIGMA_X, double SIGMA_Y, double RHO)
+     This function computes the probability density p(x,y) at (X,Y) for
+     a bivariate Gaussian distribution with standard deviations SIGMA_X,
+     SIGMA_Y and correlation coefficient RHO, using the formula given
+     above.
+
+
+
+File: gsl-ref.info,  Node: The Multivariate Gaussian Distribution,  Next: The Exponential Distribution,  Prev: The Bivariate Gaussian Distribution,  Up: Random Number Distributions
+
+20.5 The Multivariate Gaussian Distribution
+===========================================
+
+ -- Function: int gsl_ran_multivariate_gaussian (const gsl_rng * R,
+          const gsl_vector * MU, const gsl_matrix * L, gsl_vector *
+          RESULT)
+     This function generates a random vector satisfying the
+     k-dimensional multivariate Gaussian distribution with mean \mu and
+     variance-covariance matrix \Sigma.  On input, the k-vector \mu is
+     given in MU, and the Cholesky factor of the k-by-k matrix \Sigma =
+     L L^T is given in the lower triangle of L, as output from
+     'gsl_linalg_cholesky_decomp'.  The random vector is stored in
+     RESULT on output.  The probability distribution for multivariate
+     Gaussian random variates is
+
+          p(x_1,...,x_k) dx_1 ... dx_k = {1 \over \sqrt{(2 \pi)^k |\Sigma|} \exp \left(-{1 \over 2} (x - \mu)^T \Sigma^{-1} (x - \mu)\right) dx_1 \dots dx_k
+
+ -- Function: int gsl_ran_multivariate_gaussian_pdf (const gsl_vector *
+          X, const gsl_vector * MU, const gsl_matrix * L, double *
+          RESULT, gsl_vector * WORK)
+ -- Function: int gsl_ran_multivariate_gaussian_log_pdf (const
+          gsl_vector * X, const gsl_vector * MU, const gsl_matrix * L,
+          double * RESULT, gsl_vector * WORK)
+     These functions compute p(x) or \log{p(x)} at the point X, using
+     mean vector MU and variance-covariance matrix specified by its
+     Cholesky factor L using the formula above.  Additional workspace of
+     length k is required in WORK.
+
+ -- Function: int gsl_ran_multivariate_gaussian_mean (const gsl_matrix *
+          X, gsl_vector * MU_HAT)
+     Given a set of n samples X_j from a k-dimensional multivariate
+     Gaussian distribution, this function computes the maximum
+     likelihood estimate of the mean of the distribution, given by
+
+          \Hat{\mu} = {1 \over n} \sum_{j=1}^n X_j
+
+     The samples X_1,X_2,\dots,X_n are given in the n-by-k matrix X, and
+     the maximum likelihood estimate of the mean is stored in MU_HAT on
+     output.
+
+ -- Function: int gsl_ran_multivariate_gaussian_vcov (const gsl_matrix *
+          X, gsl_matrix * SIGMA_HAT)
+     Given a set of n samples X_j from a k-dimensional multivariate
+     Gaussian distribution, this function computes the maximum
+     likelihood estimate of the variance-covariance matrix of the
+     distribution, given by
+
+          \Hat{\Sigma} = {1 \over n} \sum_{j=1}^n \left( X_j - \Hat{\mu} \right) \left( X_j - \Hat{\mu} \right)^T
+
+     The samples X_1,X_2,\dots,X_n are given in the n-by-k matrix X and
+     the maximum likelihood estimate of the variance-covariance matrix
+     is stored in SIGMA_HAT on output.
+
+
+File: gsl-ref.info,  Node: The Exponential Distribution,  Next: The Laplace Distribution,  Prev: The Multivariate Gaussian Distribution,  Up: Random Number Distributions
+
+20.6 The Exponential Distribution
+=================================
+
+ -- Function: double gsl_ran_exponential (const gsl_rng * R, double MU)
+     This function returns a random variate from the exponential
+     distribution with mean MU.  The distribution is,
+
+          p(x) dx = {1 \over \mu} \exp(-x/\mu) dx
+
+     for x >= 0.
+
+ -- Function: double gsl_ran_exponential_pdf (double X, double MU)
+     This function computes the probability density p(x) at X for an
+     exponential distribution with mean MU, using the formula given
+     above.
+
+
+ -- Function: double gsl_cdf_exponential_P (double X, double MU)
+ -- Function: double gsl_cdf_exponential_Q (double X, double MU)
+ -- Function: double gsl_cdf_exponential_Pinv (double P, double MU)
+ -- Function: double gsl_cdf_exponential_Qinv (double Q, double MU)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the exponential distribution with mean
+     MU.
+
+
+File: gsl-ref.info,  Node: The Laplace Distribution,  Next: The Exponential Power Distribution,  Prev: The Exponential Distribution,  Up: Random Number Distributions
+
+20.7 The Laplace Distribution
+=============================
+
+ -- Function: double gsl_ran_laplace (const gsl_rng * R, double A)
+     This function returns a random variate from the Laplace
+     distribution with width A.  The distribution is,
+
+          p(x) dx = {1 \over 2 a}  \exp(-|x/a|) dx
+
+     for -\infty < x < \infty.
+
+ -- Function: double gsl_ran_laplace_pdf (double X, double A)
+     This function computes the probability density p(x) at X for a
+     Laplace distribution with width A, using the formula given above.
+
+
+ -- Function: double gsl_cdf_laplace_P (double X, double A)
+ -- Function: double gsl_cdf_laplace_Q (double X, double A)
+ -- Function: double gsl_cdf_laplace_Pinv (double P, double A)
+ -- Function: double gsl_cdf_laplace_Qinv (double Q, double A)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the Laplace distribution with width A.
+
+
+File: gsl-ref.info,  Node: The Exponential Power Distribution,  Next: The Cauchy Distribution,  Prev: The Laplace Distribution,  Up: Random Number Distributions
+
+20.8 The Exponential Power Distribution
+=======================================
+
+ -- Function: double gsl_ran_exppow (const gsl_rng * R, double A, double
+          B)
+     This function returns a random variate from the exponential power
+     distribution with scale parameter A and exponent B.  The
+     distribution is,
+
+          p(x) dx = {1 \over 2 a \Gamma(1+1/b)} \exp(-|x/a|^b) dx
+
+     for x >= 0.  For b = 1 this reduces to the Laplace distribution.
+     For b = 2 it has the same form as a Gaussian distribution, but with
+     a = \sqrt{2} \sigma.
+
+ -- Function: double gsl_ran_exppow_pdf (double X, double A, double B)
+     This function computes the probability density p(x) at X for an
+     exponential power distribution with scale parameter A and exponent
+     B, using the formula given above.
+
+
+ -- Function: double gsl_cdf_exppow_P (double X, double A, double B)
+ -- Function: double gsl_cdf_exppow_Q (double X, double A, double B)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) for the exponential power distribution with parameters A and
+     B.
+
+
+File: gsl-ref.info,  Node: The Cauchy Distribution,  Next: The Rayleigh Distribution,  Prev: The Exponential Power Distribution,  Up: Random Number Distributions
+
+20.9 The Cauchy Distribution
+============================
+
+ -- Function: double gsl_ran_cauchy (const gsl_rng * R, double A)
+     This function returns a random variate from the Cauchy distribution
+     with scale parameter A.  The probability distribution for Cauchy
+     random variates is,
+
+          p(x) dx = {1 \over a\pi (1 + (x/a)^2) } dx
+
+     for x in the range -\infty to +\infty.  The Cauchy distribution is
+     also known as the Lorentz distribution.
+
+ -- Function: double gsl_ran_cauchy_pdf (double X, double A)
+     This function computes the probability density p(x) at X for a
+     Cauchy distribution with scale parameter A, using the formula given
+     above.
+
+
+ -- Function: double gsl_cdf_cauchy_P (double X, double A)
+ -- Function: double gsl_cdf_cauchy_Q (double X, double A)
+ -- Function: double gsl_cdf_cauchy_Pinv (double P, double A)
+ -- Function: double gsl_cdf_cauchy_Qinv (double Q, double A)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the Cauchy distribution with scale
+     parameter A.
+
+
+File: gsl-ref.info,  Node: The Rayleigh Distribution,  Next: The Rayleigh Tail Distribution,  Prev: The Cauchy Distribution,  Up: Random Number Distributions
+
+20.10 The Rayleigh Distribution
+===============================
+
+ -- Function: double gsl_ran_rayleigh (const gsl_rng * R, double SIGMA)
+     This function returns a random variate from the Rayleigh
+     distribution with scale parameter SIGMA.  The distribution is,
+
+          p(x) dx = {x \over \sigma^2} \exp(- x^2/(2 \sigma^2)) dx
+
+     for x > 0.
+
+ -- Function: double gsl_ran_rayleigh_pdf (double X, double SIGMA)
+     This function computes the probability density p(x) at X for a
+     Rayleigh distribution with scale parameter SIGMA, using the formula
+     given above.
+
+
+ -- Function: double gsl_cdf_rayleigh_P (double X, double SIGMA)
+ -- Function: double gsl_cdf_rayleigh_Q (double X, double SIGMA)
+ -- Function: double gsl_cdf_rayleigh_Pinv (double P, double SIGMA)
+ -- Function: double gsl_cdf_rayleigh_Qinv (double Q, double SIGMA)
+     These functions compute the cumulative distribution functions P(x),
+     Q(x) and their inverses for the Rayleigh distribution with scale
+     parameter SIGMA.
+
+
+File: gsl-ref.info,  Node: The Rayleigh Tail Distribution,  Next: The Landau Distribution,  Prev: The Rayleigh Distribution,  Up: Random Number Distributions
+
+20.11 The Rayleigh Tail Distribution
+====================================
+
+ -- Function: double gsl_ran_rayleigh_tail (const gsl_rng * R, double A,
+          double SIGMA)
+     This function returns a random variate from the tail of the
+     Rayleigh distribution with scale parameter SIGMA and a lower limit
+     of A.  The distribution is,
+
+          p(x) dx = {x \over \sigma^2} \exp ((a^2 - x^2) /(2 \sigma^2)) dx
+
+     for x > a.
+
+ -- Function: double gsl_ran_rayleigh_tail_pdf (double X, double A,
+          double SIGMA)
+     This function computes the probability density p(x) at X for a
+     Rayleigh tail distribution with scale parameter SIGMA and lower
+     limit A, using the formula given above.
+
+
+
+File: gsl-ref.info,  Node: The Landau Distribution,  Next: The Levy alpha-Stable Distributions,  Prev: The Rayleigh Tail Distribution,  Up: Random Number Distributions
+
+20.12 The Landau Distribution
+=============================
+
+ -- Function: double gsl_ran_landau (const gsl_rng * R)
+     This function returns a random variate from the Landau
+     distribution.  The probability distribution for Landau random
+     variates is defined analytically by the complex integral,
+
+          p(x) = (1/(2 \pi i)) \int_{c-i\infty}^{c+i\infty} ds exp(s log(s) + x s)
+     For numerical purposes it is more convenient to use the following
+     equivalent form of the integral,
+
+          p(x) = (1/\pi) \int_0^\infty dt \exp(-t \log(t) - x t) \sin(\pi t).
+
+ -- Function: double gsl_ran_landau_pdf (double X)
+     This function computes the probability density p(x) at X for the
+     Landau distribution using an approximation to the formula given
+     above.
+
+
+
 File: gsl-ref.info,  Node: The Levy alpha-Stable Distributions,  Next: The Levy skew alpha-Stable Distribution,  Prev: The Landau Distribution,  Up: Random Number Distributions
 
-20.12 The Levy alpha-Stable Distributions
+20.13 The Levy alpha-Stable Distributions
 =========================================
 
  -- Function: double gsl_ran_levy (const gsl_rng * R, double C, double
@@ -47,7 +627,7 @@ File: gsl-ref.info,  Node: The Levy alpha-Stable Distributions,  Next: The Levy 
 
 File: gsl-ref.info,  Node: The Levy skew alpha-Stable Distribution,  Next: The Gamma Distribution,  Prev: The Levy alpha-Stable Distributions,  Up: Random Number Distributions
 
-20.13 The Levy skew alpha-Stable Distribution
+20.14 The Levy skew alpha-Stable Distribution
 =============================================
 
  -- Function: double gsl_ran_levy_skew (const gsl_rng * R, double C,
@@ -80,7 +660,7 @@ as an alpha-stable variate, p(N^(1/\alpha) c, \alpha, \beta).
 
 File: gsl-ref.info,  Node: The Gamma Distribution,  Next: The Flat (Uniform) Distribution,  Prev: The Levy skew alpha-Stable Distribution,  Up: Random Number Distributions
 
-20.14 The Gamma Distribution
+20.15 The Gamma Distribution
 ============================
 
  -- Function: double gsl_ran_gamma (const gsl_rng * R, double A, double
@@ -121,7 +701,7 @@ File: gsl-ref.info,  Node: The Gamma Distribution,  Next: The Flat (Uniform) Dis
 
 File: gsl-ref.info,  Node: The Flat (Uniform) Distribution,  Next: The Lognormal Distribution,  Prev: The Gamma Distribution,  Up: Random Number Distributions
 
-20.15 The Flat (Uniform) Distribution
+20.16 The Flat (Uniform) Distribution
 =====================================
 
  -- Function: double gsl_ran_flat (const gsl_rng * R, double A, double
@@ -148,7 +728,7 @@ File: gsl-ref.info,  Node: The Flat (Uniform) Distribution,  Next: The Lognormal
 
 File: gsl-ref.info,  Node: The Lognormal Distribution,  Next: The Chi-squared Distribution,  Prev: The Flat (Uniform) Distribution,  Up: Random Number Distributions
 
-20.16 The Lognormal Distribution
+20.17 The Lognormal Distribution
 ================================
 
  -- Function: double gsl_ran_lognormal (const gsl_rng * R, double ZETA,
@@ -182,7 +762,7 @@ File: gsl-ref.info,  Node: The Lognormal Distribution,  Next: The Chi-squared Di
 
 File: gsl-ref.info,  Node: The Chi-squared Distribution,  Next: The F-distribution,  Prev: The Lognormal Distribution,  Up: Random Number Distributions
 
-20.17 The Chi-squared Distribution
+20.18 The Chi-squared Distribution
 ==================================
 
 The chi-squared distribution arises in statistics.  If Y_i are n
@@ -219,7 +799,7 @@ has a chi-squared distribution with n degrees of freedom.
 
 File: gsl-ref.info,  Node: The F-distribution,  Next: The t-distribution,  Prev: The Chi-squared Distribution,  Up: Random Number Distributions
 
-20.18 The F-distribution
+20.19 The F-distribution
 ========================
 
 The F-distribution arises in statistics.  If Y_1 and Y_2 are chi-squared
@@ -262,7 +842,7 @@ has an F-distribution F(x;\nu_1,\nu_2).
 
 File: gsl-ref.info,  Node: The t-distribution,  Next: The Beta Distribution,  Prev: The F-distribution,  Up: Random Number Distributions
 
-20.19 The t-distribution
+20.20 The t-distribution
 ========================
 
 The t-distribution arises in statistics.  If Y_1 has a normal
@@ -299,7 +879,7 @@ has a t-distribution t(x;\nu) with \nu degrees of freedom.
 
 File: gsl-ref.info,  Node: The Beta Distribution,  Next: The Logistic Distribution,  Prev: The t-distribution,  Up: Random Number Distributions
 
-20.20 The Beta Distribution
+20.21 The Beta Distribution
 ===========================
 
  -- Function: double gsl_ran_beta (const gsl_rng * R, double A, double
@@ -328,7 +908,7 @@ File: gsl-ref.info,  Node: The Beta Distribution,  Next: The Logistic Distributi
 
 File: gsl-ref.info,  Node: The Logistic Distribution,  Next: The Pareto Distribution,  Prev: The Beta Distribution,  Up: Random Number Distributions
 
-20.21 The Logistic Distribution
+20.22 The Logistic Distribution
 ===============================
 
  -- Function: double gsl_ran_logistic (const gsl_rng * R, double A)
@@ -356,7 +936,7 @@ File: gsl-ref.info,  Node: The Logistic Distribution,  Next: The Pareto Distribu
 
 File: gsl-ref.info,  Node: The Pareto Distribution,  Next: Spherical Vector Distributions,  Prev: The Logistic Distribution,  Up: Random Number Distributions
 
-20.22 The Pareto Distribution
+20.23 The Pareto Distribution
 =============================
 
  -- Function: double gsl_ran_pareto (const gsl_rng * R, double A, double
@@ -385,7 +965,7 @@ File: gsl-ref.info,  Node: The Pareto Distribution,  Next: Spherical Vector Dist
 
 File: gsl-ref.info,  Node: Spherical Vector Distributions,  Next: The Weibull Distribution,  Prev: The Pareto Distribution,  Up: Random Number Distributions
 
-20.23 Spherical Vector Distributions
+20.24 Spherical Vector Distributions
 ====================================
 
 The spherical distributions generate random vectors, located on a
@@ -437,7 +1017,7 @@ in the steps of a random walk.
 
 File: gsl-ref.info,  Node: The Weibull Distribution,  Next: The Type-1 Gumbel Distribution,  Prev: Spherical Vector Distributions,  Up: Random Number Distributions
 
-20.24 The Weibull Distribution
+20.25 The Weibull Distribution
 ==============================
 
  -- Function: double gsl_ran_weibull (const gsl_rng * R, double A,
@@ -466,7 +1046,7 @@ File: gsl-ref.info,  Node: The Weibull Distribution,  Next: The Type-1 Gumbel Di
 
 File: gsl-ref.info,  Node: The Type-1 Gumbel Distribution,  Next: The Type-2 Gumbel Distribution,  Prev: The Weibull Distribution,  Up: Random Number Distributions
 
-20.25 The Type-1 Gumbel Distribution
+20.26 The Type-1 Gumbel Distribution
 ====================================
 
  -- Function: double gsl_ran_gumbel1 (const gsl_rng * R, double A,
@@ -495,7 +1075,7 @@ File: gsl-ref.info,  Node: The Type-1 Gumbel Distribution,  Next: The Type-2 Gum
 
 File: gsl-ref.info,  Node: The Type-2 Gumbel Distribution,  Next: The Dirichlet Distribution,  Prev: The Type-1 Gumbel Distribution,  Up: Random Number Distributions
 
-20.26 The Type-2 Gumbel Distribution
+20.27 The Type-2 Gumbel Distribution
 ====================================
 
  -- Function: double gsl_ran_gumbel2 (const gsl_rng * R, double A,
@@ -524,7 +1104,7 @@ File: gsl-ref.info,  Node: The Type-2 Gumbel Distribution,  Next: The Dirichlet 
 
 File: gsl-ref.info,  Node: The Dirichlet Distribution,  Next: General Discrete Distributions,  Prev: The Type-2 Gumbel Distribution,  Up: Random Number Distributions
 
-20.27 The Dirichlet Distribution
+20.28 The Dirichlet Distribution
 ================================
 
  -- Function: void gsl_ran_dirichlet (const gsl_rng * R, size_t K, const
@@ -560,7 +1140,7 @@ File: gsl-ref.info,  Node: The Dirichlet Distribution,  Next: General Discrete D
 
 File: gsl-ref.info,  Node: General Discrete Distributions,  Next: The Poisson Distribution,  Prev: The Dirichlet Distribution,  Up: Random Number Distributions
 
-20.28 General Discrete Distributions
+20.29 General Discrete Distributions
 ====================================
 
 Given K discrete events with different probabilities P[k], produce a
@@ -635,7 +1215,7 @@ to be made, since it only takes a finite set of K outcomes.
 
 File: gsl-ref.info,  Node: The Poisson Distribution,  Next: The Bernoulli Distribution,  Prev: General Discrete Distributions,  Up: Random Number Distributions
 
-20.29 The Poisson Distribution
+20.30 The Poisson Distribution
 ==============================
 
  -- Function: unsigned int gsl_ran_poisson (const gsl_rng * R, double
@@ -661,7 +1241,7 @@ File: gsl-ref.info,  Node: The Poisson Distribution,  Next: The Bernoulli Distri
 
 File: gsl-ref.info,  Node: The Bernoulli Distribution,  Next: The Binomial Distribution,  Prev: The Poisson Distribution,  Up: Random Number Distributions
 
-20.30 The Bernoulli Distribution
+20.31 The Bernoulli Distribution
 ================================
 
  -- Function: unsigned int gsl_ran_bernoulli (const gsl_rng * R, double
@@ -682,7 +1262,7 @@ File: gsl-ref.info,  Node: The Bernoulli Distribution,  Next: The Binomial Distr
 
 File: gsl-ref.info,  Node: The Binomial Distribution,  Next: The Multinomial Distribution,  Prev: The Bernoulli Distribution,  Up: Random Number Distributions
 
-20.31 The Binomial Distribution
+20.32 The Binomial Distribution
 ===============================
 
  -- Function: unsigned int gsl_ran_binomial (const gsl_rng * R, double
@@ -713,7 +1293,7 @@ File: gsl-ref.info,  Node: The Binomial Distribution,  Next: The Multinomial Dis
 
 File: gsl-ref.info,  Node: The Multinomial Distribution,  Next: The Negative Binomial Distribution,  Prev: The Binomial Distribution,  Up: Random Number Distributions
 
-20.32 The Multinomial Distribution
+20.33 The Multinomial Distribution
 ==================================
 
  -- Function: void gsl_ran_multinomial (const gsl_rng * R, size_t K,
@@ -753,7 +1333,7 @@ File: gsl-ref.info,  Node: The Multinomial Distribution,  Next: The Negative Bin
 
 File: gsl-ref.info,  Node: The Negative Binomial Distribution,  Next: The Pascal Distribution,  Prev: The Multinomial Distribution,  Up: Random Number Distributions
 
-20.33 The Negative Binomial Distribution
+20.34 The Negative Binomial Distribution
 ========================================
 
  -- Function: unsigned int gsl_ran_negative_binomial (const gsl_rng * R,
@@ -785,7 +1365,7 @@ File: gsl-ref.info,  Node: The Negative Binomial Distribution,  Next: The Pascal
 
 File: gsl-ref.info,  Node: The Pascal Distribution,  Next: The Geometric Distribution,  Prev: The Negative Binomial Distribution,  Up: Random Number Distributions
 
-20.34 The Pascal Distribution
+20.35 The Pascal Distribution
 =============================
 
  -- Function: unsigned int gsl_ran_pascal (const gsl_rng * R, double P,
@@ -815,7 +1395,7 @@ File: gsl-ref.info,  Node: The Pascal Distribution,  Next: The Geometric Distrib
 
 File: gsl-ref.info,  Node: The Geometric Distribution,  Next: The Hypergeometric Distribution,  Prev: The Pascal Distribution,  Up: Random Number Distributions
 
-20.35 The Geometric Distribution
+20.36 The Geometric Distribution
 ================================
 
  -- Function: unsigned int gsl_ran_geometric (const gsl_rng * R, double
@@ -845,7 +1425,7 @@ File: gsl-ref.info,  Node: The Geometric Distribution,  Next: The Hypergeometric
 
 File: gsl-ref.info,  Node: The Hypergeometric Distribution,  Next: The Logarithmic Distribution,  Prev: The Geometric Distribution,  Up: Random Number Distributions
 
-20.36 The Hypergeometric Distribution
+20.37 The Hypergeometric Distribution
 =====================================
 
  -- Function: unsigned int gsl_ran_hypergeometric (const gsl_rng * R,
@@ -882,7 +1462,7 @@ File: gsl-ref.info,  Node: The Hypergeometric Distribution,  Next: The Logarithm
 
 File: gsl-ref.info,  Node: The Logarithmic Distribution,  Next: Shuffling and Sampling,  Prev: The Hypergeometric Distribution,  Up: Random Number Distributions
 
-20.37 The Logarithmic Distribution
+20.38 The Logarithmic Distribution
 ==================================
 
  -- Function: unsigned int gsl_ran_logarithmic (const gsl_rng * R,
@@ -904,7 +1484,7 @@ File: gsl-ref.info,  Node: The Logarithmic Distribution,  Next: Shuffling and Sa
 
 File: gsl-ref.info,  Node: Shuffling and Sampling,  Next: Random Number Distribution Examples,  Prev: The Logarithmic Distribution,  Up: Random Number Distributions
 
-20.38 Shuffling and Sampling
+20.39 Shuffling and Sampling
 ============================
 
 The following functions allow the shuffling and sampling of a set of
@@ -970,7 +1550,7 @@ short period.  For more information see Knuth, v2, 3rd ed, Section
 
 File: gsl-ref.info,  Node: Random Number Distribution Examples,  Next: Random Number Distribution References and Further Reading,  Prev: Shuffling and Sampling,  Up: Random Number Distributions
 
-20.39 Examples
+20.40 Examples
 ==============
 
 The following program demonstrates the use of a random number generator
@@ -1103,7 +1683,7 @@ Here is the output of the program,
 
 File: gsl-ref.info,  Node: Random Number Distribution References and Further Reading,  Prev: Random Number Distribution Examples,  Up: Random Number Distributions
 
-20.40 References and Further Reading
+20.41 References and Further Reading
 ====================================
 
 For an encyclopaedic coverage of the subject readers are advised to
@@ -1359,7 +1939,7 @@ File: gsl-ref.info,  Node: Autocorrelation,  Next: Covariance,  Prev: Higher mom
      This function computes the lag-1 autocorrelation of the dataset
      DATA.
 
-          a_1 = {\sum_{i = 1}^{n} (x_{i} - \Hat\mu) (x_{i-1} - \Hat\mu)
+          a_1 = {\sum_{i = 2}^{n} (x_{i} - \Hat\mu) (x_{i-1} - \Hat\mu)
                  \over
                  \sum_{i = 1}^{n} (x_{i} - \Hat\mu) (x_{i} - \Hat\mu)}
 
@@ -1861,6 +2441,12 @@ File: gsl-ref.info,  Node: Running Statistics Current Statistics,  Next: Running
      the accumulator, defined as the square root of the variance given
      above.
 
+ -- Function: double gsl_rstat_rms (gsl_rstat_workspace * W)
+     This function returns the root mean square of all data added to the
+     accumulator, defined as
+
+          rms = \sqrt ( 1/N \sum x_i^2 )
+
  -- Function: double gsl_rstat_skew (gsl_rstat_workspace * W)
      This function returns the skewness of all data added to the
      accumulator, defined as
@@ -1899,6 +2485,11 @@ positions and heights are updated.
  -- Function: void gsl_rstat_quantile_free (gsl_rstat_quantile_workspace
           * W)
      This function frees the memory associated with the workspace W.
+
+ -- Function: int gsl_rstat_quantile_reset (gsl_rstat_quantile_workspace
+          * W)
+     This function resets the workspace W to its initial state, so it
+     can begin working on a new set of data.
 
  -- Function: int gsl_rstat_quantile_add (const double X,
           gsl_rstat_quantile_workspace * W)
@@ -5747,11 +6338,11 @@ File: gsl-ref.info,  Node: 2D Introduction to Interpolation,  Next: 2D Interpola
 28.9 Introduction to 2D Interpolation
 =====================================
 
-Given two sets of equally spaced grid points: x_1,...,x_m with spacing
-\delta x, and y_1,...,y_n with spacing \delta y, plus a set of function
-values z_{ij} for each grid point (x_i,y_j), the routines described in
-this section compute a continuous interpolation function z(x,y) such
-that z(x_i,y_j) = z_{ij}.
+Given a set of x coordinates x_1,...,x_m and a set of y coordinates
+y_1,...,y_n, each in increasing order, plus a set of function values
+z_{ij} for each grid point (x_i,y_j), the routines described in this
+section compute a continuous interpolation function z(x,y) such that
+z(x_i,y_j) = z_{ij}.
 
 
 File: gsl-ref.info,  Node: 2D Interpolation Functions,  Next: 2D Interpolation Grids,  Prev: 2D Introduction to Interpolation,  Up: Interpolation
@@ -6650,621 +7241,4 @@ accurate, giving the correct number of significant digits.
 
 Note that a direct summation of this series would require 10^10 terms to
 achieve the same precision as the accelerated sum does in 13 terms.
-
-
-File: gsl-ref.info,  Node: Series Acceleration References,  Prev: Example of accelerating a series,  Up: Series Acceleration
-
-31.4 References and Further Reading
-===================================
-
-The algorithms used by these functions are described in the following
-papers,
-
-     T. Fessler, W.F. Ford, D.A. Smith, HURRY: An acceleration algorithm
-     for scalar sequences and series 'ACM Transactions on Mathematical
-     Software', 9(3):346-354, 1983.  and Algorithm 602 9(3):355-357,
-     1983.
-
-The theory of the u-transform was presented by Levin,
-
-     D. Levin, Development of Non-Linear Transformations for Improving
-     Convergence of Sequences, 'Intern. J. Computer Math.' B3:371-388,
-     1973.
-
-A review paper on the Levin Transform is available online,
-     Herbert H. H. Homeier, Scalar Levin-Type Sequence Transformations,
-     <http://arxiv.org/abs/math/0005209>.
-
-
-File: gsl-ref.info,  Node: Wavelet Transforms,  Next: Discrete Hankel Transforms,  Prev: Series Acceleration,  Up: Top
-
-32 Wavelet Transforms
-*********************
-
-This chapter describes functions for performing Discrete Wavelet
-Transforms (DWTs).  The library includes wavelets for real data in both
-one and two dimensions.  The wavelet functions are declared in the
-header files 'gsl_wavelet.h' and 'gsl_wavelet2d.h'.
-
-* Menu:
-
-* DWT Definitions::             
-* DWT Initialization::          
-* DWT Transform Functions::     
-* DWT Examples::                
-* DWT References::              
-
-
-File: gsl-ref.info,  Node: DWT Definitions,  Next: DWT Initialization,  Up: Wavelet Transforms
-
-32.1 Definitions
-================
-
-The continuous wavelet transform and its inverse are defined by the
-relations,
-
-     w(s,\tau) = \int f(t) * \psi^*_{s,\tau}(t) dt
-
-and,
-
-     f(t) = \int \int_{-\infty}^\infty w(s, \tau) * \psi_{s,\tau}(t) d\tau ds
-
-where the basis functions \psi_{s,\tau} are obtained by scaling and
-translation from a single function, referred to as the "mother wavelet".
-
-   The discrete version of the wavelet transform acts on equally-spaced
-samples, with fixed scaling and translation steps (s, \tau).  The
-frequency and time axes are sampled "dyadically" on scales of 2^j
-through a level parameter j.  The resulting family of functions
-{\psi_{j,n}} constitutes an orthonormal basis for square-integrable
-signals.
-
-   The discrete wavelet transform is an O(N) algorithm, and is also
-referred to as the "fast wavelet transform".
-
-
-File: gsl-ref.info,  Node: DWT Initialization,  Next: DWT Transform Functions,  Prev: DWT Definitions,  Up: Wavelet Transforms
-
-32.2 Initialization
-===================
-
-The 'gsl_wavelet' structure contains the filter coefficients defining
-the wavelet and any associated offset parameters.
-
- -- Function: gsl_wavelet * gsl_wavelet_alloc (const gsl_wavelet_type *
-          T, size_t K)
-     This function allocates and initializes a wavelet object of type T.
-     The parameter K selects the specific member of the wavelet family.
-     A null pointer is returned if insufficient memory is available or
-     if a unsupported member is selected.
-
-   The following wavelet types are implemented:
-
- -- Wavelet: gsl_wavelet_daubechies
- -- Wavelet: gsl_wavelet_daubechies_centered
-     This is the Daubechies wavelet family of maximum phase with k/2
-     vanishing moments.  The implemented wavelets are k=4, 6, ..., 20,
-     with K even.
-
- -- Wavelet: gsl_wavelet_haar
- -- Wavelet: gsl_wavelet_haar_centered
-     This is the Haar wavelet.  The only valid choice of k for the Haar
-     wavelet is k=2.
-
- -- Wavelet: gsl_wavelet_bspline
- -- Wavelet: gsl_wavelet_bspline_centered
-     This is the biorthogonal B-spline wavelet family of order (i,j).
-     The implemented values of k = 100*i + j are 103, 105, 202, 204,
-     206, 208, 301, 303, 305 307, 309.
-
-The centered forms of the wavelets align the coefficients of the various
-sub-bands on edges.  Thus the resulting visualization of the
-coefficients of the wavelet transform in the phase plane is easier to
-understand.
-
- -- Function: const char * gsl_wavelet_name (const gsl_wavelet * W)
-     This function returns a pointer to the name of the wavelet family
-     for W.
-
- -- Function: void gsl_wavelet_free (gsl_wavelet * W)
-     This function frees the wavelet object W.
-
-   The 'gsl_wavelet_workspace' structure contains scratch space of the
-same size as the input data and is used to hold intermediate results
-during the transform.
-
- -- Function: gsl_wavelet_workspace * gsl_wavelet_workspace_alloc
-          (size_t N)
-     This function allocates a workspace for the discrete wavelet
-     transform.  To perform a one-dimensional transform on N elements, a
-     workspace of size N must be provided.  For two-dimensional
-     transforms of N-by-N matrices it is sufficient to allocate a
-     workspace of size N, since the transform operates on individual
-     rows and columns.  A null pointer is returned if insufficient
-     memory is available.
-
- -- Function: void gsl_wavelet_workspace_free (gsl_wavelet_workspace *
-          WORK)
-     This function frees the allocated workspace WORK.
-
-
-File: gsl-ref.info,  Node: DWT Transform Functions,  Next: DWT Examples,  Prev: DWT Initialization,  Up: Wavelet Transforms
-
-32.3 Transform Functions
-========================
-
-This sections describes the actual functions performing the discrete
-wavelet transform.  Note that the transforms use periodic boundary
-conditions.  If the signal is not periodic in the sample length then
-spurious coefficients will appear at the beginning and end of each level
-of the transform.
-
-* Menu:
-
-* DWT in one dimension::        
-* DWT in two dimension::        
-
-
-File: gsl-ref.info,  Node: DWT in one dimension,  Next: DWT in two dimension,  Up: DWT Transform Functions
-
-32.3.1 Wavelet transforms in one dimension
-------------------------------------------
-
- -- Function: int gsl_wavelet_transform (const gsl_wavelet * W, double *
-          DATA, size_t STRIDE, size_t N, gsl_wavelet_direction DIR,
-          gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet_transform_forward (const gsl_wavelet * W,
-          double * DATA, size_t STRIDE, size_t N, gsl_wavelet_workspace
-          * WORK)
- -- Function: int gsl_wavelet_transform_inverse (const gsl_wavelet * W,
-          double * DATA, size_t STRIDE, size_t N, gsl_wavelet_workspace
-          * WORK)
-
-     These functions compute in-place forward and inverse discrete
-     wavelet transforms of length N with stride STRIDE on the array
-     DATA.  The length of the transform N is restricted to powers of
-     two.  For the 'transform' version of the function the argument DIR
-     can be either 'forward' (+1) or 'backward' (-1).  A workspace WORK
-     of length N must be provided.
-
-     For the forward transform, the elements of the original array are
-     replaced by the discrete wavelet transform f_i -> w_{j,k} in a
-     packed triangular storage layout, where J is the index of the level
-     j = 0 ... J-1 and K is the index of the coefficient within each
-     level, k = 0 ... (2^j)-1.  The total number of levels is J =
-     \log_2(n).  The output data has the following form,
-
-          (s_{-1,0}, d_{0,0}, d_{1,0}, d_{1,1}, d_{2,0}, ...,
-            d_{j,k}, ..., d_{J-1,2^{J-1}-1})
-
-     where the first element is the smoothing coefficient s_{-1,0},
-     followed by the detail coefficients d_{j,k} for each level j.  The
-     backward transform inverts these coefficients to obtain the
-     original data.
-
-     These functions return a status of 'GSL_SUCCESS' upon successful
-     completion.  'GSL_EINVAL' is returned if N is not an integer power
-     of 2 or if insufficient workspace is provided.
-
-
-File: gsl-ref.info,  Node: DWT in two dimension,  Prev: DWT in one dimension,  Up: DWT Transform Functions
-
-32.3.2 Wavelet transforms in two dimension
-------------------------------------------
-
-The library provides functions to perform two-dimensional discrete
-wavelet transforms on square matrices.  The matrix dimensions must be an
-integer power of two.  There are two possible orderings of the rows and
-columns in the two-dimensional wavelet transform, referred to as the
-"standard" and "non-standard" forms.
-
-   The "standard" transform performs a complete discrete wavelet
-transform on the rows of the matrix, followed by a separate complete
-discrete wavelet transform on the columns of the resulting
-row-transformed matrix.  This procedure uses the same ordering as a
-two-dimensional Fourier transform.
-
-   The "non-standard" transform is performed in interleaved passes on
-the rows and columns of the matrix for each level of the transform.  The
-first level of the transform is applied to the matrix rows, and then to
-the matrix columns.  This procedure is then repeated across the rows and
-columns of the data for the subsequent levels of the transform, until
-the full discrete wavelet transform is complete.  The non-standard form
-of the discrete wavelet transform is typically used in image analysis.
-
-   The functions described in this section are declared in the header
-file 'gsl_wavelet2d.h'.
-
- -- Function: int gsl_wavelet2d_transform (const gsl_wavelet * W, double
-          * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_direction DIR, gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_transform_forward (const gsl_wavelet *
-          W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_transform_inverse (const gsl_wavelet *
-          W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_workspace * WORK)
-
-     These functions compute two-dimensional in-place forward and
-     inverse discrete wavelet transforms in standard form on the array
-     DATA stored in row-major form with dimensions SIZE1 and SIZE2 and
-     physical row length TDA.  The dimensions must be equal (square
-     matrix) and are restricted to powers of two.  For the 'transform'
-     version of the function the argument DIR can be either 'forward'
-     (+1) or 'backward' (-1).  A workspace WORK of the appropriate size
-     must be provided.  On exit, the appropriate elements of the array
-     DATA are replaced by their two-dimensional wavelet transform.
-
-     The functions return a status of 'GSL_SUCCESS' upon successful
-     completion.  'GSL_EINVAL' is returned if SIZE1 and SIZE2 are not
-     equal and integer powers of 2, or if insufficient workspace is
-     provided.
-
- -- Function: int gsl_wavelet2d_transform_matrix (const gsl_wavelet * W,
-          gsl_matrix * M, gsl_wavelet_direction DIR,
-          gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_transform_matrix_forward (const
-          gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_transform_matrix_inverse (const
-          gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
-     These functions compute the two-dimensional in-place wavelet
-     transform on a matrix A.
-
- -- Function: int gsl_wavelet2d_nstransform (const gsl_wavelet * W,
-          double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_direction DIR, gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_nstransform_forward (const gsl_wavelet *
-          W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_nstransform_inverse (const gsl_wavelet *
-          W, double * DATA, size_t TDA, size_t SIZE1, size_t SIZE2,
-          gsl_wavelet_workspace * WORK)
-     These functions compute the two-dimensional wavelet transform in
-     non-standard form.
-
- -- Function: int gsl_wavelet2d_nstransform_matrix (const gsl_wavelet *
-          W, gsl_matrix * M, gsl_wavelet_direction DIR,
-          gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_nstransform_matrix_forward (const
-          gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
- -- Function: int gsl_wavelet2d_nstransform_matrix_inverse (const
-          gsl_wavelet * W, gsl_matrix * M, gsl_wavelet_workspace * WORK)
-     These functions compute the non-standard form of the
-     two-dimensional in-place wavelet transform on a matrix A.
-
-
-File: gsl-ref.info,  Node: DWT Examples,  Next: DWT References,  Prev: DWT Transform Functions,  Up: Wavelet Transforms
-
-32.4 Examples
-=============
-
-The following program demonstrates the use of the one-dimensional
-wavelet transform functions.  It computes an approximation to an input
-signal (of length 256) using the 20 largest components of the wavelet
-transform, while setting the others to zero.
-
-     #include <stdio.h>
-     #include <math.h>
-     #include <gsl/gsl_sort.h>
-     #include <gsl/gsl_wavelet.h>
-
-     int
-     main (int argc, char **argv)
-     {
-       (void)(argc); /* avoid unused parameter warning */
-       int i, n = 256, nc = 20;
-       double *data = malloc (n * sizeof (double));
-       double *abscoeff = malloc (n * sizeof (double));
-       size_t *p = malloc (n * sizeof (size_t));
-
-       FILE * f;
-       gsl_wavelet *w;
-       gsl_wavelet_workspace *work;
-
-       w = gsl_wavelet_alloc (gsl_wavelet_daubechies, 4);
-       work = gsl_wavelet_workspace_alloc (n);
-
-       f = fopen (argv[1], "r");
-       for (i = 0; i < n; i++)
-         {
-           fscanf (f, "%lg", &data[i]);
-         }
-       fclose (f);
-
-       gsl_wavelet_transform_forward (w, data, 1, n, work);
-
-       for (i = 0; i < n; i++)
-         {
-           abscoeff[i] = fabs (data[i]);
-         }
-
-       gsl_sort_index (p, abscoeff, 1, n);
-
-       for (i = 0; (i + nc) < n; i++)
-         data[p[i]] = 0;
-
-       gsl_wavelet_transform_inverse (w, data, 1, n, work);
-
-       for (i = 0; i < n; i++)
-         {
-           printf ("%g\n", data[i]);
-         }
-
-       gsl_wavelet_free (w);
-       gsl_wavelet_workspace_free (work);
-
-       free (data);
-       free (abscoeff);
-       free (p);
-       return 0;
-     }
-
-The output can be used with the GNU plotutils 'graph' program,
-
-     $ ./a.out ecg.dat > dwt.txt
-     $ graph -T ps -x 0 256 32 -h 0.3 -a dwt.txt > dwt.ps
-
-
-File: gsl-ref.info,  Node: DWT References,  Prev: DWT Examples,  Up: Wavelet Transforms
-
-32.5 References and Further Reading
-===================================
-
-The mathematical background to wavelet transforms is covered in the
-original lectures by Daubechies,
-
-     Ingrid Daubechies.  Ten Lectures on Wavelets.  'CBMS-NSF Regional
-     Conference Series in Applied Mathematics' (1992), SIAM, ISBN
-     0898712742.
-
-An easy to read introduction to the subject with an emphasis on the
-application of the wavelet transform in various branches of science is,
-
-     Paul S. Addison.  'The Illustrated Wavelet Transform Handbook'.
-     Institute of Physics Publishing (2002), ISBN 0750306920.
-
-For extensive coverage of signal analysis by wavelets, wavelet packets
-and local cosine bases see,
-
-     S. G. Mallat.  'A wavelet tour of signal processing' (Second
-     edition).  Academic Press (1999), ISBN 012466606X.
-
-The concept of multiresolution analysis underlying the wavelet transform
-is described in,
-
-     S. G. Mallat.  Multiresolution Approximations and Wavelet
-     Orthonormal Bases of L^2(R). 'Transactions of the American
-     Mathematical Society', 315(1), 1989, 69-87.
-
-     S. G. Mallat.  A Theory for Multiresolution Signal
-     Decomposition--The Wavelet Representation.  'IEEE Transactions on
-     Pattern Analysis and Machine Intelligence', 11, 1989, 674-693.
-
-The coefficients for the individual wavelet families implemented by the
-library can be found in the following papers,
-
-     I. Daubechies.  Orthonormal Bases of Compactly Supported Wavelets.
-     'Communications on Pure and Applied Mathematics', 41 (1988)
-     909-996.
-
-     A. Cohen, I. Daubechies, and J.-C. Feauveau.  Biorthogonal Bases of
-     Compactly Supported Wavelets.  'Communications on Pure and Applied
-     Mathematics', 45 (1992) 485-560.
-
-The PhysioNet archive of physiological datasets can be found online at
-<http://www.physionet.org/> and is described in the following paper,
-
-     Goldberger et al.  PhysioBank, PhysioToolkit, and PhysioNet:
-     Components of a New Research Resource for Complex Physiologic
-     Signals.  'Circulation' 101(23):e215-e220 2000.
-
-
-File: gsl-ref.info,  Node: Discrete Hankel Transforms,  Next: One dimensional Root-Finding,  Prev: Wavelet Transforms,  Up: Top
-
-33 Discrete Hankel Transforms
-*****************************
-
-This chapter describes functions for performing Discrete Hankel
-Transforms (DHTs).  The functions are declared in the header file
-'gsl_dht.h'.
-
-* Menu:
-
-* Discrete Hankel Transform Definition::  
-* Discrete Hankel Transform Functions::  
-* Discrete Hankel Transform References::  
-
-
-File: gsl-ref.info,  Node: Discrete Hankel Transform Definition,  Next: Discrete Hankel Transform Functions,  Up: Discrete Hankel Transforms
-
-33.1 Definitions
-================
-
-The discrete Hankel transform acts on a vector of sampled data, where
-the samples are assumed to have been taken at points related to the
-zeros of a Bessel function of fixed order; compare this to the case of
-the discrete Fourier transform, where samples are taken at points
-related to the zeroes of the sine or cosine function.
-
-   Starting with its definition, the Hankel transform (or Bessel
-transform) of order \nu of a function f with \nu > -1/2 is defined as
-(see Johnson, 1987 and Lemoine, 1994)
-     F_\nu(u) = \int_0^\infty f(t) J_\nu(u t) t dt
-
-If the integral exists, F_\nu is called the Hankel transformation of f.
-The reverse transform is given by
-     f(t) = \int_0^\infty F_\nu(u) J_\nu(u t) u du ,
-
-where \int_0^\infty f(t) t^{1/2} dt must exist and be absolutely
-convergent, and where f(t) satisfies Dirichlet's conditions (of limited
-total fluctuations) in the interval [0,\infty].
-
-   Now the discrete Hankel transform works on a discrete function f,
-which is sampled on points n=1...M located at positions
-t_n=(j_{\nu,n}/j_{\nu,M}) X in real space and at u_n=j_{\nu,n}/X in
-reciprocal space.  Here, j_{\nu,m} are the m-th zeros of the Bessel
-function J_\nu(x) arranged in ascending order.  Moreover, the discrete
-functions are assumed to be band limited, so f(t_n)=0 and F(u_n)=0 for
-n>M.  Accordingly, the function f is defined on the interval [0,X].
-
-   Following the work of Johnson, 1987 and Lemoine, 1994, the discrete
-Hankel transform is given by
-     F_\nu(u_m) = (2 X^2 / j_(\nu,M)^2)
-           \sum_{k=1}^{M-1} f(j_(\nu,k) X/j_(\nu,M))
-               (J_\nu(j_(\nu,m) j_(\nu,k) / j_(\nu,M)) / J_(\nu+1)(j_(\nu,k))^2).
-
-It is this discrete expression which defines the discrete Hankel
-transform calculated by GSL. In GSL, forward and backward transforms are
-defined equally and calculate F_\nu(u_m).  Following Johnson, the
-backward transform reads
-     f(t_k) = (2 / X^2)
-           \sum_{m=1}^{M-1} F(j_(\nu,m)/X)
-               (J_\nu(j_(\nu,m) j_(\nu,k) / j_(\nu,M)) / J_(\nu+1)(j_(\nu,m))^2).
-
-Obviously, using the forward transform instead of the backward transform
-gives an additional factor X^4/j_{\nu,M}^2=t_m^2/u_m^2.
-
-   The kernel in the summation above defines the matrix of the
-\nu-Hankel transform of size M-1.  The coefficients of this matrix,
-being dependent on \nu and M, must be precomputed and stored; the
-'gsl_dht' object encapsulates this data.  The allocation function
-'gsl_dht_alloc' returns a 'gsl_dht' object which must be properly
-initialized with 'gsl_dht_init' before it can be used to perform
-transforms on data sample vectors, for fixed \nu and M, using the
-'gsl_dht_apply' function.  The implementation allows to define the
-length X of the fundamental interval, for convenience, while discrete
-Hankel transforms are often defined on the unit interval instead of
-[0,X].
-
-   Notice that by assumption f(t) vanishes at the endpoints of the
-interval, consistent with the inversion formula and the sampling formula
-given above.  Therefore, this transform corresponds to an orthogonal
-expansion in eigenfunctions of the Dirichlet problem for the Bessel
-differential equation.
-
-
-File: gsl-ref.info,  Node: Discrete Hankel Transform Functions,  Next: Discrete Hankel Transform References,  Prev: Discrete Hankel Transform Definition,  Up: Discrete Hankel Transforms
-
-33.2 Functions
-==============
-
- -- Function: gsl_dht * gsl_dht_alloc (size_t SIZE)
-     This function allocates a Discrete Hankel transform object of size
-     SIZE.
-
- -- Function: int gsl_dht_init (gsl_dht * T, double NU, double XMAX)
-     This function initializes the transform T for the given values of
-     NU and XMAX.
-
- -- Function: gsl_dht * gsl_dht_new (size_t SIZE, double NU, double
-          XMAX)
-     This function allocates a Discrete Hankel transform object of size
-     SIZE and initializes it for the given values of NU and XMAX.
-
- -- Function: void gsl_dht_free (gsl_dht * T)
-     This function frees the transform T.
-
- -- Function: int gsl_dht_apply (const gsl_dht * T, double * F_IN,
-          double * F_OUT)
-     This function applies the transform T to the array F_IN whose size
-     is equal to the size of the transform.  The result is stored in the
-     array F_OUT which must be of the same length.
-
-     Applying this function to its output gives the original data
-     multiplied by (1/j_(\nu,M))^2, up to numerical errors.
-
- -- Function: double gsl_dht_x_sample (const gsl_dht * T, int N)
-     This function returns the value of the N-th sample point in the
-     unit interval, (j_{\nu,n+1}/j_{\nu,M}) X.  These are the points
-     where the function f(t) is assumed to be sampled.
-
- -- Function: double gsl_dht_k_sample (const gsl_dht * T, int N)
-     This function returns the value of the N-th sample point in
-     "k-space", j_{\nu,n+1}/X.
-
-
-File: gsl-ref.info,  Node: Discrete Hankel Transform References,  Prev: Discrete Hankel Transform Functions,  Up: Discrete Hankel Transforms
-
-33.3 References and Further Reading
-===================================
-
-The algorithms used by these functions are described in the following
-papers,
-
-     H. Fisk Johnson, Comp. Phys. Comm. 43, 181 (1987).
-
-     D. Lemoine, J. Chem. Phys. 101, 3936 (1994).
-
-
-File: gsl-ref.info,  Node: One dimensional Root-Finding,  Next: One dimensional Minimization,  Prev: Discrete Hankel Transforms,  Up: Top
-
-34 One dimensional Root-Finding
-*******************************
-
-This chapter describes routines for finding roots of arbitrary
-one-dimensional functions.  The library provides low level components
-for a variety of iterative solvers and convergence tests.  These can be
-combined by the user to achieve the desired solution, with full access
-to the intermediate steps of the iteration.  Each class of methods uses
-the same framework, so that you can switch between solvers at runtime
-without needing to recompile your program.  Each instance of a solver
-keeps track of its own state, allowing the solvers to be used in
-multi-threaded programs.
-
-   The header file 'gsl_roots.h' contains prototypes for the root
-finding functions and related declarations.
-
-* Menu:
-
-* Root Finding Overview::       
-* Root Finding Caveats::        
-* Initializing the Solver::     
-* Providing the function to solve::  
-* Search Bounds and Guesses::   
-* Root Finding Iteration::      
-* Search Stopping Parameters::  
-* Root Bracketing Algorithms::  
-* Root Finding Algorithms using Derivatives::  
-* Root Finding Examples::       
-* Root Finding References and Further Reading::  
-
-
-File: gsl-ref.info,  Node: Root Finding Overview,  Next: Root Finding Caveats,  Up: One dimensional Root-Finding
-
-34.1 Overview
-=============
-
-One-dimensional root finding algorithms can be divided into two classes,
-"root bracketing" and "root polishing".  Algorithms which proceed by
-bracketing a root are guaranteed to converge.  Bracketing algorithms
-begin with a bounded region known to contain a root.  The size of this
-bounded region is reduced, iteratively, until it encloses the root to a
-desired tolerance.  This provides a rigorous error estimate for the
-location of the root.
-
-   The technique of "root polishing" attempts to improve an initial
-guess to the root.  These algorithms converge only if started "close
-enough" to a root, and sacrifice a rigorous error bound for speed.  By
-approximating the behavior of a function in the vicinity of a root they
-attempt to find a higher order improvement of an initial guess.  When
-the behavior of the function is compatible with the algorithm and a good
-initial guess is available a polishing algorithm can provide rapid
-convergence.
-
-   In GSL both types of algorithm are available in similar frameworks.
-The user provides a high-level driver for the algorithms, and the
-library provides the individual functions necessary for each of the
-steps.  There are three main phases of the iteration.  The steps are,
-
-   * initialize solver state, S, for algorithm T
-
-   * update S using the iteration T
-
-   * test S for convergence, and repeat iteration if necessary
-
-The state for bracketing solvers is held in a 'gsl_root_fsolver' struct.
-The updating procedure uses only function evaluations (not derivatives).
-The state for root polishing solvers is held in a 'gsl_root_fdfsolver'
-struct.  The updates require both the function and its derivative (hence
-the name 'fdf') to be supplied by the user.
 

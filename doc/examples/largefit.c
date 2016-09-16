@@ -11,7 +11,8 @@
 double
 func(const double t)
 {
-  return exp(sin(4.0 * (t - 10.0)));
+  double x = sin(10.0 * t);
+  return exp(x*x*x);
 }
 
 /* construct a row of the least squares matrix */
@@ -32,7 +33,7 @@ build_row(const double t, gsl_vector *row)
 }
 
 int
-solve_system(const gsl_multilarge_linear_type * T,
+solve_system(const int print_data, const gsl_multilarge_linear_type * T,
              const double lambda, const size_t n, const size_t p,
              gsl_vector * c)
 {
@@ -43,9 +44,13 @@ solve_system(const gsl_multilarge_linear_type * T,
   gsl_matrix *X = gsl_matrix_alloc(nrows, p);
   gsl_vector *y = gsl_vector_alloc(nrows);
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
+  const size_t nlcurve = 200;
+  gsl_vector *reg_param = gsl_vector_alloc(nlcurve);
+  gsl_vector *rho = gsl_vector_alloc(nlcurve);
+  gsl_vector *eta = gsl_vector_alloc(nlcurve);
   size_t rowidx = 0;
   double rnorm, snorm, rcond;
-  double t = 10.0;
+  double t = 0.0;
   double dt = 1.0 / (n - 1.0);
 
   while (rowidx < n)
@@ -60,14 +65,18 @@ solve_system(const gsl_multilarge_linear_type * T,
       for (i = 0; i < nr; ++i)
         {
           gsl_vector_view row = gsl_matrix_row(&Xv.matrix, i);
-          double yi = func(t);
-          double ei = gsl_ran_gaussian (r, 0.3 * yi); /* noise */
+          double fi = func(t);
+          double ei = gsl_ran_gaussian (r, 0.1 * fi); /* noise */
+          double yi = fi + ei;
 
           /* construct this row of LS matrix */
           build_row(t, &row.vector);
 
           /* set right hand side value with added noise */
-          gsl_vector_set(&yv.vector, i, yi + ei);
+          gsl_vector_set(&yv.vector, i, yi);
+
+          if (print_data && (i % 100 == 0))
+            printf("%f %f\n", t, yi);
 
           t += dt;
         }
@@ -78,6 +87,12 @@ solve_system(const gsl_multilarge_linear_type * T,
       rowidx += nr;
     }
 
+  if (print_data)
+    printf("\n\n");
+
+  /* compute L-curve */
+  gsl_multilarge_linear_lcurve(reg_param, rho, eta, w);
+
   /* solve large LS system and store solution in c */
   gsl_multilarge_linear_solve(lambda, c, &rnorm, &snorm, w);
 
@@ -85,15 +100,30 @@ solve_system(const gsl_multilarge_linear_type * T,
   gsl_multilarge_linear_rcond(&rcond, w);
 
   fprintf(stderr, "=== Method %s ===\n", gsl_multilarge_linear_name(w));
-  if (rcond != 0.0)
-    fprintf(stderr, "matrix condition number = %e\n", 1.0 / rcond);
-  fprintf(stderr, "residual norm  = %e\n", rnorm);
-  fprintf(stderr, "solution norm  = %e\n", snorm);
+  fprintf(stderr, "condition number = %e\n", 1.0 / rcond);
+  fprintf(stderr, "residual norm    = %e\n", rnorm);
+  fprintf(stderr, "solution norm    = %e\n", snorm);
+
+  /* output L-curve */
+  {
+    size_t i;
+    for (i = 0; i < nlcurve; ++i)
+      {
+        printf("%.12e %.12e %.12e\n",
+               gsl_vector_get(reg_param, i),
+               gsl_vector_get(rho, i),
+               gsl_vector_get(eta, i));
+      }
+    printf("\n\n");
+  }
 
   gsl_matrix_free(X);
   gsl_vector_free(y);
   gsl_multilarge_linear_free(w);
   gsl_rng_free(r);
+  gsl_vector_free(reg_param);
+  gsl_vector_free(rho);
+  gsl_vector_free(eta);
 
   return 0;
 }
@@ -102,7 +132,7 @@ int
 main(int argc, char *argv[])
 {
   const size_t n = 50000;   /* number of observations */
-  const size_t p = 15;      /* polynomial order + 1 */
+  const size_t p = 16;      /* polynomial order + 1 */
   double lambda = 0.0;      /* regularization parameter */
   gsl_vector *c_tsqr = gsl_vector_alloc(p);
   gsl_vector *c_normal = gsl_vector_alloc(p);
@@ -111,17 +141,17 @@ main(int argc, char *argv[])
     lambda = atof(argv[1]);
 
   /* solve system with TSQR method */
-  solve_system(gsl_multilarge_linear_tsqr, lambda, n, p, c_tsqr);
+  solve_system(1, gsl_multilarge_linear_tsqr, lambda, n, p, c_tsqr);
 
   /* solve system with Normal equations method */
-  solve_system(gsl_multilarge_linear_normal, lambda, n, p, c_normal);
+  solve_system(0, gsl_multilarge_linear_normal, lambda, n, p, c_normal);
 
   /* output solutions */
   {
     gsl_vector *v = gsl_vector_alloc(p);
     double t;
 
-    for (t = 10.0; t <= 11.0; t += 0.01)
+    for (t = 0.0; t <= 1.0; t += 0.01)
       {
         double f_exact = func(t);
         double f_tsqr, f_normal;

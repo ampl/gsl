@@ -2,8 +2,8 @@ This is gsl-ref.info, produced by makeinfo version 5.1 from
 gsl-ref.texi.
 
 Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 The GSL
-Team.
+2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
+The GSL Team.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -1793,9 +1793,12 @@ file 'gsl_linalg.h'.
 
 * LU Decomposition::            
 * QR Decomposition::            
-* QR Decomposition with Column Pivoting::  
+* QR Decomposition with Column Pivoting::
+* Complete Orthogonal Decomposition::
 * Singular Value Decomposition::  
 * Cholesky Decomposition::      
+* Pivoted Cholesky Decomposition::      
+* Modified Cholesky Decomposition::      
 * Tridiagonal Decomposition of Real Symmetric Matrices::  
 * Tridiagonal Decomposition of Hermitian Matrices::  
 * Hessenberg Decomposition of Real Matrices::
@@ -1804,7 +1807,8 @@ file 'gsl_linalg.h'.
 * Givens Rotations::  
 * Householder Transformations::  
 * Householder solver for linear systems::  
-* Tridiagonal Systems::         
+* Tridiagonal Systems::
+* Triangular Systems::
 * Balancing::
 * Linear Algebra Examples::     
 * Linear Algebra References and Further Reading::  
@@ -2041,13 +2045,13 @@ rank.
      the solution on output.
 
 
-File: gsl-ref.info,  Node: QR Decomposition with Column Pivoting,  Next: Singular Value Decomposition,  Prev: QR Decomposition,  Up: Linear Algebra
+File: gsl-ref.info,  Node: QR Decomposition with Column Pivoting,  Next: Complete Orthogonal Decomposition,  Prev: QR Decomposition,  Up: Linear Algebra
 
 14.3 QR Decomposition with Column Pivoting
 ==========================================
 
-The QR decomposition can be extended to the rank deficient case by
-introducing a column permutation P,
+The QR decomposition of an M-by-N matrix A can be extended to the rank
+deficient case by introducing a column permutation P,
 
      A P = Q R
 
@@ -2056,7 +2060,20 @@ for a matrix with column rank r.  This decomposition can also be used to
 convert the linear system A x = b into the triangular system R y = Q^T
 b, x = P y, which can be solved by back-substitution and permutation.
 We denote the QR decomposition with column pivoting by QRP^T since A = Q
-R P^T.
+R P^T.  When A is rank deficient with r = {\rm rank}(A), the matrix R
+can be partitioned as
+
+     R = [ R11 R12; 0 R22 ] =~ [ R11 R12; 0 0 ]
+
+   where R_{11} is r-by-r and nonsingular.  In this case, a "basic"
+least squares solution for the overdetermined system A x = b can be
+obtained as
+
+     x = P [ R11^-1 c1 ; 0 ]
+
+   where c_1 consists of the first r elements of Q^T b.  This basic
+solution is not guaranteed to be the minimum norm solution unless R_{12}
+= 0 (see *note Complete Orthogonal Decomposition::).
 
  -- Function: int gsl_linalg_QRPT_decomp (gsl_matrix * A, gsl_vector *
           TAU, gsl_permutation * P, int * SIGNUM, gsl_vector * NORM)
@@ -2100,6 +2117,33 @@ R P^T.
      contain the right-hand side b, which is replaced by the solution on
      output.
 
+ -- Function: int gsl_linalg_QRPT_lssolve (const gsl_matrix * QR, const
+          gsl_vector * TAU, const gsl_permutation * P, const gsl_vector
+          * B, gsl_vector * X, gsl_vector * RESIDUAL)
+     This function finds the least squares solution to the
+     overdetermined system A x = b where the matrix A has more rows than
+     columns and is assumed to have full rank.  The least squares
+     solution minimizes the Euclidean norm of the residual, ||b - A x||.
+     The routine requires as input the QR decomposition of A into (QR,
+     TAU, P) given by 'gsl_linalg_QRPT_decomp'.  The solution is
+     returned in X.  The residual is computed as a by-product and stored
+     in RESIDUAL.  For rank deficient matrices,
+     'gsl_linalg_QRPT_lssolve2' should be used instead.
+
+ -- Function: int gsl_linalg_QRPT_lssolve2 (const gsl_matrix * QR, const
+          gsl_vector * TAU, const gsl_permutation * P, const gsl_vector
+          * B, const size_t RANK, gsl_vector * X, gsl_vector * RESIDUAL)
+     This function finds the least squares solution to the
+     overdetermined system A x = b where the matrix A has more rows than
+     columns and has rank given by the input RANK.  If the user does not
+     know the rank of A, the routine 'gsl_linalg_QRPT_rank' can be
+     called to estimate it.  The least squares solution is the so-called
+     "basic" solution discussed above and may not be the minimum norm
+     solution.  The routine requires as input the QR decomposition of A
+     into (QR, TAU, P) given by 'gsl_linalg_QRPT_decomp'.  The solution
+     is returned in X.  The residual is computed as a by-product and
+     stored in RESIDUAL.
+
  -- Function: int gsl_linalg_QRPT_QRsolve (const gsl_matrix * Q, const
           gsl_matrix * R, const gsl_permutation * P, const gsl_vector *
           B, gsl_vector * X)
@@ -2127,10 +2171,96 @@ R P^T.
      the N-by-N matrix R contained in QR.  On input X should contain the
      right-hand side b, which is replaced by the solution on output.
 
-
-File: gsl-ref.info,  Node: Singular Value Decomposition,  Next: Cholesky Decomposition,  Prev: QR Decomposition with Column Pivoting,  Up: Linear Algebra
+ -- Function: size_t gsl_linalg_QRPT_rank (const gsl_matrix * QR, const
+          double TOL)
+     This function estimates the rank of the triangular matrix R
+     contained in QR.  The algorithm simply counts the number of
+     diagonal elements of R whose absolute value is greater than the
+     specified tolerance TOL.  If the input TOL is negative, a default
+     value of 20 (M + N) eps(max(|diag(R)|)) is used.
 
-14.4 Singular Value Decomposition
+ -- Function: int gsl_linalg_QRPT_rcond (const gsl_matrix * QR, double *
+          RCOND, gsl_vector * WORK)
+     This function estimates the reciprocal condition number (using the
+     1-norm) of the R factor, stored in the upper triangle of QR.  The
+     reciprocal condition number estimate, defined as 1 / (||R||_1 \cdot
+     ||R^{-1}||_1), is stored in RCOND.  Additional workspace of size 3
+     N is required in WORK.
+
+
+File: gsl-ref.info,  Node: Complete Orthogonal Decomposition,  Next: Singular Value Decomposition,  Prev: QR Decomposition with Column Pivoting,  Up: Linear Algebra
+
+14.4 Complete Orthogonal Decomposition
+======================================
+
+The complete orthogonal decomposition of a M-by-N matrix A is a
+generalization of the QR decomposition with column pivoting, given by
+
+     A P = Q [ R11 0 ] Z
+             [  0  0 ]
+
+where P is a N-by-N permutation matrix, Q is M-by-M orthogonal, R_{11}
+is r-by-r upper triangular, with r = {\rm rank}(A), and Z is N-by-N
+orthogonal.  If A has full rank, then R_{11} = R, Z = I and this reduces
+to the QR decomposition with column pivoting.  The advantage of using
+the complete orthogonal decomposition for rank deficient matrices is the
+ability to compute the minimum norm solution to the linear least squares
+problem Ax = b, which is given by
+
+     x = P Z^T [ R11^-1 c1 ]
+               [    0      ]
+
+   and the vector c_1 is the first r elements of Q^T b.
+
+ -- Function: int gsl_linalg_COD_decomp (gsl_matrix * A, gsl_vector *
+          TAU_Q, gsl_vector * TAU_Z, gsl_permutation * P, size_t * RANK,
+          gsl_vector * WORK)
+ -- Function: int gsl_linalg_COD_decomp_e (gsl_matrix * A, gsl_vector *
+          TAU_Q, gsl_vector * TAU_Z, gsl_permutation * P, double TOL,
+          size_t * RANK, gsl_vector * WORK)
+     These functions factor the M-by-N matrix A into the decomposition A
+     = Q R Z P^T.  The rank of A is computed as the number of diagonal
+     elements of R greater than the tolerance TOL and output in RANK.
+     If TOL is not specified, a default value is used (see
+     'gsl_linalg_QRPT_rank').  On output, the permutation matrix P is
+     stored in P.  The matrix R_{11} is stored in the upper RANK-by-RANK
+     block of A.  The matrices Q and Z are encoded in packed storage in
+     A on output.  The vectors TAU_Q and TAU_Z contain the Householder
+     scalars corresponding to the matrices Q and Z respectively and must
+     be of length k = \min(M,N).  The vector WORK is additional
+     workspace of length N.
+
+ -- Function: int gsl_linalg_COD_lssolve (const gsl_matrix * QRZ, const
+          gsl_vector * TAU_Q, const gsl_vector * TAU_Z, const
+          gsl_permutation * P, const size_t RANK, const gsl_vector * B,
+          gsl_vector * X, gsl_vector * RESIDUAL)
+     This function finds the least squares solution to the
+     overdetermined system A x = b where the matrix A has more rows than
+     columns.  The least squares solution minimizes the Euclidean norm
+     of the residual, ||b - A x||.  The routine requires as input the
+     QRZ decomposition of A into (QRZ, TAU_Q, TAU_Z, P, RANK) given by
+     'gsl_linalg_COD_decomp'.  The solution is returned in X.  The
+     residual is computed as a by-product and stored in RESIDUAL.
+
+ -- Function: int gsl_linalg_COD_unpack (const gsl_matrix * QRZ, const
+          gsl_vector * TAU_Q, const gsl_vector * TAU_Z, const size_t
+          RANK, gsl_matrix * Q, gsl_matrix * R, gsl_matrix * Z)
+     This function unpacks the encoded QRZ decomposition (QRZ, TAU_Q,
+     TAU_Z, RANK) into the matrices Q, R, and Z, where Q is M-by-M, R is
+     M-by-N, and Z is N-by-N.
+
+ -- Function: int gsl_linalg_COD_matZ (const gsl_matrix * QRZ, const
+          gsl_vector * TAU_Z, const size_t RANK, gsl_matrix * A,
+          gsl_vector * WORK)
+     This function multiplies the input matrix A on the right by Z, A' =
+     A Z using the encoded QRZ decomposition (QRZ, TAU_Z, RANK).  A must
+     have N columns but may have any number of rows.  Additional
+     workspace of length M is provided in WORK.
+
+
+File: gsl-ref.info,  Node: Singular Value Decomposition,  Next: Cholesky Decomposition,  Prev: Complete Orthogonal Decomposition,  Up: Linear Algebra
+
+14.5 Singular Value Decomposition
 =================================
 
 A general rectangular M-by-N matrix A has a singular value decomposition
@@ -2215,9 +2345,9 @@ M-by-N diagonal matrix (with additional rows of zeros).
      the matrix U which is the input to this function.
 
 
-File: gsl-ref.info,  Node: Cholesky Decomposition,  Next: Tridiagonal Decomposition of Real Symmetric Matrices,  Prev: Singular Value Decomposition,  Up: Linear Algebra
+File: gsl-ref.info,  Node: Cholesky Decomposition,  Next: Pivoted Cholesky Decomposition,  Prev: Singular Value Decomposition,  Up: Linear Algebra
 
-14.5 Cholesky Decomposition
+14.6 Cholesky Decomposition
 ===========================
 
 A symmetric, positive definite square matrix A has a Cholesky
@@ -2233,7 +2363,17 @@ to convert the linear system A x = b into a pair of triangular systems
 (L y = b, L^T x = y), which can be solved by forward and
 back-substitution.
 
- -- Function: int gsl_linalg_cholesky_decomp (gsl_matrix * A)
+   If the matrix A is near singular, it is sometimes possible to reduce
+the condition number and recover a more accurate solution vector x by
+scaling as
+
+     ( S A S ) ( S^(-1) x ) = S b
+
+   where S is a diagonal matrix whose elements are given by S_{ii} =
+1/\sqrt{A_{ii}}.  This scaling is also known as Jacobi preconditioning.
+There are routines below to solve both the scaled and unscaled systems.
+
+ -- Function: int gsl_linalg_cholesky_decomp1 (gsl_matrix * A)
  -- Function: int gsl_linalg_complex_cholesky_decomp (gsl_matrix_complex
           * A)
      These functions factorize the symmetric, positive-definite square
@@ -2242,13 +2382,16 @@ back-substitution.
      lower-triangular part of the matrix A are used (the upper
      triangular part is ignored).  On output the diagonal and lower
      triangular part of the input matrix A contain the matrix L, while
-     the upper triangular part of the input matrix is overwritten with
-     L^T (the diagonal terms being identical for both L and L^T).  If
-     the matrix is not positive-definite then the decomposition will
-     fail, returning the error code 'GSL_EDOM'.
+     the upper triangular part is unmodified.  If the matrix is not
+     positive-definite then the decomposition will fail, returning the
+     error code 'GSL_EDOM'.
 
      When testing whether a matrix is positive-definite, disable the
      error handler first to avoid triggering an error.
+
+ -- Function: int gsl_linalg_cholesky_decomp (gsl_matrix * A)
+     This function is now deprecated and is provided only for backward
+     compatibility.
 
  -- Function: int gsl_linalg_cholesky_solve (const gsl_matrix *
           CHOLESKY, const gsl_vector * B, gsl_vector * X)
@@ -2279,10 +2422,229 @@ back-substitution.
      'gsl_linalg_complex_cholesky_decomp'.  On output, the inverse is
      stored in-place in CHOLESKY.
 
-
-File: gsl-ref.info,  Node: Tridiagonal Decomposition of Real Symmetric Matrices,  Next: Tridiagonal Decomposition of Hermitian Matrices,  Prev: Cholesky Decomposition,  Up: Linear Algebra
+ -- Function: int gsl_linalg_cholesky_decomp2 (gsl_matrix * A,
+          gsl_vector * S)
+     This function calculates a diagonal scaling transformation S for
+     the symmetric, positive-definite square matrix A, and then computes
+     the Cholesky decomposition S A S = L L^T.  On input, the values
+     from the diagonal and lower-triangular part of the matrix A are
+     used (the upper triangular part is ignored).  On output the
+     diagonal and lower triangular part of the input matrix A contain
+     the matrix L, while the upper triangular part of the input matrix
+     is overwritten with L^T (the diagonal terms being identical for
+     both L and L^T).  If the matrix is not positive-definite then the
+     decomposition will fail, returning the error code 'GSL_EDOM'.  The
+     diagonal scale factors are stored in S on output.
 
-14.6 Tridiagonal Decomposition of Real Symmetric Matrices
+     When testing whether a matrix is positive-definite, disable the
+     error handler first to avoid triggering an error.
+
+ -- Function: int gsl_linalg_cholesky_solve2 (const gsl_matrix *
+          CHOLESKY, const gsl_vector * S, const gsl_vector * B,
+          gsl_vector * X)
+     This function solves the system (S A S) (S^{-1} x) = S b using the
+     Cholesky decomposition of S A S held in the matrix CHOLESKY which
+     must have been previously computed by
+     'gsl_linalg_cholesky_decomp2'.
+
+ -- Function: int gsl_linalg_cholesky_svx2 (const gsl_matrix * CHOLESKY,
+          const gsl_vector * S, gsl_vector * X)
+     This function solves the system (S A S) (S^{-1} x) = S b in-place
+     using the Cholesky decomposition of S A S held in the matrix
+     CHOLESKY which must have been previously computed by
+     'gsl_linalg_cholesky_decomp2'.  On input X should contain the
+     right-hand side b, which is replaced by the solution on output.
+
+ -- Function: int gsl_linalg_cholesky_scale (const gsl_matrix * A,
+          gsl_vector * S)
+     This function calculates a diagonal scaling transformation of the
+     symmetric, positive definite matrix A, such that S A S has a
+     condition number within a factor of N of the matrix of smallest
+     possible condition number over all possible diagonal scalings.  On
+     output, S contains the scale factors, given by S_i =
+     1/\sqrt{A_{ii}}.  For any A_{ii} \le 0, the corresponding scale
+     factor S_i is set to 1.
+
+ -- Function: int gsl_linalg_cholesky_scale_apply (gsl_matrix * A, const
+          gsl_vector * S)
+     This function applies the scaling transformation S to the matrix A.
+     On output, A is replaced by S A S.
+
+ -- Function: int gsl_linalg_cholesky_rcond (const gsl_matrix *
+          CHOLESKY, double * RCOND, gsl_vector * WORK)
+     This function estimates the reciprocal condition number (using the
+     1-norm) of the symmetric positive definite matrix A, using its
+     Cholesky decomposition provided in CHOLESKY.  The reciprocal
+     condition number estimate, defined as 1 / (||A||_1 \cdot
+     ||A^{-1}||_1), is stored in RCOND.  Additional workspace of size 3
+     N is required in WORK.
+
+
+File: gsl-ref.info,  Node: Pivoted Cholesky Decomposition,  Next: Modified Cholesky Decomposition,  Prev: Cholesky Decomposition,  Up: Linear Algebra
+
+14.7 Pivoted Cholesky Decomposition
+===================================
+
+A symmetric, positive definite square matrix A has an alternate Cholesky
+decomposition into a product of a lower unit triangular matrix L, a
+diagonal matrix D and L^T, given by L D L^T.  This is equivalent to the
+Cholesky formulation discussed above, with the standard Cholesky lower
+triangular factor given by L D^{1 \over 2}.  For ill-conditioned
+matrices, it can help to use a pivoting strategy to prevent the entries
+of D and L from growing too large, and also ensure D_1 \ge D_2 \ge
+\cdots \ge D_n > 0, where D_i are the diagonal entries of D.  The final
+decomposition is given by
+
+     P A P^T = L D L^T
+
+   where P is a permutation matrix.
+
+ -- Function: int gsl_linalg_pcholesky_decomp (gsl_matrix * A,
+          gsl_permutation * P)
+     This function factors the symmetric, positive-definite square
+     matrix A into the Pivoted Cholesky decomposition P A P^T = L D L^T.
+     On input, the values from the diagonal and lower-triangular part of
+     the matrix A are used to construct the factorization.  On output
+     the diagonal of the input matrix A stores the diagonal elements of
+     D, and the lower triangular portion of A contains the matrix L.
+     Since L has ones on its diagonal these do not need to be
+     explicitely stored.  The upper triangular portion of A is
+     unmodified.  The permutation matrix P is stored in P on output.
+
+ -- Function: int gsl_linalg_pcholesky_solve (const gsl_matrix * LDLT,
+          const gsl_permutation * P, const gsl_vector * B, gsl_vector *
+          X)
+     This function solves the system A x = b using the Pivoted Cholesky
+     decomposition of A held in the matrix LDLT and permutation P which
+     must have been previously computed by
+     'gsl_linalg_pcholesky_decomp'.
+
+ -- Function: int gsl_linalg_pcholesky_svx (const gsl_matrix * LDLT,
+          const gsl_permutation * P, gsl_vector * X)
+     This function solves the system A x = b in-place using the Pivoted
+     Cholesky decomposition of A held in the matrix LDLT and permutation
+     P which must have been previously computed by
+     'gsl_linalg_pcholesky_decomp'.  On input, X contains the right hand
+     side vector b which is replaced by the solution vector on output.
+
+ -- Function: int gsl_linalg_pcholesky_decomp2 (gsl_matrix * A,
+          gsl_permutation * P, gsl_vector * S)
+     This function computes the pivoted Cholesky factorization of the
+     matrix S A S, where the input matrix A is symmetric and positive
+     definite, and the diagonal scaling matrix S is computed to reduce
+     the condition number of A as much as possible.  See *note Cholesky
+     Decomposition:: for more information on the matrix S.  The Pivoted
+     Cholesky decomposition satisfies P S A S P^T = L D L^T.  On input,
+     the values from the diagonal and lower-triangular part of the
+     matrix A are used to construct the factorization.  On output the
+     diagonal of the input matrix A stores the diagonal elements of D,
+     and the lower triangular portion of A contains the matrix L.  Since
+     L has ones on its diagonal these do not need to be explicitely
+     stored.  The upper triangular portion of A is unmodified.  The
+     permutation matrix P is stored in P on output.  The diagonal
+     scaling transformation is stored in S on output.
+
+ -- Function: int gsl_linalg_pcholesky_solve2 (const gsl_matrix * LDLT,
+          const gsl_permutation * P, const gsl_vector * S, const
+          gsl_vector * B, gsl_vector * X)
+     This function solves the system (S A S) (S^{-1} x) = S b using the
+     Pivoted Cholesky decomposition of S A S held in the matrix LDLT,
+     permutation P, and vector S, which must have been previously
+     computed by 'gsl_linalg_pcholesky_decomp2'.
+
+ -- Function: int gsl_linalg_pcholesky_svx2 (const gsl_matrix * LDLT,
+          const gsl_permutation * P, const gsl_vector * S, gsl_vector *
+          X)
+     This function solves the system (S A S) (S^{-1} x) = S b in-place
+     using the Pivoted Cholesky decomposition of S A S held in the
+     matrix LDLT, permutation P and vector S, which must have been
+     previously computed by 'gsl_linalg_pcholesky_decomp2'.  On input, X
+     contains the right hand side vector b which is replaced by the
+     solution vector on output.
+
+ -- Function: int gsl_linalg_pcholesky_invert (const gsl_matrix * LDLT,
+          const gsl_permutation * P, gsl_matrix * AINV)
+     This function computes the inverse of the matrix A, using the
+     Pivoted Cholesky decomposition stored in LDLT and P.  On output,
+     the matrix AINV contains A^{-1}.
+
+ -- Function: int gsl_linalg_pcholesky_rcond (const gsl_matrix * LDLT,
+          const gsl_permutation * P, double * RCOND, gsl_vector * WORK)
+     This function estimates the reciprocal condition number (using the
+     1-norm) of the symmetric positive definite matrix A, using its
+     pivoted Cholesky decomposition provided in LDLT.  The reciprocal
+     condition number estimate, defined as 1 / (||A||_1 \cdot
+     ||A^{-1}||_1), is stored in RCOND.  Additional workspace of size 3
+     N is required in WORK.
+
+
+File: gsl-ref.info,  Node: Modified Cholesky Decomposition,  Next: Tridiagonal Decomposition of Real Symmetric Matrices,  Prev: Pivoted Cholesky Decomposition,  Up: Linear Algebra
+
+14.8 Modified Cholesky Decomposition
+====================================
+
+The modified Cholesky decomposition is suitable for solving systems A x
+= b where A is a symmetric indefinite matrix.  Such matrices arise in
+nonlinear optimization algorithms.  The standard Cholesky decomposition
+requires a positive definite matrix and would fail in this case.
+Instead of resorting to a method like QR or SVD, which do not take into
+account the symmetry of the matrix, we can instead introduce a small
+perturbation to the matrix A to make it positive definite, and then use
+a Cholesky decomposition on the perturbed matrix.  The resulting
+decomposition satisfies
+
+     P (A + E) P^T = L D L^T
+
+   where P is a permutation matrix, E is a diagonal perturbation matrix,
+L is unit lower triangular, and D is diagonal.  If A is sufficiently
+positive definite, then the perturbation matrix E will be zero and this
+method is equivalent to the pivoted Cholesky algorithm.  For indefinite
+matrices, the perturbation matrix E is computed to ensure that A + E is
+positive definite and well conditioned.
+
+ -- Function: int gsl_linalg_mcholesky_decomp (gsl_matrix * A,
+          gsl_permutation * P, gsl_vector * E)
+     This function factors the symmetric, indefinite square matrix A
+     into the Modified Cholesky decomposition P (A + E) P^T = L D L^T.
+     On input, the values from the diagonal and lower-triangular part of
+     the matrix A are used to construct the factorization.  On output
+     the diagonal of the input matrix A stores the diagonal elements of
+     D, and the lower triangular portion of A contains the matrix L.
+     Since L has ones on its diagonal these do not need to be
+     explicitely stored.  The upper triangular portion of A is
+     unmodified.  The permutation matrix P is stored in P on output.
+     The diagonal perturbation matrix is stored in E on output.  The
+     parameter E may be set to NULL if it is not required.
+
+ -- Function: int gsl_linalg_mcholesky_solve (const gsl_matrix * LDLT,
+          const gsl_permutation * P, const gsl_vector * B, gsl_vector *
+          X)
+     This function solves the perturbed system (A + E) x = b using the
+     Cholesky decomposition of A + E held in the matrix LDLT and
+     permutation P which must have been previously computed by
+     'gsl_linalg_mcholesky_decomp'.
+
+ -- Function: int gsl_linalg_mcholesky_svx (const gsl_matrix * LDLT,
+          const gsl_permutation * P, gsl_vector * X)
+     This function solves the perturbed system (A + E) x = b in-place
+     using the Cholesky decomposition of A + E held in the matrix LDLT
+     and permutation P which must have been previously computed by
+     'gsl_linalg_mcholesky_decomp'.  On input, X contains the right hand
+     side vector b which is replaced by the solution vector on output.
+
+ -- Function: int gsl_linalg_mcholesky_rcond (const gsl_matrix * LDLT,
+          const gsl_permutation * P, double * RCOND, gsl_vector * WORK)
+     This function estimates the reciprocal condition number (using the
+     1-norm) of the perturbed matrix A + E, using its pivoted Cholesky
+     decomposition provided in LDLT.  The reciprocal condition number
+     estimate, defined as 1 / (||A + E||_1 \cdot ||(A + E)^{-1}||_1), is
+     stored in RCOND.  Additional workspace of size 3 N is required in
+     WORK.
+
+
+File: gsl-ref.info,  Node: Tridiagonal Decomposition of Real Symmetric Matrices,  Next: Tridiagonal Decomposition of Hermitian Matrices,  Prev: Modified Cholesky Decomposition,  Up: Linear Algebra
+
+14.9 Tridiagonal Decomposition of Real Symmetric Matrices
 =========================================================
 
 A symmetric matrix A can be factorized by similarity transformations
@@ -2320,8 +2682,8 @@ where Q is an orthogonal matrix and T is a symmetric tridiagonal matrix.
 
 File: gsl-ref.info,  Node: Tridiagonal Decomposition of Hermitian Matrices,  Next: Hessenberg Decomposition of Real Matrices,  Prev: Tridiagonal Decomposition of Real Symmetric Matrices,  Up: Linear Algebra
 
-14.7 Tridiagonal Decomposition of Hermitian Matrices
-====================================================
+14.10 Tridiagonal Decomposition of Hermitian Matrices
+=====================================================
 
 A hermitian matrix A can be factorized by similarity transformations
 into the form,
@@ -2360,8 +2722,8 @@ matrix.
 
 File: gsl-ref.info,  Node: Hessenberg Decomposition of Real Matrices,  Next: Hessenberg-Triangular Decomposition of Real Matrices,  Prev: Tridiagonal Decomposition of Hermitian Matrices,  Up: Linear Algebra
 
-14.8 Hessenberg Decomposition of Real Matrices
-==============================================
+14.11 Hessenberg Decomposition of Real Matrices
+===============================================
 
 A general real matrix A can be decomposed by orthogonal similarity
 transformations into the form
@@ -2407,8 +2769,8 @@ eigenvalue problem, but has applications in other areas as well.
 
 File: gsl-ref.info,  Node: Hessenberg-Triangular Decomposition of Real Matrices,  Next: Bidiagonalization,  Prev: Hessenberg Decomposition of Real Matrices,  Up: Linear Algebra
 
-14.9 Hessenberg-Triangular Decomposition of Real Matrices
-=========================================================
+14.12 Hessenberg-Triangular Decomposition of Real Matrices
+==========================================================
 
 A general real matrix pair (A, B) can be decomposed by orthogonal
 similarity transformations into the form
@@ -2432,7 +2794,7 @@ eigenvalue problem.
 
 File: gsl-ref.info,  Node: Bidiagonalization,  Next: Givens Rotations,  Prev: Hessenberg-Triangular Decomposition of Real Matrices,  Up: Linear Algebra
 
-14.10 Bidiagonalization
+14.13 Bidiagonalization
 =======================
 
 A general matrix A can be factorized by similarity transformations into
@@ -2480,7 +2842,7 @@ The size of U is M-by-N and the size of V is N-by-N.
 
 File: gsl-ref.info,  Node: Givens Rotations,  Next: Householder Transformations,  Prev: Bidiagonalization,  Up: Linear Algebra
 
-14.11 Givens Rotations
+14.14 Givens Rotations
 ======================
 
 A Givens rotation is a rotation in the plane acting on two elements of a
@@ -2508,7 +2870,7 @@ desired to find c and s such that
 
 File: gsl-ref.info,  Node: Householder Transformations,  Next: Householder solver for linear systems,  Prev: Givens Rotations,  Up: Linear Algebra
 
-14.12 Householder Transformations
+14.15 Householder Transformations
 =================================
 
 A Householder transformation is a rank-1 modification of the identity
@@ -2561,7 +2923,7 @@ efficiently.
 
 File: gsl-ref.info,  Node: Householder solver for linear systems,  Next: Tridiagonal Systems,  Prev: Householder Transformations,  Up: Linear Algebra
 
-14.13 Householder solver for linear systems
+14.16 Householder solver for linear systems
 ===========================================
 
  -- Function: int gsl_linalg_HH_solve (gsl_matrix * A, const gsl_vector
@@ -2578,9 +2940,9 @@ File: gsl-ref.info,  Node: Householder solver for linear systems,  Next: Tridiag
      destroyed by the Householder transformations.
 
 
-File: gsl-ref.info,  Node: Tridiagonal Systems,  Next: Balancing,  Prev: Householder solver for linear systems,  Up: Linear Algebra
+File: gsl-ref.info,  Node: Tridiagonal Systems,  Next: Triangular Systems,  Prev: Householder solver for linear systems,  Up: Linear Algebra
 
-14.14 Tridiagonal Systems
+14.17 Tridiagonal Systems
 =========================
 
 The functions described in this section efficiently solve symmetric,
@@ -2644,9 +3006,37 @@ error code 'GSL_ESING'.
               ( e_3  0  e_2 d_3 )
 
 
-File: gsl-ref.info,  Node: Balancing,  Next: Linear Algebra Examples,  Prev: Tridiagonal Systems,  Up: Linear Algebra
+File: gsl-ref.info,  Node: Triangular Systems,  Next: Balancing,  Prev: Tridiagonal Systems,  Up: Linear Algebra
 
-14.15 Balancing
+14.18 Triangular Systems
+========================
+
+ -- Function: int gsl_linalg_tri_upper_invert (gsl_matrix * T)
+ -- Function: int gsl_linalg_tri_lower_invert (gsl_matrix * T)
+ -- Function: int gsl_linalg_tri_upper_unit_invert (gsl_matrix * T)
+ -- Function: int gsl_linalg_tri_lower_unit_invert (gsl_matrix * T)
+     These functions calculate the in-place inverse of the triangular
+     matrix T.  When the 'upper' prefix is specified, then the upper
+     triangle of T is used, and when the 'lower' prefix is specified,
+     the lower triangle is used.  If the 'unit' prefix is specified,
+     then the diagonal elements of the matrix T are taken as unity and
+     are not referenced.  Otherwise the diagonal elements are used in
+     the inversion.
+
+ -- Function: int gsl_linalg_tri_upper_rcond (const gsl_matrix * T,
+          double * RCOND, gsl_vector * WORK)
+ -- Function: int gsl_linalg_tri_lower_rcond (const gsl_matrix * T,
+          double * RCOND, gsl_vector * WORK)
+     These functions estimate the reciprocal condition number, in the
+     1-norm, of the upper or lower N-by-N triangular matrix T.  The
+     reciprocal condition number is stored in RCOND on output, and is
+     defined by 1 / (||T||_1 \cdot ||T^{-1}||_1).  Additional workspace
+     of size 3 N is required in WORK.
+
+
+File: gsl-ref.info,  Node: Balancing,  Next: Linear Algebra Examples,  Prev: Triangular Systems,  Up: Linear Algebra
+
+14.19 Balancing
 ===============
 
 The process of balancing a matrix applies similarity transformations to
@@ -2669,7 +3059,7 @@ point radix.
 
 File: gsl-ref.info,  Node: Linear Algebra Examples,  Next: Linear Algebra References and Further Reading,  Prev: Balancing,  Up: Linear Algebra
 
-14.16 Examples
+14.20 Examples
 ==============
 
 The following program solves the linear system A x = b.  The system to
@@ -2750,7 +3140,7 @@ with the equation A x = b.
 
 File: gsl-ref.info,  Node: Linear Algebra References and Further Reading,  Prev: Linear Algebra Examples,  Up: Linear Algebra
 
-14.17 References and Further Reading
+14.21 References and Further Reading
 ====================================
 
 Further information on the algorithms described in this section can be
@@ -2791,6 +3181,14 @@ the following papers,
      than QR", 'Lapack Working Note 15' (LAWN-15), October 1989.
      Available from netlib, <http://www.netlib.org/lapack/> in the
      'lawns' or 'lawnspdf' directories.
+
+The algorithm for estimating a matrix condition number is described in
+the following paper,
+
+     N. J. Higham, "FORTRAN codes for estimating the one-norm of a real
+     or complex matrix, with applications to condition estimation", ACM
+     Trans.  Math.  Soft., vol.  14, no.  4, pp.  381-396, December
+     1988.
 
 
 File: gsl-ref.info,  Node: Eigensystems,  Next: Fast Fourier Transforms,  Prev: Linear Algebra,  Up: Top
@@ -6462,527 +6860,4 @@ File: gsl-ref.info,  Node: Saving and restoring quasi-random number generator st
  -- Function: gsl_qrng * gsl_qrng_clone (const gsl_qrng * Q)
      This function returns a pointer to a newly created generator which
      is an exact copy of the generator Q.
-
-
-File: gsl-ref.info,  Node: Quasi-random number generator algorithms,  Next: Quasi-random number generator examples,  Prev: Saving and restoring quasi-random number generator state,  Up: Quasi-Random Sequences
-
-19.5 Quasi-random number generator algorithms
-=============================================
-
-The following quasi-random sequence algorithms are available,
-
- -- Generator: gsl_qrng_niederreiter_2
-     This generator uses the algorithm described in Bratley, Fox,
-     Niederreiter, 'ACM Trans. Model. Comp. Sim.' 2, 195 (1992).  It is
-     valid up to 12 dimensions.
-
- -- Generator: gsl_qrng_sobol
-     This generator uses the Sobol sequence described in Antonov,
-     Saleev, 'USSR Comput. Maths. Math. Phys.' 19, 252 (1980).  It is
-     valid up to 40 dimensions.
-
- -- Generator: gsl_qrng_halton
- -- Generator: gsl_qrng_reversehalton
-     These generators use the Halton and reverse Halton sequences
-     described in J.H. Halton, 'Numerische Mathematik' 2, 84-90 (1960)
-     and B. Vandewoestyne and R. Cools 'Computational and Applied
-     Mathematics' 189, 1&2, 341-361 (2006).  They are valid up to 1229
-     dimensions.
-
-
-File: gsl-ref.info,  Node: Quasi-random number generator examples,  Next: Quasi-random number references,  Prev: Quasi-random number generator algorithms,  Up: Quasi-Random Sequences
-
-19.6 Examples
-=============
-
-The following program prints the first 1024 points of the 2-dimensional
-Sobol sequence.
-
-     #include <stdio.h>
-     #include <gsl/gsl_qrng.h>
-
-     int
-     main (void)
-     {
-       int i;
-       gsl_qrng * q = gsl_qrng_alloc (gsl_qrng_sobol, 2);
-
-       for (i = 0; i < 1024; i++)
-         {
-           double v[2];
-           gsl_qrng_get (q, v);
-           printf ("%.5f %.5f\n", v[0], v[1]);
-         }
-
-       gsl_qrng_free (q);
-       return 0;
-     }
-
-Here is the output from the program,
-
-     $ ./a.out
-     0.50000 0.50000
-     0.75000 0.25000
-     0.25000 0.75000
-     0.37500 0.37500
-     0.87500 0.87500
-     0.62500 0.12500
-     0.12500 0.62500
-     ....
-
-It can be seen that successive points progressively fill-in the spaces
-between previous points.
-
-
-File: gsl-ref.info,  Node: Quasi-random number references,  Prev: Quasi-random number generator examples,  Up: Quasi-Random Sequences
-
-19.7 References
-===============
-
-The implementations of the quasi-random sequence routines are based on
-the algorithms described in the following paper,
-
-     P. Bratley and B.L. Fox and H. Niederreiter, "Algorithm 738:
-     Programs to Generate Niederreiter's Low-discrepancy Sequences",
-     'ACM Transactions on Mathematical Software', Vol. 20, No. 4,
-     December, 1994, p. 494-495.
-
-
-File: gsl-ref.info,  Node: Random Number Distributions,  Next: Statistics,  Prev: Quasi-Random Sequences,  Up: Top
-
-20 Random Number Distributions
-******************************
-
-This chapter describes functions for generating random variates and
-computing their probability distributions.  Samples from the
-distributions described in this chapter can be obtained using any of the
-random number generators in the library as an underlying source of
-randomness.
-
-   In the simplest cases a non-uniform distribution can be obtained
-analytically from the uniform distribution of a random number generator
-by applying an appropriate transformation.  This method uses one call to
-the random number generator.  More complicated distributions are created
-by the "acceptance-rejection" method, which compares the desired
-distribution against a distribution which is similar and known
-analytically.  This usually requires several samples from the generator.
-
-   The library also provides cumulative distribution functions and
-inverse cumulative distribution functions, sometimes referred to as
-quantile functions.  The cumulative distribution functions and their
-inverses are computed separately for the upper and lower tails of the
-distribution, allowing full accuracy to be retained for small results.
-
-   The functions for random variates and probability density functions
-described in this section are declared in 'gsl_randist.h'.  The
-corresponding cumulative distribution functions are declared in
-'gsl_cdf.h'.
-
-   Note that the discrete random variate functions always return a value
-of type 'unsigned int', and on most platforms this has a maximum value
-of 2^32-1 ~=~ 4.29e9.  They should only be called with a safe range of
-parameters (where there is a negligible probability of a variate
-exceeding this limit) to prevent incorrect results due to overflow.
-
-* Menu:
-
-* Random Number Distribution Introduction::  
-* The Gaussian Distribution::   
-* The Gaussian Tail Distribution::  
-* The Bivariate Gaussian Distribution::  
-* The Exponential Distribution::  
-* The Laplace Distribution::    
-* The Exponential Power Distribution::  
-* The Cauchy Distribution::     
-* The Rayleigh Distribution::   
-* The Rayleigh Tail Distribution::  
-* The Landau Distribution::     
-* The Levy alpha-Stable Distributions::  
-* The Levy skew alpha-Stable Distribution::  
-* The Gamma Distribution::      
-* The Flat (Uniform) Distribution::  
-* The Lognormal Distribution::  
-* The Chi-squared Distribution::  
-* The F-distribution::          
-* The t-distribution::          
-* The Beta Distribution::       
-* The Logistic Distribution::   
-* The Pareto Distribution::     
-* Spherical Vector Distributions::  
-* The Weibull Distribution::    
-* The Type-1 Gumbel Distribution::  
-* The Type-2 Gumbel Distribution::  
-* The Dirichlet Distribution::  
-* General Discrete Distributions::  
-* The Poisson Distribution::    
-* The Bernoulli Distribution::  
-* The Binomial Distribution::   
-* The Multinomial Distribution::  
-* The Negative Binomial Distribution::  
-* The Pascal Distribution::     
-* The Geometric Distribution::  
-* The Hypergeometric Distribution::  
-* The Logarithmic Distribution::  
-* Shuffling and Sampling::      
-* Random Number Distribution Examples::  
-* Random Number Distribution References and Further Reading::  
-
-
-File: gsl-ref.info,  Node: Random Number Distribution Introduction,  Next: The Gaussian Distribution,  Up: Random Number Distributions
-
-20.1 Introduction
-=================
-
-Continuous random number distributions are defined by a probability
-density function, p(x), such that the probability of x occurring in the
-infinitesimal range x to x+dx is p dx.
-
-   The cumulative distribution function for the lower tail P(x) is
-defined by the integral,
-
-     P(x) = \int_{-\infty}^{x} dx' p(x')
-
-and gives the probability of a variate taking a value less than x.
-
-   The cumulative distribution function for the upper tail Q(x) is
-defined by the integral,
-
-     Q(x) = \int_{x}^{+\infty} dx' p(x')
-
-and gives the probability of a variate taking a value greater than x.
-
-   The upper and lower cumulative distribution functions are related by
-P(x) + Q(x) = 1 and satisfy 0 <= P(x) <= 1, 0 <= Q(x) <= 1.
-
-   The inverse cumulative distributions, x=P^{-1}(P) and x=Q^{-1}(Q)
-give the values of x which correspond to a specific value of P or Q.
-They can be used to find confidence limits from probability values.
-
-   For discrete distributions the probability of sampling the integer
-value k is given by p(k), where \sum_k p(k) = 1.  The cumulative
-distribution for the lower tail P(k) of a discrete distribution is
-defined as,
-
-     P(k) = \sum_{i <= k} p(i)
-
-where the sum is over the allowed range of the distribution less than or
-equal to k.
-
-   The cumulative distribution for the upper tail of a discrete
-distribution Q(k) is defined as
-
-     Q(k) = \sum_{i > k} p(i)
-
-giving the sum of probabilities for all values greater than k.  These
-two definitions satisfy the identity P(k)+Q(k)=1.
-
-   If the range of the distribution is 1 to n inclusive then P(n)=1,
-Q(n)=0 while P(1) = p(1), Q(1)=1-p(1).
-
-
-File: gsl-ref.info,  Node: The Gaussian Distribution,  Next: The Gaussian Tail Distribution,  Prev: Random Number Distribution Introduction,  Up: Random Number Distributions
-
-20.2 The Gaussian Distribution
-==============================
-
- -- Function: double gsl_ran_gaussian (const gsl_rng * R, double SIGMA)
-     This function returns a Gaussian random variate, with mean zero and
-     standard deviation SIGMA.  The probability distribution for
-     Gaussian random variates is,
-
-          p(x) dx = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2) dx
-
-     for x in the range -\infty to +\infty.  Use the transformation z =
-     \mu + x on the numbers returned by 'gsl_ran_gaussian' to obtain a
-     Gaussian distribution with mean \mu.  This function uses the
-     Box-Muller algorithm which requires two calls to the random number
-     generator R.
-
- -- Function: double gsl_ran_gaussian_pdf (double X, double SIGMA)
-     This function computes the probability density p(x) at X for a
-     Gaussian distribution with standard deviation SIGMA, using the
-     formula given above.
-
-
- -- Function: double gsl_ran_gaussian_ziggurat (const gsl_rng * R,
-          double SIGMA)
- -- Function: double gsl_ran_gaussian_ratio_method (const gsl_rng * R,
-          double SIGMA)
-     This function computes a Gaussian random variate using the
-     alternative Marsaglia-Tsang ziggurat and Kinderman-Monahan-Leva
-     ratio methods.  The Ziggurat algorithm is the fastest available
-     algorithm in most cases.
-
- -- Function: double gsl_ran_ugaussian (const gsl_rng * R)
- -- Function: double gsl_ran_ugaussian_pdf (double X)
- -- Function: double gsl_ran_ugaussian_ratio_method (const gsl_rng * R)
-     These functions compute results for the unit Gaussian distribution.
-     They are equivalent to the functions above with a standard
-     deviation of one, SIGMA = 1.
-
- -- Function: double gsl_cdf_gaussian_P (double X, double SIGMA)
- -- Function: double gsl_cdf_gaussian_Q (double X, double SIGMA)
- -- Function: double gsl_cdf_gaussian_Pinv (double P, double SIGMA)
- -- Function: double gsl_cdf_gaussian_Qinv (double Q, double SIGMA)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the Gaussian distribution with standard
-     deviation SIGMA.
-
- -- Function: double gsl_cdf_ugaussian_P (double X)
- -- Function: double gsl_cdf_ugaussian_Q (double X)
- -- Function: double gsl_cdf_ugaussian_Pinv (double P)
- -- Function: double gsl_cdf_ugaussian_Qinv (double Q)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the unit Gaussian distribution.
-
-
-File: gsl-ref.info,  Node: The Gaussian Tail Distribution,  Next: The Bivariate Gaussian Distribution,  Prev: The Gaussian Distribution,  Up: Random Number Distributions
-
-20.3 The Gaussian Tail Distribution
-===================================
-
- -- Function: double gsl_ran_gaussian_tail (const gsl_rng * R, double A,
-          double SIGMA)
-     This function provides random variates from the upper tail of a
-     Gaussian distribution with standard deviation SIGMA.  The values
-     returned are larger than the lower limit A, which must be positive.
-     The method is based on Marsaglia's famous rectangle-wedge-tail
-     algorithm (Ann.  Math.  Stat.  32, 894-899 (1961)), with this
-     aspect explained in Knuth, v2, 3rd ed, p139,586 (exercise 11).
-
-     The probability distribution for Gaussian tail random variates is,
-
-          p(x) dx = {1 \over N(a;\sigma) \sqrt{2 \pi \sigma^2}} \exp (- x^2/(2 \sigma^2)) dx
-
-     for x > a where N(a;\sigma) is the normalization constant,
-
-          N(a;\sigma) = (1/2) erfc(a / sqrt(2 sigma^2)).
-
- -- Function: double gsl_ran_gaussian_tail_pdf (double X, double A,
-          double SIGMA)
-     This function computes the probability density p(x) at X for a
-     Gaussian tail distribution with standard deviation SIGMA and lower
-     limit A, using the formula given above.
-
-
- -- Function: double gsl_ran_ugaussian_tail (const gsl_rng * R, double
-          A)
- -- Function: double gsl_ran_ugaussian_tail_pdf (double X, double A)
-     These functions compute results for the tail of a unit Gaussian
-     distribution.  They are equivalent to the functions above with a
-     standard deviation of one, SIGMA = 1.
-
-
-File: gsl-ref.info,  Node: The Bivariate Gaussian Distribution,  Next: The Exponential Distribution,  Prev: The Gaussian Tail Distribution,  Up: Random Number Distributions
-
-20.4 The Bivariate Gaussian Distribution
-========================================
-
- -- Function: void gsl_ran_bivariate_gaussian (const gsl_rng * R, double
-          SIGMA_X, double SIGMA_Y, double RHO, double * X, double * Y)
-     This function generates a pair of correlated Gaussian variates,
-     with mean zero, correlation coefficient RHO and standard deviations
-     SIGMA_X and SIGMA_Y in the x and y directions.  The probability
-     distribution for bivariate Gaussian random variates is,
-
-          p(x,y) dx dy = {1 \over 2 \pi \sigma_x \sigma_y \sqrt{1-\rho^2}} \exp (-(x^2/\sigma_x^2 + y^2/\sigma_y^2 - 2 \rho x y/(\sigma_x\sigma_y))/2(1-\rho^2)) dx dy
-
-     for x,y in the range -\infty to +\infty.  The correlation
-     coefficient RHO should lie between 1 and -1.
-
- -- Function: double gsl_ran_bivariate_gaussian_pdf (double X, double Y,
-          double SIGMA_X, double SIGMA_Y, double RHO)
-     This function computes the probability density p(x,y) at (X,Y) for
-     a bivariate Gaussian distribution with standard deviations SIGMA_X,
-     SIGMA_Y and correlation coefficient RHO, using the formula given
-     above.
-
-
-
-File: gsl-ref.info,  Node: The Exponential Distribution,  Next: The Laplace Distribution,  Prev: The Bivariate Gaussian Distribution,  Up: Random Number Distributions
-
-20.5 The Exponential Distribution
-=================================
-
- -- Function: double gsl_ran_exponential (const gsl_rng * R, double MU)
-     This function returns a random variate from the exponential
-     distribution with mean MU.  The distribution is,
-
-          p(x) dx = {1 \over \mu} \exp(-x/\mu) dx
-
-     for x >= 0.
-
- -- Function: double gsl_ran_exponential_pdf (double X, double MU)
-     This function computes the probability density p(x) at X for an
-     exponential distribution with mean MU, using the formula given
-     above.
-
-
- -- Function: double gsl_cdf_exponential_P (double X, double MU)
- -- Function: double gsl_cdf_exponential_Q (double X, double MU)
- -- Function: double gsl_cdf_exponential_Pinv (double P, double MU)
- -- Function: double gsl_cdf_exponential_Qinv (double Q, double MU)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the exponential distribution with mean
-     MU.
-
-
-File: gsl-ref.info,  Node: The Laplace Distribution,  Next: The Exponential Power Distribution,  Prev: The Exponential Distribution,  Up: Random Number Distributions
-
-20.6 The Laplace Distribution
-=============================
-
- -- Function: double gsl_ran_laplace (const gsl_rng * R, double A)
-     This function returns a random variate from the Laplace
-     distribution with width A.  The distribution is,
-
-          p(x) dx = {1 \over 2 a}  \exp(-|x/a|) dx
-
-     for -\infty < x < \infty.
-
- -- Function: double gsl_ran_laplace_pdf (double X, double A)
-     This function computes the probability density p(x) at X for a
-     Laplace distribution with width A, using the formula given above.
-
-
- -- Function: double gsl_cdf_laplace_P (double X, double A)
- -- Function: double gsl_cdf_laplace_Q (double X, double A)
- -- Function: double gsl_cdf_laplace_Pinv (double P, double A)
- -- Function: double gsl_cdf_laplace_Qinv (double Q, double A)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the Laplace distribution with width A.
-
-
-File: gsl-ref.info,  Node: The Exponential Power Distribution,  Next: The Cauchy Distribution,  Prev: The Laplace Distribution,  Up: Random Number Distributions
-
-20.7 The Exponential Power Distribution
-=======================================
-
- -- Function: double gsl_ran_exppow (const gsl_rng * R, double A, double
-          B)
-     This function returns a random variate from the exponential power
-     distribution with scale parameter A and exponent B.  The
-     distribution is,
-
-          p(x) dx = {1 \over 2 a \Gamma(1+1/b)} \exp(-|x/a|^b) dx
-
-     for x >= 0.  For b = 1 this reduces to the Laplace distribution.
-     For b = 2 it has the same form as a Gaussian distribution, but with
-     a = \sqrt{2} \sigma.
-
- -- Function: double gsl_ran_exppow_pdf (double X, double A, double B)
-     This function computes the probability density p(x) at X for an
-     exponential power distribution with scale parameter A and exponent
-     B, using the formula given above.
-
-
- -- Function: double gsl_cdf_exppow_P (double X, double A, double B)
- -- Function: double gsl_cdf_exppow_Q (double X, double A, double B)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) for the exponential power distribution with parameters A and
-     B.
-
-
-File: gsl-ref.info,  Node: The Cauchy Distribution,  Next: The Rayleigh Distribution,  Prev: The Exponential Power Distribution,  Up: Random Number Distributions
-
-20.8 The Cauchy Distribution
-============================
-
- -- Function: double gsl_ran_cauchy (const gsl_rng * R, double A)
-     This function returns a random variate from the Cauchy distribution
-     with scale parameter A.  The probability distribution for Cauchy
-     random variates is,
-
-          p(x) dx = {1 \over a\pi (1 + (x/a)^2) } dx
-
-     for x in the range -\infty to +\infty.  The Cauchy distribution is
-     also known as the Lorentz distribution.
-
- -- Function: double gsl_ran_cauchy_pdf (double X, double A)
-     This function computes the probability density p(x) at X for a
-     Cauchy distribution with scale parameter A, using the formula given
-     above.
-
-
- -- Function: double gsl_cdf_cauchy_P (double X, double A)
- -- Function: double gsl_cdf_cauchy_Q (double X, double A)
- -- Function: double gsl_cdf_cauchy_Pinv (double P, double A)
- -- Function: double gsl_cdf_cauchy_Qinv (double Q, double A)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the Cauchy distribution with scale
-     parameter A.
-
-
-File: gsl-ref.info,  Node: The Rayleigh Distribution,  Next: The Rayleigh Tail Distribution,  Prev: The Cauchy Distribution,  Up: Random Number Distributions
-
-20.9 The Rayleigh Distribution
-==============================
-
- -- Function: double gsl_ran_rayleigh (const gsl_rng * R, double SIGMA)
-     This function returns a random variate from the Rayleigh
-     distribution with scale parameter SIGMA.  The distribution is,
-
-          p(x) dx = {x \over \sigma^2} \exp(- x^2/(2 \sigma^2)) dx
-
-     for x > 0.
-
- -- Function: double gsl_ran_rayleigh_pdf (double X, double SIGMA)
-     This function computes the probability density p(x) at X for a
-     Rayleigh distribution with scale parameter SIGMA, using the formula
-     given above.
-
-
- -- Function: double gsl_cdf_rayleigh_P (double X, double SIGMA)
- -- Function: double gsl_cdf_rayleigh_Q (double X, double SIGMA)
- -- Function: double gsl_cdf_rayleigh_Pinv (double P, double SIGMA)
- -- Function: double gsl_cdf_rayleigh_Qinv (double Q, double SIGMA)
-     These functions compute the cumulative distribution functions P(x),
-     Q(x) and their inverses for the Rayleigh distribution with scale
-     parameter SIGMA.
-
-
-File: gsl-ref.info,  Node: The Rayleigh Tail Distribution,  Next: The Landau Distribution,  Prev: The Rayleigh Distribution,  Up: Random Number Distributions
-
-20.10 The Rayleigh Tail Distribution
-====================================
-
- -- Function: double gsl_ran_rayleigh_tail (const gsl_rng * R, double A,
-          double SIGMA)
-     This function returns a random variate from the tail of the
-     Rayleigh distribution with scale parameter SIGMA and a lower limit
-     of A.  The distribution is,
-
-          p(x) dx = {x \over \sigma^2} \exp ((a^2 - x^2) /(2 \sigma^2)) dx
-
-     for x > a.
-
- -- Function: double gsl_ran_rayleigh_tail_pdf (double X, double A,
-          double SIGMA)
-     This function computes the probability density p(x) at X for a
-     Rayleigh tail distribution with scale parameter SIGMA and lower
-     limit A, using the formula given above.
-
-
-
-File: gsl-ref.info,  Node: The Landau Distribution,  Next: The Levy alpha-Stable Distributions,  Prev: The Rayleigh Tail Distribution,  Up: Random Number Distributions
-
-20.11 The Landau Distribution
-=============================
-
- -- Function: double gsl_ran_landau (const gsl_rng * R)
-     This function returns a random variate from the Landau
-     distribution.  The probability distribution for Landau random
-     variates is defined analytically by the complex integral,
-
-          p(x) = (1/(2 \pi i)) \int_{c-i\infty}^{c+i\infty} ds exp(s log(s) + x s)
-     For numerical purposes it is more convenient to use the following
-     equivalent form of the integral,
-
-          p(x) = (1/\pi) \int_0^\infty dt \exp(-t \log(t) - x t) \sin(\pi t).
-
- -- Function: double gsl_ran_landau_pdf (double X)
-     This function computes the probability density p(x) at X for the
-     Landau distribution using an approximation to the formula given
-     above.
-
 

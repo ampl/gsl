@@ -90,7 +90,6 @@ static int tsqr_householder_hv (const double tau, const gsl_vector * v, double *
 static int tsqr_householder_hm (const double tau, const gsl_vector * v, gsl_matrix * R,
                                 gsl_matrix * A);
 static int tsqr_QR_decomp (gsl_matrix * R, gsl_matrix * A, gsl_vector * tau);
-static int tsqr_copy_upper(gsl_matrix * dest, const gsl_matrix * src);
 
 /*
 tsqr_alloc()
@@ -204,6 +203,8 @@ Notes:
 contains current R matrix
 
 2) state->QTb(1:p) contains current Q^T b vector
+
+3) A and b are destroyed
 */
 
 static int
@@ -239,7 +240,7 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
         return status;
 
       /* store upper triangular R factor in state->R */
-      tsqr_copy_upper(&R.matrix, &Av.matrix);
+      gsl_matrix_tricpy('U', 1, &R.matrix, &Av.matrix);
 
       /* compute ||b|| */
       state->normb = gsl_blas_dnrm2(b);
@@ -317,8 +318,6 @@ tsqr_solve(const double lambda, gsl_vector * x,
   else
     {
       int status;
-      gsl_matrix_view R = gsl_matrix_submatrix(state->R, 0, 0, p, p);
-      gsl_vector_view QTb = gsl_vector_subvector(state->QTb, 0, p);
 
       /* compute SVD of R if not already computed */
       if (state->svd == 0)
@@ -328,7 +327,7 @@ tsqr_solve(const double lambda, gsl_vector * x,
             return status;
         }
 
-      status = gsl_multifit_linear_solve(lambda, &R.matrix, &QTb.vector, x, rnorm, snorm,
+      status = gsl_multifit_linear_solve(lambda, state->R, state->QTb, x, rnorm, snorm,
                                          state->multifit_workspace_p);
       if (status)
         return status;
@@ -347,7 +346,7 @@ tsqr_solve(const double lambda, gsl_vector * x,
        * so add this into the rnorm calculation
        */
       {
-        double norm_Q1Tb = gsl_blas_dnrm2(&QTb.vector);
+        double norm_Q1Tb = gsl_blas_dnrm2(state->QTb);
         double ratio = norm_Q1Tb / state->normb;
         double diff = 1.0 - ratio*ratio;
 
@@ -379,8 +378,6 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
             gsl_vector * eta, void * vstate)
 {
   tsqr_state_t *state = (tsqr_state_t *) vstate;
-  const size_t p = state->p;
-  gsl_vector_view QTb = gsl_vector_subvector(state->QTb, 0, p);
   int status;
 
   /* compute SVD of R if not already computed */
@@ -391,8 +388,27 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
         return status;
     }
 
-  status = gsl_multifit_linear_lcurve(&QTb.vector, reg_param, rho, eta,
+  status = gsl_multifit_linear_lcurve(state->QTb, reg_param, rho, eta,
                                       state->multifit_workspace_p);
+
+  /* now add contribution to rnorm from Q2 factor */
+  {
+    double norm_Q1Tb = gsl_blas_dnrm2(state->QTb);
+    double ratio = norm_Q1Tb / state->normb;
+    double diff = 1.0 - ratio*ratio;
+    size_t i;
+
+    if (diff > GSL_DBL_EPSILON)
+      {
+        double norm_Q2Tb = state->normb * sqrt(diff);
+
+        for (i = 0; i < rho->size; ++i)
+          {
+            double *rhoi = gsl_vector_ptr(rho, i);
+            *rhoi = gsl_hypot(*rhoi, norm_Q2Tb);
+          }
+      }
+  }
 
   return status;
 }
@@ -407,9 +423,7 @@ tsqr_rcond(double * rcond, void * vstate)
     {
       int status = tsqr_svd(state);
       if (status)
-        {
-          GSL_ERROR("error computing SVD of R", GSL_EINVAL);
-        }
+        return status;
     }
 
   *rcond = gsl_multifit_linear_rcond(state->multifit_workspace_p);
@@ -432,15 +446,17 @@ Return: success/error
 static int
 tsqr_svd(tsqr_state_t * state)
 {
-  const size_t p = state->p;
-  gsl_matrix_view R = gsl_matrix_submatrix(state->R, 0, 0, p, p);
   int status;
 
-  status = gsl_multifit_linear_svd(&R.matrix, state->multifit_workspace_p);
+  status = gsl_multifit_linear_svd(state->R, state->multifit_workspace_p);
+  if (status)
+    {
+      GSL_ERROR("error computing SVD of R", status);
+    }
 
   state->svd = 1;
 
-  return status;
+  return GSL_SUCCESS;
 }
 
 /*
@@ -533,7 +549,7 @@ Inputs: tau - Householder scalar
         w0  - (input/output)
               on input, w1(0);
               on output, transformed w1(0)
-        w   - (input/output)
+        w   - (input/output) n-by-1
               on input, vector w2;
               on output, P*w2
 */
@@ -549,7 +565,7 @@ tsqr_householder_hv (const double tau, const gsl_vector * v, double *w0, gsl_vec
   {
     double d1, d;
 
-    /* compute d1 = v(2:n)'w(2:n) */
+    /* compute d1 = v(2:n)' w(2:n) */
     gsl_blas_ddot (v, w, &d1);
 
     /* compute d = v'w = w(1) + d1 since v(1) = 1 */
@@ -671,28 +687,6 @@ tsqr_QR_decomp (gsl_matrix * R, gsl_matrix * A, gsl_vector * tau)
 
       return GSL_SUCCESS;
     }
-}
-
-/* copy upper triangle of src to dest, including diagonal */
-static int
-tsqr_copy_upper(gsl_matrix * dest, const gsl_matrix * src)
-{
-  const size_t src_size1 = src->size1;
-  const size_t src_size2 = src->size2;
-  const size_t src_tda = src->tda;
-  const size_t dest_tda = dest->tda;
-  size_t i, j;
-
-  for (i = 0; i < src_size1; i++)
-    {
-      for (j = i; j < src_size2; j++)
-        {
-          dest->data[dest_tda * i + j] 
-            = src->data[src_tda * i + j];
-        }
-    }
-
-  return GSL_SUCCESS;
 }
 
 static const gsl_multilarge_linear_type tsqr_type =

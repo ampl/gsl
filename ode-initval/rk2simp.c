@@ -149,6 +149,7 @@ rk2simp_alloc (size_t dim)
       free (state->ytmp);
       free (state->dfdy);
       free (state->dfdt);
+      free (state->y_onestep);
       free (state);
       GSL_ERROR_NULL ("failed to allocate space for p", GSL_ENOMEM);
     }

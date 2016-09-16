@@ -7,7 +7,7 @@ int
 main()
 {
   gsl_spmatrix *A = gsl_spmatrix_alloc(5, 4); /* triplet format */
-  gsl_spmatrix *C;
+  gsl_spmatrix *B, *C;
   size_t i, j;
 
   /* build the sparse matrix */
@@ -28,20 +28,38 @@ main()
 
   /* print out elements in triplet format */
   printf("matrix in triplet format (i,j,Aij):\n");
-  for (i = 0; i < A->nz; ++i)
-    printf("(%zu, %zu, %.1f)\n", A->i[i], A->p[i], A->data[i]);
+  gsl_spmatrix_fprintf(stdout, A, "%.1f");
 
   /* convert to compressed column format */
-  C = gsl_spmatrix_compcol(A);
+  B = gsl_spmatrix_ccs(A);
 
   printf("matrix in compressed column format:\n");
+  printf("i = [ ");
+  for (i = 0; i < B->nz; ++i)
+    printf("%zu, ", B->i[i]);
+  printf("]\n");
+
+  printf("p = [ ");
+  for (i = 0; i < B->size2 + 1; ++i)
+    printf("%zu, ", B->p[i]);
+  printf("]\n");
+
+  printf("d = [ ");
+  for (i = 0; i < B->nz; ++i)
+    printf("%g, ", B->data[i]);
+  printf("]\n");
+
+  /* convert to compressed row format */
+  C = gsl_spmatrix_crs(A);
+
+  printf("matrix in compressed row format:\n");
   printf("i = [ ");
   for (i = 0; i < C->nz; ++i)
     printf("%zu, ", C->i[i]);
   printf("]\n");
 
   printf("p = [ ");
-  for (i = 0; i < C->size2 + 1; ++i)
+  for (i = 0; i < C->size1 + 1; ++i)
     printf("%zu, ", C->p[i]);
   printf("]\n");
 
@@ -51,6 +69,7 @@ main()
   printf("]\n");
 
   gsl_spmatrix_free(A);
+  gsl_spmatrix_free(B);
   gsl_spmatrix_free(C);
 
   return 0;

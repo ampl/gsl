@@ -57,13 +57,21 @@ typedef struct
  *   i = A->i[n]
  *   j = A->p[n]
  *
- * Compressed column format:
+ * Compressed column format (CCS):
  *
  * If data[n] = A_{ij}, then:
  *   i = A->i[n]
  *   A->p[j] <= n < A->p[j+1]
  * so that column j is stored in
  * [ data[p[j]], data[p[j] + 1], ..., data[p[j+1] - 1] ]
+ *
+ * Compressed row format (CRS):
+ *
+ * If data[n] = A_{ij}, then:
+ *   j = A->i[n]
+ *   A->p[i] <= n < A->p[i+1]
+ * so that row i is stored in
+ * [ data[p[i]], data[p[i] + 1], ..., data[p[i+1] - 1] ]
  */
 
 typedef struct
@@ -71,15 +79,21 @@ typedef struct
   size_t size1;  /* number of rows */
   size_t size2;  /* number of columns */
 
-  size_t *i;     /* row indices of size nzmax */
+  /* i (size nzmax) contains:
+   *
+   * Triplet/CCS: row indices
+   * CRS: column indices
+   */
+  size_t *i;
+
   double *data;  /* matrix elements of size nzmax */
 
   /*
    * p contains the column indices (triplet) or column pointers (compcol)
    *
-   * triplet:   p[n] = column number of element data[n]
-   * comp. col: p[j] = index in data of first non-zero element in column j
-   * comp. row: p[i] = index in data of first non-zero element in row i
+   * triplet: p[n] = column number of element data[n]
+   * CCS:     p[j] = index in data of first non-zero element in column j
+   * CRS:     p[i] = index in data of first non-zero element in row i
    */
   size_t *p;
 
@@ -99,9 +113,11 @@ typedef struct
 
 #define GSL_SPMATRIX_TRIPLET      (0)
 #define GSL_SPMATRIX_CCS          (1)
+#define GSL_SPMATRIX_CRS          (2)
 
 #define GSL_SPMATRIX_ISTRIPLET(m) ((m)->sptype == GSL_SPMATRIX_TRIPLET)
 #define GSL_SPMATRIX_ISCCS(m)     ((m)->sptype == GSL_SPMATRIX_CCS)
+#define GSL_SPMATRIX_ISCRS(m)     ((m)->sptype == GSL_SPMATRIX_CRS)
 
 /*
  * Prototypes
@@ -116,6 +132,7 @@ int gsl_spmatrix_set_zero(gsl_spmatrix *m);
 size_t gsl_spmatrix_nnz(const gsl_spmatrix *m);
 int gsl_spmatrix_compare_idx(const size_t ia, const size_t ja,
                              const size_t ib, const size_t jb);
+int gsl_spmatrix_tree_rebuild(gsl_spmatrix * m);
 
 /* spcopy.c */
 int gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src);
@@ -125,10 +142,20 @@ double gsl_spmatrix_get(const gsl_spmatrix *m, const size_t i,
                         const size_t j);
 int gsl_spmatrix_set(gsl_spmatrix *m, const size_t i, const size_t j,
                      const double x);
+double *gsl_spmatrix_ptr(gsl_spmatrix *m, const size_t i, const size_t j);
 
 /* spcompress.c */
 gsl_spmatrix *gsl_spmatrix_compcol(const gsl_spmatrix *T);
+gsl_spmatrix *gsl_spmatrix_ccs(const gsl_spmatrix *T);
+gsl_spmatrix *gsl_spmatrix_crs(const gsl_spmatrix *T);
 void gsl_spmatrix_cumsum(const size_t n, size_t *c);
+
+/* spio.c */
+int gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
+                         const char *format);
+gsl_spmatrix * gsl_spmatrix_fscanf(FILE *stream);
+int gsl_spmatrix_fwrite(FILE *stream, const gsl_spmatrix *m);
+int gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m);
 
 /* spoper.c */
 int gsl_spmatrix_scale(gsl_spmatrix *m, const double x);
@@ -143,6 +170,8 @@ int gsl_spmatrix_sp2d(gsl_matrix *A, const gsl_spmatrix *S);
 int gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b);
 
 /* spswap.c */
+int gsl_spmatrix_transpose(gsl_spmatrix * m);
+int gsl_spmatrix_transpose2(gsl_spmatrix * m);
 int gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src);
 
 __END_DECLS

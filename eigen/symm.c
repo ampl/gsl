@@ -84,7 +84,7 @@ gsl_eigen_symm_free (gsl_eigen_symm_workspace * w)
 
 int
 gsl_eigen_symm (gsl_matrix * A, gsl_vector * eval,
-                     gsl_eigen_symm_workspace * w)
+                gsl_eigen_symm_workspace * w)
 {
   if (A->size1 != A->size2)
     {
@@ -93,6 +93,10 @@ gsl_eigen_symm (gsl_matrix * A, gsl_vector * eval,
   else if (eval->size != A->size1)
     {
       GSL_ERROR ("eigenvalue vector must match matrix size", GSL_EBADLEN);
+    }
+  else if (A->size1 != w->size)
+    {
+      GSL_ERROR ("matrix does not match workspace", GSL_EBADLEN);
     }
   else
     {

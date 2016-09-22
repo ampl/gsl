@@ -118,9 +118,9 @@ test_shaw_system(gsl_rng *rng_p, const size_t n, const size_t p,
 
       /* solve regularized system and check for consistent rho/eta values */
       gsl_multifit_linear_solve(lami, X, y, c, &rnorm, &snorm, work);
-      gsl_test_rel(rhoi, rnorm, tol3, "shaw rho n=%zu p=%zu lambda=%e",
+      gsl_test_rel(rhoi, rnorm, tol3, "shaw rho n="F_ZU" p="F_ZU" lambda=%e",
                    n, p, lami);
-      gsl_test_rel(etai, snorm, tol1, "shaw eta n=%zu p=%zu lambda=%e",
+      gsl_test_rel(etai, snorm, tol1, "shaw eta n="F_ZU" p="F_ZU" lambda=%e",
                    n, p, lami);
     }
 
@@ -133,7 +133,7 @@ test_shaw_system(gsl_rng *rng_p, const size_t n, const size_t p,
   if (lambda_expected > 0.0)
     {
       gsl_test_rel(lambda, lambda_expected, tol1,
-                   "shaw: n=%zu p=%zu L-curve corner lambda",
+                   "shaw: n="F_ZU" p="F_ZU" L-curve corner lambda",
                    n, p);
     }
 
@@ -146,11 +146,11 @@ test_shaw_system(gsl_rng *rng_p, const size_t n, const size_t p,
 
   /* test rnorm value */
   gsl_test_rel(rnorm, gsl_blas_dnrm2(r), tol2,
-               "shaw: n=%zu p=%zu rnorm", n, p);
+               "shaw: n="F_ZU" p="F_ZU" rnorm", n, p);
 
   /* test snorm value */
   gsl_test_rel(snorm, gsl_blas_dnrm2(c), tol2,
-               "shaw: n=%zu p=%zu snorm", n, p);
+               "shaw: n="F_ZU" p="F_ZU" snorm", n, p);
 
   gsl_matrix_free(X);
   gsl_matrix_free(cov);

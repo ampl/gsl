@@ -125,21 +125,21 @@ test_getset(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status, "test_getset: M=%zu N=%zu _get != _set", M, N);
+    gsl_test(status, "test_getset: M="F_ZU" N="F_ZU" _get != _set", M, N);
 
     /* test setting an element to 0 */
     gsl_spmatrix_set(m, 0, 0, 1.0);
     gsl_spmatrix_set(m, 0, 0, 0.0);
 
     status = gsl_spmatrix_get(m, 0, 0) != 0.0;
-    gsl_test(status, "test_getset: M=%zu N=%zu m(0,0) = %f",
+    gsl_test(status, "test_getset: M="F_ZU" N="F_ZU" m(0,0) = %f",
              M, N, gsl_spmatrix_get(m, 0, 0));
 
     /* test gsl_spmatrix_set_zero() */
     gsl_spmatrix_set(m, 0, 0, 1.0);
     gsl_spmatrix_set_zero(m);
     status = gsl_spmatrix_get(m, 0, 0) != 0.0;
-    gsl_test(status, "test_getset: M=%zu N=%zu set_zero m(0,0) = %f",
+    gsl_test(status, "test_getset: M="F_ZU" N="F_ZU" set_zero m(0,0) = %f",
              M, N, gsl_spmatrix_get(m, 0, 0));
 
     /* resassemble matrix to ensure nz is calculated correctly */
@@ -154,7 +154,7 @@ test_getset(const size_t M, const size_t N,
       }
 
     status = gsl_spmatrix_nnz(m) != M * N;
-    gsl_test(status, "test_getset: M=%zu N=%zu set_zero nz = %zu",
+    gsl_test(status, "test_getset: M="F_ZU" N="F_ZU" set_zero nz = "F_ZU,
              M, N, gsl_spmatrix_nnz(m));
 
     /* test gsl_spmatrix_ptr() */
@@ -172,7 +172,7 @@ test_getset(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 2, "test_getset: M=%zu N=%zu triplet ptr", M, N);
+    gsl_test(status == 2, "test_getset: M="F_ZU" N="F_ZU" triplet ptr", M, N);
 
     gsl_spmatrix_free(m);
   }
@@ -200,11 +200,11 @@ test_getset(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status, "test_getset: duplicate test M=%zu N=%zu _get != _set", M, N);
+    gsl_test(status, "test_getset: duplicate test M="F_ZU" N="F_ZU" _get != _set", M, N);
 
     nnz = gsl_spmatrix_nnz(m);
     status = nnz != expected_nnz;
-    gsl_test(status, "test_getset: duplicate test M=%zu N=%zu nnz=%zu, expected=%zu",
+    gsl_test(status, "test_getset: duplicate test M="F_ZU" N="F_ZU" nnz="F_ZU", expected="F_ZU,
              M, N, nnz, expected_nnz);
 
     gsl_spmatrix_free(m);
@@ -238,8 +238,8 @@ test_getset(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 1, "test_getset: M=%zu N=%zu CCS get", M, N);
-    gsl_test(status == 2, "test_getset: M=%zu N=%zu CCS ptr", M, N);
+    gsl_test(status == 1, "test_getset: M="F_ZU" N="F_ZU" CCS get", M, N);
+    gsl_test(status == 2, "test_getset: M="F_ZU" N="F_ZU" CCS ptr", M, N);
 
     gsl_spmatrix_free(T);
     gsl_spmatrix_free(C);
@@ -273,8 +273,8 @@ test_getset(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 1, "test_getset: M=%zu N=%zu CRS get", M, N);
-    gsl_test(status == 2, "test_getset: M=%zu N=%zu CRS ptr", M, N);
+    gsl_test(status == 1, "test_getset: M="F_ZU" N="F_ZU" CRS get", M, N);
+    gsl_test(status == 2, "test_getset: M="F_ZU" N="F_ZU" CRS ptr", M, N);
 
     gsl_spmatrix_free(T);
     gsl_spmatrix_free(C);
@@ -297,7 +297,7 @@ test_memcpy(const size_t M, const size_t N,
     gsl_spmatrix_memcpy(B_t, A);
 
     status = gsl_spmatrix_equal(A, B_t) != 1;
-    gsl_test(status, "test_memcpy: _memcpy M=%zu N=%zu triplet format", M, N);
+    gsl_test(status, "test_memcpy: _memcpy M="F_ZU" N="F_ZU" triplet format", M, N);
 
     B_ccs = gsl_spmatrix_alloc_nzmax(M, N, A_ccs->nzmax, GSL_SPMATRIX_CCS);
     B_crs = gsl_spmatrix_alloc_nzmax(M, N, A_ccs->nzmax, GSL_SPMATRIX_CRS);
@@ -306,10 +306,10 @@ test_memcpy(const size_t M, const size_t N,
     gsl_spmatrix_memcpy(B_crs, A_crs);
 
     status = gsl_spmatrix_equal(A_ccs, B_ccs) != 1;
-    gsl_test(status, "test_memcpy: _memcpy M=%zu N=%zu CCS", M, N);
+    gsl_test(status, "test_memcpy: _memcpy M="F_ZU" N="F_ZU" CCS", M, N);
 
     status = gsl_spmatrix_equal(A_crs, B_crs) != 1;
-    gsl_test(status, "test_memcpy: _memcpy M=%zu N=%zu CRS", M, N);
+    gsl_test(status, "test_memcpy: _memcpy M="F_ZU" N="F_ZU" CRS", M, N);
 
     gsl_spmatrix_free(A);
     gsl_spmatrix_free(A_ccs);
@@ -346,7 +346,7 @@ test_memcpy(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status, "test_memcpy: _transpose_memcpy M=%zu N=%zu triplet format", M, N);
+    gsl_test(status, "test_memcpy: _transpose_memcpy M="F_ZU" N="F_ZU" triplet format", M, N);
 
     status = 0;
     for (i = 0; i < M; ++i)
@@ -362,7 +362,7 @@ test_memcpy(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status, "test_memcpy: _transpose_memcpy M=%zu N=%zu CCS format", M, N);
+    gsl_test(status, "test_memcpy: _transpose_memcpy M="F_ZU" N="F_ZU" CCS format", M, N);
 
     status = 0;
     for (i = 0; i < M; ++i)
@@ -378,7 +378,7 @@ test_memcpy(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status, "test_memcpy: _transpose_memcpy M=%zu N=%zu CRS format", M, N);
+    gsl_test(status, "test_memcpy: _transpose_memcpy M="F_ZU" N="F_ZU" CRS format", M, N);
 
     gsl_spmatrix_free(A);
     gsl_spmatrix_free(AT);
@@ -425,9 +425,9 @@ test_transpose(const size_t M, const size_t N,
         }
     }
 
-  gsl_test(status == 1, "test_transpose: transpose M=%zu N=%zu triplet format",
+  gsl_test(status == 1, "test_transpose: transpose M="F_ZU" N="F_ZU" triplet format",
            M, N);
-  gsl_test(status == 2, "test_transpose: transpose2 M=%zu N=%zu triplet format",
+  gsl_test(status == 2, "test_transpose: transpose2 M="F_ZU" N="F_ZU" triplet format",
            M, N);
 
   /* test CCS transpose */
@@ -448,7 +448,7 @@ test_transpose(const size_t M, const size_t N,
         }
     }
 
-  gsl_test(status == 2, "test_transpose: transpose2 M=%zu N=%zu CCS format",
+  gsl_test(status == 2, "test_transpose: transpose2 M="F_ZU" N="F_ZU" CCS format",
            M, N);
 
   /* test CRS transpose */
@@ -469,7 +469,7 @@ test_transpose(const size_t M, const size_t N,
         }
     }
 
-  gsl_test(status == 2, "test_transpose: transpose2 M=%zu N=%zu CRS format",
+  gsl_test(status == 2, "test_transpose: transpose2 M="F_ZU" N="F_ZU" CRS format",
            M, N);
 
   gsl_spmatrix_free(A);
@@ -523,8 +523,8 @@ test_ops(const size_t M, const size_t N,
           }
       }
 
-    gsl_test(status == 1, "test_ops: add M=%zu N=%zu CCS", M, N);
-    gsl_test(status == 2, "test_ops: add M=%zu N=%zu CRS", M, N);
+    gsl_test(status == 1, "test_ops: add M="F_ZU" N="F_ZU" CCS", M, N);
+    gsl_test(status == 2, "test_ops: add M="F_ZU" N="F_ZU" CRS", M, N);
 
     gsl_spmatrix_free(A);
     gsl_spmatrix_free(B);
@@ -566,7 +566,7 @@ test_io_ascii(const size_t M, const size_t N,
     gsl_spmatrix *B = gsl_spmatrix_fscanf(f);
 
     status = gsl_spmatrix_equal(A, B) != 1;
-    gsl_test(status, "test_io_ascii: fprintf/fscanf M=%zu N=%zu triplet format", M, N);
+    gsl_test(status, "test_io_ascii: fprintf/fscanf M="F_ZU" N="F_ZU" triplet format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);
@@ -588,7 +588,7 @@ test_io_ascii(const size_t M, const size_t N,
     gsl_spmatrix *B = gsl_spmatrix_fscanf(f);
 
     status = gsl_spmatrix_equal(A, B) != 1;
-    gsl_test(status, "test_io_ascii: fprintf/fscanf M=%zu N=%zu CCS format", M, N);
+    gsl_test(status, "test_io_ascii: fprintf/fscanf M="F_ZU" N="F_ZU" CCS format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);
@@ -610,7 +610,7 @@ test_io_ascii(const size_t M, const size_t N,
     gsl_spmatrix *B = gsl_spmatrix_fscanf(f);
 
     status = gsl_spmatrix_equal(A, B) != 1;
-    gsl_test(status, "test_io_ascii: fprintf/fscanf M=%zu N=%zu CRS format", M, N);
+    gsl_test(status, "test_io_ascii: fprintf/fscanf M="F_ZU" N="F_ZU" CRS format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);
@@ -653,7 +653,7 @@ test_io_binary(const size_t M, const size_t N,
     gsl_spmatrix_fread(f, B);
 
     status = gsl_spmatrix_equal(A, B) != 1;
-    gsl_test(status, "test_io_binary: fwrite/fread M=%zu N=%zu triplet format", M, N);
+    gsl_test(status, "test_io_binary: fwrite/fread M="F_ZU" N="F_ZU" triplet format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);
@@ -677,7 +677,7 @@ test_io_binary(const size_t M, const size_t N,
     gsl_spmatrix_fread(f, B);
 
     status = gsl_spmatrix_equal(A_ccs, B) != 1;
-    gsl_test(status, "test_io_binary: fwrite/fread M=%zu N=%zu CCS format", M, N);
+    gsl_test(status, "test_io_binary: fwrite/fread M="F_ZU" N="F_ZU" CCS format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);
@@ -701,7 +701,7 @@ test_io_binary(const size_t M, const size_t N,
     gsl_spmatrix_fread(f, B);
 
     status = gsl_spmatrix_equal(A_crs, B) != 1;
-    gsl_test(status, "test_io_binary: fwrite/fread M=%zu N=%zu CRS format", M, N);
+    gsl_test(status, "test_io_binary: fwrite/fread M="F_ZU" N="F_ZU" CRS format", M, N);
 
     fclose(f);
     gsl_spmatrix_free(B);

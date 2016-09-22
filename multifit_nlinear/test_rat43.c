@@ -32,7 +32,7 @@ rat43_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < rat43_P; ++i)
     {
-      gsl_test_rel(x[i], rat43_x[i], epsrel, "%s/%s i=%zu",
+      gsl_test_rel(x[i], rat43_x[i], epsrel, "%s/%s i="F_ZU,
                    sname, pname, i);
     }
 }

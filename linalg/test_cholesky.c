@@ -349,7 +349,7 @@ test_mcholesky_decomp_eps(const int posdef, const int scale, const gsl_matrix * 
       /* ||E|| should be 0 */
       double norm = gsl_blas_dnrm2(E);
       s = norm != 0.0;
-      gsl_test(s, "%s: (%zu,%zu): ||E|| = %.12e",
+      gsl_test(s, "%s: ("F_ZU","F_ZU"): ||E|| = %.12e",
                desc, N, N, norm);
 
       /* check that D is decreasing */
@@ -363,7 +363,7 @@ test_mcholesky_decomp_eps(const int posdef, const int scale, const gsl_matrix * 
             s = 1;
         }
 
-      gsl_test(s, "%s: (%zu,%zu): D is not decreasing",
+      gsl_test(s, "%s: ("F_ZU","F_ZU"): D is not decreasing",
                desc, N, N);
     }
   
@@ -687,7 +687,7 @@ test_pcholesky_decomp_eps(const int scale, const gsl_matrix * m,
         s = 1;
     }
 
-  gsl_test(s, "%s: (%zu,%zu): D is not decreasing",
+  gsl_test(s, "%s: ("F_ZU","F_ZU"): D is not decreasing",
            desc, N, N);
   
   /* compute L and LT */

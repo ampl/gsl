@@ -575,6 +575,15 @@ AH_BOTTOM([#if defined(GSL_RANGE_CHECK_OFF) || !defined(GSL_RANGE_CHECK)
 AH_BOTTOM([#define RETURN_IF_NULL(x) if (!x) { return ; }
 ])
 
+AH_BOTTOM([/* Microsoft Visual C does not support "%zu" */
+#ifdef _WIN64
+#define F_ZU "%llu"
+#elif _WIN32
+#define F_ZU "%lu"
+#else
+#define F_ZU "%zu"
+#endif])
+
 AH_VERBATIM([GSL_DISABLE_DEPRECATED],
 [/* Disable deprecated functions and enums while building */
 #define GSL_DISABLE_DEPRECATED 1])

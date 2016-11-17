@@ -12,6 +12,9 @@ if (POLICY CMP0054)
   # Only interpret `if` arguments as variables or keywords when unquoted.
   cmake_policy(SET CMP0054 NEW)
 endif ()
+if( POLICY CMP0053 )
+    cmake_policy(SET CMP0053 NEW)
+endif( )
 
 set(PACKAGE "gsl")
 set(PACKAGE_NAME ${PACKAGE})
@@ -692,4 +695,27 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   set(PC_FILE ${CMAKE_BINARY_DIR}/gsl.pc)
   configure_file("gsl.pc.cmake" ${PC_FILE} @ONLY)
   install(FILES ${PC_FILE} DESTINATION lib/pkgconfig)
+
+  # Read config file and replace placefolders.
+  file( READ "${CMAKE_SOURCE_DIR}/gsl-config.in" GSL_CONFIG_FILE)
+  string(REPLACE ";" "@SEMICOLON@" GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
+  # Replace
+  string( REPLACE @prefix@ ${CMAKE_INSTALL_PREFIX} GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
+  string( REPLACE @exec_prefix@ ${CMAKE_INSTALL_PREFIX}/bin GSL_CONFIG_FILE ${GSL_CONFIG_FILE})
+  string( REPLACE @includedir@ ${CMAKE_INSTALL_PREFIX}/include GSL_CONFIG_FILE
+      "${GSL_CONFIG_FILE}")
+  string( REPLACE @VERSION@ ${VERSION} GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
+  string( REPLACE @GSL_CFLAGS@ "${CMAKE_C_FLAGS_RELEASE}" GSL_CONFIG_FILE
+      "${GSL_CONFIG_FILE}")
+  string( REPLACE @GSL_LIBS@ "-lgsl -lgslcblas" GSL_CONFIG_FILE
+      "${GSL_CONFIG_FILE}")
+  string( REPLACE @GSL_LIBM@ "-lm" GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
+
+  # write
+  string(REPLACE "@SEMICOLON@"  "\\;" GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
+  file( WRITE ${CMAKE_BINARY_DIR}/gsl-config ${GSL_CONFIG_FILE})
+
+  # Install gsl-config
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/gsl-config DESTINATION bin)
+
 endif ()

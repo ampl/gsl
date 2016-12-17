@@ -1,7 +1,7 @@
 REM @echo off
 
 Echo GSL Windows Build NuGet
-REM set INCREMENTDISABLE=true
+set INCREMENTDISABLE=true
 
 REM # XEON x64 Build Vars #
 set _SCRIPT_DRIVE=%~d0
@@ -52,14 +52,46 @@ msbuild gsl.sln /p:Configuration=Release /m
 
 :copy_files
 set BINDIR=%SRC%\build-nuget\
+rd /s /q %BINDIR%
+mkdir %BINDIR%
 echo %BINDIR%
 xcopy %BUILDTREE%Release\gsl* %BINDIR%
 xcopy %BUILDTREE%bin\Release\gsl.dll %BINDIR%
 del %BINDIR%gsl
 xcopy /I %BUILDTREE%gsl %BINDIR%gsl
 
+mkdir %BUILDTREE%Static
+cd %BUILDTREE%Static
+
+:static_GSL
+REM # GSL STATIC #
+if exist %BUILDTREE%Static\Release\gsl.lib (
+    if exist %BUILDTREE%Static\Release\gslcblas.lib (
+		ECHO GSL Libs Found
+		GOTO:copy_static_files
+	)
+)
+
+ECHO %cmake_platform% STATIC
+cmake -G %cmake_platform% ^
+-DBUILD_SHARED_LIBS:BOOL=OFF ^
+-DCMAKE_CXX_FLAGS_RELEASE="/MD" ^
+-DCMAKE_CXX_FLAGS_DEBUG="/MDd" ^
+-DCMAKE_C_FLAGS_RELEASE="/MD" ^
+-DCMAKE_C_FLAGS_DEBUG="/MDd" ^
+-DCMAKE_BUILD_TYPE="Release" %SRC%
+msbuild gsl.sln /p:Configuration=Release /m
+
+:copy_static_files
+set BINDIR=%SRC%\build-nuget\static
+rd /s /q %BINDIR%
+mkdir %BINDIR%
+echo %BINDIR%
+xcopy %BUILDTREE%Static\Release\gsl* %BINDIR%
+
 :nuget_req
 REM # make nuget packages from binaries #
+cd %BUILDTREE%
 nuget pack %SRC%\gsl-msvc14-x64.nuspec
 
 GOTO:eof

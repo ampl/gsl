@@ -502,7 +502,9 @@ gsl_multilarge_nlinear_eval_df(const CBLAS_TRANSPOSE_t TransJ,
         {
 #if 0
           /* use finite difference Jacobian approximation */
+          /*
           status = gsl_multilarge_nlinear_df(h, fdtype, x, swts, fdf, f, df, work);
+          */
 #endif
         }
 
@@ -551,8 +553,10 @@ gsl_multilarge_nlinear_eval_fvv(const double h,
     {
 #if 0
       /* use finite difference approximation */
+      /*
       status = gsl_multilarge_nlinear_fdfvv(h, x, v, f, J,
                                           swts, fdf, yvv, work);
+                                          */
 #endif
     }
 

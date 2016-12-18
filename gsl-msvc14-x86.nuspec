@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>gsl-msvc14-x86</id>
+        <version>2.2.1.2577</version>
+        <authors>administrator</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Release GSL as NuGet package.</description>
+    </metadata>
+    <files>
+        <file src=".\COPYING" target="COPYING" />
+        <file src=".\README" target="README" />
+		<file src=".\build-nuget\**\*.*" target="" />
+    </files>
+</package>

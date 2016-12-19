@@ -59,6 +59,7 @@ xcopy %BUILDTREE%Release\gsl* %BINDIR%
 xcopy %BUILDTREE%bin\Release\gsl.dll %BINDIR%
 del %BINDIR%gsl
 xcopy /I %BUILDTREE%gsl %BINDIR%gsl
+copy %SRC%\gsl-msvc14.targets %BINDIR%\gsl-msvc14-x64.targets
 
 mkdir %BUILDTREE%Static
 cd %BUILDTREE%Static

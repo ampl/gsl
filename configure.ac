@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gsl],[2.2.1])
+AC_INIT([gsl],[2.3])
 AC_CONFIG_SRCDIR(gsl_math.h)
 
 AM_INIT_AUTOMAKE([gnu])
@@ -32,6 +32,7 @@ dnl gsl-2.0    libgsl 18:0:18  (**) libgslcblas 0:0:0
 dnl gsl-2.1    libgsl 19:0:0   libgslcblas 0:0:0 
 dnl gsl-2.2    libgsl 20:0:1   libgslcblas 0:0:0 
 dnl gsl-2.2.1  libgsl 21:0:2   libgslcblas 0:0:0 
+dnl gsl-2.3    libgsl 22:0:3   libgslcblas 0:0:0 
 dnl 
 dnl (*) There was an error on this release.  Firstly, the versioning
 dnl numbers were not updated.  Secondly, 2 functions were removed, but
@@ -58,9 +59,9 @@ dnl See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-i
 dnl for more detailed info
 
 dnl
-GSL_CURRENT=21
+GSL_CURRENT=22
 GSL_REVISION=0
-GSL_AGE=2
+GSL_AGE=3
 dnl
 CBLAS_CURRENT=0
 CBLAS_REVISION=0
@@ -574,15 +575,6 @@ AH_BOTTOM([#if defined(GSL_RANGE_CHECK_OFF) || !defined(GSL_RANGE_CHECK)
 
 AH_BOTTOM([#define RETURN_IF_NULL(x) if (!x) { return ; }
 ])
-
-AH_BOTTOM([/* Microsoft Visual C does not support "%zu" */
-#ifdef _WIN64
-#define F_ZU "%llu"
-#elif _WIN32
-#define F_ZU "%lu"
-#else
-#define F_ZU "%zu"
-#endif])
 
 AH_VERBATIM([GSL_DISABLE_DEPRECATED],
 [/* Disable deprecated functions and enums while building */

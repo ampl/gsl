@@ -433,29 +433,26 @@ gsl_multifit_nlinear_eval_df(const gsl_vector *x,
       /* call user-supplied function */
       status = ((*((fdf)->df)) (x, fdf->params, df));
       ++(fdf->nevaldf);
+
+      /* J <- sqrt(W) J */
+      if (swts)
+        {
+          const size_t n = swts->size;
+          size_t i;
+
+          for (i = 0; i < n; ++i)
+            {
+              double swi = gsl_vector_get(swts, i);
+              gsl_vector_view v = gsl_matrix_row(df, i);
+
+              gsl_vector_scale(&v.vector, swi);
+            }
+        }
     }
   else
     {
       /* use finite difference Jacobian approximation */
       status = gsl_multifit_nlinear_df(h, fdtype, x, swts, fdf, f, df, work);
-    }
-
-  if (status)
-    return status;
-
-  /* J <- sqrt(W) J */
-  if (swts)
-    {
-      const size_t n = swts->size;
-      size_t i;
-
-      for (i = 0; i < n; ++i)
-        {
-          double swi = gsl_vector_get(swts, i);
-          gsl_vector_view v = gsl_matrix_row(df, i);
-
-          gsl_vector_scale(&v.vector, swi);
-        }
     }
 
   return status;
@@ -498,6 +495,10 @@ gsl_multifit_nlinear_eval_fvv(const double h,
       /* call user-supplied function */
       status = ((*((fdf)->fvv)) (x, v, fdf->params, yvv));
       ++(fdf->nevalfvv);
+
+      /* yvv <- sqrt(W) yvv */
+      if (swts)
+        gsl_vector_mul(yvv, swts);
     }
   else
     {
@@ -505,10 +506,6 @@ gsl_multifit_nlinear_eval_fvv(const double h,
       status = gsl_multifit_nlinear_fdfvv(h, x, v, f, J,
                                           swts, fdf, yvv, work);
     }
-
-  /* yvv <- sqrt(W) yvv */
-  if (swts)
-    gsl_vector_mul(yvv, swts);
 
   return status;
 }

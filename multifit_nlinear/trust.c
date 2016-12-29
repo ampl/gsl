@@ -30,8 +30,6 @@
 #include "common.c"
 #include "nielsen.c"
 
-#define SCALE_SUB2D           1
-
 /*
  * This module contains a high level driver for a general trust
  * region nonlinear least squares solver. This container handles
@@ -52,7 +50,6 @@ typedef struct
   double mu;                 /* LM parameter */
   long nu;                   /* for updating LM parameter */
   gsl_vector *diag;          /* D = diag(J^T J) */
-  gsl_vector *dx_scaled;     /* scaled step vector: dx_scaled = D*dx */
   gsl_vector *x_trial;       /* trial parameter vector */
   gsl_vector *f_trial;       /* trial function vector */
   gsl_vector *workp;         /* workspace, length p */
@@ -87,9 +84,6 @@ static double trust_calc_rho(const gsl_vector * f, const gsl_vector * f_trial,
 static int trust_eval_step(const gsl_vector * f, const gsl_vector * f_trial,
                            const gsl_vector * g, const gsl_matrix * J,
                            const gsl_vector * dx, double * rho, trust_state_t * state);
-static int trust_scale_Jg(const int dir, const gsl_vector * diag,
-                          gsl_matrix * J, gsl_vector * g,
-                          const trust_state_t * state);
 static double trust_scaled_norm(const gsl_vector *D, const gsl_vector *a);
 
 static void *
@@ -108,12 +102,6 @@ trust_alloc (const gsl_multifit_nlinear_parameters * params,
   if (state->diag == NULL)
     {
       GSL_ERROR_NULL ("failed to allocate space for diag", GSL_ENOMEM);
-    }
-
-  state->dx_scaled = gsl_vector_alloc(p);
-  if (state->dx_scaled == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for dx_scaled", GSL_ENOMEM);
     }
 
   state->workp = gsl_vector_alloc(p);
@@ -168,9 +156,6 @@ trust_free(void *vstate)
 
   if (state->diag)
     gsl_vector_free(state->diag);
-
-  if (state->dx_scaled)
-    gsl_vector_free(state->dx_scaled);
 
   if (state->workp)
     gsl_vector_free(state->workp);
@@ -250,13 +235,7 @@ trust_init(void *vstate, const gsl_vector *swts,
                                                            state->solver_state, fdf,
                                                            &(state->avratio) };
 
-    /* only scaled J/g should be passed to TRS */
-    trust_scale_Jg(1, state->diag, J, g, state);
-
     status = (params->trs->init)(&trust_state, state->trs_state);
-
-    /* undo scaling */
-    trust_scale_Jg(-1, state->diag, J, g, state);
 
     if (status)
       return status;
@@ -319,19 +298,9 @@ trust_iterate(void *vstate, const gsl_vector *swts,
   gsl_vector *x_trial = state->x_trial;       /* trial x + dx */
   gsl_vector *f_trial = state->f_trial;       /* trial f(x + dx) */
   gsl_vector *diag = state->diag;             /* diag(D) */
-  gsl_vector *dx_scaled = state->dx_scaled;   /* diag(D) * dx */
   double rho;                                 /* ratio actual_reduction/predicted_reduction */
   int foundstep = 0;                          /* found step dx */
   int bad_steps = 0;                          /* consecutive rejected steps */
-  size_t i;
-
-  /*
-   * rscale gradient vector and Jacobian matrix:
-   *
-   * g := D^{-1} g
-   * J := J D^{-1}
-   */
-  trust_scale_Jg(1, diag, J, g, state);
 
   /* initialize trust region subproblem with this Jacobian */
   status = (trs->preloop)(&trust_state, state->trs_state);
@@ -342,31 +311,13 @@ trust_iterate(void *vstate, const gsl_vector *swts,
   while (!foundstep)
     {
       /* calculate new step */
-      status = (trs->step)(&trust_state, state->delta, dx_scaled, state->trs_state);
+      status = (trs->step)(&trust_state, state->delta, dx, state->trs_state);
 
       /* occasionally the iterative methods (ie: CG Steihaug) can fail to find a step,
        * so in this case skip rho calculation and count it as a rejected step */
 
       if (status == GSL_SUCCESS)
         {
-#if SCALE_SUB2D
-          /* undo scaling: dx = D^{-1} dx_scaled */
-          if (params->scale != gsl_multifit_nlinear_scale_levenberg &&
-              trs == gsl_multifit_nlinear_trs_subspace2D)
-            {
-              for (i = 0; i < state->p; ++i)
-                {
-                  double di = gsl_vector_get(diag, i);
-                  double dxsi = gsl_vector_get(dx_scaled, i);
-                  gsl_vector_set(dx, i, dxsi / di);
-                }
-            }
-          else
-#endif
-            {
-              gsl_vector_memcpy(dx, dx_scaled);
-            }
-
           /* compute x_trial = x + dx */
           trust_trial_step(x, dx, x_trial);
 
@@ -376,21 +327,9 @@ trust_iterate(void *vstate, const gsl_vector *swts,
             return status;
 
           /* check if step should be accepted or rejected */
-          status = trust_eval_step(f, f_trial, g, J, dx_scaled, &rho, state);
+          status = trust_eval_step(f, f_trial, g, J, dx, &rho, state);
           if (status == GSL_SUCCESS)
             foundstep = 1;
-
-#if 0 /*XXX*/
-          fprintf(stdout, "delta = %.12e |D dx| = %.12e |dx| = %.12e, dx0 = %.12e dx1 = %.12e |x_trial| = %.12e |f_trial| = %.12e rho = %.12e\n",
-                  state->delta,
-                  scaled_enorm(state->diag, dx),
-                  gsl_blas_dnrm2(dx),
-                  gsl_vector_get(dx, 0),
-                  gsl_vector_get(dx, 1),
-                  gsl_blas_dnrm2(x_trial),
-                  gsl_blas_dnrm2(f_trial),
-                  rho);
-#endif
         }
       else
         {
@@ -448,11 +387,9 @@ trust_iterate(void *vstate, const gsl_vector *swts,
           if (status)
             return status;
 
-          /* if more than 15 consecutive rejected steps, report no progress */
           if (++bad_steps > 15)
             {
-              /* undo Jacobian and gradient scaling prior to returning */
-              trust_scale_Jg(-1, diag, J, g, state);
+              /* if more than 15 consecutive rejected steps, report no progress */
               return GSL_ENOPROG;
             }
         }
@@ -590,62 +527,6 @@ trust_eval_step(const gsl_vector * f, const gsl_vector * f_trial,
     status = GSL_FAILURE;
 
   return status;
-}
-
-/*
-trust_scale_Jg()
-  When using a scaling matrix D, the Jacobian and gradient
-vector must be rescaled prior to solving the TRS:
-
-J~ = J * D^{-1}
-g~ = D^{-1} * g
-
-Inputs: dir  - scaling direction +/- 1
-        diag - diag(D)
-        J    - (input/output) rescaled Jacobian matrix
-        g    - (input/output) rescaled gradient vector
-
-Notes:
-1) If dir = -1, the scaling is undone, ie:
-J = J~ * D
-g = D * g~
-*/
-
-static int
-trust_scale_Jg(const int dir, const gsl_vector * diag,
-               gsl_matrix * J, gsl_vector * g,
-               const trust_state_t *state)
-{
-  const size_t N = J->size2;
-  size_t i;
-  const gsl_multifit_nlinear_trs *trs = state->params.trs;
-
-  if (trs != gsl_multifit_nlinear_trs_subspace2D)
-    return GSL_SUCCESS;
-
-#if !SCALE_SUB2D
-  return GSL_SUCCESS;
-#endif
-
-  /* quick return if D = I */
-  if (state->params.scale == gsl_multifit_nlinear_scale_levenberg)
-    return GSL_SUCCESS;
-
-  /* forward scaling, J~ := J * D^{-1}, g~ := D^{-1} g */
-  for (i = 0; i < N; ++i)
-    {
-      double di = gsl_vector_get(diag, i);
-      double *gi = gsl_vector_ptr(g, i);
-      gsl_vector_view c = gsl_matrix_column(J, i);
-
-      if (dir == 1)
-        di = 1.0 / di;
-
-      *gi *= di;
-      gsl_vector_scale(&c.vector, di);
-    }
-
-  return GSL_SUCCESS;
 }
 
 /* compute || diag(D) a || */

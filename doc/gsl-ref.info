@@ -24,678 +24,679 @@ END-INFO-DIR-ENTRY
 
 Indirect:
 gsl-ref.info-1: 973
-gsl-ref.info-2: 302548
-gsl-ref.info-3: 601149
-gsl-ref.info-4: 901403
-gsl-ref.info-5: 1201233
-gsl-ref.info-6: 1686841
+gsl-ref.info-2: 302546
+gsl-ref.info-3: 601121
+gsl-ref.info-4: 902718
+gsl-ref.info-5: 1201856
+gsl-ref.info-6: 1705030
 
 Tag Table:
 (Indirect)
 Node: Top973
-Node: Introduction4285
-Node: Routines available in GSL5005
-Node: GSL is Free Software6618
-Node: Obtaining GSL9010
-Node: No Warranty10038
-Node: Reporting Bugs10544
-Ref: Reporting Bugs-Footnote-111496
-Node: Further Information11546
-Node: Conventions used in this manual12560
-Node: Using the library13324
-Node: An Example Program14047
-Ref: An Example Program-Footnote-114790
-Node: Compiling and Linking14897
-Node: Linking programs with the library15970
-Ref: Linking programs with the library-Footnote-117373
-Ref: Linking programs with the library-Footnote-217410
-Node: Linking with an alternative BLAS library17463
-Node: Shared Libraries18546
-Ref: Shared Libraries-Footnote-120021
-Node: ANSI C Compliance20069
-Node: Inline functions21162
-Node: Long double22700
-Node: Portability functions24288
-Node: Alternative optimized functions25686
-Node: Support for different numeric types27144
-Node: Compatibility with C++30208
-Node: Aliasing of arrays30780
-Node: Thread-safety31531
-Node: Deprecated Functions32619
-Node: Code Reuse33244
-Node: Error Handling33889
-Node: Error Reporting34689
-Node: Error Codes36581
-Node: Error Handlers38438
-Node: Using GSL error reporting in your own functions42078
-Node: Error Reporting Examples44038
-Node: Mathematical Functions45250
-Node: Mathematical Constants46043
-Node: Infinities and Not-a-number47173
-Ref: Infinities and Not-a-number-Footnote-148283
-Node: Elementary Functions48693
-Node: Small integer powers51150
-Node: Testing the Sign of Numbers52799
-Node: Testing for Odd and Even Numbers53232
-Node: Maximum and Minimum functions53791
-Node: Approximate Comparison of Floating Point Numbers56072
-Node: Complex Numbers57432
-Ref: Complex Numbers-Footnote-158777
-Node: Representation of complex numbers58841
-Node: Properties of complex numbers60781
-Node: Complex arithmetic operators61787
-Node: Elementary Complex Functions64533
-Node: Complex Trigonometric Functions66357
-Node: Inverse Complex Trigonometric Functions67578
-Node: Complex Hyperbolic Functions70191
-Node: Inverse Complex Hyperbolic Functions71487
-Node: Complex Number References and Further Reading73475
-Node: Polynomials74871
-Node: Polynomial Evaluation75675
-Node: Divided Difference Representation of Polynomials77086
-Node: Quadratic Equations80948
-Node: Cubic Equations82885
-Node: General Polynomial Equations84468
-Node: Roots of Polynomials Examples86825
-Node: Roots of Polynomials References and Further Reading88214
-Node: Special Functions89260
-Node: Special Function Usage91508
-Node: The gsl_sf_result struct92692
-Node: Special Function Modes93956
-Node: Airy Functions and Derivatives94890
-Node: Airy Functions95615
-Node: Derivatives of Airy Functions96975
-Node: Zeros of Airy Functions98487
-Node: Zeros of Derivatives of Airy Functions99206
-Node: Bessel Functions99965
-Node: Regular Cylindrical Bessel Functions101183
-Node: Irregular Cylindrical Bessel Functions102507
-Node: Regular Modified Cylindrical Bessel Functions103965
-Node: Irregular Modified Cylindrical Bessel Functions106793
-Node: Regular Spherical Bessel Functions109766
-Node: Irregular Spherical Bessel Functions111979
-Node: Regular Modified Spherical Bessel Functions113665
-Node: Irregular Modified Spherical Bessel Functions115664
-Node: Regular Bessel Function - Fractional Order117727
-Node: Irregular Bessel Functions - Fractional Order118725
-Node: Regular Modified Bessel Functions - Fractional Order119307
-Node: Irregular Modified Bessel Functions - Fractional Order120232
-Node: Zeros of Regular Bessel Functions121468
-Node: Clausen Functions122571
-Node: Coulomb Functions123175
-Node: Normalized Hydrogenic Bound States123634
-Node: Coulomb Wave Functions124747
-Node: Coulomb Wave Function Normalization Constant128159
-Node: Coupling Coefficients128912
-Node: 3-j Symbols129686
-Node: 6-j Symbols130290
-Node: 9-j Symbols130914
-Node: Dawson Function131620
-Node: Debye Functions132187
-Node: Dilogarithm133961
-Node: Real Argument134283
-Node: Complex Argument134977
-Node: Elementary Operations135447
-Node: Elliptic Integrals136271
-Node: Definition of Legendre Forms136866
-Node: Definition of Carlson Forms137686
-Node: Legendre Form of Complete Elliptic Integrals138383
-Node: Legendre Form of Incomplete Elliptic Integrals139936
-Node: Carlson Forms142028
-Node: Elliptic Functions (Jacobi)143575
-Node: Error Functions144156
-Node: Error Function144632
-Node: Complementary Error Function145005
-Node: Log Complementary Error Function145465
-Node: Probability functions145917
-Node: Exponential Functions147170
-Node: Exponential Function147565
-Node: Relative Exponential Functions148787
-Node: Exponentiation With Error Estimate150459
-Node: Exponential Integrals151668
-Node: Exponential Integral152224
-Node: Ei(x)153145
-Node: Hyperbolic Integrals153593
-Node: Ei_3(x)154248
-Node: Trigonometric Integrals154640
-Node: Arctangent Integral155239
-Node: Fermi-Dirac Function155639
-Node: Complete Fermi-Dirac Integrals156013
-Node: Incomplete Fermi-Dirac Integrals158578
-Node: Gamma and Beta Functions159221
-Node: Gamma Functions159856
-Node: Factorials162964
-Node: Pochhammer Symbol165517
-Node: Incomplete Gamma Functions167018
-Node: Beta Functions168267
-Node: Incomplete Beta Function169019
-Node: Gegenbauer Functions169729
-Node: Hypergeometric Functions171379
-Node: Laguerre Functions175643
-Node: Lambert W Functions177206
-Node: Legendre Functions and Spherical Harmonics178246
-Node: Legendre Polynomials178858
-Node: Associated Legendre Polynomials and Spherical Harmonics180914
-Node: Conical Functions191667
-Node: Radial Functions for Hyperbolic Space193790
-Node: Logarithm and Related Functions195967
-Node: Mathieu Functions197591
-Node: Mathieu Function Workspace198951
-Node: Mathieu Function Characteristic Values199764
-Node: Angular Mathieu Functions200946
-Node: Radial Mathieu Functions202114
-Node: Power Function203497
-Node: Psi (Digamma) Function204425
-Node: Digamma Function204978
-Node: Trigamma Function205808
-Node: Polygamma Function206385
-Node: Synchrotron Functions206769
-Node: Transport Functions207532
-Node: Trigonometric Functions208679
-Node: Circular Trigonometric Functions209325
-Node: Trigonometric Functions for Complex Arguments210334
-Node: Hyperbolic Trigonometric Functions211370
-Node: Conversion Functions211973
-Node: Restriction Functions212756
-Node: Trigonometric Functions With Error Estimates213687
-Node: Zeta Functions214597
-Node: Riemann Zeta Function215055
-Node: Riemann Zeta Function Minus One215734
-Node: Hurwitz Zeta Function216505
-Node: Eta Function217010
-Node: Special Functions Examples217569
-Node: Special Functions References and Further Reading219264
-Node: Vectors and Matrices220781
-Node: Data types221624
-Node: Blocks222827
-Node: Block allocation223760
-Node: Reading and writing blocks225164
-Node: Example programs for blocks227228
-Node: Vectors227855
-Node: Vector allocation229823
-Node: Accessing vector elements231360
-Ref: Accessing vector elements-Footnote-1234533
-Node: Initializing vector elements234772
-Node: Reading and writing vectors235466
-Node: Vector views237556
-Node: Copying vectors245022
-Node: Exchanging elements245882
-Node: Vector operations246440
-Node: Finding maximum and minimum elements of vectors248213
-Node: Vector properties249800
-Node: Example programs for vectors250774
-Node: Matrices253063
-Node: Matrix allocation256003
-Node: Accessing matrix elements257589
-Node: Initializing matrix elements259562
-Node: Reading and writing matrices260359
-Node: Matrix views262462
-Node: Creating row and column views269598
-Node: Copying matrices274075
-Node: Copying rows and columns274671
-Node: Exchanging rows and columns276348
-Node: Matrix operations277826
-Node: Finding maximum and minimum elements of matrices279796
-Node: Matrix properties281696
-Node: Example programs for matrices282799
-Node: Vector and Matrix References and Further Reading286871
-Node: Permutations287357
-Node: The Permutation struct288694
-Node: Permutation allocation289197
-Node: Accessing permutation elements290633
-Node: Permutation properties291476
-Node: Permutation functions292181
-Node: Applying Permutations293438
-Node: Reading and writing permutations295820
-Ref: Reading and writing permutations-Footnote-1298036
-Node: Permutations in cyclic form298148
-Node: Permutation Examples302548
-Node: Permutation References and Further Reading305091
-Node: Combinations305765
-Node: The Combination struct306650
-Node: Combination allocation307201
-Node: Accessing combination elements308988
-Node: Combination properties309647
-Node: Combination functions310533
-Node: Reading and writing combinations311473
-Ref: Reading and writing combinations-Footnote-1313706
-Node: Combination Examples313818
-Node: Combination References and Further Reading315126
-Node: Multisets315529
-Node: The Multiset struct316455
-Node: Multiset allocation316976
-Node: Accessing multiset elements318671
-Node: Multiset properties319300
-Node: Multiset functions320113
-Node: Reading and writing multisets321023
-Ref: Reading and writing multisets-Footnote-1323174
-Node: Multiset Examples323286
-Node: Sorting325394
-Node: Sorting objects326393
-Node: Sorting vectors329306
-Node: Selecting the k smallest or largest elements332467
-Node: Computing the rank335808
-Node: Sorting Examples337009
-Node: Sorting References and Further Reading338656
-Node: BLAS Support339202
-Ref: BLAS Support-Footnote-1342588
-Node: GSL BLAS Interface342757
-Node: Level 1 GSL BLAS Interface343250
-Node: Level 2 GSL BLAS Interface349990
-Node: Level 3 GSL BLAS Interface359280
-Node: BLAS Examples370378
-Node: BLAS References and Further Reading371799
-Node: Linear Algebra373141
-Node: LU Decomposition374491
-Node: QR Decomposition379742
-Node: QR Decomposition with Column Pivoting386051
-Node: Complete Orthogonal Decomposition393550
-Node: Singular Value Decomposition397177
-Node: Cholesky Decomposition401593
-Node: Pivoted Cholesky Decomposition408309
-Node: Modified Cholesky Decomposition413606
-Node: Tridiagonal Decomposition of Real Symmetric Matrices417111
-Node: Tridiagonal Decomposition of Hermitian Matrices418968
-Node: Hessenberg Decomposition of Real Matrices420922
-Node: Hessenberg-Triangular Decomposition of Real Matrices423336
-Node: Bidiagonalization424461
-Node: Givens Rotations426875
-Node: Householder Transformations428206
-Node: Householder solver for linear systems430827
-Node: Tridiagonal Systems431734
-Node: Triangular Systems434616
-Node: Balancing436030
-Node: Linear Algebra Examples436832
-Node: Linear Algebra References and Further Reading438826
-Node: Eigensystems440790
-Node: Real Symmetric Matrices442019
-Node: Complex Hermitian Matrices444533
-Node: Real Nonsymmetric Matrices447162
-Node: Real Generalized Symmetric-Definite Eigensystems452897
-Node: Complex Generalized Hermitian-Definite Eigensystems455776
-Node: Real Generalized Nonsymmetric Eigensystems458490
-Node: Sorting Eigenvalues and Eigenvectors465097
-Node: Eigenvalue and Eigenvector Examples468375
-Node: Eigenvalue and Eigenvector References473766
-Node: Fast Fourier Transforms474793
-Node: Mathematical Definitions476019
-Node: Overview of complex data FFTs478424
-Node: Radix-2 FFT routines for complex data481369
-Node: Mixed-radix FFT routines for complex data485588
-Node: Overview of real data FFTs494928
-Node: Radix-2 FFT routines for real data497363
-Node: Mixed-radix FFT routines for real data501787
-Node: FFT References and Further Reading512472
-Node: Numerical Integration515342
-Node: Numerical Integration Introduction517140
-Node: Integrands without weight functions519415
-Node: Integrands with weight functions520245
-Node: Integrands with singular weight functions520956
-Node: QNG non-adaptive Gauss-Kronrod integration521874
-Node: QAG adaptive integration523156
-Node: QAGS adaptive integration with singularities525945
-Node: QAGP adaptive integration with known singular points527745
-Node: QAGI adaptive integration on infinite intervals529059
-Node: QAWC adaptive integration for Cauchy principal values531339
-Node: QAWS adaptive integration for singular functions532509
-Node: QAWO adaptive integration for oscillatory functions535735
-Node: QAWF adaptive integration for Fourier integrals539523
-Node: CQUAD doubly-adaptive integration542147
-Node: Fixed order Gauss-Legendre integration545405
-Node: Numerical integration error codes547393
-Node: Numerical integration examples548149
-Node: Numerical integration References and Further Reading550206
-Node: Random Number Generation551197
-Node: General comments on random numbers552731
-Node: The Random Number Generator Interface554683
-Node: Random number generator initialization556041
-Node: Sampling from a random number generator558412
-Node: Auxiliary random number generator functions561656
-Node: Random number environment variables563976
-Node: Copying random number generator state566501
-Node: Reading and writing random number generator state567475
-Node: Random number generator algorithms568869
-Node: Unix random number generators578811
-Node: Other random number generators582525
-Node: Random Number Generator Performance591176
-Node: Random Number Generator Examples592297
-Node: Random Number References and Further Reading593809
-Node: Random Number Acknowledgements595104
-Node: Quasi-Random Sequences595590
-Node: Quasi-random number generator initialization596710
-Node: Sampling from a quasi-random number generator597725
-Node: Auxiliary quasi-random number generator functions598422
-Node: Saving and restoring quasi-random number generator state599368
-Node: Quasi-random number generator algorithms601149
-Node: Quasi-random number generator examples602287
-Node: Quasi-random number references603272
-Node: Random Number Distributions603798
-Node: Random Number Distribution Introduction607174
-Node: The Gaussian Distribution608969
-Node: The Gaussian Tail Distribution611629
-Node: The Bivariate Gaussian Distribution613293
-Node: The Multivariate Gaussian Distribution614617
-Node: The Exponential Distribution617465
-Node: The Laplace Distribution618607
-Node: The Exponential Power Distribution619699
-Node: The Cauchy Distribution620967
-Node: The Rayleigh Distribution622216
-Node: The Rayleigh Tail Distribution623390
-Node: The Landau Distribution624263
-Node: The Levy alpha-Stable Distributions625218
-Node: The Levy skew alpha-Stable Distribution626276
-Node: The Gamma Distribution627888
-Node: The Flat (Uniform) Distribution629543
-Node: The Lognormal Distribution630691
-Node: The Chi-squared Distribution632039
-Node: The F-distribution633444
-Node: The t-distribution635081
-Node: The Beta Distribution636475
-Node: The Logistic Distribution637634
-Node: The Pareto Distribution638763
-Node: Spherical Vector Distributions639933
-Node: The Weibull Distribution642769
-Node: The Type-1 Gumbel Distribution643963
-Node: The Type-2 Gumbel Distribution645199
-Node: The Dirichlet Distribution646430
-Node: General Discrete Distributions648098
-Node: The Poisson Distribution651966
-Node: The Bernoulli Distribution652973
-Node: The Binomial Distribution653724
-Node: The Multinomial Distribution654927
-Node: The Negative Binomial Distribution656701
-Node: The Pascal Distribution658066
-Node: The Geometric Distribution659224
-Node: The Hypergeometric Distribution660472
-Node: The Logarithmic Distribution662125
-Node: Shuffling and Sampling662917
-Node: Random Number Distribution Examples665729
-Node: Random Number Distribution References and Further Reading668903
-Node: Statistics671047
-Node: Mean and standard deviation and variance672541
-Node: Absolute deviation676049
-Node: Higher moments (skewness and kurtosis)677341
-Node: Autocorrelation679474
-Node: Covariance680287
-Node: Correlation681253
-Node: Weighted Samples682622
-Node: Maximum and Minimum values688472
-Node: Median and Percentiles691211
-Node: Example statistical programs693626
-Node: Statistics References and Further Reading696287
-Node: Running Statistics697495
-Node: Running Statistics Initializing the Accumulator698797
-Node: Running Statistics Adding Data to the Accumulator699509
-Node: Running Statistics Current Statistics700198
-Node: Running Statistics Quantiles702141
-Node: Running Statistics Example programs703741
-Node: Running Statistics References and Further Reading708136
-Node: Histograms708669
-Node: The histogram struct710530
-Node: Histogram allocation712334
-Node: Copying Histograms715291
-Node: Updating and accessing histogram elements715967
-Node: Searching histogram ranges719236
-Node: Histogram Statistics720236
-Node: Histogram Operations722102
-Node: Reading and writing histograms724177
-Node: Resampling from histograms727219
-Node: The histogram probability distribution struct728018
-Node: Example programs for histograms731052
-Node: Two dimensional histograms733115
-Node: The 2D histogram struct733836
-Node: 2D Histogram allocation735646
-Node: Copying 2D Histograms737720
-Node: Updating and accessing 2D histogram elements738425
-Node: Searching 2D histogram ranges742082
-Node: 2D Histogram Statistics743096
-Node: 2D Histogram Operations745961
-Node: Reading and writing 2D histograms748139
-Node: Resampling from 2D histograms751768
-Node: Example programs for 2D histograms754789
-Node: N-tuples756616
-Node: The ntuple struct757939
-Node: Creating ntuples758418
-Node: Opening an existing ntuple file759085
-Node: Writing ntuples759714
-Node: Reading ntuples760175
-Node: Closing an ntuple file760506
-Node: Histogramming ntuple values760846
-Node: Example ntuple programs762856
-Node: Ntuple References and Further Reading766245
-Node: Monte Carlo Integration766566
-Node: Monte Carlo Interface767877
-Node: PLAIN Monte Carlo770504
-Node: MISER772959
-Ref: MISER-Footnote-1779639
-Node: VEGAS779764
-Node: Monte Carlo Examples789325
-Node: Monte Carlo Integration References and Further Reading795393
-Node: Simulated Annealing796175
-Node: Simulated Annealing algorithm797391
-Node: Simulated Annealing functions798543
-Node: Examples with Simulated Annealing803073
-Node: Trivial example803642
-Node: Traveling Salesman Problem806275
-Node: Simulated Annealing References and Further Reading809588
-Node: Ordinary Differential Equations809999
-Node: Defining the ODE System811239
-Node: Stepping Functions814251
-Node: Adaptive Step-size Control821221
-Node: Evolution827298
-Node: Driver831427
-Node: ODE Example programs835661
-Node: ODE References and Further Reading840817
-Node: Interpolation842581
-Node: 1D Introduction to Interpolation844155
-Node: 1D Interpolation Functions844642
-Node: 1D Interpolation Types845864
-Node: 1D Index Look-up and Acceleration849123
-Node: 1D Evaluation of Interpolating Functions851190
-Node: 1D Higher-level Interface853701
-Node: 1D Interpolation Example programs855756
-Node: 1D Interpolation References and Further Reading861312
-Node: 2D Introduction to Interpolation862067
-Node: 2D Interpolation Functions862615
-Node: 2D Interpolation Grids864146
-Node: 2D Interpolation Types865365
-Node: 2D Evaluation of Interpolating Functions866630
-Node: 2D Higher-level Interface872737
-Node: 2D Interpolation Example programs876481
-Node: Numerical Differentiation878663
-Node: Numerical Differentiation functions879258
-Node: Numerical Differentiation Examples882115
-Node: Numerical Differentiation References883588
-Node: Chebyshev Approximations884139
-Node: Chebyshev Definitions885220
-Node: Creation and Calculation of Chebyshev Series886009
-Node: Auxiliary Functions for Chebyshev Series886994
-Node: Chebyshev Series Evaluation887734
-Node: Derivatives and Integrals889114
-Node: Chebyshev Approximation Examples890352
-Node: Chebyshev Approximation References and Further Reading891904
-Node: Series Acceleration892354
-Node: Acceleration functions893131
-Node: Acceleration functions without error estimation895458
-Node: Example of accelerating a series898082
-Node: Series Acceleration References901403
-Node: Wavelet Transforms902291
-Node: DWT Definitions902890
-Node: DWT Initialization903842
-Node: DWT Transform Functions906490
-Node: DWT in one dimension907041
-Node: DWT in two dimension909062
-Node: DWT Examples913641
-Node: DWT References915516
-Node: Discrete Hankel Transforms917680
-Node: Discrete Hankel Transform Definition918154
-Node: Discrete Hankel Transform Functions921465
-Node: Discrete Hankel Transform References923130
-Node: One dimensional Root-Finding923534
-Node: Root Finding Overview924840
-Node: Root Finding Caveats926696
-Node: Initializing the Solver928465
-Node: Providing the function to solve931098
-Node: Search Bounds and Guesses934652
-Node: Root Finding Iteration935515
-Node: Search Stopping Parameters937366
-Node: Root Bracketing Algorithms939877
-Node: Root Finding Algorithms using Derivatives943175
-Ref: Root Finding Algorithms using Derivatives-Footnote-1946718
-Node: Root Finding Examples946874
-Node: Root Finding References and Further Reading954138
-Node: One dimensional Minimization954777
-Node: Minimization Overview956120
-Node: Minimization Caveats957827
-Node: Initializing the Minimizer959165
-Node: Providing the function to minimize961406
-Node: Minimization Iteration961884
-Node: Minimization Stopping Parameters964022
-Node: Minimization Algorithms965627
-Node: Minimization Examples968221
-Node: Minimization References and Further Reading970972
-Node: Multidimensional Root-Finding971428
-Node: Overview of Multidimensional Root Finding972936
-Node: Initializing the Multidimensional Solver975123
-Node: Providing the multidimensional system of equations to solve978353
-Node: Iteration of the multidimensional solver983265
-Node: Search Stopping Parameters for the multidimensional solver985546
-Node: Algorithms using Derivatives987284
-Node: Algorithms without Derivatives992109
-Node: Example programs for Multidimensional Root finding995199
-Node: References and Further Reading for Multidimensional Root Finding1003823
-Node: Multidimensional Minimization1005062
-Node: Multimin Overview1006472
-Node: Multimin Caveats1008552
-Node: Initializing the Multidimensional Minimizer1009301
-Node: Providing a function to minimize1012535
-Node: Multimin Iteration1016596
-Node: Multimin Stopping Criteria1018940
-Node: Multimin Algorithms with Derivatives1020511
-Node: Multimin Algorithms without Derivatives1024042
-Node: Multimin Examples1027044
-Node: Multimin References and Further Reading1033614
-Node: Least-Squares Fitting1034478
-Node: Fitting Overview1035510
-Node: Linear regression1037843
-Node: Linear regression with a constant term1038286
-Node: Linear regression without a constant term1040929
-Node: Multi-parameter regression1043121
-Node: Regularized regression1048552
-Node: Robust linear regression1064489
-Node: Large Dense Linear Systems1076700
-Node: Large Dense Linear Systems Normal Equations1078923
-Node: Large Dense Linear Systems TSQR1080516
-Node: Large Dense Linear Systems Solution Steps1082161
-Node: Large Dense Linear Systems Routines1083303
-Node: Troubleshooting1091626
-Node: Fitting Examples1092251
-Node: Fitting linear regression example1092753
-Node: Fitting multi-parameter linear regression example1094955
-Node: Fitting regularized linear regression example1099947
-Node: Fitting robust linear regression example1105316
-Node: Fitting large linear systems example1109271
-Node: Fitting References and Further Reading1116490
-Node: Nonlinear Least-Squares Fitting1118771
-Node: Nonlinear Least-Squares Overview1120728
-Node: Nonlinear Least-Squares TRS Overview1125129
-Node: Nonlinear Least-Squares TRS Levenberg-Marquardt1127263
-Node: Nonlinear Least-Squares TRS Levenberg-Marquardt with Geodesic Acceleration1128870
-Node: Nonlinear Least-Squares TRS Dogleg1130624
-Node: Nonlinear Least-Squares TRS Double Dogleg1132094
-Node: Nonlinear Least-Squares TRS 2D Subspace1132892
-Node: Nonlinear Least-Squares TRS Steihaug-Toint Conjugate Gradient1133864
-Node: Nonlinear Least-Squares Weighted Overview1134608
-Node: Nonlinear Least-Squares Tunable Parameters1135826
-Node: Nonlinear Least-Squares Initialization1147308
-Node: Nonlinear Least-Squares Function Definition1152238
-Node: Nonlinear Least-Squares Iteration1159320
-Node: Nonlinear Least-Squares Testing for Convergence1163858
-Node: Nonlinear Least-Squares High Level Driver1166754
-Node: Nonlinear Least-Squares Covariance Matrix1168974
-Node: Nonlinear Least-Squares Troubleshooting1171182
-Node: Nonlinear Least-Squares Examples1173206
-Node: Nonlinear Least-Squares Exponential Fit Example1173752
-Node: Nonlinear Least-Squares Geodesic Acceleration Example1184173
-Node: Nonlinear Least-Squares Comparison Example1191498
-Node: Nonlinear Least-Squares Large Example1201233
-Node: Nonlinear Least-Squares References and Further Reading1209969
-Node: Basis Splines1211563
-Node: Overview of B-splines1212448
-Node: Initializing the B-splines solver1213764
-Node: Constructing the knots vector1214629
-Node: Evaluation of B-spline basis functions1215417
-Node: Evaluation of B-spline basis function derivatives1217065
-Node: Working with the Greville abscissae1218947
-Node: Example programs for B-splines1219941
-Node: B-Spline References and Further Reading1223945
-Node: Sparse Matrices1224778
-Node: Sparse Matrices Overview1226104
-Node: Sparse Matrices Allocation1229315
-Node: Sparse Matrices Accessing Elements1232326
-Node: Sparse Matrices Initializing Elements1233289
-Node: Sparse Matrices Reading and Writing1233924
-Node: Sparse Matrices Copying1236146
-Node: Sparse Matrices Exchanging Rows and Columns1236628
-Node: Sparse Matrices Operations1238023
-Node: Sparse Matrices Properties1238703
-Node: Sparse Matrices Finding Maximum and Minimum Elements1239355
-Node: Sparse Matrices Compressed Format1239898
-Node: Sparse Matrices Conversion Between Sparse and Dense1240977
-Node: Sparse Matrices Examples1241799
-Node: Sparse Matrices References and Further Reading1245445
-Node: Sparse BLAS Support1245893
-Node: Sparse BLAS operations1246524
-Node: Sparse BLAS References and Further Reading1247478
-Node: Sparse Linear Algebra1247922
-Node: Overview of Sparse Linear Algebra1248549
-Node: Sparse Iterative Solvers1249301
-Node: Sparse Iterative Solver Overview1249647
-Node: Sparse Iterative Solvers Types1250497
-Node: Iterating the Sparse Linear System1252601
-Node: Sparse Linear Algebra Examples1255071
-Node: Sparse Linear Algebra References and Further Reading1259536
-Node: Physical Constants1260069
-Node: Fundamental Constants1261656
-Node: Astronomy and Astrophysics1262796
-Node: Atomic and Nuclear Physics1263461
-Node: Measurement of Time1265112
-Node: Imperial Units1265542
-Node: Speed and Nautical Units1265984
-Node: Printers Units1266488
-Node: Volume Area and Length1266811
-Node: Mass and Weight1267497
-Node: Thermal Energy and Power1268316
-Node: Pressure1268739
-Node: Viscosity1269352
-Node: Light and Illumination1269628
-Node: Radioactivity1270220
-Node: Force and Energy1270555
-Node: Prefixes1270959
-Node: Physical Constant Examples1271702
-Node: Physical Constant References and Further Reading1273491
-Node: IEEE floating-point arithmetic1274221
-Node: Representation of floating point numbers1274813
-Node: Setting up your IEEE environment1279299
-Node: IEEE References and Further Reading1286272
-Node: Debugging Numerical Programs1287432
-Node: Using gdb1287949
-Node: Examining floating point registers1291292
-Node: Handling floating point exceptions1292577
-Node: GCC warning options for numerical programs1293989
-Node: Debugging References1297937
-Node: Contributors to GSL1298649
-Node: Autoconf Macros1303160
-Node: GSL CBLAS Library1307192
-Node: Level 1 CBLAS Functions1307732
-Node: Level 2 CBLAS Functions1313034
-Node: Level 3 CBLAS Functions1329664
-Node: GSL CBLAS Examples1339326
-Node: GNU General Public License1340889
-Node: GNU Free Documentation License1378463
-Node: Function Index1403612
-Node: Variable Index1686841
-Node: Type Index1695519
-Node: Concept Index1710743
+Node: Introduction4283
+Node: Routines available in GSL5003
+Node: GSL is Free Software6616
+Node: Obtaining GSL9008
+Node: No Warranty10036
+Node: Reporting Bugs10542
+Ref: Reporting Bugs-Footnote-111494
+Node: Further Information11544
+Node: Conventions used in this manual12558
+Node: Using the library13322
+Node: An Example Program14045
+Ref: An Example Program-Footnote-114788
+Node: Compiling and Linking14895
+Node: Linking programs with the library15968
+Ref: Linking programs with the library-Footnote-117371
+Ref: Linking programs with the library-Footnote-217408
+Node: Linking with an alternative BLAS library17461
+Node: Shared Libraries18544
+Ref: Shared Libraries-Footnote-120019
+Node: ANSI C Compliance20067
+Node: Inline functions21160
+Node: Long double22698
+Node: Portability functions24286
+Node: Alternative optimized functions25684
+Node: Support for different numeric types27142
+Node: Compatibility with C++30206
+Node: Aliasing of arrays30778
+Node: Thread-safety31529
+Node: Deprecated Functions32617
+Node: Code Reuse33242
+Node: Error Handling33887
+Node: Error Reporting34687
+Node: Error Codes36579
+Node: Error Handlers38436
+Node: Using GSL error reporting in your own functions42076
+Node: Error Reporting Examples44036
+Node: Mathematical Functions45248
+Node: Mathematical Constants46041
+Node: Infinities and Not-a-number47171
+Ref: Infinities and Not-a-number-Footnote-148281
+Node: Elementary Functions48691
+Node: Small integer powers51148
+Node: Testing the Sign of Numbers52797
+Node: Testing for Odd and Even Numbers53230
+Node: Maximum and Minimum functions53789
+Node: Approximate Comparison of Floating Point Numbers56070
+Node: Complex Numbers57430
+Ref: Complex Numbers-Footnote-158775
+Node: Representation of complex numbers58839
+Node: Properties of complex numbers60779
+Node: Complex arithmetic operators61785
+Node: Elementary Complex Functions64531
+Node: Complex Trigonometric Functions66355
+Node: Inverse Complex Trigonometric Functions67576
+Node: Complex Hyperbolic Functions70189
+Node: Inverse Complex Hyperbolic Functions71485
+Node: Complex Number References and Further Reading73473
+Node: Polynomials74869
+Node: Polynomial Evaluation75673
+Node: Divided Difference Representation of Polynomials77084
+Node: Quadratic Equations80946
+Node: Cubic Equations82883
+Node: General Polynomial Equations84466
+Node: Roots of Polynomials Examples86823
+Node: Roots of Polynomials References and Further Reading88212
+Node: Special Functions89258
+Node: Special Function Usage91506
+Node: The gsl_sf_result struct92690
+Node: Special Function Modes93954
+Node: Airy Functions and Derivatives94888
+Node: Airy Functions95613
+Node: Derivatives of Airy Functions96973
+Node: Zeros of Airy Functions98485
+Node: Zeros of Derivatives of Airy Functions99204
+Node: Bessel Functions99963
+Node: Regular Cylindrical Bessel Functions101181
+Node: Irregular Cylindrical Bessel Functions102505
+Node: Regular Modified Cylindrical Bessel Functions103963
+Node: Irregular Modified Cylindrical Bessel Functions106791
+Node: Regular Spherical Bessel Functions109764
+Node: Irregular Spherical Bessel Functions111977
+Node: Regular Modified Spherical Bessel Functions113663
+Node: Irregular Modified Spherical Bessel Functions115662
+Node: Regular Bessel Function - Fractional Order117725
+Node: Irregular Bessel Functions - Fractional Order118723
+Node: Regular Modified Bessel Functions - Fractional Order119305
+Node: Irregular Modified Bessel Functions - Fractional Order120230
+Node: Zeros of Regular Bessel Functions121466
+Node: Clausen Functions122569
+Node: Coulomb Functions123173
+Node: Normalized Hydrogenic Bound States123632
+Node: Coulomb Wave Functions124745
+Node: Coulomb Wave Function Normalization Constant128157
+Node: Coupling Coefficients128910
+Node: 3-j Symbols129684
+Node: 6-j Symbols130288
+Node: 9-j Symbols130912
+Node: Dawson Function131618
+Node: Debye Functions132185
+Node: Dilogarithm133959
+Node: Real Argument134281
+Node: Complex Argument134975
+Node: Elementary Operations135445
+Node: Elliptic Integrals136269
+Node: Definition of Legendre Forms136864
+Node: Definition of Carlson Forms137684
+Node: Legendre Form of Complete Elliptic Integrals138381
+Node: Legendre Form of Incomplete Elliptic Integrals139934
+Node: Carlson Forms142026
+Node: Elliptic Functions (Jacobi)143573
+Node: Error Functions144154
+Node: Error Function144630
+Node: Complementary Error Function145003
+Node: Log Complementary Error Function145463
+Node: Probability functions145915
+Node: Exponential Functions147168
+Node: Exponential Function147563
+Node: Relative Exponential Functions148785
+Node: Exponentiation With Error Estimate150457
+Node: Exponential Integrals151666
+Node: Exponential Integral152222
+Node: Ei(x)153143
+Node: Hyperbolic Integrals153591
+Node: Ei_3(x)154246
+Node: Trigonometric Integrals154638
+Node: Arctangent Integral155237
+Node: Fermi-Dirac Function155637
+Node: Complete Fermi-Dirac Integrals156011
+Node: Incomplete Fermi-Dirac Integrals158576
+Node: Gamma and Beta Functions159219
+Node: Gamma Functions159854
+Node: Factorials162962
+Node: Pochhammer Symbol165515
+Node: Incomplete Gamma Functions167016
+Node: Beta Functions168265
+Node: Incomplete Beta Function169017
+Node: Gegenbauer Functions169727
+Node: Hypergeometric Functions171377
+Node: Laguerre Functions175641
+Node: Lambert W Functions177204
+Node: Legendre Functions and Spherical Harmonics178244
+Node: Legendre Polynomials178856
+Node: Associated Legendre Polynomials and Spherical Harmonics180912
+Node: Conical Functions191665
+Node: Radial Functions for Hyperbolic Space193788
+Node: Logarithm and Related Functions195965
+Node: Mathieu Functions197589
+Node: Mathieu Function Workspace198949
+Node: Mathieu Function Characteristic Values199762
+Node: Angular Mathieu Functions200944
+Node: Radial Mathieu Functions202112
+Node: Power Function203495
+Node: Psi (Digamma) Function204423
+Node: Digamma Function204976
+Node: Trigamma Function205806
+Node: Polygamma Function206383
+Node: Synchrotron Functions206767
+Node: Transport Functions207530
+Node: Trigonometric Functions208677
+Node: Circular Trigonometric Functions209323
+Node: Trigonometric Functions for Complex Arguments210332
+Node: Hyperbolic Trigonometric Functions211368
+Node: Conversion Functions211971
+Node: Restriction Functions212754
+Node: Trigonometric Functions With Error Estimates213685
+Node: Zeta Functions214595
+Node: Riemann Zeta Function215053
+Node: Riemann Zeta Function Minus One215732
+Node: Hurwitz Zeta Function216503
+Node: Eta Function217008
+Node: Special Functions Examples217567
+Node: Special Functions References and Further Reading219262
+Node: Vectors and Matrices220779
+Node: Data types221622
+Node: Blocks222825
+Node: Block allocation223758
+Node: Reading and writing blocks225162
+Node: Example programs for blocks227226
+Node: Vectors227853
+Node: Vector allocation229821
+Node: Accessing vector elements231358
+Ref: Accessing vector elements-Footnote-1234531
+Node: Initializing vector elements234770
+Node: Reading and writing vectors235464
+Node: Vector views237554
+Node: Copying vectors245020
+Node: Exchanging elements245880
+Node: Vector operations246438
+Node: Finding maximum and minimum elements of vectors248211
+Node: Vector properties249798
+Node: Example programs for vectors250772
+Node: Matrices253061
+Node: Matrix allocation256001
+Node: Accessing matrix elements257587
+Node: Initializing matrix elements259560
+Node: Reading and writing matrices260357
+Node: Matrix views262460
+Node: Creating row and column views269596
+Node: Copying matrices274073
+Node: Copying rows and columns274669
+Node: Exchanging rows and columns276346
+Node: Matrix operations277824
+Node: Finding maximum and minimum elements of matrices279794
+Node: Matrix properties281694
+Node: Example programs for matrices282797
+Node: Vector and Matrix References and Further Reading286869
+Node: Permutations287355
+Node: The Permutation struct288692
+Node: Permutation allocation289195
+Node: Accessing permutation elements290631
+Node: Permutation properties291474
+Node: Permutation functions292179
+Node: Applying Permutations293436
+Node: Reading and writing permutations295818
+Ref: Reading and writing permutations-Footnote-1298034
+Node: Permutations in cyclic form298146
+Node: Permutation Examples302546
+Node: Permutation References and Further Reading305089
+Node: Combinations305763
+Node: The Combination struct306648
+Node: Combination allocation307199
+Node: Accessing combination elements308986
+Node: Combination properties309645
+Node: Combination functions310531
+Node: Reading and writing combinations311471
+Ref: Reading and writing combinations-Footnote-1313704
+Node: Combination Examples313816
+Node: Combination References and Further Reading315124
+Node: Multisets315527
+Node: The Multiset struct316453
+Node: Multiset allocation316974
+Node: Accessing multiset elements318669
+Node: Multiset properties319298
+Node: Multiset functions320111
+Node: Reading and writing multisets321021
+Ref: Reading and writing multisets-Footnote-1323172
+Node: Multiset Examples323284
+Node: Sorting325392
+Node: Sorting objects326391
+Node: Sorting vectors329304
+Node: Selecting the k smallest or largest elements332465
+Node: Computing the rank335806
+Node: Sorting Examples337007
+Node: Sorting References and Further Reading338654
+Node: BLAS Support339200
+Ref: BLAS Support-Footnote-1342586
+Node: GSL BLAS Interface342755
+Node: Level 1 GSL BLAS Interface343248
+Node: Level 2 GSL BLAS Interface349988
+Node: Level 3 GSL BLAS Interface359278
+Node: BLAS Examples370376
+Node: BLAS References and Further Reading371797
+Node: Linear Algebra373139
+Node: LU Decomposition374489
+Node: QR Decomposition379714
+Node: QR Decomposition with Column Pivoting386023
+Node: Complete Orthogonal Decomposition393522
+Node: Singular Value Decomposition397149
+Node: Cholesky Decomposition401565
+Node: Pivoted Cholesky Decomposition408281
+Node: Modified Cholesky Decomposition413578
+Node: Tridiagonal Decomposition of Real Symmetric Matrices417083
+Node: Tridiagonal Decomposition of Hermitian Matrices418940
+Node: Hessenberg Decomposition of Real Matrices420894
+Node: Hessenberg-Triangular Decomposition of Real Matrices423308
+Node: Bidiagonalization424433
+Node: Givens Rotations426847
+Node: Householder Transformations428178
+Node: Householder solver for linear systems430799
+Node: Tridiagonal Systems431706
+Node: Triangular Systems434588
+Node: Balancing436002
+Node: Linear Algebra Examples436804
+Node: Linear Algebra References and Further Reading438798
+Node: Eigensystems440762
+Node: Real Symmetric Matrices441991
+Node: Complex Hermitian Matrices444505
+Node: Real Nonsymmetric Matrices447134
+Node: Real Generalized Symmetric-Definite Eigensystems452869
+Node: Complex Generalized Hermitian-Definite Eigensystems455748
+Node: Real Generalized Nonsymmetric Eigensystems458462
+Node: Sorting Eigenvalues and Eigenvectors465069
+Node: Eigenvalue and Eigenvector Examples468347
+Node: Eigenvalue and Eigenvector References473738
+Node: Fast Fourier Transforms474765
+Node: Mathematical Definitions475991
+Node: Overview of complex data FFTs478396
+Node: Radix-2 FFT routines for complex data481341
+Node: Mixed-radix FFT routines for complex data485560
+Node: Overview of real data FFTs494900
+Node: Radix-2 FFT routines for real data497335
+Node: Mixed-radix FFT routines for real data501759
+Node: FFT References and Further Reading512444
+Node: Numerical Integration515314
+Node: Numerical Integration Introduction517112
+Node: Integrands without weight functions519387
+Node: Integrands with weight functions520217
+Node: Integrands with singular weight functions520928
+Node: QNG non-adaptive Gauss-Kronrod integration521846
+Node: QAG adaptive integration523128
+Node: QAGS adaptive integration with singularities525917
+Node: QAGP adaptive integration with known singular points527717
+Node: QAGI adaptive integration on infinite intervals529031
+Node: QAWC adaptive integration for Cauchy principal values531311
+Node: QAWS adaptive integration for singular functions532481
+Node: QAWO adaptive integration for oscillatory functions535707
+Node: QAWF adaptive integration for Fourier integrals539495
+Node: CQUAD doubly-adaptive integration542119
+Node: Fixed order Gauss-Legendre integration545377
+Node: Numerical integration error codes547365
+Node: Numerical integration examples548121
+Node: Numerical integration References and Further Reading550178
+Node: Random Number Generation551169
+Node: General comments on random numbers552703
+Node: The Random Number Generator Interface554655
+Node: Random number generator initialization556013
+Node: Sampling from a random number generator558384
+Node: Auxiliary random number generator functions561628
+Node: Random number environment variables563948
+Node: Copying random number generator state566473
+Node: Reading and writing random number generator state567447
+Node: Random number generator algorithms568841
+Node: Unix random number generators578783
+Node: Other random number generators582497
+Node: Random Number Generator Performance591148
+Node: Random Number Generator Examples592269
+Node: Random Number References and Further Reading593781
+Node: Random Number Acknowledgements595076
+Node: Quasi-Random Sequences595562
+Node: Quasi-random number generator initialization596682
+Node: Sampling from a quasi-random number generator597697
+Node: Auxiliary quasi-random number generator functions598394
+Node: Saving and restoring quasi-random number generator state599340
+Node: Quasi-random number generator algorithms601121
+Node: Quasi-random number generator examples602259
+Node: Quasi-random number references603244
+Node: Random Number Distributions603770
+Node: Random Number Distribution Introduction607146
+Node: The Gaussian Distribution608941
+Node: The Gaussian Tail Distribution611601
+Node: The Bivariate Gaussian Distribution613265
+Node: The Multivariate Gaussian Distribution614589
+Node: The Exponential Distribution617437
+Node: The Laplace Distribution618579
+Node: The Exponential Power Distribution619671
+Node: The Cauchy Distribution620939
+Node: The Rayleigh Distribution622188
+Node: The Rayleigh Tail Distribution623362
+Node: The Landau Distribution624235
+Node: The Levy alpha-Stable Distributions625190
+Node: The Levy skew alpha-Stable Distribution626248
+Node: The Gamma Distribution627860
+Node: The Flat (Uniform) Distribution629515
+Node: The Lognormal Distribution630663
+Node: The Chi-squared Distribution632011
+Node: The F-distribution633416
+Node: The t-distribution635053
+Node: The Beta Distribution636447
+Node: The Logistic Distribution637606
+Node: The Pareto Distribution638735
+Node: Spherical Vector Distributions639905
+Node: The Weibull Distribution642741
+Node: The Type-1 Gumbel Distribution643935
+Node: The Type-2 Gumbel Distribution645171
+Node: The Dirichlet Distribution646402
+Node: General Discrete Distributions648070
+Node: The Poisson Distribution651938
+Node: The Bernoulli Distribution652945
+Node: The Binomial Distribution653696
+Node: The Multinomial Distribution654899
+Node: The Negative Binomial Distribution656673
+Node: The Pascal Distribution658038
+Node: The Geometric Distribution659196
+Node: The Hypergeometric Distribution660444
+Node: The Logarithmic Distribution662097
+Node: Shuffling and Sampling662889
+Node: Random Number Distribution Examples665701
+Node: Random Number Distribution References and Further Reading668875
+Node: Statistics671019
+Node: Mean and standard deviation and variance672513
+Node: Absolute deviation676021
+Node: Higher moments (skewness and kurtosis)677313
+Node: Autocorrelation679446
+Node: Covariance680259
+Node: Correlation681225
+Node: Weighted Samples682594
+Node: Maximum and Minimum values688444
+Node: Median and Percentiles691183
+Node: Example statistical programs693598
+Node: Statistics References and Further Reading696259
+Node: Running Statistics697467
+Node: Running Statistics Initializing the Accumulator698769
+Node: Running Statistics Adding Data to the Accumulator699481
+Node: Running Statistics Current Statistics700170
+Node: Running Statistics Quantiles702301
+Node: Running Statistics Example programs703901
+Node: Running Statistics References and Further Reading709451
+Node: Histograms709984
+Node: The histogram struct711845
+Node: Histogram allocation713649
+Node: Copying Histograms716606
+Node: Updating and accessing histogram elements717282
+Node: Searching histogram ranges720551
+Node: Histogram Statistics721551
+Node: Histogram Operations723417
+Node: Reading and writing histograms725492
+Node: Resampling from histograms728534
+Node: The histogram probability distribution struct729333
+Node: Example programs for histograms732367
+Node: Two dimensional histograms734430
+Node: The 2D histogram struct735151
+Node: 2D Histogram allocation736961
+Node: Copying 2D Histograms739035
+Node: Updating and accessing 2D histogram elements739740
+Node: Searching 2D histogram ranges743397
+Node: 2D Histogram Statistics744411
+Node: 2D Histogram Operations747276
+Node: Reading and writing 2D histograms749454
+Node: Resampling from 2D histograms753083
+Node: Example programs for 2D histograms756104
+Node: N-tuples757931
+Node: The ntuple struct759254
+Node: Creating ntuples759733
+Node: Opening an existing ntuple file760400
+Node: Writing ntuples761029
+Node: Reading ntuples761490
+Node: Closing an ntuple file761821
+Node: Histogramming ntuple values762161
+Node: Example ntuple programs764171
+Node: Ntuple References and Further Reading767560
+Node: Monte Carlo Integration767881
+Node: Monte Carlo Interface769192
+Node: PLAIN Monte Carlo771819
+Node: MISER774274
+Ref: MISER-Footnote-1780954
+Node: VEGAS781079
+Node: Monte Carlo Examples790640
+Node: Monte Carlo Integration References and Further Reading796708
+Node: Simulated Annealing797490
+Node: Simulated Annealing algorithm798706
+Node: Simulated Annealing functions799858
+Node: Examples with Simulated Annealing804388
+Node: Trivial example804957
+Node: Traveling Salesman Problem807590
+Node: Simulated Annealing References and Further Reading810903
+Node: Ordinary Differential Equations811314
+Node: Defining the ODE System812554
+Node: Stepping Functions815566
+Node: Adaptive Step-size Control822536
+Node: Evolution828613
+Node: Driver832742
+Node: ODE Example programs836976
+Node: ODE References and Further Reading842132
+Node: Interpolation843896
+Node: 1D Introduction to Interpolation845470
+Node: 1D Interpolation Functions845957
+Node: 1D Interpolation Types847179
+Node: 1D Index Look-up and Acceleration850438
+Node: 1D Evaluation of Interpolating Functions852505
+Node: 1D Higher-level Interface855016
+Node: 1D Interpolation Example programs857071
+Node: 1D Interpolation References and Further Reading862627
+Node: 2D Introduction to Interpolation863382
+Node: 2D Interpolation Functions863930
+Node: 2D Interpolation Grids865461
+Node: 2D Interpolation Types866680
+Node: 2D Evaluation of Interpolating Functions867945
+Node: 2D Higher-level Interface874052
+Node: 2D Interpolation Example programs877796
+Node: Numerical Differentiation879978
+Node: Numerical Differentiation functions880573
+Node: Numerical Differentiation Examples883430
+Node: Numerical Differentiation References884903
+Node: Chebyshev Approximations885454
+Node: Chebyshev Definitions886535
+Node: Creation and Calculation of Chebyshev Series887324
+Node: Auxiliary Functions for Chebyshev Series888309
+Node: Chebyshev Series Evaluation889049
+Node: Derivatives and Integrals890429
+Node: Chebyshev Approximation Examples891667
+Node: Chebyshev Approximation References and Further Reading893219
+Node: Series Acceleration893669
+Node: Acceleration functions894446
+Node: Acceleration functions without error estimation896773
+Node: Example of accelerating a series899397
+Node: Series Acceleration References902718
+Node: Wavelet Transforms903606
+Node: DWT Definitions904205
+Node: DWT Initialization905157
+Node: DWT Transform Functions907805
+Node: DWT in one dimension908356
+Node: DWT in two dimension910377
+Node: DWT Examples914956
+Node: DWT References916831
+Node: Discrete Hankel Transforms918995
+Node: Discrete Hankel Transform Definition919469
+Node: Discrete Hankel Transform Functions922780
+Node: Discrete Hankel Transform References924445
+Node: One dimensional Root-Finding924849
+Node: Root Finding Overview926155
+Node: Root Finding Caveats928011
+Node: Initializing the Solver929780
+Node: Providing the function to solve932413
+Node: Search Bounds and Guesses935967
+Node: Root Finding Iteration936830
+Node: Search Stopping Parameters938681
+Node: Root Bracketing Algorithms941192
+Node: Root Finding Algorithms using Derivatives944490
+Ref: Root Finding Algorithms using Derivatives-Footnote-1948033
+Node: Root Finding Examples948189
+Node: Root Finding References and Further Reading955453
+Node: One dimensional Minimization956092
+Node: Minimization Overview957435
+Node: Minimization Caveats959142
+Node: Initializing the Minimizer960480
+Node: Providing the function to minimize962721
+Node: Minimization Iteration963199
+Node: Minimization Stopping Parameters965337
+Node: Minimization Algorithms966942
+Node: Minimization Examples969536
+Node: Minimization References and Further Reading972287
+Node: Multidimensional Root-Finding972743
+Node: Overview of Multidimensional Root Finding974251
+Node: Initializing the Multidimensional Solver976438
+Node: Providing the multidimensional system of equations to solve979668
+Node: Iteration of the multidimensional solver984580
+Node: Search Stopping Parameters for the multidimensional solver986861
+Node: Algorithms using Derivatives988599
+Node: Algorithms without Derivatives993424
+Node: Example programs for Multidimensional Root finding996514
+Node: References and Further Reading for Multidimensional Root Finding1005138
+Node: Multidimensional Minimization1006377
+Node: Multimin Overview1007787
+Node: Multimin Caveats1009867
+Node: Initializing the Multidimensional Minimizer1010616
+Node: Providing a function to minimize1013850
+Node: Multimin Iteration1017911
+Node: Multimin Stopping Criteria1020255
+Node: Multimin Algorithms with Derivatives1021826
+Node: Multimin Algorithms without Derivatives1025357
+Node: Multimin Examples1028359
+Node: Multimin References and Further Reading1034929
+Node: Least-Squares Fitting1035793
+Node: Fitting Overview1036825
+Node: Linear regression1039158
+Node: Linear regression with a constant term1039601
+Node: Linear regression without a constant term1042244
+Node: Multi-parameter regression1044436
+Node: Regularized regression1052576
+Node: Robust linear regression1071950
+Node: Large Dense Linear Systems1084161
+Node: Large Dense Linear Systems Normal Equations1086384
+Node: Large Dense Linear Systems TSQR1087977
+Node: Large Dense Linear Systems Solution Steps1089622
+Node: Large Dense Linear Systems Routines1090764
+Node: Troubleshooting1099087
+Node: Fitting Examples1099712
+Node: Fitting linear regression example1100268
+Node: Fitting multi-parameter linear regression example1102470
+Node: Fitting regularized linear regression example 11107464
+Node: Fitting regularized linear regression example 21115049
+Node: Fitting robust linear regression example1121969
+Node: Fitting large linear systems example1125926
+Node: Fitting References and Further Reading1133145
+Node: Nonlinear Least-Squares Fitting1135426
+Node: Nonlinear Least-Squares Overview1137383
+Node: Nonlinear Least-Squares TRS Overview1141784
+Node: Nonlinear Least-Squares TRS Levenberg-Marquardt1143918
+Node: Nonlinear Least-Squares TRS Levenberg-Marquardt with Geodesic Acceleration1145525
+Node: Nonlinear Least-Squares TRS Dogleg1147279
+Node: Nonlinear Least-Squares TRS Double Dogleg1148749
+Node: Nonlinear Least-Squares TRS 2D Subspace1149547
+Node: Nonlinear Least-Squares TRS Steihaug-Toint Conjugate Gradient1150519
+Node: Nonlinear Least-Squares Weighted Overview1151263
+Node: Nonlinear Least-Squares Tunable Parameters1152481
+Node: Nonlinear Least-Squares Initialization1164018
+Node: Nonlinear Least-Squares Function Definition1168948
+Node: Nonlinear Least-Squares Iteration1176030
+Node: Nonlinear Least-Squares Testing for Convergence1180568
+Node: Nonlinear Least-Squares High Level Driver1183464
+Node: Nonlinear Least-Squares Covariance Matrix1185684
+Node: Nonlinear Least-Squares Troubleshooting1187892
+Node: Nonlinear Least-Squares Examples1189916
+Node: Nonlinear Least-Squares Exponential Fit Example1190462
+Node: Nonlinear Least-Squares Geodesic Acceleration Example1201856
+Node: Nonlinear Least-Squares Comparison Example1209181
+Node: Nonlinear Least-Squares Large Example1217943
+Node: Nonlinear Least-Squares References and Further Reading1226889
+Node: Basis Splines1228483
+Node: Overview of B-splines1229368
+Node: Initializing the B-splines solver1230684
+Node: Constructing the knots vector1231549
+Node: Evaluation of B-spline basis functions1232337
+Node: Evaluation of B-spline basis function derivatives1233985
+Node: Working with the Greville abscissae1235867
+Node: Example programs for B-splines1236861
+Node: B-Spline References and Further Reading1240865
+Node: Sparse Matrices1241698
+Node: Sparse Matrices Overview1243024
+Node: Sparse Matrices Allocation1246235
+Node: Sparse Matrices Accessing Elements1249246
+Node: Sparse Matrices Initializing Elements1250209
+Node: Sparse Matrices Reading and Writing1250844
+Node: Sparse Matrices Copying1253066
+Node: Sparse Matrices Exchanging Rows and Columns1253548
+Node: Sparse Matrices Operations1254943
+Node: Sparse Matrices Properties1255623
+Node: Sparse Matrices Finding Maximum and Minimum Elements1256275
+Node: Sparse Matrices Compressed Format1256818
+Node: Sparse Matrices Conversion Between Sparse and Dense1257897
+Node: Sparse Matrices Examples1258719
+Node: Sparse Matrices References and Further Reading1262365
+Node: Sparse BLAS Support1262813
+Node: Sparse BLAS operations1263444
+Node: Sparse BLAS References and Further Reading1264398
+Node: Sparse Linear Algebra1264842
+Node: Overview of Sparse Linear Algebra1265469
+Node: Sparse Iterative Solvers1266221
+Node: Sparse Iterative Solver Overview1266567
+Node: Sparse Iterative Solvers Types1267417
+Node: Iterating the Sparse Linear System1269521
+Node: Sparse Linear Algebra Examples1271991
+Node: Sparse Linear Algebra References and Further Reading1276456
+Node: Physical Constants1276989
+Node: Fundamental Constants1278576
+Node: Astronomy and Astrophysics1279716
+Node: Atomic and Nuclear Physics1280381
+Node: Measurement of Time1282032
+Node: Imperial Units1282462
+Node: Speed and Nautical Units1282904
+Node: Printers Units1283408
+Node: Volume Area and Length1283731
+Node: Mass and Weight1284417
+Node: Thermal Energy and Power1285236
+Node: Pressure1285659
+Node: Viscosity1286272
+Node: Light and Illumination1286548
+Node: Radioactivity1287140
+Node: Force and Energy1287475
+Node: Prefixes1287879
+Node: Physical Constant Examples1288622
+Node: Physical Constant References and Further Reading1290411
+Node: IEEE floating-point arithmetic1291141
+Node: Representation of floating point numbers1291733
+Node: Setting up your IEEE environment1296219
+Node: IEEE References and Further Reading1303192
+Node: Debugging Numerical Programs1304352
+Node: Using gdb1304869
+Node: Examining floating point registers1308212
+Node: Handling floating point exceptions1309497
+Node: GCC warning options for numerical programs1310909
+Node: Debugging References1314857
+Node: Contributors to GSL1315569
+Node: Autoconf Macros1320080
+Node: GSL CBLAS Library1324112
+Node: Level 1 CBLAS Functions1324652
+Node: Level 2 CBLAS Functions1329954
+Node: Level 3 CBLAS Functions1346584
+Node: GSL CBLAS Examples1356246
+Node: GNU General Public License1357809
+Node: GNU Free Documentation License1395383
+Node: Function Index1420532
+Node: Variable Index1705030
+Node: Type Index1713866
+Node: Concept Index1729090
 
 End Tag Table

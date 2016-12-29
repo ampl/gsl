@@ -41,7 +41,7 @@ The functions described in this chapter are declared in the header file
 @section LU Decomposition
 @cindex LU decomposition
 
-A general square matrix @math{A} has an @math{LU} decomposition into
+A general @math{N}-by-@math{N} square matrix @math{A} has an @math{LU} decomposition into
 upper and lower triangular matrices,
 @tex
 \beforedisplay
@@ -106,12 +106,11 @@ by the solution on output.
 @cindex refinement of solutions in linear systems
 @cindex iterative refinement of solutions in linear systems
 @cindex linear systems, refinement of solutions
-@deftypefun int gsl_linalg_LU_refine (const gsl_matrix * @var{A}, const gsl_matrix * @var{LU}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x}, gsl_vector * @var{residual})
-@deftypefunx int gsl_linalg_complex_LU_refine (const gsl_matrix_complex * @var{A}, const gsl_matrix_complex * @var{LU}, const gsl_permutation * @var{p}, const gsl_vector_complex * @var{b}, gsl_vector_complex * @var{x}, gsl_vector_complex * @var{residual})
+@deftypefun int gsl_linalg_LU_refine (const gsl_matrix * @var{A}, const gsl_matrix * @var{LU}, const gsl_permutation * @var{p}, const gsl_vector * @var{b}, gsl_vector * @var{x}, gsl_vector * @var{work})
+@deftypefunx int gsl_linalg_complex_LU_refine (const gsl_matrix_complex * @var{A}, const gsl_matrix_complex * @var{LU}, const gsl_permutation * @var{p}, const gsl_vector_complex * @var{b}, gsl_vector_complex * @var{x}, gsl_vector_complex * @var{work})
 These functions apply an iterative improvement to @var{x}, the solution
 of @math{A x = b}, from the precomputed @math{LU} decomposition of @math{A} into
-(@var{LU},@var{p}). The initial residual @math{r = A x - b} is also
-computed and stored in @var{residual}.
+(@var{LU},@var{p}). Additional workspace of length @var{N} is required in @var{work}.
 @end deftypefun
 
 @cindex inverse of a matrix, by LU decomposition

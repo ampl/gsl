@@ -90,10 +90,10 @@ solve_system(gsl_vector *x0, gsl_multifit_nlinear_fdf *fdf,
 
   /* print summary */
 
-  fprintf(stderr, "NITER         = "F_ZU"\n", gsl_multifit_nlinear_niter(work));
-  fprintf(stderr, "NFEV          = "F_ZU"\n", fdf->nevalf);
-  fprintf(stderr, "NJEV          = "F_ZU"\n", fdf->nevaldf);
-  fprintf(stderr, "NAEV          = "F_ZU"\n", fdf->nevalfvv);
+  fprintf(stderr, "NITER         = %zu\n", gsl_multifit_nlinear_niter(work));
+  fprintf(stderr, "NFEV          = %zu\n", fdf->nevalf);
+  fprintf(stderr, "NJEV          = %zu\n", fdf->nevaldf);
+  fprintf(stderr, "NAEV          = %zu\n", fdf->nevalfvv);
   fprintf(stderr, "initial cost  = %.12e\n", chisq0);
   fprintf(stderr, "final cost    = %.12e\n", chisq);
   fprintf(stderr, "final x       = (%.12e, %.12e)\n",

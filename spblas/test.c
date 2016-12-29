@@ -98,7 +98,7 @@ test_vectors(gsl_vector *observed, gsl_vector *expected, const double tol,
       double x_obs = gsl_vector_get(observed, i);
       double x_exp = gsl_vector_get(expected, i);
 
-      gsl_test_rel(x_obs, x_exp, tol, "N="F_ZU" i="F_ZU" %s", N, i, str);
+      gsl_test_rel(x_obs, x_exp, tol, "N=%zu i=%zu %s", N, i, str);
     }
 
   return s;

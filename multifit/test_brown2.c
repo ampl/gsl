@@ -44,7 +44,7 @@ brown2_checksol(const double x[], const double sumsq,
 
   for (i = 1; i < brown2_P - 1; ++i)
     {
-      gsl_test_rel(x[i], alpha, epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], alpha, epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 

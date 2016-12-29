@@ -1,4 +1,39 @@
-* What is new in gsl-2.2.1:
+* What is new in gsl-2.3:
+
+** bug fix in documentation for gsl_linalg_LU_refine
+   (bug #49728, Joey De Pauw)
+
+** added gsl_multifit_linear_tsvd and gsl_multifit_wlinear_tsvd
+   to give user more control over cutoff for truncated SVD
+
+** added routines for Generalized Cross Validation for
+   regularized linear least squares
+
+** improved rstat example program and added documentation for
+   gsl_rstat_sd_mean (Jonathan Leto)
+
+** added function gsl_multifit_linear_rank
+
+** bug fix in nonlinear least squares when using data weights with
+   finite-difference Jacobian
+
+** add 2D subspace method for large systems (multilarge_nlinear)
+
+** bug fix in gsl_ran_beta for small parameters
+   (bug #47646, Yu Liu)
+
+** bug fix in gsl_complex_tan for negative imaginary arguments
+   (bug #47347, Yu Liu)
+
+** doc bug fix: value of golden ratio
+
+** fixed scaling issue in 2D subspace nonlinear least squares
+   method
+
+** optimize dogleg methods to calculate Gauss-Newton point
+   only when needed
+
+* What was new in gsl-2.2.1:
 
 ** reverted gsl_linalg_cholesky_decomp to its previous behavior
    so it is backward compatible; new cholesky routine is

@@ -334,7 +334,7 @@ library, with linear convergence.
 On each iteration, the algorithm first compares the subintervals from
 the endpoints to the current minimum.  The larger subinterval is divided
 in a golden section (using the famous ratio @math{(3-\sqrt 5)/2 =
-0.3189660}@dots{}) and the value of the function at this new point is
+0.3819660}@dots{}) and the value of the function at this new point is
 calculated.  The new value is used with the constraint @math{f(a') >
 f(x') < f(b')} to a select new interval containing the minimum, by
 discarding the least useful point.  This procedure can be continued

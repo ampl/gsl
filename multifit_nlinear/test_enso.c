@@ -65,7 +65,7 @@ enso_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < enso_P; ++i)
     {
-      gsl_test_rel(x[i], enso_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], enso_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -154,6 +154,7 @@ static test_fdf_problem ensoa_problem =
 {
   "nist-ENSOa",
   enso_x0a,
+  NULL,
   enso_sigma,
   &enso_epsrel,
   &enso_checksol,
@@ -164,6 +165,7 @@ static test_fdf_problem ensob_problem =
 {
   "nist-ENSOb",
   enso_x0b,
+  NULL,
   enso_sigma,
   &enso_epsrel,
   &enso_checksol,

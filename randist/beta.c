@@ -33,10 +33,39 @@
 double
 gsl_ran_beta (const gsl_rng * r, const double a, const double b)
 {
-  double x1 = gsl_ran_gamma (r, a, 1.0);
-  double x2 = gsl_ran_gamma (r, b, 1.0);
-
-  return x1 / (x1 + x2);
+  if ( (a <= 1.0) && (b <= 1.0) )
+    {
+      double U, V, X, Y;
+      while (1)
+        {
+          U = gsl_rng_uniform_pos(r);
+          V = gsl_rng_uniform_pos(r);
+          X = pow(U, 1.0/a);
+          Y = pow(V, 1.0/b);
+          if ((X + Y ) <= 1.0)
+            {
+              if (X + Y > 0)
+                {
+                  return X/ (X + Y);
+                }
+              else
+                {
+                  double logX = log(U)/a;
+                  double logY = log(V)/b;
+                  double logM = logX > logY ? logX: logY;
+                  logX -= logM;
+                  logY -= logM;
+                  return exp(logX - log(exp(logX) + exp(logY)));
+                }
+            }
+        }
+    }
+  else
+    {
+      double x1 = gsl_ran_gamma (r, a, 1.0);
+      double x2 = gsl_ran_gamma (r, b, 1.0);
+      return x1 / (x1 + x2);
+    }
 }
 
 double

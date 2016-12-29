@@ -23,9 +23,9 @@ bard_checksol(const double x[], const double sumsq,
                                    1.133036092245175,
                                    2.343695178435405 };
   const double sumsq_exact2 = 17.42869333333333;
-  const double bard_x2[bard_P] = { 8.406666666666666e-01,
-                                   GSL_NAN,    /* -inf */
-                                   GSL_NAN };  /* -inf */
+  const double bard_x2[bard_P] = {  8.406666666666666e-01,
+                                   -99999.9,    /* -inf */
+                                   -99999.9 };  /* -inf */
   const double *bard_x;
   double sumsq_exact;
 
@@ -45,10 +45,10 @@ bard_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < bard_P; ++i)
     {
-      if (!gsl_finite(bard_x[i]))
+      if (bard_x[i] < -90000.0)
         continue;
 
-      gsl_test_rel(x[i], bard_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], bard_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }

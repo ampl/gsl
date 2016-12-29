@@ -22,7 +22,7 @@ brown1_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < brown1_P; ++i)
     {
-      gsl_test_rel(x[i], brown1_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], brown1_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }

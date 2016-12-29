@@ -41,7 +41,7 @@ main (void)
 
   for (i = 0; i < (int) wavetable->nf; i++)
     {
-       printf ("# factor %d: "F_ZU"\n", i, 
+       printf ("# factor %d: %zu\n", i, 
                wavetable->factor[i]);
     }
 

@@ -45,14 +45,14 @@ test_filip_results(const char *str,
       gsl_test_rel (gsl_vector_get(c,i),
                     gsl_vector_get(expected_c, i),
                     1.0e-7,
-                    "%s c["F_ZU"]", str, i) ;
+                    "%s c[%zu]", str, i) ;
 
       if (cov_diag && expected_sd)
         {
           gsl_test_rel (sqrt(gsl_vector_get(cov_diag, i)),
                         gsl_vector_get(expected_sd, i),
                         1e-7,
-                        "%s cov["F_ZU","F_ZU"]", str, i, i);
+                        "%s cov[%zu,%zu]", str, i, i);
         }
     }
 

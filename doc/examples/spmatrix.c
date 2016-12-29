@@ -23,7 +23,7 @@ main()
   printf("printing all matrix elements:\n");
   for (i = 0; i < 5; ++i)
     for (j = 0; j < 4; ++j)
-      printf("A("F_ZU","F_ZU") = %g\n", i, j,
+      printf("A(%zu,%zu) = %g\n", i, j,
              gsl_spmatrix_get(A, i, j));
 
   /* print out elements in triplet format */
@@ -36,12 +36,12 @@ main()
   printf("matrix in compressed column format:\n");
   printf("i = [ ");
   for (i = 0; i < B->nz; ++i)
-    printf(F_ZU", ", B->i[i]);
+    printf("%zu, ", B->i[i]);
   printf("]\n");
 
   printf("p = [ ");
   for (i = 0; i < B->size2 + 1; ++i)
-    printf(F_ZU", ", B->p[i]);
+    printf("%zu, ", B->p[i]);
   printf("]\n");
 
   printf("d = [ ");
@@ -55,12 +55,12 @@ main()
   printf("matrix in compressed row format:\n");
   printf("i = [ ");
   for (i = 0; i < C->nz; ++i)
-    printf(F_ZU", ", C->i[i]);
+    printf("%zu, ", C->i[i]);
   printf("]\n");
 
   printf("p = [ ");
   for (i = 0; i < C->size1 + 1; ++i)
-    printf(F_ZU", ", C->p[i]);
+    printf("%zu, ", C->p[i]);
   printf("]\n");
 
   printf("d = [ ");

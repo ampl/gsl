@@ -133,6 +133,7 @@ static test_fdf_problem osborne_problem =
   "osborne",
   osborne_x0,
   NULL,
+  NULL,
   &osborne_epsrel,
   &osborne_checksol,
   &osborne_func

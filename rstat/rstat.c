@@ -143,18 +143,16 @@ gsl_rstat_sd(gsl_rstat_workspace *w)
 double
 gsl_rstat_rms(gsl_rstat_workspace *w)
 {
-  double mean = gsl_rstat_mean(w);
-  double sigma = gsl_rstat_sd(w);
-  double rms;
+  double rms = 0.0;
 
   if (w->n > 0)
     {
+      double mean = gsl_rstat_mean(w);
+      double sigma = gsl_rstat_sd(w);
       double n = (double) w->n;
       double a = sqrt((n - 1.0) / n);
       rms = gsl_hypot(mean, a * sigma);
     }
-  else
-    rms = 0.0;
 
   return rms;
 }

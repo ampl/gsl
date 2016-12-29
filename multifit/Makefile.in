@@ -95,8 +95,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgslmultifit_la_LIBADD =
-am_libgslmultifit_la_OBJECTS = multilinear.lo multiwlinear.lo work.lo \
-	lmniel.lo lmder.lo fsolver.lo fdfsolver.lo fdfridge.lo \
+am_libgslmultifit_la_OBJECTS = gcv.lo multilinear.lo multiwlinear.lo \
+	work.lo lmniel.lo lmder.lo fsolver.lo fdfsolver.lo fdfridge.lo \
 	fdjac.lo convergence.lo gradient.lo covar.lo multirobust.lo \
 	robust_wfun.lo multireg.lo
 libgslmultifit_la_OBJECTS = $(am_libgslmultifit_la_OBJECTS)
@@ -114,7 +114,7 @@ test_DEPENDENCIES = libgslmultifit.la ../linalg/libgsllinalg.la \
 	../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la \
 	../err/libgslerr.la ../test/libgsltest.la ../utils/libutils.la \
 	../sys/libgslsys.la ../rng/libgslrng.la \
-	../specfunc/libgslspecfunc.la
+	../specfunc/libgslspecfunc.la ../min/libgslmin.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -529,7 +529,7 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslmultifit.la 
 pkginclude_HEADERS = gsl_multifit.h gsl_multifit_nlin.h
 AM_CPPFLAGS = -I$(top_srcdir)
-libgslmultifit_la_SOURCES = multilinear.c multiwlinear.c work.c lmniel.c lmder.c fsolver.c fdfsolver.c fdfridge.c fdjac.c convergence.c gradient.c covar.c multirobust.c robust_wfun.c multireg.c
+libgslmultifit_la_SOURCES = gcv.c multilinear.c multiwlinear.c work.c lmniel.c lmder.c fsolver.c fdfsolver.c fdfridge.c fdjac.c convergence.c gradient.c covar.c multirobust.c robust_wfun.c multireg.c
 noinst_HEADERS = \
 linear_common.c         \
 lmutil.c                \
@@ -588,7 +588,7 @@ test_wood.c
 
 TESTS = $(check_PROGRAMS)
 test_SOURCES = test.c
-test_LDADD = libgslmultifit.la ../linalg/libgsllinalg.la ../permutation/libgslpermutation.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../matrix/libgslmatrix.la ../sort/libgslsort.la ../statistics/libgslstatistics.la ../vector/libgslvector.la ../block/libgslblock.la  ../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../utils/libutils.la ../sys/libgslsys.la ../rng/libgslrng.la ../specfunc/libgslspecfunc.la
+test_LDADD = libgslmultifit.la ../linalg/libgsllinalg.la ../permutation/libgslpermutation.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../matrix/libgslmatrix.la ../sort/libgslsort.la ../statistics/libgslstatistics.la ../vector/libgslvector.la ../block/libgslblock.la  ../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../utils/libutils.la ../sys/libgslsys.la ../rng/libgslrng.la ../specfunc/libgslspecfunc.la ../min/libgslmin.la
 all: all-am
 
 .SUFFIXES:
@@ -663,6 +663,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fdfsolver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fdjac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fsolver.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gcv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gradient.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lmder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lmniel.Plo@am__quote@

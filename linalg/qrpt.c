@@ -599,7 +599,7 @@ gsl_linalg_QRPT_rank (const gsl_matrix * QR, const double tol)
 
       gsl_vector_minmax(&diag.vector, &min, &max);
       absmax = GSL_MAX(fabs(min), fabs(max));
-      ee = (int) (log(absmax) / log(2.0));
+      ee = (int) log2(absmax);
 
       eps = 20.0 * (M + N) * pow(2.0, (double) ee) * GSL_DBL_EPSILON;
     }

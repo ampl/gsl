@@ -50,7 +50,7 @@ test_proc(const gsl_multilarge_nlinear_trs *trs,
 int
 main (void)
 {
-  const gsl_multilarge_nlinear_trs **nlinear_trs[6];
+  const gsl_multilarge_nlinear_trs **nlinear_trs[7];
   const gsl_multilarge_nlinear_scale **nlinear_scales[3];
   const gsl_multilarge_nlinear_trs **trs;
   const gsl_multilarge_nlinear_scale **scale;
@@ -65,8 +65,9 @@ main (void)
   nlinear_trs[1] = &gsl_multilarge_nlinear_trs_lmaccel;
   nlinear_trs[2] = &gsl_multilarge_nlinear_trs_dogleg;
   nlinear_trs[3] = &gsl_multilarge_nlinear_trs_ddogleg;
-  nlinear_trs[4] = &gsl_multilarge_nlinear_trs_cgst;
-  nlinear_trs[5] = NULL;
+  nlinear_trs[4] = &gsl_multilarge_nlinear_trs_subspace2D;
+  nlinear_trs[5] = &gsl_multilarge_nlinear_trs_cgst;
+  nlinear_trs[6] = NULL;
 
   nlinear_scales[0] = &gsl_multilarge_nlinear_scale_levenberg;
   nlinear_scales[1] = &gsl_multilarge_nlinear_scale_more;

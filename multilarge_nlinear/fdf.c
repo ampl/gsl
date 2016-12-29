@@ -40,7 +40,7 @@ gsl_multilarge_nlinear_alloc (const gsl_multilarge_nlinear_type * T,
   w = calloc (1, sizeof (gsl_multilarge_nlinear_workspace));
   if (w == 0)
     {
-      GSL_ERROR_VAL ("failed to allocate space for multifit workspace",
+      GSL_ERROR_VAL ("failed to allocate space for workspace",
                      GSL_ENOMEM, 0);
     }
 
@@ -106,7 +106,7 @@ gsl_multilarge_nlinear_alloc (const gsl_multilarge_nlinear_type * T,
   if (w->state == 0)
     {
       gsl_multilarge_nlinear_free (w);
-      GSL_ERROR_VAL ("failed to allocate space for multifit state", GSL_ENOMEM, 0);
+      GSL_ERROR_VAL ("failed to allocate space for state", GSL_ENOMEM, 0);
     }
 
   return w;
@@ -502,9 +502,7 @@ gsl_multilarge_nlinear_eval_df(const CBLAS_TRANSPOSE_t TransJ,
         {
 #if 0
           /* use finite difference Jacobian approximation */
-          /*
           status = gsl_multilarge_nlinear_df(h, fdtype, x, swts, fdf, f, df, work);
-          */
 #endif
         }
 
@@ -553,10 +551,8 @@ gsl_multilarge_nlinear_eval_fvv(const double h,
     {
 #if 0
       /* use finite difference approximation */
-      /*
       status = gsl_multilarge_nlinear_fdfvv(h, x, v, f, J,
                                           swts, fdf, yvv, work);
-                                          */
 #endif
     }
 

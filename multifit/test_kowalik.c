@@ -31,10 +31,10 @@ kowalik_checksol(const double x[], const double sumsq,
                                          1.230565070690708e-01,
                                          1.360623308065148e-01 };
   const double sumsq_exact2 = 0.00102734304869549252;
-  const double kowalik_x2[kowalik_P] = { GSL_NAN,   /* inf */
+  const double kowalik_x2[kowalik_P] = { -99999.9,   /* inf */
                                          -14.0758834005984603,
-                                         GSL_NAN,   /* -inf */
-                                         GSL_NAN }; /* -inf */
+                                         -99999.9,   /* -inf */
+                                         -99999.9 }; /* -inf */
   const double *kowalik_x;
   double sumsq_exact;
 
@@ -54,10 +54,10 @@ kowalik_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < kowalik_P; ++i)
     {
-      if (!gsl_finite(kowalik_x[i]))
+      if (kowalik_x[i] < -90000.0)
         continue;
 
-      gsl_test_rel(x[i], kowalik_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], kowalik_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }

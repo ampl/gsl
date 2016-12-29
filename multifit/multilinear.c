@@ -39,49 +39,100 @@ gsl_multifit_linear (const gsl_matrix * X,
                      gsl_matrix * cov,
                      double *chisq, gsl_multifit_linear_workspace * work)
 {
-  size_t rank = 0;
-  int status;
-  double rnorm = 0.0, snorm;
-
-  status = gsl_multifit_linear_bsvd (X, work);
-  if (status)
-    return status;
-
-  status = multifit_linear_solve (X, y, GSL_DBL_EPSILON, 0.0, &rank,
-                                  c, &rnorm, &snorm, work);
-
-  *chisq = rnorm * rnorm;
-
-  /* variance-covariance matrix cov = s2 * (Q S^-1) (Q S^-1)^T */
-  {
-    const size_t n = X->size1;
-    const size_t p = X->size2;
-    double r2 = rnorm * rnorm;
-    double s2 = r2 / (double)(n - rank);
-    size_t i, j;
-    gsl_matrix_view QSI = gsl_matrix_submatrix(work->QSI, 0, 0, p, p);
-    gsl_vector_view D = gsl_vector_subvector(work->D, 0, p);
-
-    for (i = 0; i < p; i++)
-      {
-        gsl_vector_view row_i = gsl_matrix_row (&QSI.matrix, i);
-        double d_i = gsl_vector_get (&D.vector, i);
-
-        for (j = i; j < p; j++)
-          {
-            gsl_vector_view row_j = gsl_matrix_row (&QSI.matrix, j);
-            double d_j = gsl_vector_get (&D.vector, j);
-            double s;
-
-            gsl_blas_ddot (&row_i.vector, &row_j.vector, &s);
-
-            gsl_matrix_set (cov, i, j, s * s2 / (d_i * d_j));
-            gsl_matrix_set (cov, j, i, s * s2 / (d_i * d_j));
-          }
-      }
-  }
+  size_t rank;
+  int status = gsl_multifit_linear_tsvd(X, y, GSL_DBL_EPSILON, c, cov, chisq, &rank, work);
 
   return status;
+}
+
+/*
+gsl_multifit_linear_tsvd()
+  Solve linear least squares system with truncated SVD
+
+Inputs: X     - least squares matrix, n-by-p
+        y     - right hand side vector, n-by-1
+        tol   - tolerance for singular value truncation; if
+                s_j <= tol * s_0
+                then it is discarded from series expansion
+        c     - (output) solution vector, p-by-1
+        cov   - (output) covariance matrix, p-by-p
+        chisq - (output) cost function chi^2
+        rank  - (output) effective rank (number of singular values
+                used in solution)
+        work  - workspace
+*/
+
+int
+gsl_multifit_linear_tsvd (const gsl_matrix * X,
+                          const gsl_vector * y,
+                          const double tol,
+                          gsl_vector * c,
+                          gsl_matrix * cov,
+                          double * chisq,
+                          size_t * rank,
+                          gsl_multifit_linear_workspace * work)
+{
+  const size_t n = X->size1;
+  const size_t p = X->size2;
+
+  if (y->size != n)
+    {
+      GSL_ERROR("number of observations in y does not match matrix",
+                GSL_EBADLEN);
+    }
+  else if (p != c->size)
+    {
+      GSL_ERROR ("number of parameters c does not match matrix",
+                 GSL_EBADLEN);
+    }
+  else if (tol <= 0)
+    {
+      GSL_ERROR ("tolerance must be positive", GSL_EINVAL);
+    }
+  else
+    {
+      int status;
+      double rnorm = 0.0, snorm;
+
+      /* compute balanced SVD */
+      status = gsl_multifit_linear_bsvd (X, work);
+      if (status)
+        return status;
+
+      status = multifit_linear_solve (X, y, tol, -1.0, rank,
+                                      c, &rnorm, &snorm, work);
+
+      *chisq = rnorm * rnorm;
+
+      /* variance-covariance matrix cov = s2 * (Q S^-1) (Q S^-1)^T */
+      {
+        double r2 = rnorm * rnorm;
+        double s2 = r2 / (double)(n - *rank);
+        size_t i, j;
+        gsl_matrix_view QSI = gsl_matrix_submatrix(work->QSI, 0, 0, p, p);
+        gsl_vector_view D = gsl_vector_subvector(work->D, 0, p);
+
+        for (i = 0; i < p; i++)
+          {
+            gsl_vector_view row_i = gsl_matrix_row (&QSI.matrix, i);
+            double d_i = gsl_vector_get (&D.vector, i);
+
+            for (j = i; j < p; j++)
+              {
+                gsl_vector_view row_j = gsl_matrix_row (&QSI.matrix, j);
+                double d_j = gsl_vector_get (&D.vector, j);
+                double s;
+
+                gsl_blas_ddot (&row_i.vector, &row_j.vector, &s);
+
+                gsl_matrix_set (cov, i, j, s * s2 / (d_i * d_j));
+                gsl_matrix_set (cov, j, i, s * s2 / (d_i * d_j));
+              }
+          }
+      }
+
+      return status;
+    }
 }
 
 /*
@@ -98,7 +149,7 @@ gsl_multifit_linear_svd (const gsl_matrix * X,
   int status = multifit_linear_svd(X, 0, work);
 
   return status;
-} /* gsl_multifit_linear_svd() */
+}
 
 /*
 gsl_multifit_linear_bsvd()
@@ -113,7 +164,25 @@ gsl_multifit_linear_bsvd (const gsl_matrix * X,
   int status = multifit_linear_svd(X, 1, work);
 
   return status;
-} /* gsl_multifit_linear_bsvd() */
+}
+
+size_t
+gsl_multifit_linear_rank(const double tol, const gsl_multifit_linear_workspace * work)
+{
+  double s0 = gsl_vector_get (work->S, 0);
+  size_t rank = 0;
+  size_t j;
+
+  for (j = 0; j < work->p; j++)
+    {
+      double sj = gsl_vector_get (work->S, j);
+
+      if (sj > tol * s0)
+        ++rank;
+    }
+
+  return rank;
+}
 
 /* Estimation of values for given x */
 

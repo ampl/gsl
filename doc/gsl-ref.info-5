@@ -22,6 +22,492 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gsl-ref.info,  Node: Nonlinear Least-Squares Geodesic Acceleration Example,  Next: Nonlinear Least-Squares Comparison Example,  Prev: Nonlinear Least-Squares Exponential Fit Example,  Up: Nonlinear Least-Squares Examples
+
+39.12.2 Geodesic Acceleration Example
+-------------------------------------
+
+The following example program minimizes a modified Rosenbrock function,
+which is characterized by a narrow canyon with steep walls.  The
+starting point is selected high on the canyon wall, so the solver must
+first find the canyon bottom and then navigate to the minimum.  The
+problem is solved both with and without using geodesic acceleration for
+comparison.  The cost function is given by
+
+     Phi(x) = 1/2 (f1^2 + f2^2)
+     f1 = 100 ( x2 - x1^2 )
+     f2 = 1 - x1
+
+The Jacobian matrix is given by
+
+     J = [ -200*x1 100 ; -1 0 ]
+
+In order to use geodesic acceleration, the user must provide the second
+directional derivative of each residual in the velocity direction, D_v^2
+f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha}
+\partial_{\beta} f_i.  The velocity vector v is provided by the solver.
+For this example, these derivatives are given by
+
+     fvv = [ -200 v1^2 ; 0 ]
+
+The solution of this minimization problem is given by
+
+     x* = [ 1 ; 1 ]
+     Phi(x*) = 0
+
+The program output is shown below.
+
+     === Solving system without acceleration ===
+     NITER         = 53
+     NFEV          = 56
+     NJEV          = 54
+     NAEV          = 0
+     initial cost  = 2.250225000000e+04
+     final cost    = 6.674986031430e-18
+     final x       = (9.999999974165e-01, 9.999999948328e-01)
+     final cond(J) = 6.000096055094e+02
+     === Solving system with acceleration ===
+     NITER         = 15
+     NFEV          = 17
+     NJEV          = 16
+     NAEV          = 16
+     initial cost  = 2.250225000000e+04
+     final cost    = 7.518932873279e-19
+     final x       = (9.999999991329e-01, 9.999999982657e-01)
+     final cond(J) = 6.000097233278e+02
+
+We can see that enabling geodesic acceleration requires less than a
+third of the number of Jacobian evaluations in order to locate the
+minimum.  The path taken by both methods is shown in the figure below.
+The contours show the cost function \Phi(x_1,x_2).  We see that both
+methods quickly find the canyon bottom, but the geodesic acceleration
+method navigates along the bottom to the solution with significantly
+fewer iterations.
+
+The program is given below.
+
+     #include <stdlib.h>
+     #include <stdio.h>
+     #include <gsl/gsl_vector.h>
+     #include <gsl/gsl_matrix.h>
+     #include <gsl/gsl_blas.h>
+     #include <gsl/gsl_multifit_nlinear.h>
+
+     int
+     func_f (const gsl_vector * x, void *params, gsl_vector * f)
+     {
+       double x1 = gsl_vector_get(x, 0);
+       double x2 = gsl_vector_get(x, 1);
+
+       gsl_vector_set(f, 0, 100.0 * (x2 - x1*x1));
+       gsl_vector_set(f, 1, 1.0 - x1);
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     func_df (const gsl_vector * x, void *params, gsl_matrix * J)
+     {
+       double x1 = gsl_vector_get(x, 0);
+
+       gsl_matrix_set(J, 0, 0, -200.0*x1);
+       gsl_matrix_set(J, 0, 1, 100.0);
+       gsl_matrix_set(J, 1, 0, -1.0);
+       gsl_matrix_set(J, 1, 1, 0.0);
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     func_fvv (const gsl_vector * x, const gsl_vector * v,
+               void *params, gsl_vector * fvv)
+     {
+       double v1 = gsl_vector_get(v, 0);
+
+       gsl_vector_set(fvv, 0, -200.0 * v1 * v1);
+       gsl_vector_set(fvv, 1, 0.0);
+
+       return GSL_SUCCESS;
+     }
+
+     void
+     callback(const size_t iter, void *params,
+              const gsl_multifit_nlinear_workspace *w)
+     {
+       gsl_vector * x = gsl_multifit_nlinear_position(w);
+
+       /* print out current location */
+       printf("%f %f\n",
+              gsl_vector_get(x, 0),
+              gsl_vector_get(x, 1));
+     }
+
+     void
+     solve_system(gsl_vector *x0, gsl_multifit_nlinear_fdf *fdf,
+                  gsl_multifit_nlinear_parameters *params)
+     {
+       const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
+       const size_t max_iter = 200;
+       const double xtol = 1.0e-8;
+       const double gtol = 1.0e-8;
+       const double ftol = 1.0e-8;
+       const size_t n = fdf->n;
+       const size_t p = fdf->p;
+       gsl_multifit_nlinear_workspace *work =
+         gsl_multifit_nlinear_alloc(T, params, n, p);
+       gsl_vector * f = gsl_multifit_nlinear_residual(work);
+       gsl_vector * x = gsl_multifit_nlinear_position(work);
+       int info;
+       double chisq0, chisq, rcond;
+
+       /* initialize solver */
+       gsl_multifit_nlinear_init(x0, fdf, work);
+
+       /* store initial cost */
+       gsl_blas_ddot(f, f, &chisq0);
+
+       /* iterate until convergence */
+       gsl_multifit_nlinear_driver(max_iter, xtol, gtol, ftol,
+                                   callback, NULL, &info, work);
+
+       /* store final cost */
+       gsl_blas_ddot(f, f, &chisq);
+
+       /* store cond(J(x)) */
+       gsl_multifit_nlinear_rcond(&rcond, work);
+
+       /* print summary */
+
+       fprintf(stderr, "NITER         = %zu\n", gsl_multifit_nlinear_niter(work));
+       fprintf(stderr, "NFEV          = %zu\n", fdf->nevalf);
+       fprintf(stderr, "NJEV          = %zu\n", fdf->nevaldf);
+       fprintf(stderr, "NAEV          = %zu\n", fdf->nevalfvv);
+       fprintf(stderr, "initial cost  = %.12e\n", chisq0);
+       fprintf(stderr, "final cost    = %.12e\n", chisq);
+       fprintf(stderr, "final x       = (%.12e, %.12e)\n",
+               gsl_vector_get(x, 0), gsl_vector_get(x, 1));
+       fprintf(stderr, "final cond(J) = %.12e\n", 1.0 / rcond);
+
+       printf("\n\n");
+
+       gsl_multifit_nlinear_free(work);
+     }
+
+     int
+     main (void)
+     {
+       const size_t n = 2;
+       const size_t p = 2;
+       gsl_vector *f = gsl_vector_alloc(n);
+       gsl_vector *x = gsl_vector_alloc(p);
+       gsl_multifit_nlinear_fdf fdf;
+       gsl_multifit_nlinear_parameters fdf_params =
+         gsl_multifit_nlinear_default_parameters();
+
+       /* print map of Phi(x1, x2) */
+       {
+         double x1, x2, chisq;
+         double *f1 = gsl_vector_ptr(f, 0);
+         double *f2 = gsl_vector_ptr(f, 1);
+
+         for (x1 = -1.2; x1 < 1.3; x1 += 0.1)
+           {
+             for (x2 = -0.5; x2 < 2.1; x2 += 0.1)
+               {
+                 gsl_vector_set(x, 0, x1);
+                 gsl_vector_set(x, 1, x2);
+                 func_f(x, NULL, f);
+
+                 chisq = (*f1) * (*f1) + (*f2) * (*f2);
+                 printf("%f %f %f\n", x1, x2, chisq);
+               }
+             printf("\n");
+           }
+         printf("\n\n");
+       }
+
+       /* define function to be minimized */
+       fdf.f = func_f;
+       fdf.df = func_df;
+       fdf.fvv = func_fvv;
+       fdf.n = n;
+       fdf.p = p;
+       fdf.params = NULL;
+
+       /* starting point */
+       gsl_vector_set(x, 0, -0.5);
+       gsl_vector_set(x, 1, 1.75);
+
+       fprintf(stderr, "=== Solving system without acceleration ===\n");
+       fdf_params.trs = gsl_multifit_nlinear_trs_lm;
+       solve_system(x, &fdf, &fdf_params);
+
+       fprintf(stderr, "=== Solving system with acceleration ===\n");
+       fdf_params.trs = gsl_multifit_nlinear_trs_lmaccel;
+       solve_system(x, &fdf, &fdf_params);
+
+       gsl_vector_free(f);
+       gsl_vector_free(x);
+
+       return 0;
+     }
+
+
+File: gsl-ref.info,  Node: Nonlinear Least-Squares Comparison Example,  Next: Nonlinear Least-Squares Large Example,  Prev: Nonlinear Least-Squares Geodesic Acceleration Example,  Up: Nonlinear Least-Squares Examples
+
+39.12.3 Comparing TRS Methods Example
+-------------------------------------
+
+The following program compares all available nonlinear least squares
+trust-region subproblem (TRS) methods on the Branin function, a common
+optimization test problem.  The cost function is given by
+
+     \Phi(x) &= 1/2 (f_1^2 + f_2^2)
+     f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3
+     f_2 &= sqrt(a_4) sqrt(1 + (1 - a_5) cos(x_1))
+
+   with a_1 = -{5.1 \over 4 \pi^2}, a_2 = {5 \over \pi}, a_3 = -6, a_4 =
+10, a_5 = {1 \over 8\pi}.  There are three minima of this function in
+the range (x_1,x_2) \in [-5,15] \times [-5,15].  The program below uses
+the starting point (x_1,x_2) = (6,14.5) and calculates the solution with
+all available nonlinear least squares TRS methods.  The program output
+is shown below.
+
+Method                    NITER  NFEV  NJEV  Initial Cost  Final cost   Final cond(J) Final x
+levenberg-marquardt       20     27    21    1.9874e+02    3.9789e-01   6.1399e+07    (-3.14e+00, 1.23e+01)
+levenberg-marquardt+accel 27     36    28    1.9874e+02    3.9789e-01   1.4465e+07    (3.14e+00, 2.27e+00)
+dogleg                    23     64    23    1.9874e+02    3.9789e-01   5.0692e+08    (3.14e+00, 2.28e+00)
+double-dogleg             24     69    24    1.9874e+02    3.9789e-01   3.4879e+07    (3.14e+00, 2.27e+00)
+2D-subspace               23     54    24    1.9874e+02    3.9789e-01   2.5142e+07    (3.14e+00, 2.27e+00)
+
+The first row of output above corresponds to standard
+Levenberg-Marquardt, while the second row includes geodesic
+acceleration.  We see that the standard LM method converges to the
+minimum at (-\pi,12.275) and also uses the least number of iterations
+and Jacobian evaluations.  All other methods converge to the minimum
+(\pi,2.275) and perform similarly in terms of number of Jacobian
+evaluations.  We see that J is fairly ill-conditioned at both minima,
+indicating that the QR (or SVD) solver is the best choice for this
+problem.  Since there are only two parameters in this optimization
+problem, we can easily visualize the paths taken by each method, which
+are shown in the figure below.  The figure shows contours of the cost
+function \Phi(x_1,x_2) which exhibits three global minima in the range
+[-5,15] \times [-5,15].  The paths taken by each solver are shown as
+colored lines.
+
+The program is given below.
+
+     #include <stdlib.h>
+     #include <stdio.h>
+     #include <gsl/gsl_vector.h>
+     #include <gsl/gsl_matrix.h>
+     #include <gsl/gsl_blas.h>
+     #include <gsl/gsl_multifit_nlinear.h>
+
+     /* parameters to model */
+     struct model_params
+     {
+       double a1;
+       double a2;
+       double a3;
+       double a4;
+       double a5;
+     };
+
+     /* Branin function */
+     int
+     func_f (const gsl_vector * x, void *params, gsl_vector * f)
+     {
+       struct model_params *par = (struct model_params *) params;
+       double x1 = gsl_vector_get(x, 0);
+       double x2 = gsl_vector_get(x, 1);
+       double f1 = x2 + par->a1 * x1 * x1 + par->a2 * x1 + par->a3;
+       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * cos(x1));
+
+       gsl_vector_set(f, 0, f1);
+       gsl_vector_set(f, 1, f2);
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     func_df (const gsl_vector * x, void *params, gsl_matrix * J)
+     {
+       struct model_params *par = (struct model_params *) params;
+       double x1 = gsl_vector_get(x, 0);
+       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * cos(x1));
+
+       gsl_matrix_set(J, 0, 0, 2.0 * par->a1 * x1 + par->a2);
+       gsl_matrix_set(J, 0, 1, 1.0);
+
+       gsl_matrix_set(J, 1, 0, -0.5 * par->a4 / f2 * (1.0 - par->a5) * sin(x1));
+       gsl_matrix_set(J, 1, 1, 0.0);
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     func_fvv (const gsl_vector * x, const gsl_vector * v,
+               void *params, gsl_vector * fvv)
+     {
+       struct model_params *par = (struct model_params *) params;
+       double x1 = gsl_vector_get(x, 0);
+       double v1 = gsl_vector_get(v, 0);
+       double c = cos(x1);
+       double s = sin(x1);
+       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * c);
+       double t = 0.5 * par->a4 * (1.0 - par->a5) / f2;
+
+       gsl_vector_set(fvv, 0, 2.0 * par->a1 * v1 * v1);
+       gsl_vector_set(fvv, 1, -t * (c + s*s/f2) * v1 * v1);
+
+       return GSL_SUCCESS;
+     }
+
+     void
+     callback(const size_t iter, void *params,
+              const gsl_multifit_nlinear_workspace *w)
+     {
+       gsl_vector * x = gsl_multifit_nlinear_position(w);
+       double x1 = gsl_vector_get(x, 0);
+       double x2 = gsl_vector_get(x, 1);
+
+       /* print out current location */
+       printf("%f %f\n", x1, x2);
+     }
+
+     void
+     solve_system(gsl_vector *x0, gsl_multifit_nlinear_fdf *fdf,
+                  gsl_multifit_nlinear_parameters *params)
+     {
+       const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
+       const size_t max_iter = 200;
+       const double xtol = 1.0e-8;
+       const double gtol = 1.0e-8;
+       const double ftol = 1.0e-8;
+       const size_t n = fdf->n;
+       const size_t p = fdf->p;
+       gsl_multifit_nlinear_workspace *work =
+         gsl_multifit_nlinear_alloc(T, params, n, p);
+       gsl_vector * f = gsl_multifit_nlinear_residual(work);
+       gsl_vector * x = gsl_multifit_nlinear_position(work);
+       int info;
+       double chisq0, chisq, rcond;
+
+       printf("# %s/%s\n",
+              gsl_multifit_nlinear_name(work),
+              gsl_multifit_nlinear_trs_name(work));
+
+       /* initialize solver */
+       gsl_multifit_nlinear_init(x0, fdf, work);
+
+       /* store initial cost */
+       gsl_blas_ddot(f, f, &chisq0);
+
+       /* iterate until convergence */
+       gsl_multifit_nlinear_driver(max_iter, xtol, gtol, ftol,
+                                   callback, NULL, &info, work);
+
+       /* store final cost */
+       gsl_blas_ddot(f, f, &chisq);
+
+       /* store cond(J(x)) */
+       gsl_multifit_nlinear_rcond(&rcond, work);
+
+       /* print summary */
+       fprintf(stderr, "%-25s %-6zu %-5zu %-5zu %-13.4e %-12.4e %-13.4e (%.2e, %.2e)\n",
+               gsl_multifit_nlinear_trs_name(work),
+               gsl_multifit_nlinear_niter(work),
+               fdf->nevalf,
+               fdf->nevaldf,
+               chisq0,
+               chisq,
+               1.0 / rcond,
+               gsl_vector_get(x, 0),
+               gsl_vector_get(x, 1));
+
+       printf("\n\n");
+
+       gsl_multifit_nlinear_free(work);
+     }
+
+     int
+     main (void)
+     {
+       const size_t n = 2;
+       const size_t p = 2;
+       gsl_vector *f = gsl_vector_alloc(n);
+       gsl_vector *x = gsl_vector_alloc(p);
+       gsl_multifit_nlinear_fdf fdf;
+       gsl_multifit_nlinear_parameters fdf_params =
+         gsl_multifit_nlinear_default_parameters();
+       struct model_params params;
+
+       params.a1 = -5.1 / (4.0 * M_PI * M_PI);
+       params.a2 = 5.0 / M_PI;
+       params.a3 = -6.0;
+       params.a4 = 10.0;
+       params.a5 = 1.0 / (8.0 * M_PI);
+
+       /* print map of Phi(x1, x2) */
+       {
+         double x1, x2, chisq;
+
+         for (x1 = -5.0; x1 < 15.0; x1 += 0.1)
+           {
+             for (x2 = -5.0; x2 < 15.0; x2 += 0.1)
+               {
+                 gsl_vector_set(x, 0, x1);
+                 gsl_vector_set(x, 1, x2);
+                 func_f(x, &params, f);
+
+                 gsl_blas_ddot(f, f, &chisq);
+
+                 printf("%f %f %f\n", x1, x2, chisq);
+               }
+             printf("\n");
+           }
+         printf("\n\n");
+       }
+
+       /* define function to be minimized */
+       fdf.f = func_f;
+       fdf.df = func_df;
+       fdf.fvv = func_fvv;
+       fdf.n = n;
+       fdf.p = p;
+       fdf.params = &params;
+
+       /* starting point */
+       gsl_vector_set(x, 0, 6.0);
+       gsl_vector_set(x, 1, 14.5);
+
+       fprintf(stderr, "%-25s %-6s %-5s %-5s %-13s %-12s %-13s %-15s\n",
+               "Method", "NITER", "NFEV", "NJEV", "Initial Cost",
+               "Final cost", "Final cond(J)", "Final x");
+
+       fdf_params.trs = gsl_multifit_nlinear_trs_lm;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multifit_nlinear_trs_lmaccel;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multifit_nlinear_trs_dogleg;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multifit_nlinear_trs_ddogleg;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multifit_nlinear_trs_subspace2D;
+       solve_system(x, &fdf, &fdf_params);
+
+       gsl_vector_free(f);
+       gsl_vector_free(x);
+
+       return 0;
+     }
+
+
 File: gsl-ref.info,  Node: Nonlinear Least-Squares Large Example,  Prev: Nonlinear Least-Squares Comparison Example,  Up: Nonlinear Least-Squares Examples
 
 39.12.4 Large Nonlinear Least Squares Example
@@ -58,13 +544,14 @@ the iterative Steihaug-Toint solver, based on sparse matrix-vector
 products J u and J^T u.  The program output is shown below.
 
 Method                    NITER NFEV NJUEV NJTJEV NAEV Init Cost  Final cost cond(J) Final |x|^2 Time (s)
-levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  45.73
-levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.82
-dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.83  2.5044e-01  56.84
-double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.68  2.5044e-01  53.89
+levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  46.28
+levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.92
+dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.59  2.5044e-01  56.05
+double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.62  2.5044e-01  52.65
+2D-subspace               37    88   36    36     0    7.1218e+18 1.9555e-02 447.71  2.5044e-01  59.75
 steihaug-toint            35    88   345   0      0    7.1218e+18 1.9555e-02 inf     2.5044e-01  0.09
 
-The first four rows use methods based on factoring the dense J^T J
+The first five rows use methods based on factoring the dense J^T J
 matrix while the last row uses the iterative Steihaug-Toint method.
 While the number of Jacobian matrix-vector products (NJUEV) is less for
 the dense methods, the added time to construct and factor the J^T J
@@ -278,6 +765,9 @@ The program is given below.
        solve_system(x, &fdf, &fdf_params);
 
        fdf_params.trs = gsl_multilarge_nlinear_trs_ddogleg;
+       solve_system(x, &fdf, &fdf_params);
+
+       fdf_params.trs = gsl_multilarge_nlinear_trs_subspace2D;
        solve_system(x, &fdf, &fdf_params);
 
        fdf_params.trs = gsl_multilarge_nlinear_trs_cgst;
@@ -6361,11 +6851,11 @@ Function Index
 * gsl_linalg_complex_householder_transform: Householder Transformations.
                                                               (line  18)
 * gsl_linalg_complex_LU_decomp:          LU Decomposition.    (line  20)
-* gsl_linalg_complex_LU_det:             LU Decomposition.    (line  84)
-* gsl_linalg_complex_LU_invert:          LU Decomposition.    (line  72)
-* gsl_linalg_complex_LU_lndet:           LU Decomposition.    (line  92)
+* gsl_linalg_complex_LU_det:             LU Decomposition.    (line  83)
+* gsl_linalg_complex_LU_invert:          LU Decomposition.    (line  71)
+* gsl_linalg_complex_LU_lndet:           LU Decomposition.    (line  91)
 * gsl_linalg_complex_LU_refine:          LU Decomposition.    (line  61)
-* gsl_linalg_complex_LU_sgndet:          LU Decomposition.    (line 100)
+* gsl_linalg_complex_LU_sgndet:          LU Decomposition.    (line  99)
 * gsl_linalg_complex_LU_solve:           LU Decomposition.    (line  42)
 * gsl_linalg_complex_LU_svx:             LU Decomposition.    (line  51)
 * gsl_linalg_givens:                     Givens Rotations.    (line  16)
@@ -6399,11 +6889,11 @@ Function Index
 * gsl_linalg_householder_transform:      Householder Transformations.
                                                               (line  17)
 * gsl_linalg_LU_decomp:                  LU Decomposition.    (line  18)
-* gsl_linalg_LU_det:                     LU Decomposition.    (line  83)
-* gsl_linalg_LU_invert:                  LU Decomposition.    (line  70)
-* gsl_linalg_LU_lndet:                   LU Decomposition.    (line  91)
+* gsl_linalg_LU_det:                     LU Decomposition.    (line  82)
+* gsl_linalg_LU_invert:                  LU Decomposition.    (line  69)
+* gsl_linalg_LU_lndet:                   LU Decomposition.    (line  90)
 * gsl_linalg_LU_refine:                  LU Decomposition.    (line  58)
-* gsl_linalg_LU_sgndet:                  LU Decomposition.    (line  99)
+* gsl_linalg_LU_sgndet:                  LU Decomposition.    (line  98)
 * gsl_linalg_LU_solve:                   LU Decomposition.    (line  40)
 * gsl_linalg_LU_svx:                     LU Decomposition.    (line  49)
 * gsl_linalg_mcholesky_decomp:           Modified Cholesky Decomposition.
@@ -6673,47 +7163,61 @@ Function Index
 * gsl_multifit_linear_alloc:             Multi-parameter regression.
                                                               (line  42)
 * gsl_multifit_linear_applyW:            Regularized regression.
-                                                              (line 187)
+                                                              (line 205)
 * gsl_multifit_linear_bsvd:              Multi-parameter regression.
                                                               (line  58)
 * gsl_multifit_linear_est:               Multi-parameter regression.
-                                                              (line 100)
+                                                              (line 136)
 * gsl_multifit_linear_free:              Multi-parameter regression.
                                                               (line  49)
+* gsl_multifit_linear_gcv(const:         Regularized regression.
+                                                              (line 301)
+* gsl_multifit_linear_gcv_calc(const:    Regularized regression.
+                                                              (line 295)
+* gsl_multifit_linear_gcv_curve(const:   Regularized regression.
+                                                              (line 277)
+* gsl_multifit_linear_gcv_init(const:    Regularized regression.
+                                                              (line 267)
+* gsl_multifit_linear_gcv_min(const:     Regularized regression.
+                                                              (line 285)
 * gsl_multifit_linear_genform1:          Regularized regression.
-                                                              (line 159)
+                                                              (line 177)
 * gsl_multifit_linear_genform2:          Regularized regression.
-                                                              (line 169)
+                                                              (line 187)
 * gsl_multifit_linear_lcorner:           Regularized regression.
-                                                              (line 214)
+                                                              (line 232)
 * gsl_multifit_linear_lcorner2:          Regularized regression.
-                                                              (line 229)
+                                                              (line 247)
 * gsl_multifit_linear_lcurve:            Regularized regression.
-                                                              (line 197)
+                                                              (line 215)
 * gsl_multifit_linear_Lk:                Regularized regression.
-                                                              (line 249)
+                                                              (line 312)
 * gsl_multifit_linear_Lsobolev:          Regularized regression.
-                                                              (line 255)
+                                                              (line 318)
 * gsl_multifit_linear_L_decomp:          Regularized regression.
-                                                              (line 108)
+                                                              (line 126)
+* gsl_multifit_linear_rank:              Multi-parameter regression.
+                                                              (line 149)
 * gsl_multifit_linear_rcond:             Regularized regression.
-                                                              (line 269)
+                                                              (line 332)
 * gsl_multifit_linear_residuals:         Multi-parameter regression.
-                                                              (line 108)
+                                                              (line 144)
 * gsl_multifit_linear_solve:             Regularized regression.
-                                                              (line 141)
+                                                              (line 159)
 * gsl_multifit_linear_stdform1:          Regularized regression.
-                                                              (line  85)
+                                                              (line 103)
 * gsl_multifit_linear_stdform2:          Regularized regression.
-                                                              (line 119)
+                                                              (line 137)
 * gsl_multifit_linear_svd:               Multi-parameter regression.
                                                               (line  53)
+* gsl_multifit_linear_tsvd:              Multi-parameter regression.
+                                                              (line  85)
 * gsl_multifit_linear_wgenform2:         Regularized regression.
-                                                              (line 173)
+                                                              (line 191)
 * gsl_multifit_linear_wstdform1:         Regularized regression.
-                                                              (line  88)
+                                                              (line 106)
 * gsl_multifit_linear_wstdform2:         Regularized regression.
-                                                              (line 123)
+                                                              (line 141)
 * gsl_multifit_nlinear_alloc:            Nonlinear Least-Squares Initialization.
                                                               (line   6)
 * gsl_multifit_nlinear_covar:            Nonlinear Least-Squares Covariance Matrix.
@@ -6781,7 +7285,9 @@ Function Index
 * gsl_multifit_robust_welsch:            Robust linear regression.
                                                               (line 134)
 * gsl_multifit_wlinear:                  Multi-parameter regression.
-                                                              (line  85)
+                                                              (line 103)
+* gsl_multifit_wlinear_tsvd:             Multi-parameter regression.
+                                                              (line 118)
 * gsl_multilarge_linear_accumulate:      Large Dense Linear Systems Routines.
                                                               (line  89)
 * gsl_multilarge_linear_alloc:           Large Dense Linear Systems Routines.
@@ -7513,13 +8019,13 @@ Function Index
 * gsl_rstat_free:                        Running Statistics Initializing the Accumulator.
                                                               (line  10)
 * gsl_rstat_kurtosis:                    Running Statistics Current Statistics.
-                                                              (line  41)
+                                                              (line  47)
 * gsl_rstat_max:                         Running Statistics Current Statistics.
                                                               (line   9)
 * gsl_rstat_mean:                        Running Statistics Current Statistics.
                                                               (line  12)
 * gsl_rstat_median:                      Running Statistics Current Statistics.
-                                                              (line  47)
+                                                              (line  53)
 * gsl_rstat_min:                         Running Statistics Current Statistics.
                                                               (line   6)
 * gsl_rstat_n:                           Running Statistics Adding Data to the Accumulator.
@@ -7537,11 +8043,13 @@ Function Index
 * gsl_rstat_reset:                       Running Statistics Initializing the Accumulator.
                                                               (line  13)
 * gsl_rstat_rms:                         Running Statistics Current Statistics.
-                                                              (line  29)
+                                                              (line  35)
 * gsl_rstat_sd:                          Running Statistics Current Statistics.
                                                               (line  24)
+* gsl_rstat_sd_mean:                     Running Statistics Current Statistics.
+                                                              (line  29)
 * gsl_rstat_skew:                        Running Statistics Current Statistics.
-                                                              (line  35)
+                                                              (line  41)
 * gsl_rstat_variance:                    Running Statistics Current Statistics.
                                                               (line  18)
 * GSL_SET_COMPLEX:                       Representation of complex numbers.

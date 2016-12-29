@@ -18,7 +18,7 @@ brown3_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < brown3_P; ++i)
     {
-      gsl_test_rel(x[i], brown3_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], brown3_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -90,6 +90,7 @@ static test_fdf_problem brown3_problem =
 {
   "brown_badly_scaled",
   brown3_x0,
+  NULL,
   NULL,
   &brown3_epsrel,
   &brown3_checksol,

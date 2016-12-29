@@ -48,7 +48,7 @@ wnlin_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < wnlin_P; ++i)
     {
-      gsl_test_rel(x[i], wnlin_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], wnlin_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -167,6 +167,7 @@ static test_fdf_problem wnlin_problem1 =
   "wnlin_internal_weights",
   wnlin_x0,
   NULL,
+  NULL,
   &wnlin_epsrel,
   &wnlin_checksol,
   &wnlin_func1
@@ -176,6 +177,7 @@ static test_fdf_problem wnlin_problem2 =
 {
   "wnlin_external_weights",
   wnlin_x0,
+  wnlin_W,
   NULL,
   &wnlin_epsrel,
   &wnlin_checksol,

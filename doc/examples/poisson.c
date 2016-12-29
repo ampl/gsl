@@ -72,7 +72,7 @@ main()
 
         /* print out residual norm ||A*u - f|| */
         residual = gsl_splinalg_itersolve_normr(work);
-        fprintf(stderr, "iter "F_ZU" residual = %.12e\n", iter, residual);
+        fprintf(stderr, "iter %zu residual = %.12e\n", iter, residual);
 
         if (status == GSL_SUCCESS)
           fprintf(stderr, "Converged\n");

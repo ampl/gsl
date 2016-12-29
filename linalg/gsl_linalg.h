@@ -193,7 +193,7 @@ int gsl_linalg_LU_refine (const gsl_matrix * A,
                           const gsl_permutation * p,
                           const gsl_vector * b,
                           gsl_vector * x,
-                          gsl_vector * residual);
+                          gsl_vector * work);
 
 int gsl_linalg_LU_invert (const gsl_matrix * LU,
                           const gsl_permutation * p,
@@ -223,7 +223,7 @@ int gsl_linalg_complex_LU_refine (const gsl_matrix_complex * A,
                                   const gsl_permutation * p,
                                   const gsl_vector_complex * b,
                                   gsl_vector_complex * x,
-                                  gsl_vector_complex * residual);
+                                  gsl_vector_complex * work);
 
 int gsl_linalg_complex_LU_invert (const gsl_matrix_complex * LU,
                                   const gsl_permutation * p,

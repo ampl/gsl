@@ -131,7 +131,7 @@ hahn1_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < hahn1_P; ++i)
     {
-      gsl_test_rel(x[i], hahn1_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], hahn1_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -207,6 +207,7 @@ static test_fdf_problem hahn1a_problem =
 {
   "nist-hahn1a",
   hahn1_x0a,
+  NULL,
   hahn1_sigma,
   &hahn1_epsrel,
   &hahn1_checksol,
@@ -217,6 +218,7 @@ static test_fdf_problem hahn1b_problem =
 {
   "nist-hahn1b",
   hahn1_x0b,
+  NULL,
   hahn1_sigma,
   &hahn1_epsrel,
   &hahn1_checksol,

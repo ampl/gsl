@@ -59,7 +59,7 @@ eckerle_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < eckerle_P; ++i)
     {
-      gsl_test_rel(new_x[i], eckerle_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(new_x[i], eckerle_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -136,6 +136,7 @@ static test_fdf_problem eckerlea_problem =
 {
   "nist-eckerlea",
   eckerle_x0a,
+  NULL,
   eckerle_sigma,
   &eckerle_epsrel,
   &eckerle_checksol,
@@ -146,6 +147,7 @@ static test_fdf_problem eckerleb_problem =
 {
   "nist-eckerleb",
   eckerle_x0b,
+  NULL,
   eckerle_sigma,
   &eckerle_epsrel,
   &eckerle_checksol,

@@ -91,7 +91,7 @@ test_reg1(const gsl_matrix * X, const gsl_vector * y,
     }
 
   gsl_test_rel(rnorm*rnorm, chisq, tol,
-               "test_reg1: %s, lambda = 0, n="F_ZU" p="F_ZU" chisq", desc, n, p);
+               "test_reg1: %s, lambda = 0, n=%zu p=%zu chisq", desc, n, p);
 
   /* test c0 = c1 */
   for (j = 0; j < p; ++j)
@@ -99,7 +99,7 @@ test_reg1(const gsl_matrix * X, const gsl_vector * y,
       double c0j = gsl_vector_get(c0, j);
       double c1j = gsl_vector_get(c1, j);
 
-      gsl_test_rel(c1j, c0j, tol, "test_reg1: %s, lambda = 0, n="F_ZU" p="F_ZU" c0/c1",
+      gsl_test_rel(c1j, c0j, tol, "test_reg1: %s, lambda = 0, n=%zu p=%zu c0/c1",
                    desc, n, p);
     }
 
@@ -153,14 +153,14 @@ test_reg2(const double lambda, const gsl_matrix * X, const gsl_vector * y,
 
   /* test snorm = ||c1|| */
   snorm1 = gsl_blas_dnrm2(c1);
-  gsl_test_rel(snorm0, snorm1, tol, "test_reg2: %s, snorm lambda=%g n="F_ZU" p="F_ZU,
+  gsl_test_rel(snorm0, snorm1, tol, "test_reg2: %s, snorm lambda=%g n=%zu p=%zu",
                desc, lambda, n, p);
 
   /* test rnorm = ||y - X c1|| */
   gsl_vector_memcpy(r, ys);
   gsl_blas_dgemv(CblasNoTrans, -1.0, Xs, c1, 1.0, r);
   rnorm1 = gsl_blas_dnrm2(r);
-  gsl_test_rel(rnorm0, rnorm1, tol, "test_reg2: %s, rnorm lambda=%g n="F_ZU" p="F_ZU,
+  gsl_test_rel(rnorm0, rnorm1, tol, "test_reg2: %s, rnorm lambda=%g n=%zu p=%zu",
                desc, lambda, n, p);
 
   /* test c0 = c1 */
@@ -169,7 +169,7 @@ test_reg2(const double lambda, const gsl_matrix * X, const gsl_vector * y,
       double c0j = gsl_vector_get(c0, j);
       double c1j = gsl_vector_get(c1, j);
 
-      gsl_test_rel(c1j, c0j, tol, "test_reg2: %s, c0/c1 lambda=%g n="F_ZU" p="F_ZU,
+      gsl_test_rel(c1j, c0j, tol, "test_reg2: %s, c0/c1 lambda=%g n=%zu p=%zu",
                    desc, lambda, n, p);
     }
 
@@ -235,7 +235,7 @@ test_reg3(const double lambda, const gsl_vector * L, const gsl_matrix * X,
   gsl_vector_memcpy(Lc, c1);
   gsl_vector_mul(Lc, L);
   snorm1 = gsl_blas_dnrm2(Lc);
-  gsl_test_rel(snorm0, snorm1, tol, "test_reg3: %s, snorm lambda=%g n="F_ZU" p="F_ZU,
+  gsl_test_rel(snorm0, snorm1, tol, "test_reg3: %s, snorm lambda=%g n=%zu p=%zu",
                desc, lambda, n, p);
 
   /* test rnorm = ||y - X c1||, compute again Xs = sqrt(W) X and ys = sqrt(W) y */
@@ -243,7 +243,7 @@ test_reg3(const double lambda, const gsl_vector * L, const gsl_matrix * X,
   gsl_vector_memcpy(r, ys);
   gsl_blas_dgemv(CblasNoTrans, -1.0, Xs, c1, 1.0, r);
   rnorm1 = gsl_blas_dnrm2(r);
-  gsl_test_rel(rnorm0, rnorm1, tol, "test_reg3: %s, rnorm lambda=%g n="F_ZU" p="F_ZU,
+  gsl_test_rel(rnorm0, rnorm1, tol, "test_reg3: %s, rnorm lambda=%g n=%zu p=%zu",
                desc, lambda, n, p);
 
   /* test c0 = c1 */
@@ -252,7 +252,7 @@ test_reg3(const double lambda, const gsl_vector * L, const gsl_matrix * X,
       double c0j = gsl_vector_get(c0, j);
       double c1j = gsl_vector_get(c1, j);
 
-      gsl_test_rel(c1j, c0j, tol, "test_reg3: %s, c0/c1 j="F_ZU" lambda=%g n="F_ZU" p="F_ZU,
+      gsl_test_rel(c1j, c0j, tol, "test_reg3: %s, c0/c1 j=%zu lambda=%g n=%zu p=%zu",
                    desc, j, lambda, n, p);
     }
 
@@ -340,7 +340,7 @@ test_reg4(const double lambda, const gsl_matrix * L, const gsl_matrix * X,
       double c0j = gsl_vector_get(c0, j);
       double c1j = gsl_vector_get(c1, j);
 
-      gsl_test_rel(c1j, c0j, tol, "test_reg4: %s lambda=%g n="F_ZU" p="F_ZU" j="F_ZU,
+      gsl_test_rel(c1j, c0j, tol, "test_reg4: %s lambda=%g n=%zu p=%zu j=%zu",
                    desc, lambda, n, p, j);
     }
 
@@ -518,7 +518,7 @@ test_reg_sobolev(const size_t p, const size_t kmax, const gsl_rng *r)
               double aij = gsl_matrix_get(LTL, i, j);
               double bij = gsl_matrix_get(LTL2, i, j);
 
-              gsl_test_rel(aij, bij, tol, "sobolov k="F_ZU" LTL("F_ZU","F_ZU")", k, i, j);
+              gsl_test_rel(aij, bij, tol, "sobolov k=%zu LTL(%zu,%zu)", k, i, j);
             }
         }
 

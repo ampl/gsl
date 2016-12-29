@@ -202,7 +202,7 @@ gsl_linalg_LU_svx (const gsl_matrix * LU, const gsl_permutation * p, gsl_vector 
 
 
 int
-gsl_linalg_LU_refine (const gsl_matrix * A, const gsl_matrix * LU, const gsl_permutation * p, const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
+gsl_linalg_LU_refine (const gsl_matrix * A, const gsl_matrix * LU, const gsl_permutation * p, const gsl_vector * b, gsl_vector * x, gsl_vector * work)
 {
   if (A->size1 != A->size2)
     {
@@ -228,6 +228,10 @@ gsl_linalg_LU_refine (const gsl_matrix * A, const gsl_matrix * LU, const gsl_per
     {
       GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
     }
+  else if (LU->size1 != work->size)
+    {
+      GSL_ERROR ("matrix size must match workspace size", GSL_EBADLEN);
+    }
   else if (singular (LU)) 
     {
       GSL_ERROR ("matrix is singular", GSL_EDOM);
@@ -236,15 +240,15 @@ gsl_linalg_LU_refine (const gsl_matrix * A, const gsl_matrix * LU, const gsl_per
     {
       int status;
 
-      /* Compute residual, residual = (A * x  - b) */
+      /* Compute residual = (A * x  - b) */
 
-      gsl_vector_memcpy (residual, b);
-      gsl_blas_dgemv (CblasNoTrans, 1.0, A, x, -1.0, residual);
+      gsl_vector_memcpy (work, b);
+      gsl_blas_dgemv (CblasNoTrans, 1.0, A, x, -1.0, work);
 
       /* Find correction, delta = - (A^-1) * residual, and apply it */
 
-      status = gsl_linalg_LU_svx (LU, p, residual);
-      gsl_blas_daxpy (-1.0, residual, x);
+      status = gsl_linalg_LU_svx (LU, p, work);
+      gsl_blas_daxpy (-1.0, work, x);
 
       return status;
     }

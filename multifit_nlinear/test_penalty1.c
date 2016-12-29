@@ -100,6 +100,7 @@ static test_fdf_problem penalty1_problem =
   "penalty1",
   penalty1_x0,
   NULL,
+  NULL,
   &penalty1_epsrel,
   &penalty1_checksol,
   &penalty1_func

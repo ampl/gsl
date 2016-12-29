@@ -17,7 +17,7 @@ powell1_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < powell1_P; ++i)
     {
-      gsl_test_rel(x[i], 0.0, epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], 0.0, epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -112,6 +112,7 @@ static test_fdf_problem powell1_problem =
 {
   "powell_singular",
   powell1_x0,
+  NULL,
   NULL,
   &powell1_epsrel,
   &powell1_checksol,

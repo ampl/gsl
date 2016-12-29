@@ -17,7 +17,7 @@ vardim_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < vardim_P; ++i)
     {
-      gsl_test_rel(x[i], 1.0, epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], 1.0, epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -111,6 +111,7 @@ static test_fdf_problem vardim_problem =
 {
   "vardim",
   vardim_x0,
+  NULL,
   NULL,
   &vardim_epsrel,
   &vardim_checksol,

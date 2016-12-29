@@ -71,12 +71,25 @@ gsl_multifit_linear (const gsl_matrix * X,
                      gsl_multifit_linear_workspace * work);
 
 int
+gsl_multifit_linear_tsvd (const gsl_matrix * X,
+                          const gsl_vector * y,
+                          const double tol,
+                          gsl_vector * c,
+                          gsl_matrix * cov,
+                          double * chisq,
+                          size_t * rank,
+                          gsl_multifit_linear_workspace * work);
+
+int
 gsl_multifit_linear_svd (const gsl_matrix * X,
                          gsl_multifit_linear_workspace * work);
 
 int
 gsl_multifit_linear_bsvd (const gsl_matrix * X,
                           gsl_multifit_linear_workspace * work);
+
+size_t
+gsl_multifit_linear_rank(const double tol, const gsl_multifit_linear_workspace * work);
 
 int
 gsl_multifit_linear_solve (const double lambda,
@@ -200,6 +213,17 @@ gsl_multifit_wlinear (const gsl_matrix * X,
                       gsl_multifit_linear_workspace * work);
 
 int
+gsl_multifit_wlinear_tsvd (const gsl_matrix * X,
+                           const gsl_vector * w,
+                           const gsl_vector * y,
+                           const double tol,
+                           gsl_vector * c,
+                           gsl_matrix * cov,
+                           double * chisq,
+                           size_t * rank,
+                           gsl_multifit_linear_workspace * work);
+
+int
 gsl_multifit_wlinear_svd (const gsl_matrix * X,
                           const gsl_vector * w,
                           const gsl_vector * y,
@@ -232,6 +256,43 @@ gsl_multifit_linear_rcond (const gsl_multifit_linear_workspace * w);
 int
 gsl_multifit_linear_residuals (const gsl_matrix *X, const gsl_vector *y,
                                const gsl_vector *c, gsl_vector *r);
+
+/* gcv.c */
+int
+gsl_multifit_linear_gcv_init(const gsl_vector * y,
+                             gsl_vector * reg_param,
+                             gsl_vector * UTy,
+                             double * delta0,
+                             gsl_multifit_linear_workspace * work);
+
+int
+gsl_multifit_linear_gcv_curve(const gsl_vector * reg_param,
+                              const gsl_vector * UTy,
+                              const double delta0,
+                              gsl_vector * G,
+                              gsl_multifit_linear_workspace * work);
+
+int
+gsl_multifit_linear_gcv_min(const gsl_vector * reg_param,
+                            const gsl_vector * UTy,
+                            const gsl_vector * G,
+                            const double delta0,
+                            double * lambda,
+                            gsl_multifit_linear_workspace * work);
+
+double
+gsl_multifit_linear_gcv_calc(const double lambda,
+                             const gsl_vector * UTy,
+                             const double delta0,
+                             gsl_multifit_linear_workspace * work);
+
+int
+gsl_multifit_linear_gcv(const gsl_vector * y,
+                        gsl_vector * reg_param,
+                        gsl_vector * G,
+                        double * lambda,
+                        double * G_lambda,
+                        gsl_multifit_linear_workspace * work);
 
 typedef struct
 {

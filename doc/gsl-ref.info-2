@@ -1819,8 +1819,8 @@ File: gsl-ref.info,  Node: LU Decomposition,  Next: QR Decomposition,  Up: Linea
 14.1 LU Decomposition
 =====================
 
-A general square matrix A has an LU decomposition into upper and lower
-triangular matrices,
+A general N-by-N square matrix A has an LU decomposition into upper and
+lower triangular matrices,
 
      P A = L U
 
@@ -1873,15 +1873,14 @@ matrices.
 
  -- Function: int gsl_linalg_LU_refine (const gsl_matrix * A, const
           gsl_matrix * LU, const gsl_permutation * P, const gsl_vector *
-          B, gsl_vector * X, gsl_vector * RESIDUAL)
+          B, gsl_vector * X, gsl_vector * WORK)
  -- Function: int gsl_linalg_complex_LU_refine (const gsl_matrix_complex
           * A, const gsl_matrix_complex * LU, const gsl_permutation * P,
           const gsl_vector_complex * B, gsl_vector_complex * X,
-          gsl_vector_complex * RESIDUAL)
+          gsl_vector_complex * WORK)
      These functions apply an iterative improvement to X, the solution
      of A x = b, from the precomputed LU decomposition of A into (LU,P).
-     The initial residual r = A x - b is also computed and stored in
-     RESIDUAL.
+     Additional workspace of length N is required in WORK.
 
  -- Function: int gsl_linalg_LU_invert (const gsl_matrix * LU, const
           gsl_permutation * P, gsl_matrix * INVERSE)

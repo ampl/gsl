@@ -42,7 +42,7 @@ brown2_checksol(const double x[], const double sumsq,
 
   for (i = 1; i < brown2_P - 1; ++i)
     {
-      gsl_test_rel(x[i], alpha, epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], alpha, epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 
@@ -162,6 +162,7 @@ static test_fdf_problem brown2_problem =
 {
   "brown_almost_linear",
   brown2_x0,
+  NULL,
   NULL,
   &brown2_epsrel,
   &brown2_checksol,

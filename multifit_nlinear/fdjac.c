@@ -163,7 +163,7 @@ Inputs: h      - finite difference step size
         wts    - data weights (set to NULL if not needed)
         fdf    - fdf
         f      - (input) function values f_i(x)
-        J      - (output) approximate Jacobian matrix
+        J      - (output) approximate (weighted) Jacobian matrix, sqrt(W) * J
         work   - additional workspace for centered differences, size n
 
 Return: success or error

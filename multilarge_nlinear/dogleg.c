@@ -70,6 +70,7 @@ static int dogleg_double_step(const void * vtrust_state, const double delta,
                               gsl_vector * dx, void * vstate);
 static int dogleg_preduction(const void * vtrust_state, const gsl_vector * dx,
                              double * pred, void * vstate);
+static int dogleg_calc_gn(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx);
 static double dogleg_beta(const double t, const double delta,
                           const gsl_vector * diag, dogleg_state_t * state);
 
@@ -166,46 +167,26 @@ dogleg_init(const void *vtrust_state, void *vstate)
 /*
 dogleg_preloop()
   Initialize dogleg method prior to iteration loop.
-This involves computing the Gauss-Newton step and
-steepest descent step
+This involves computing the steepest descent step. The
+Gauss-Newton step is computed later in the _step() functions
+if required.
 
 Notes: on output,
-1) state->dx_gn contains Gauss-Newton step
-2) state->dx_sd contains steepest descent step
-3) state->norm_Dinvg contains || D^{-1} g ||
-4) state->norm_JDinv2g contains || J D^{-2} g ||
+1) state->dx_sd contains steepest descent step
+2) state->norm_Dinvg contains || D^{-1} g ||
+3) state->norm_JDinv2g contains || J D^{-2} g ||
 */
 
 static int
 dogleg_preloop(const void * vtrust_state, void * vstate)
 {
-  int status;
   const gsl_multilarge_nlinear_trust_state *trust_state =
     (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   dogleg_state_t *state = (dogleg_state_t *) vstate;
-  const gsl_multilarge_nlinear_parameters *params = trust_state->params;
   double u;
   double alpha; /* ||g||^2 / ||Jg||^2 */
 
-  /* initialize linear least squares solver */
-  status = (params->solver->init)(trust_state, trust_state->solver_state);
-  if (status)
-    return status;
-
-  /* prepare the linear solver to compute Gauss-Newton step */
-  status = (params->solver->presolve)(0.0, trust_state, trust_state->solver_state);
-  if (status)
-    return status;
-
-  /* solve: J dx_gn = -f for Gauss-Newton step */
-  status = (params->solver->solve)(trust_state->g,
-                                   state->dx_gn,
-                                   trust_state,
-                                   trust_state->solver_state);
-  if (status)
-    return status;
-
-  /* now calculate the steepest descent step */
+  /* calculate the steepest descent step */
 
   /* compute workp1 = D^{-1} g and its norm */
   gsl_vector_memcpy(state->workp1, trust_state->g);
@@ -229,8 +210,8 @@ dogleg_preloop(const void * vtrust_state, void * vstate)
   gsl_vector_memcpy(state->dx_sd, state->workp1);
   gsl_vector_scale(state->dx_sd, -alpha);
 
-  state->norm_Dgn = scaled_enorm(trust_state->diag, state->dx_gn);
   state->norm_Dsd = scaled_enorm(trust_state->diag, state->dx_sd);
+  state->norm_Dgn = -1.0; /* computed later if needed */
 
   return GSL_SUCCESS;
 }
@@ -244,36 +225,50 @@ static int
 dogleg_step(const void * vtrust_state, const double delta,
             gsl_vector * dx, void * vstate)
 {
+  const gsl_multilarge_nlinear_trust_state *trust_state =
+    (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   dogleg_state_t *state = (dogleg_state_t *) vstate;
 
-  if (state->norm_Dgn <= delta)
+  if (state->norm_Dsd >= delta)
     {
-      /* Gauss-Newton step is inside trust region, use it as final step
-       * since it is the global minimizer of the quadratic model function */
-      gsl_vector_memcpy(dx, state->dx_gn);
-    }
-  else if (state->norm_Dsd >= delta)
-    {
-      /* both Gauss-Newton and steepest descent steps are outside
-       * trust region; truncate steepest descent step to trust
-       * region boundary */
+      /* steepest descent step is outside trust region;
+       * truncate steepest descent step to trust region boundary */
       gsl_vector_memcpy(dx, state->dx_sd);
       gsl_vector_scale(dx, delta / state->norm_Dsd);
     }
   else
     {
-      /* Gauss-Newton step is outside trust region, but steepest
-       * descent is inside; use dogleg step */
+      /* compute Gauss-Newton step if needed */
+      if (state->norm_Dgn < 0.0)
+        {
+          int status = dogleg_calc_gn(trust_state, state->dx_gn);
 
-      const gsl_multilarge_nlinear_trust_state *trust_state =
-        (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
-      double beta = dogleg_beta(1.0, delta, trust_state->diag, state);
+          if (status)
+            return status;
 
-      /* compute: workp1 = dx_gn - dx_sd */
-      scaled_addition(1.0, state->dx_gn, -1.0, state->dx_sd, state->workp1);
+          /* compute || D dx_gn || */
+          state->norm_Dgn = scaled_enorm(trust_state->diag, state->dx_gn);
+        }
 
-      /* dx = dx_sd + beta*(dx_gn - dx_sd) */
-      scaled_addition(beta, state->workp1, 1.0, state->dx_sd, dx);
+      if (state->norm_Dgn <= delta)
+        {
+          /* Gauss-Newton step is inside trust region, use it as final step
+           * since it is the global minimizer of the quadratic model function */
+          gsl_vector_memcpy(dx, state->dx_gn);
+        }
+      else
+        {
+          /* Gauss-Newton step is outside trust region, but steepest
+           * descent is inside; use dogleg step */
+
+          double beta = dogleg_beta(1.0, delta, trust_state->diag, state);
+
+          /* compute: workp1 = dx_gn - dx_sd */
+          scaled_addition(1.0, state->dx_gn, -1.0, state->dx_sd, state->workp1);
+
+          /* dx = dx_sd + beta*(dx_gn - dx_sd) */
+          scaled_addition(beta, state->workp1, 1.0, state->dx_sd, dx);
+        }
     }
 
   return GSL_SUCCESS;
@@ -294,55 +289,69 @@ dogleg_double_step(const void * vtrust_state, const double delta,
     (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   dogleg_state_t *state = (dogleg_state_t *) vstate;
 
-  if (state->norm_Dgn <= delta)
+  if (state->norm_Dsd >= delta)
     {
-      /* Gauss-Newton step is inside trust region, use it as final step
-       * since it is the global minimizer of the quadratic model function */
-      gsl_vector_memcpy(dx, state->dx_gn);
+      /* steepest descent step is outside trust region;
+       * truncate steepest descent step to trust region boundary */
+      gsl_vector_memcpy(dx, state->dx_sd);
+      gsl_vector_scale(dx, delta / state->norm_Dsd);
     }
   else
     {
-      double t, u, v, c;
-
-      /* compute: u = ||D^{-1} g||^2 / ||J D^{-2} g||^2 */
-      v = state->norm_Dinvg / state->norm_JDinv2g;
-      u = v * v;
-
-      /* compute: v = g^T dx_gn */
-      gsl_blas_ddot(trust_state->g, state->dx_gn, &v);
-
-      /* compute: c = ||D^{-1} g||^4 / (||J D^{-2} g||^2 * |g^T dx_gn|) */
-      c = u * (state->norm_Dinvg / fabs(v)) * state->norm_Dinvg;
-
-      /* compute: t = 1 - alpha_fac*(1-c) */
-      t = 1.0 - alpha_fac*(1.0 - c);
-
-      if (t * state->norm_Dgn <= delta)
+      /* compute Gauss-Newton step if needed */
+      if (state->norm_Dgn < 0.0)
         {
-          /* set dx = (delta / ||D dx_gn||) dx_gn */
-          gsl_vector_memcpy(dx, state->dx_gn);
-          gsl_vector_scale(dx, delta / state->norm_Dgn);
+          int status = dogleg_calc_gn(trust_state, state->dx_gn);
+
+          if (status)
+            return status;
+
+          /* compute || D dx_gn || */
+          state->norm_Dgn = scaled_enorm(trust_state->diag, state->dx_gn);
         }
-      else if (state->norm_Dsd >= delta)
+
+      if (state->norm_Dgn <= delta)
         {
-          /* both Gauss-Newton and steepest descent steps are outside
-           * trust region; truncate steepest descent step to trust
-           * region boundary */
-          gsl_vector_memcpy(dx, state->dx_sd);
-          gsl_vector_scale(dx, delta / state->norm_Dsd);
+          /* Gauss-Newton step is inside trust region, use it as final step
+           * since it is the global minimizer of the quadratic model function */
+          gsl_vector_memcpy(dx, state->dx_gn);
         }
       else
         {
-          /* Cauchy point is inside, Gauss-Newton is outside trust region;
-           * use double dogleg step */
+          double t, u, v, c;
 
-          double beta = dogleg_beta(t, delta, trust_state->diag, state);
+          /* compute: u = ||D^{-1} g||^2 / ||J D^{-2} g||^2 */
+          v = state->norm_Dinvg / state->norm_JDinv2g;
+          u = v * v;
 
-          /* compute: workp1 = t*dx_gn - dx_sd */
-          scaled_addition(t, state->dx_gn, -1.0, state->dx_sd, state->workp1);
+          /* compute: v = g^T dx_gn */
+          gsl_blas_ddot(trust_state->g, state->dx_gn, &v);
 
-          /* dx = dx_sd + beta*(t*dx_gn - dx_sd) */
-          scaled_addition(beta, state->workp1, 1.0, state->dx_sd, dx);
+          /* compute: c = ||D^{-1} g||^4 / (||J D^{-2} g||^2 * |g^T dx_gn|) */
+          c = u * (state->norm_Dinvg / fabs(v)) * state->norm_Dinvg;
+
+          /* compute: t = 1 - alpha_fac*(1-c) */
+          t = 1.0 - alpha_fac*(1.0 - c);
+
+          if (t * state->norm_Dgn <= delta)
+            {
+              /* set dx = (delta / ||D dx_gn||) dx_gn */
+              gsl_vector_memcpy(dx, state->dx_gn);
+              gsl_vector_scale(dx, delta / state->norm_Dgn);
+            }
+          else
+            {
+              /* Cauchy point is inside, Gauss-Newton is outside trust region;
+               * use double dogleg step */
+
+              double beta = dogleg_beta(t, delta, trust_state->diag, state);
+
+              /* compute: workp1 = t*dx_gn - dx_sd */
+              scaled_addition(t, state->dx_gn, -1.0, state->dx_sd, state->workp1);
+
+              /* dx = dx_sd + beta*(t*dx_gn - dx_sd) */
+              scaled_addition(beta, state->workp1, 1.0, state->dx_sd, dx);
+            }
         }
     }
 
@@ -358,6 +367,45 @@ dogleg_preduction(const void * vtrust_state, const gsl_vector * dx,
   dogleg_state_t *state = (dogleg_state_t *) vstate;
 
   *pred = quadratic_preduction(trust_state, dx, state->workn);
+
+  return GSL_SUCCESS;
+}
+
+/*
+dogleg_calc_gn()
+  Calculate Gauss-Newton step by solving
+
+J^T J dx_gn = -J^T f
+
+Inputs: trust_state - trust state variables
+        dx          - (output) Gauss-Newton step vector
+
+Return: success/error
+*/
+
+static int
+dogleg_calc_gn(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx)
+{
+  int status;
+  const gsl_multilarge_nlinear_parameters *params = trust_state->params;
+
+  /* initialize linear least squares solver */
+  status = (params->solver->init)(trust_state, trust_state->solver_state);
+  if (status)
+    return status;
+
+  /* prepare the linear solver to compute Gauss-Newton step */
+  status = (params->solver->presolve)(0.0, trust_state, trust_state->solver_state);
+  if (status)
+    return status;
+
+  /* solve: J dx_gn = -f for Gauss-Newton step */
+  status = (params->solver->solve)(trust_state->g,
+                                   dx,
+                                   trust_state,
+                                   trust_state->solver_state);
+  if (status)
+    return status;
 
   return GSL_SUCCESS;
 }

@@ -17,7 +17,7 @@ lin1_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < lin1_P; ++i)
     {
-      gsl_test_rel(x[i], -1.0, epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], -1.0, epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -99,6 +99,7 @@ static test_fdf_problem lin1_problem =
 {
   "linear_full",
   lin1_x0,
+  NULL,
   NULL,
   &lin1_epsrel,
   &lin1_checksol,

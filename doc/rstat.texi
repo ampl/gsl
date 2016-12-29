@@ -110,6 +110,24 @@ This function returns the standard deviation of all data added to the
 accumulator, defined as the square root of the variance given above.
 @end deftypefun
 
+@deftypefun double gsl_rstat_sd_mean (gsl_rstat_workspace * @var{w})
+This function returns the standard deviation of the mean, defined as
+@tex
+\beforedisplay
+$$
+\Hat\sigma_{\Hat\mu} = {\Hat\sigma \over \sqrt{N}}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+sd_mean = \Hat\sigma / \sqrt@{N@}
+@end example
+
+@end ifinfo
+@end deftypefun
+
 @deftypefun double gsl_rstat_rms (gsl_rstat_workspace * @var{w})
 This function returns the root mean square of all data added to the
 accumulator, defined as

@@ -1662,7 +1662,7 @@ these algorithm cannot fail, provided the function is well-behaved.
      On each iteration, the algorithm first compares the subintervals
      from the endpoints to the current minimum.  The larger subinterval
      is divided in a golden section (using the famous ratio (3-\sqrt
-     5)/2 = 0.3189660...) and the value of the function at this new
+     5)/2 = 0.3819660...) and the value of the function at this new
      point is calculated.  The new value is used with the constraint
      f(a') > f(x') < f(b') to a select new interval containing the
      minimum, by discarding the least useful point.  This procedure can
@@ -3630,6 +3630,24 @@ value decomposition of the matrix X.
      components which have zero singular value (to machine precision)
      are discarded from the fit.
 
+ -- Function: int gsl_multifit_linear_tsvd (const gsl_matrix * X, const
+          gsl_vector * Y, const double TOL, gsl_vector * C, gsl_matrix *
+          COV, double * CHISQ, size_t * RANK,
+          gsl_multifit_linear_workspace * WORK)
+     This function computes the best-fit parameters C of the model y = X
+     c for the observations Y and the matrix of predictor variables X,
+     using a truncated SVD expansion.  Singular values which satisfy s_i
+     \le tol \times s_0 are discarded from the fit, where s_0 is the
+     largest singular value.  The p-by-p variance-covariance matrix of
+     the model parameters COV is set to \sigma^2 (X^T X)^{-1}, where
+     \sigma is the standard deviation of the fit residuals.  The sum of
+     squares of the residuals from the best-fit, \chi^2, is returned in
+     CHISQ.  The effective rank (number of singular values used in
+     solution) is returned in RANK.  If the coefficient of determination
+     is desired, it can be computed from the expression R^2 = 1 - \chi^2
+     / TSS, where the total sum of squares (TSS) of the observations Y
+     may be computed from 'gsl_stats_tss'.
+
  -- Function: int gsl_multifit_wlinear (const gsl_matrix * X, const
           gsl_vector * W, const gsl_vector * Y, gsl_vector * C,
           gsl_matrix * COV, double * CHISQ,
@@ -3645,6 +3663,24 @@ value decomposition of the matrix X.
      sum of squares (WTSS) of the observations Y may be computed from
      'gsl_stats_wtss'.
 
+ -- Function: int gsl_multifit_wlinear_tsvd (const gsl_matrix * X, const
+          gsl_vector * W, const gsl_vector * Y, const double TOL,
+          gsl_vector * C, gsl_matrix * COV, double * CHISQ, size_t *
+          RANK, gsl_multifit_linear_workspace * WORK)
+     This function computes the best-fit parameters C of the weighted
+     model y = X c for the observations Y with weights W and the matrix
+     of predictor variables X, using a truncated SVD expansion.
+     Singular values which satisfy s_i \le tol \times s_0 are discarded
+     from the fit, where s_0 is the largest singular value.  The p-by-p
+     covariance matrix of the model parameters COV is computed as (X^T W
+     X)^{-1}.  The weighted sum of squares of the residuals from the
+     best-fit, \chi^2, is returned in CHISQ.  The effective rank of the
+     system (number of singular values used in the solution) is returned
+     in RANK.  If the coefficient of determination is desired, it can be
+     computed from the expression R^2 = 1 - \chi^2 / WTSS, where the
+     weighted total sum of squares (WTSS) of the observations Y may be
+     computed from 'gsl_stats_wtss'.
+
  -- Function: int gsl_multifit_linear_est (const gsl_vector * X, const
           gsl_vector * C, const gsl_matrix * COV, double * Y, double *
           Y_ERR)
@@ -3657,6 +3693,14 @@ value decomposition of the matrix X.
           const gsl_vector * Y, const gsl_vector * C, gsl_vector * R)
      This function computes the vector of residuals r = y - X c for the
      observations Y, coefficients C and matrix of predictor variables X.
+
+ -- Function: size_t gsl_multifit_linear_rank (const double TOL, const
+          gsl_multifit_linear_workspace * WORK)
+     This function returns the rank of the matrix X which must first
+     have its singular value decomposition computed.  The rank is
+     computed by counting the number of singular values \sigma_j which
+     satisfy \sigma_j > tol \times \sigma_0, where \sigma_0 is the
+     largest singular value.
 
 
 File: gsl-ref.info,  Node: Regularized regression,  Next: Robust linear regression,  Prev: Multi-parameter regression,  Up: Least-Squares Fitting
@@ -3672,8 +3716,13 @@ matrix, c is the p-by-1 solution vector, W = diag(w_1,...,w_n) is the
 data weighting matrix, and ||r||_W^2 = r^T W r.  In cases where the
 least squares matrix X is ill-conditioned, small perturbations (ie:
 noise) in the observation vector could lead to widely different solution
-vectors c.  In these cases it is often advantageous to include a
-regularization term in the least squares minimization
+vectors c.  One way of dealing with ill-conditioned matrices is to use a
+"truncated SVD" in which small singular values, below some given
+tolerance, are discarded from the solution.  The truncated SVD method is
+available using the functions 'gsl_multifit_linear_tsvd' and
+'gsl_multifit_wlinear_tsvd'.  Another way to help solve ill-posed
+problems is to include a regularization term in the least squares
+minimization
      \chi^2 = || y - Xc ||_W^2 + \lambda^2 || L c ||^2
    for a suitably chosen regularization parameter \lambda and matrix L.
 This type of regularization is known as Tikhonov, or ridge, regression.
@@ -3724,6 +3773,19 @@ chosen as the optimal value.  GSL provides routines to calculate the
 L-curve for all relevant regularization parameters as well as locating
 the corner.
 
+   Another method of choosing the regularization parameter is known as
+Generalized Cross Validation (GCV). This method is based on the idea
+that if an arbitrary element y_i is left out of the right hand side, the
+resulting regularized solution should predict this element accurately.
+This leads to choosing the parameter \lambda which minimizes the GCV
+function
+
+     G(\lambda) = (||y - X c_{\lambda}||^2) / Tr(I_n - X X^I)^2
+
+   where X_{\lambda}^I is the matrix which relates the solution
+c_{\lambda} to the right hand side y, ie: c_{\lambda} = X_{\lambda}^I y.
+GSL provides routines to compute the GCV curve and its minimum.
+
 For most applications, the steps required to solve a regularized least
 squares problem are as follows:
 
@@ -3735,7 +3797,7 @@ squares problem are as follows:
   3. Calculate the SVD of \tilde{X}.
 
   4. Determine an appropriate regularization parameter \lambda (using
-     for example L-curve analysis).
+     for example L-curve or GCV analysis).
 
   5. Solve the standard form system using the chosen \lambda and the SVD
      of \tilde{X}.
@@ -3906,6 +3968,51 @@ squares problem are as follows:
      curvature (ie: the corner) is returned in IDX.  If the input arrays
      contain colinear points, this function could fail and return
      'GSL_EINVAL'.
+
+ -- Function: int gsl_multifit_linear_gcv_init(const gsl_vector * Y,
+          gsl_vector * REG_PARAM, gsl_vector * UTY, double * DELTA0,
+          gsl_multifit_linear_workspace * WORK)
+     This function performs some initialization in preparation for
+     computing the GCV curve and its minimum.  The right hand side
+     vector is provided in Y.  On output, REG_PARAM is set to a vector
+     of regularization parameters in decreasing order and may be of any
+     size.  The vector UTY of size p is set to U^T y.  The parameter
+     DELTA0 is needed for subsequent steps of the GCV calculation.
+
+ -- Function: int gsl_multifit_linear_gcv_curve(const gsl_vector *
+          REG_PARAM, const gsl_vector * UTY, const double DELTA0,
+          gsl_vector * G, gsl_multifit_linear_workspace * WORK)
+     This funtion calculates the GCV curve G(\lambda) and stores it in G
+     on output, which must be the same size as REG_PARAM.  The inputs
+     REG_PARAM, UTY and DELTA0 are computed in
+     'gsl_multifit_linear_gcv_init'.
+
+ -- Function: int gsl_multifit_linear_gcv_min(const gsl_vector *
+          REG_PARAM, const gsl_vector * UTY, const gsl_vector * G, const
+          double DELTA0, double * LAMBDA, gsl_multifit_linear_workspace
+          * WORK)
+     This function computes the value of the regularization parameter
+     which minimizes the GCV curve G(\lambda) and stores it in LAMBDA.
+     The input G is calculated by 'gsl_multifit_linear_gcv_curve' and
+     the inputs REG_PARAM, UTY and DELTA0 are computed by
+     'gsl_multifit_linear_gcv_init'.
+
+ -- Function: double gsl_multifit_linear_gcv_calc(const double LAMBDA,
+          const gsl_vector * UTY, const double DELTA0,
+          gsl_multifit_linear_workspace * WORK)
+     This function returns the value of the GCV curve G(\lambda)
+     corresponding to the input LAMBDA.
+
+ -- Function: int gsl_multifit_linear_gcv(const gsl_vector * Y,
+          gsl_vector * REG_PARAM, gsl_vector * G, double * LAMBDA,
+          double * G_LAMBDA, gsl_multifit_linear_workspace * WORK)
+     This function combines the steps 'gcv_init', 'gcv_curve', and
+     'gcv_min' defined above into a single function.  The input Y is the
+     right hand side vector.  On output, REG_PARAM and G, which must be
+     the same size, are set to vectors of \lambda and G(\lambda) values
+     respectively.  The output LAMBDA is set to the optimal value of
+     \lambda which minimizes the GCV curve.  The minimum value of the
+     GCV curve is returned in G_LAMBDA.
 
  -- Function: int gsl_multifit_linear_Lk (const size_t P, const size_t
           K, gsl_matrix * L)
@@ -4517,7 +4624,8 @@ regression methods.
 
 * Fitting linear regression example::
 * Fitting multi-parameter linear regression example::
-* Fitting regularized linear regression example::
+* Fitting regularized linear regression example 1::
+* Fitting regularized linear regression example 2::
 * Fitting robust linear regression example::
 * Fitting large linear systems example::
 
@@ -4596,7 +4704,7 @@ and display it using the GNU plotutils 'graph' utility,
           -S 0 -I a -m 1 fit -m 2 hi -m 2 lo
 
 
-File: gsl-ref.info,  Node: Fitting multi-parameter linear regression example,  Next: Fitting regularized linear regression example,  Prev: Fitting linear regression example,  Up: Fitting Examples
+File: gsl-ref.info,  Node: Fitting multi-parameter linear regression example,  Next: Fitting regularized linear regression example 1,  Prev: Fitting linear regression example,  Up: Fitting Examples
 
 38.8.2 Multi-parameter Linear Regression Example
 ------------------------------------------------
@@ -4767,10 +4875,10 @@ matrix.  The chi-squared per degree of freedom is 1.4, indicating a
 reasonable fit to the data.
 
 
-File: gsl-ref.info,  Node: Fitting regularized linear regression example,  Next: Fitting robust linear regression example,  Prev: Fitting multi-parameter linear regression example,  Up: Fitting Examples
+File: gsl-ref.info,  Node: Fitting regularized linear regression example 1,  Next: Fitting regularized linear regression example 2,  Prev: Fitting multi-parameter linear regression example,  Up: Fitting Examples
 
-38.8.3 Regularized Linear Regression Example
---------------------------------------------
+38.8.3 Regularized Linear Regression Example 1
+----------------------------------------------
 
 The next program demonstrates the difference between ordinary and
 regularized least squares when the design matrix is near-singular.  In
@@ -4785,17 +4893,29 @@ Here is the program output:
      matrix condition number = 1.025113e+04
      === Unregularized fit ===
      best fit: y = -43.6588 u + 45.6636 v
+     residual norm = 31.6248
+     solution norm = 63.1764
      chisq/dof = 1.00213
-     === Regularized fit ===
+     === Regularized fit (L-curve) ===
      optimal lambda: 4.51103
      best fit: y = 1.00113 u + 1.0032 v
+     residual norm = 31.6547
+     solution norm = 1.41728
      chisq/dof = 1.04499
+     === Regularized fit (GCV) ===
+     optimal lambda: 0.0232029
+     best fit: y = -19.8367 u + 21.8417 v
+     residual norm = 31.6332
+     solution norm = 29.5051
+     chisq/dof = 1.00314
 
-We see that the regularized method with the optimal \lambda = 4.51103
-finds the correct solution c_1 \approx c_2 \approx 1, while the ordinary
-least squares solution is completely wrong.  The optimal regularization
-parameter \lambda is found by calculating the L-curve and finding its
-corner.  The L-curve and its computed corner are plotted below.
+We see that the ordinary least squares solution is completely wrong,
+while the L-curve regularized method with the optimal \lambda = 4.51103
+finds the correct solution c_1 \approx c_2 \approx 1.  The GCV
+regularized method finds a regularization parameter \lambda = 0.0232029
+which is too small to give an accurate solution, although it performs
+better than OLS. The L-curve and its computed corner, as well as the GCV
+curve and its minimum are plotted below.
 
 The program is given below.
      #include <gsl/gsl_math.h>
@@ -4835,17 +4955,21 @@ The program is given below.
          }
 
        {
-         const size_t nL = 200;                   /* number of points on L-curve */
+         const size_t npoints = 200;                   /* number of points on L-curve and GCV curve */
          gsl_multifit_linear_workspace *w =
            gsl_multifit_linear_alloc(n, p);
-         gsl_vector *c = gsl_vector_alloc(p);     /* OLS solution */
-         gsl_vector *c_reg = gsl_vector_alloc(p); /* regularized solution */
-         gsl_vector *reg_param = gsl_vector_alloc(nL);
-         gsl_vector *rho = gsl_vector_alloc(nL);  /* residual norms */
-         gsl_vector *eta = gsl_vector_alloc(nL);  /* solution norms */
-         double lambda;                           /* optimal regularization parameter */
-         size_t reg_idx;                          /* index of optimal lambda */
-         double rcond;                            /* reciprocal condition number of X */
+         gsl_vector *c = gsl_vector_alloc(p);          /* OLS solution */
+         gsl_vector *c_lcurve = gsl_vector_alloc(p);   /* regularized solution (L-curve) */
+         gsl_vector *c_gcv = gsl_vector_alloc(p);      /* regularized solution (GCV) */
+         gsl_vector *reg_param = gsl_vector_alloc(npoints);
+         gsl_vector *rho = gsl_vector_alloc(npoints);  /* residual norms */
+         gsl_vector *eta = gsl_vector_alloc(npoints);  /* solution norms */
+         gsl_vector *G = gsl_vector_alloc(npoints);    /* GCV function values */
+         double lambda_l;                              /* optimal regularization parameter (L-curve) */
+         double lambda_gcv;                            /* optimal regularization parameter (GCV) */
+         double G_gcv;                                 /* G(lambda_gcv) */
+         size_t reg_idx;                               /* index of optimal lambda */
+         double rcond;                                 /* reciprocal condition number of X */
          double chisq, rnorm, snorm;
 
          /* compute SVD of X */
@@ -4861,6 +4985,8 @@ The program is given below.
          fprintf(stderr, "=== Unregularized fit ===\n");
          fprintf(stderr, "best fit: y = %g u + %g v\n",
            gsl_vector_get(c, 0), gsl_vector_get(c, 1));
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
          fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
 
          /* calculate L-curve and find its corner */
@@ -4868,33 +4994,62 @@ The program is given below.
          gsl_multifit_linear_lcorner(rho, eta, &reg_idx);
 
          /* store optimal regularization parameter */
-         lambda = gsl_vector_get(reg_param, reg_idx);
+         lambda_l = gsl_vector_get(reg_param, reg_idx);
 
-         /* output L-curve */
-         for (i = 0; i < nL; ++i)
-           printf("%f %f\n", gsl_vector_get(rho, i), gsl_vector_get(eta, i));
+         /* regularize with lambda_l */
+         gsl_multifit_linear_solve(lambda_l, X, y, c_lcurve, &rnorm, &snorm, w);
+         chisq = pow(rnorm, 2.0) + pow(lambda_l * snorm, 2.0);
+
+         fprintf(stderr, "=== Regularized fit (L-curve) ===\n");
+         fprintf(stderr, "optimal lambda: %g\n", lambda_l);
+         fprintf(stderr, "best fit: y = %g u + %g v\n",
+                 gsl_vector_get(c_lcurve, 0), gsl_vector_get(c_lcurve, 1));
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
+         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+
+         /* calculate GCV curve and find its minimum */
+         gsl_multifit_linear_gcv(y, reg_param, G, &lambda_gcv, &G_gcv, w);
+
+         /* regularize with lambda_gcv */
+         gsl_multifit_linear_solve(lambda_gcv, X, y, c_gcv, &rnorm, &snorm, w);
+         chisq = pow(rnorm, 2.0) + pow(lambda_gcv * snorm, 2.0);
+
+         fprintf(stderr, "=== Regularized fit (GCV) ===\n");
+         fprintf(stderr, "optimal lambda: %g\n", lambda_gcv);
+         fprintf(stderr, "best fit: y = %g u + %g v\n",
+                 gsl_vector_get(c_gcv, 0), gsl_vector_get(c_gcv, 1));
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
+         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+
+         /* output L-curve and GCV curve */
+         for (i = 0; i < npoints; ++i)
+           {
+             printf("%e %e %e %e\n",
+                    gsl_vector_get(reg_param, i),
+                    gsl_vector_get(rho, i),
+                    gsl_vector_get(eta, i),
+                    gsl_vector_get(G, i));
+           }
 
          /* output L-curve corner point */
          printf("\n\n%f %f\n",
                 gsl_vector_get(rho, reg_idx),
                 gsl_vector_get(eta, reg_idx));
 
-         /* regularize with lambda */
-         gsl_multifit_linear_solve(lambda, X, y, c_reg, &rnorm, &snorm, w);
-         chisq = pow(rnorm, 2.0) + pow(lambda * snorm, 2.0);
-
-         fprintf(stderr, "=== Regularized fit ===\n");
-         fprintf(stderr, "optimal lambda: %g\n", lambda);
-         fprintf(stderr, "best fit: y = %g u + %g v\n",
-                 gsl_vector_get(c_reg, 0), gsl_vector_get(c_reg, 1));
-         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+         /* output GCV curve corner minimum */
+         printf("\n\n%e %e\n",
+                lambda_gcv,
+                G_gcv);
 
          gsl_multifit_linear_free(w);
          gsl_vector_free(c);
-         gsl_vector_free(c_reg);
+         gsl_vector_free(c_lcurve);
          gsl_vector_free(reg_param);
          gsl_vector_free(rho);
          gsl_vector_free(eta);
+         gsl_vector_free(G);
        }
 
        gsl_rng_free(r);
@@ -4905,9 +5060,199 @@ The program is given below.
      }
 
 
-File: gsl-ref.info,  Node: Fitting robust linear regression example,  Next: Fitting large linear systems example,  Prev: Fitting regularized linear regression example,  Up: Fitting Examples
+File: gsl-ref.info,  Node: Fitting regularized linear regression example 2,  Next: Fitting robust linear regression example,  Prev: Fitting regularized linear regression example 1,  Up: Fitting Examples
 
-38.8.4 Robust Linear Regression Example
+38.8.4 Regularized Linear Regression Example 2
+----------------------------------------------
+
+The following example program minimizes the cost function
+
+     ||y - X c||^2 + \lambda^2 ||x||^2
+
+where X is the 10-by-8 Hilbert matrix whose entries are given by
+
+     X_{ij} = 1 / (i + j - 1)
+
+and the right hand side vector is given by y =
+[1,-1,1,-1,1,-1,1,-1,1,-1]^T.  Solutions are computed for \lambda = 0
+(unregularized) as well as for optimal parameters \lambda chosen by
+analyzing the L-curve and GCV curve.
+
+Here is the program output:
+     matrix condition number = 3.565872e+09
+     === Unregularized fit ===
+     residual norm = 2.15376
+     solution norm = 2.92217e+09
+     chisq/dof = 2.31934
+     === Regularized fit (L-curve) ===
+     optimal lambda: 7.11407e-07
+     residual norm = 2.60386
+     solution norm = 424507
+     chisq/dof = 3.43565
+     === Regularized fit (GCV) ===
+     optimal lambda: 1.72278
+     residual norm = 3.1375
+     solution norm = 0.139357
+     chisq/dof = 4.95076
+
+Here we see the unregularized solution results in a large solution norm
+due to the ill-conditioned matrix.  The L-curve solution finds a small
+value of \lambda = 7.11e-7 which still results in a badly conditioned
+system and a large solution norm.  The GCV method finds a parameter
+\lambda = 1.72 which results in a well-conditioned system and small
+solution norm.
+
+The L-curve and its computed corner, as well as the GCV curve and its
+minimum are plotted below.
+
+The program is given below.
+     #include <gsl/gsl_math.h>
+     #include <gsl/gsl_vector.h>
+     #include <gsl/gsl_matrix.h>
+     #include <gsl/gsl_multifit.h>
+     #include <gsl/gsl_blas.h>
+
+     static int
+     hilbert_matrix(gsl_matrix * m)
+     {
+       const size_t N = m->size1;
+       const size_t M = m->size2;
+       size_t i, j;
+
+       for (i = 0; i < N; i++)
+         {
+           for (j = 0; j < M; j++)
+             {
+               gsl_matrix_set(m, i, j, 1.0/(i+j+1.0));
+             }
+         }
+
+       return GSL_SUCCESS;
+     }
+
+     int
+     main()
+     {
+       const size_t n = 10; /* number of observations */
+       const size_t p = 8;  /* number of model parameters */
+       size_t i;
+       gsl_matrix *X = gsl_matrix_alloc(n, p);
+       gsl_vector *y = gsl_vector_alloc(n);
+
+       /* construct Hilbert matrix and rhs vector */
+       hilbert_matrix(X);
+
+       {
+         double val = 1.0;
+         for (i = 0; i < n; ++i)
+           {
+             gsl_vector_set(y, i, val);
+             val *= -1.0;
+           }
+       }
+
+       {
+         const size_t npoints = 200;                   /* number of points on L-curve and GCV curve */
+         gsl_multifit_linear_workspace *w =
+           gsl_multifit_linear_alloc(n, p);
+         gsl_vector *c = gsl_vector_alloc(p);          /* OLS solution */
+         gsl_vector *c_lcurve = gsl_vector_alloc(p);   /* regularized solution (L-curve) */
+         gsl_vector *c_gcv = gsl_vector_alloc(p);      /* regularized solution (GCV) */
+         gsl_vector *reg_param = gsl_vector_alloc(npoints);
+         gsl_vector *rho = gsl_vector_alloc(npoints);  /* residual norms */
+         gsl_vector *eta = gsl_vector_alloc(npoints);  /* solution norms */
+         gsl_vector *G = gsl_vector_alloc(npoints);    /* GCV function values */
+         double lambda_l;                              /* optimal regularization parameter (L-curve) */
+         double lambda_gcv;                            /* optimal regularization parameter (GCV) */
+         double G_gcv;                                 /* G(lambda_gcv) */
+         size_t reg_idx;                               /* index of optimal lambda */
+         double rcond;                                 /* reciprocal condition number of X */
+         double chisq, rnorm, snorm;
+
+         /* compute SVD of X */
+         gsl_multifit_linear_svd(X, w);
+
+         rcond = gsl_multifit_linear_rcond(w);
+         fprintf(stderr, "matrix condition number = %e\n", 1.0 / rcond);
+
+         /* unregularized (standard) least squares fit, lambda = 0 */
+         gsl_multifit_linear_solve(0.0, X, y, c, &rnorm, &snorm, w);
+         chisq = pow(rnorm, 2.0);
+
+         fprintf(stderr, "=== Unregularized fit ===\n");
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
+         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+
+         /* calculate L-curve and find its corner */
+         gsl_multifit_linear_lcurve(y, reg_param, rho, eta, w);
+         gsl_multifit_linear_lcorner(rho, eta, &reg_idx);
+
+         /* store optimal regularization parameter */
+         lambda_l = gsl_vector_get(reg_param, reg_idx);
+
+         /* regularize with lambda_l */
+         gsl_multifit_linear_solve(lambda_l, X, y, c_lcurve, &rnorm, &snorm, w);
+         chisq = pow(rnorm, 2.0) + pow(lambda_l * snorm, 2.0);
+
+         fprintf(stderr, "=== Regularized fit (L-curve) ===\n");
+         fprintf(stderr, "optimal lambda: %g\n", lambda_l);
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
+         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+
+         /* calculate GCV curve and find its minimum */
+         gsl_multifit_linear_gcv(y, reg_param, G, &lambda_gcv, &G_gcv, w);
+
+         /* regularize with lambda_gcv */
+         gsl_multifit_linear_solve(lambda_gcv, X, y, c_gcv, &rnorm, &snorm, w);
+         chisq = pow(rnorm, 2.0) + pow(lambda_gcv * snorm, 2.0);
+
+         fprintf(stderr, "=== Regularized fit (GCV) ===\n");
+         fprintf(stderr, "optimal lambda: %g\n", lambda_gcv);
+         fprintf(stderr, "residual norm = %g\n", rnorm);
+         fprintf(stderr, "solution norm = %g\n", snorm);
+         fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
+
+         /* output L-curve and GCV curve */
+         for (i = 0; i < npoints; ++i)
+           {
+             printf("%e %e %e %e\n",
+                    gsl_vector_get(reg_param, i),
+                    gsl_vector_get(rho, i),
+                    gsl_vector_get(eta, i),
+                    gsl_vector_get(G, i));
+           }
+
+         /* output L-curve corner point */
+         printf("\n\n%f %f\n",
+                gsl_vector_get(rho, reg_idx),
+                gsl_vector_get(eta, reg_idx));
+
+         /* output GCV curve corner minimum */
+         printf("\n\n%e %e\n",
+                lambda_gcv,
+                G_gcv);
+
+         gsl_multifit_linear_free(w);
+         gsl_vector_free(c);
+         gsl_vector_free(c_lcurve);
+         gsl_vector_free(reg_param);
+         gsl_vector_free(rho);
+         gsl_vector_free(eta);
+         gsl_vector_free(G);
+       }
+
+       gsl_matrix_free(X);
+       gsl_vector_free(y);
+
+       return 0;
+     }
+
+
+File: gsl-ref.info,  Node: Fitting robust linear regression example,  Next: Fitting large linear systems example,  Prev: Fitting regularized linear regression example 2,  Up: Fitting Examples
+
+38.8.5 Robust Linear Regression Example
 ---------------------------------------
 
 The next program demonstrates the advantage of robust least squares on a
@@ -5044,7 +5389,7 @@ outliers into the dataset.  Both the robust and ordinary least squares
 
 File: gsl-ref.info,  Node: Fitting large linear systems example,  Prev: Fitting robust linear regression example,  Up: Fitting Examples
 
-38.8.5 Large Dense Linear Regression Example
+38.8.6 Large Dense Linear Regression Example
 --------------------------------------------
 
 The following program demostrates the large dense linear least squares
@@ -5709,6 +6054,7 @@ Each of these parameters is discussed in further detail below.
           This selects the double dogleg algorithm.
 
       -- Option: gsl_multifit_nlinear_trs_subspace2D
+      -- Option: gsl_multilarge_nlinear_trs_subspace2D
           This selects the 2D subspace algorithm.
 
       -- Option: gsl_multilarge_nlinear_trs_cgst
@@ -6688,492 +7034,6 @@ system is too small to really benefit.
        gsl_multifit_nlinear_free (w);
        gsl_matrix_free (covar);
        gsl_rng_free (r);
-
-       return 0;
-     }
-
-
-File: gsl-ref.info,  Node: Nonlinear Least-Squares Geodesic Acceleration Example,  Next: Nonlinear Least-Squares Comparison Example,  Prev: Nonlinear Least-Squares Exponential Fit Example,  Up: Nonlinear Least-Squares Examples
-
-39.12.2 Geodesic Acceleration Example
--------------------------------------
-
-The following example program minimizes a modified Rosenbrock function,
-which is characterized by a narrow canyon with steep walls.  The
-starting point is selected high on the canyon wall, so the solver must
-first find the canyon bottom and then navigate to the minimum.  The
-problem is solved both with and without using geodesic acceleration for
-comparison.  The cost function is given by
-
-     Phi(x) = 1/2 (f1^2 + f2^2)
-     f1 = 100 ( x2 - x1^2 )
-     f2 = 1 - x1
-
-The Jacobian matrix is given by
-
-     J = [ -200*x1 100 ; -1 0 ]
-
-In order to use geodesic acceleration, the user must provide the second
-directional derivative of each residual in the velocity direction, D_v^2
-f_i = \sum_{\alpha\beta} v_{\alpha} v_{\beta} \partial_{\alpha}
-\partial_{\beta} f_i.  The velocity vector v is provided by the solver.
-For this example, these derivatives are given by
-
-     fvv = [ -200 v1^2 ; 0 ]
-
-The solution of this minimization problem is given by
-
-     x* = [ 1 ; 1 ]
-     Phi(x*) = 0
-
-The program output is shown below.
-
-     === Solving system without acceleration ===
-     NITER         = 53
-     NFEV          = 56
-     NJEV          = 54
-     NAEV          = 0
-     initial cost  = 2.250225000000e+04
-     final cost    = 6.674986031430e-18
-     final x       = (9.999999974165e-01, 9.999999948328e-01)
-     final cond(J) = 6.000096055094e+02
-     === Solving system with acceleration ===
-     NITER         = 15
-     NFEV          = 17
-     NJEV          = 16
-     NAEV          = 16
-     initial cost  = 2.250225000000e+04
-     final cost    = 7.518932873279e-19
-     final x       = (9.999999991329e-01, 9.999999982657e-01)
-     final cond(J) = 6.000097233278e+02
-
-We can see that enabling geodesic acceleration requires less than a
-third of the number of Jacobian evaluations in order to locate the
-minimum.  The path taken by both methods is shown in the figure below.
-The contours show the cost function \Phi(x_1,x_2).  We see that both
-methods quickly find the canyon bottom, but the geodesic acceleration
-method navigates along the bottom to the solution with significantly
-fewer iterations.
-
-The program is given below.
-
-     #include <stdlib.h>
-     #include <stdio.h>
-     #include <gsl/gsl_vector.h>
-     #include <gsl/gsl_matrix.h>
-     #include <gsl/gsl_blas.h>
-     #include <gsl/gsl_multifit_nlinear.h>
-
-     int
-     func_f (const gsl_vector * x, void *params, gsl_vector * f)
-     {
-       double x1 = gsl_vector_get(x, 0);
-       double x2 = gsl_vector_get(x, 1);
-
-       gsl_vector_set(f, 0, 100.0 * (x2 - x1*x1));
-       gsl_vector_set(f, 1, 1.0 - x1);
-
-       return GSL_SUCCESS;
-     }
-
-     int
-     func_df (const gsl_vector * x, void *params, gsl_matrix * J)
-     {
-       double x1 = gsl_vector_get(x, 0);
-
-       gsl_matrix_set(J, 0, 0, -200.0*x1);
-       gsl_matrix_set(J, 0, 1, 100.0);
-       gsl_matrix_set(J, 1, 0, -1.0);
-       gsl_matrix_set(J, 1, 1, 0.0);
-
-       return GSL_SUCCESS;
-     }
-
-     int
-     func_fvv (const gsl_vector * x, const gsl_vector * v,
-               void *params, gsl_vector * fvv)
-     {
-       double v1 = gsl_vector_get(v, 0);
-
-       gsl_vector_set(fvv, 0, -200.0 * v1 * v1);
-       gsl_vector_set(fvv, 1, 0.0);
-
-       return GSL_SUCCESS;
-     }
-
-     void
-     callback(const size_t iter, void *params,
-              const gsl_multifit_nlinear_workspace *w)
-     {
-       gsl_vector * x = gsl_multifit_nlinear_position(w);
-
-       /* print out current location */
-       printf("%f %f\n",
-              gsl_vector_get(x, 0),
-              gsl_vector_get(x, 1));
-     }
-
-     void
-     solve_system(gsl_vector *x0, gsl_multifit_nlinear_fdf *fdf,
-                  gsl_multifit_nlinear_parameters *params)
-     {
-       const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
-       const size_t max_iter = 200;
-       const double xtol = 1.0e-8;
-       const double gtol = 1.0e-8;
-       const double ftol = 1.0e-8;
-       const size_t n = fdf->n;
-       const size_t p = fdf->p;
-       gsl_multifit_nlinear_workspace *work =
-         gsl_multifit_nlinear_alloc(T, params, n, p);
-       gsl_vector * f = gsl_multifit_nlinear_residual(work);
-       gsl_vector * x = gsl_multifit_nlinear_position(work);
-       int info;
-       double chisq0, chisq, rcond;
-
-       /* initialize solver */
-       gsl_multifit_nlinear_init(x0, fdf, work);
-
-       /* store initial cost */
-       gsl_blas_ddot(f, f, &chisq0);
-
-       /* iterate until convergence */
-       gsl_multifit_nlinear_driver(max_iter, xtol, gtol, ftol,
-                                   callback, NULL, &info, work);
-
-       /* store final cost */
-       gsl_blas_ddot(f, f, &chisq);
-
-       /* store cond(J(x)) */
-       gsl_multifit_nlinear_rcond(&rcond, work);
-
-       /* print summary */
-
-       fprintf(stderr, "NITER         = %zu\n", gsl_multifit_nlinear_niter(work));
-       fprintf(stderr, "NFEV          = %zu\n", fdf->nevalf);
-       fprintf(stderr, "NJEV          = %zu\n", fdf->nevaldf);
-       fprintf(stderr, "NAEV          = %zu\n", fdf->nevalfvv);
-       fprintf(stderr, "initial cost  = %.12e\n", chisq0);
-       fprintf(stderr, "final cost    = %.12e\n", chisq);
-       fprintf(stderr, "final x       = (%.12e, %.12e)\n",
-               gsl_vector_get(x, 0), gsl_vector_get(x, 1));
-       fprintf(stderr, "final cond(J) = %.12e\n", 1.0 / rcond);
-
-       printf("\n\n");
-
-       gsl_multifit_nlinear_free(work);
-     }
-
-     int
-     main (void)
-     {
-       const size_t n = 2;
-       const size_t p = 2;
-       gsl_vector *f = gsl_vector_alloc(n);
-       gsl_vector *x = gsl_vector_alloc(p);
-       gsl_multifit_nlinear_fdf fdf;
-       gsl_multifit_nlinear_parameters fdf_params =
-         gsl_multifit_nlinear_default_parameters();
-
-       /* print map of Phi(x1, x2) */
-       {
-         double x1, x2, chisq;
-         double *f1 = gsl_vector_ptr(f, 0);
-         double *f2 = gsl_vector_ptr(f, 1);
-
-         for (x1 = -1.2; x1 < 1.3; x1 += 0.1)
-           {
-             for (x2 = -0.5; x2 < 2.1; x2 += 0.1)
-               {
-                 gsl_vector_set(x, 0, x1);
-                 gsl_vector_set(x, 1, x2);
-                 func_f(x, NULL, f);
-
-                 chisq = (*f1) * (*f1) + (*f2) * (*f2);
-                 printf("%f %f %f\n", x1, x2, chisq);
-               }
-             printf("\n");
-           }
-         printf("\n\n");
-       }
-
-       /* define function to be minimized */
-       fdf.f = func_f;
-       fdf.df = func_df;
-       fdf.fvv = func_fvv;
-       fdf.n = n;
-       fdf.p = p;
-       fdf.params = NULL;
-
-       /* starting point */
-       gsl_vector_set(x, 0, -0.5);
-       gsl_vector_set(x, 1, 1.75);
-
-       fprintf(stderr, "=== Solving system without acceleration ===\n");
-       fdf_params.trs = gsl_multifit_nlinear_trs_lm;
-       solve_system(x, &fdf, &fdf_params);
-
-       fprintf(stderr, "=== Solving system with acceleration ===\n");
-       fdf_params.trs = gsl_multifit_nlinear_trs_lmaccel;
-       solve_system(x, &fdf, &fdf_params);
-
-       gsl_vector_free(f);
-       gsl_vector_free(x);
-
-       return 0;
-     }
-
-
-File: gsl-ref.info,  Node: Nonlinear Least-Squares Comparison Example,  Next: Nonlinear Least-Squares Large Example,  Prev: Nonlinear Least-Squares Geodesic Acceleration Example,  Up: Nonlinear Least-Squares Examples
-
-39.12.3 Comparing TRS Methods Example
--------------------------------------
-
-The following program compares all available nonlinear least squares
-trust-region subproblem (TRS) methods on the Branin function, a common
-optimization test problem.  The cost function is given by
-
-     \Phi(x) &= 1/2 (f_1^2 + f_2^2)
-     f_1 &= x_2 + a_1 x_1^2 + a_2 x_1 + a_3
-     f_2 &= sqrt(a_4) sqrt(1 + (1 - a_5) cos(x_1))
-
-   with a_1 = -{5.1 \over 4 \pi^2}, a_2 = {5 \over \pi}, a_3 = -6, a_4 =
-10, a_5 = {1 \over 8\pi}.  There are three minima of this function in
-the range (x_1,x_2) \in [-5,15] \times [-5,15].  The program below uses
-the starting point (x_1,x_2) = (6,14.5) and calculates the solution with
-all available nonlinear least squares TRS methods.  The program output
-is shown below.
-
-Method                    NITER  NFEV  NJEV  Initial Cost  Final cost   Final cond(J) Final x
-levenberg-marquardt       20     27    21    1.9874e+02    3.9789e-01   6.1399e+07    (-3.14e+00, 1.23e+01)
-levenberg-marquardt+accel 27     36    28    1.9874e+02    3.9789e-01   1.4465e+07    (3.14e+00, 2.27e+00)
-dogleg                    23     64    23    1.9874e+02    3.9789e-01   5.0692e+08    (3.14e+00, 2.28e+00)
-double-dogleg             24     69    24    1.9874e+02    3.9789e-01   3.4879e+07    (3.14e+00, 2.27e+00)
-2D-subspace               23     54    24    1.9874e+02    3.9789e-01   2.5142e+07    (3.14e+00, 2.27e+00)
-
-The first row of output above corresponds to standard
-Levenberg-Marquardt, while the second row includes geodesic
-acceleration.  We see that the standard LM method converges to the
-minimum at (-\pi,12.275) and also uses the least number of iterations
-and Jacobian evaluations.  All other methods converge to the minimum
-(\pi,2.275) and perform similarly in terms of number of Jacobian
-evaluations.  We see that J is fairly ill-conditioned at both minima,
-indicating that the QR (or SVD) solver is the best choice for this
-problem.  Since there are only two parameters in this optimization
-problem, we can easily visualize the paths taken by each method, which
-are shown in the figure below.  The figure shows contours of the cost
-function \Phi(x_1,x_2) which exhibits three global minima in the range
-[-5,15] \times [-5,15].  The paths taken by each solver are shown as
-colored lines.
-
-The program is given below.
-
-     #include <stdlib.h>
-     #include <stdio.h>
-     #include <gsl/gsl_vector.h>
-     #include <gsl/gsl_matrix.h>
-     #include <gsl/gsl_blas.h>
-     #include <gsl/gsl_multifit_nlinear.h>
-
-     /* parameters to model */
-     struct model_params
-     {
-       double a1;
-       double a2;
-       double a3;
-       double a4;
-       double a5;
-     };
-
-     /* Branin function */
-     int
-     func_f (const gsl_vector * x, void *params, gsl_vector * f)
-     {
-       struct model_params *par = (struct model_params *) params;
-       double x1 = gsl_vector_get(x, 0);
-       double x2 = gsl_vector_get(x, 1);
-       double f1 = x2 + par->a1 * x1 * x1 + par->a2 * x1 + par->a3;
-       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * cos(x1));
-
-       gsl_vector_set(f, 0, f1);
-       gsl_vector_set(f, 1, f2);
-
-       return GSL_SUCCESS;
-     }
-
-     int
-     func_df (const gsl_vector * x, void *params, gsl_matrix * J)
-     {
-       struct model_params *par = (struct model_params *) params;
-       double x1 = gsl_vector_get(x, 0);
-       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * cos(x1));
-
-       gsl_matrix_set(J, 0, 0, 2.0 * par->a1 * x1 + par->a2);
-       gsl_matrix_set(J, 0, 1, 1.0);
-
-       gsl_matrix_set(J, 1, 0, -0.5 * par->a4 / f2 * (1.0 - par->a5) * sin(x1));
-       gsl_matrix_set(J, 1, 1, 0.0);
-
-       return GSL_SUCCESS;
-     }
-
-     int
-     func_fvv (const gsl_vector * x, const gsl_vector * v,
-               void *params, gsl_vector * fvv)
-     {
-       struct model_params *par = (struct model_params *) params;
-       double x1 = gsl_vector_get(x, 0);
-       double v1 = gsl_vector_get(v, 0);
-       double c = cos(x1);
-       double s = sin(x1);
-       double f2 = sqrt(par->a4) * sqrt(1.0 + (1.0 - par->a5) * c);
-       double t = 0.5 * par->a4 * (1.0 - par->a5) / f2;
-
-       gsl_vector_set(fvv, 0, 2.0 * par->a1 * v1 * v1);
-       gsl_vector_set(fvv, 1, -t * (c + s*s/f2) * v1 * v1);
-
-       return GSL_SUCCESS;
-     }
-
-     void
-     callback(const size_t iter, void *params,
-              const gsl_multifit_nlinear_workspace *w)
-     {
-       gsl_vector * x = gsl_multifit_nlinear_position(w);
-       double x1 = gsl_vector_get(x, 0);
-       double x2 = gsl_vector_get(x, 1);
-
-       /* print out current location */
-       printf("%f %f\n", x1, x2);
-     }
-
-     void
-     solve_system(gsl_vector *x0, gsl_multifit_nlinear_fdf *fdf,
-                  gsl_multifit_nlinear_parameters *params)
-     {
-       const gsl_multifit_nlinear_type *T = gsl_multifit_nlinear_trust;
-       const size_t max_iter = 200;
-       const double xtol = 1.0e-8;
-       const double gtol = 1.0e-8;
-       const double ftol = 1.0e-8;
-       const size_t n = fdf->n;
-       const size_t p = fdf->p;
-       gsl_multifit_nlinear_workspace *work =
-         gsl_multifit_nlinear_alloc(T, params, n, p);
-       gsl_vector * f = gsl_multifit_nlinear_residual(work);
-       gsl_vector * x = gsl_multifit_nlinear_position(work);
-       int info;
-       double chisq0, chisq, rcond;
-
-       printf("# %s/%s\n",
-              gsl_multifit_nlinear_name(work),
-              gsl_multifit_nlinear_trs_name(work));
-
-       /* initialize solver */
-       gsl_multifit_nlinear_init(x0, fdf, work);
-
-       /* store initial cost */
-       gsl_blas_ddot(f, f, &chisq0);
-
-       /* iterate until convergence */
-       gsl_multifit_nlinear_driver(max_iter, xtol, gtol, ftol,
-                                   callback, NULL, &info, work);
-
-       /* store final cost */
-       gsl_blas_ddot(f, f, &chisq);
-
-       /* store cond(J(x)) */
-       gsl_multifit_nlinear_rcond(&rcond, work);
-
-       /* print summary */
-       fprintf(stderr, "%-25s %-6zu %-5zu %-5zu %-13.4e %-12.4e %-13.4e (%.2e, %.2e)\n",
-               gsl_multifit_nlinear_trs_name(work),
-               gsl_multifit_nlinear_niter(work),
-               fdf->nevalf,
-               fdf->nevaldf,
-               chisq0,
-               chisq,
-               1.0 / rcond,
-               gsl_vector_get(x, 0),
-               gsl_vector_get(x, 1));
-
-       printf("\n\n");
-
-       gsl_multifit_nlinear_free(work);
-     }
-
-     int
-     main (void)
-     {
-       const size_t n = 2;
-       const size_t p = 2;
-       gsl_vector *f = gsl_vector_alloc(n);
-       gsl_vector *x = gsl_vector_alloc(p);
-       gsl_multifit_nlinear_fdf fdf;
-       gsl_multifit_nlinear_parameters fdf_params =
-         gsl_multifit_nlinear_default_parameters();
-       struct model_params params;
-
-       params.a1 = -5.1 / (4.0 * M_PI * M_PI);
-       params.a2 = 5.0 / M_PI;
-       params.a3 = -6.0;
-       params.a4 = 10.0;
-       params.a5 = 1.0 / (8.0 * M_PI);
-
-       /* print map of Phi(x1, x2) */
-       {
-         double x1, x2, chisq;
-
-         for (x1 = -5.0; x1 < 15.0; x1 += 0.1)
-           {
-             for (x2 = -5.0; x2 < 15.0; x2 += 0.1)
-               {
-                 gsl_vector_set(x, 0, x1);
-                 gsl_vector_set(x, 1, x2);
-                 func_f(x, &params, f);
-
-                 gsl_blas_ddot(f, f, &chisq);
-
-                 printf("%f %f %f\n", x1, x2, chisq);
-               }
-             printf("\n");
-           }
-         printf("\n\n");
-       }
-
-       /* define function to be minimized */
-       fdf.f = func_f;
-       fdf.df = func_df;
-       fdf.fvv = func_fvv;
-       fdf.n = n;
-       fdf.p = p;
-       fdf.params = &params;
-
-       /* starting point */
-       gsl_vector_set(x, 0, 6.0);
-       gsl_vector_set(x, 1, 14.5);
-
-       fprintf(stderr, "%-25s %-6s %-5s %-5s %-13s %-12s %-13s %-15s\n",
-               "Method", "NITER", "NFEV", "NJEV", "Initial Cost",
-               "Final cost", "Final cond(J)", "Final x");
-
-       fdf_params.trs = gsl_multifit_nlinear_trs_lm;
-       solve_system(x, &fdf, &fdf_params);
-
-       fdf_params.trs = gsl_multifit_nlinear_trs_lmaccel;
-       solve_system(x, &fdf, &fdf_params);
-
-       fdf_params.trs = gsl_multifit_nlinear_trs_dogleg;
-       solve_system(x, &fdf, &fdf_params);
-
-       fdf_params.trs = gsl_multifit_nlinear_trs_ddogleg;
-       solve_system(x, &fdf, &fdf_params);
-
-       fdf_params.trs = gsl_multifit_nlinear_trs_subspace2D;
-       solve_system(x, &fdf, &fdf_params);
-
-       gsl_vector_free(f);
-       gsl_vector_free(x);
 
        return 0;
      }

@@ -25,7 +25,8 @@
  * Inputs: X        - least squares matrix
  *         y        - right hand side vector
  *         tol      - singular value tolerance
- *         lambda   - Tikhonov regularization parameter lambda
+ *         lambda   - Tikhonov regularization parameter lambda;
+ *                    ignored if <= 0
  *         rank     - (output) effective rank
  *         c        - (output) model coefficient vector
  *         rnorm    - (output) residual norm ||y - X c||
@@ -43,6 +44,8 @@
  *    the input y points to work->t, which contains sqrt(W) y. Since
  *    work->t is also used as scratch workspace by this function, we
  *    do the necessary computations with y first to avoid problems.
+ * 4) When lambda <= 0, singular values are truncated when:
+ *    s_j <= tol * s_0
  */
 
 static int
@@ -76,10 +79,6 @@ multifit_linear_solve (const gsl_matrix * X,
   else if (tol <= 0)
     {
       GSL_ERROR ("tolerance must be positive", GSL_EINVAL);
-    }
-  else if (lambda < 0.0)
-    {
-      GSL_ERROR ("lambda must be non-negative", GSL_EINVAL);
     }
   else
     {

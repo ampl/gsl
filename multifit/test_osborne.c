@@ -21,7 +21,11 @@ osborne_checksol(const double x[], const double sumsq,
 {
   const double sumsq_exact = 5.464894697482687e-05;
   const double osborne_x[osborne_P] = {
-    3.754100521058740e-01, GSL_NAN, GSL_NAN, GSL_NAN, GSL_NAN };
+    3.754100521058740e-01,
+   -99999.0,
+   -99999.0,
+   -99999.0,
+   -99999.0 };
 
   gsl_test_rel(sumsq, sumsq_exact, epsrel, "%s/%s sumsq",
                sname, pname);

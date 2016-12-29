@@ -20,7 +20,7 @@ beale_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < beale_P; ++i)
     {
-      gsl_test_rel(x[i], beale_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], beale_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -105,6 +105,7 @@ static test_fdf_problem beale_problem =
 {
   "beale",
   beale_x0,
+  NULL,
   NULL,
   &beale_epsrel,
   &beale_checksol,

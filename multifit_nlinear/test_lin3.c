@@ -106,6 +106,7 @@ static test_fdf_problem lin3_problem =
   "linear_rank1zeros",
   lin3_x0,
   NULL,
+  NULL,
   &lin3_epsrel,
   &lin3_checksol,
   &lin3_func

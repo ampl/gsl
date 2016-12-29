@@ -440,7 +440,8 @@ figures = multimin.eps siman-test.eps siman-energy.eps 12-cities.eps \
 	rand-gaussian-tail.tex rand-gumbel1.tex rand-gumbel2.tex \
 	landau.dat rand-landau.tex dwt-orig.eps dwt-samp.eps \
 	interpp2.eps bspline.eps robust.eps sparse_poisson.eps \
-	interp_compare.eps lcurve.eps multilarge.eps
+	interp_compare.eps regularized.eps regularized2.eps \
+	multilarge.eps
 noinst_DATA = $(figures)
 EXTRA_DIST = $(man_MANS) $(noinst_DATA) gsl-design.texi fftalgorithms.tex fftalgorithms.bib algorithm.sty algorithmic.sty calc.sty statnotes.tex
 all: all-recursive

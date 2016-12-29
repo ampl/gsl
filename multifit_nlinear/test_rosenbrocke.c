@@ -20,7 +20,7 @@ rosenbrocke_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < rosenbrocke_P; ++i)
     {
-      gsl_test_rel(x[i], rosenbrocke_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], rosenbrocke_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -102,6 +102,7 @@ static test_fdf_problem rosenbrocke_problem =
 {
   "rosenbrock_extended",
   rosenbrocke_x0,
+  NULL,
   NULL,
   &rosenbrocke_epsrel,
   &rosenbrocke_checksol,

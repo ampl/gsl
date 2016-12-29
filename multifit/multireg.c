@@ -63,8 +63,8 @@ gsl_multifit_linear_applyW()
 Inputs: X    - least squares matrix n-by-p
         w    - weight vector n-by-1 or NULL for W = I
         y    - right hand side n-by-1
-        WX   - (output) sqrt(W) X
-        Wy   - (output) sqrt(W) y
+        WX   - (output) sqrt(W) X, n-by-p
+        Wy   - (output) sqrt(W) y, n-by-1
 
 Notes:
 1) If w = NULL, on output WX = X and Wy = y
@@ -1195,6 +1195,7 @@ gsl_multifit_linear_Lsobolev(const size_t p, const size_t kmax,
           s = gsl_multifit_linear_Lk(p, k, &Lk.matrix);
           if (s)
             return s;
+
           gsl_matrix_scale(&Lk.matrix, ak);
 
           /* LTL += L_k^T L_k */

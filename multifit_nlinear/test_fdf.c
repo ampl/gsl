@@ -21,6 +21,7 @@ typedef struct
 {
   const char *name;
   double *x0;       /* initial parameters (size p) */
+  double *weights;  /* data weights */
   double *sigma;
   double *epsrel;   /* relative tolerance for solution checking */
   void (*checksol) (const double x[], const double sumsq,
@@ -74,8 +75,7 @@ static void test_fdf(const gsl_multifit_nlinear_type * T,
                      const double xtol, const double gtol,
                      const double ftol,
                      const double epsrel,
-                     test_fdf_problem *problem,
-                     const double *wts);
+                     test_fdf_problem *problem);
 static void test_fdf_checksol(const char *sname, const char *pname,
                               const double epsrel,
                               gsl_multifit_nlinear_workspace *s,
@@ -175,6 +175,10 @@ static test_fdf_problem *test_problems[] = {
   /*&rat43a_problem,*/
   &rat43b_problem,
 
+  /* weighted test cases */
+  &wnlin_problem1,
+  &wnlin_problem2,
+
   NULL
 };
 
@@ -193,7 +197,7 @@ test_fdf_main(const gsl_multifit_nlinear_parameters * params)
       gsl_multifit_nlinear_fdf fdf;
 
       test_fdf(gsl_multifit_nlinear_trust, params, xtol, gtol, ftol,
-               epsrel, problem, NULL);
+               epsrel, problem);
 
       /* test finite difference Jacobian
        * XXX: watson problem doesn't work with forward differences */
@@ -203,12 +207,12 @@ test_fdf_main(const gsl_multifit_nlinear_parameters * params)
           problem->fdf->df = NULL;
 
           test_fdf(gsl_multifit_nlinear_trust, params, xtol, gtol, ftol,
-                   1.0e3 * epsrel, problem, NULL);
+                   1.0e3 * epsrel, problem);
 
           problem->fdf->df = fdf.df;
         }
 
-#if 0 /*XXX: box3d test fails on MacOS here */
+#if 1 /*XXX: box3d test fails on MacOS here */
       if (params->trs == gsl_multifit_nlinear_trs_lmaccel && problem->fdf->fvv != NULL)
         {
           /* test finite difference second directional derivative */
@@ -216,22 +220,12 @@ test_fdf_main(const gsl_multifit_nlinear_parameters * params)
           problem->fdf->fvv = NULL;
 
           test_fdf(gsl_multifit_nlinear_trust, params, xtol, gtol, ftol,
-                   epsrel / params->h_fvv, problem, NULL);
+                   epsrel / params->h_fvv, problem);
 
           problem->fdf->fvv = fdf.fvv;
         }
 #endif
     }
-
-  /* test weighted nonlinear least squares */
-
-  /* internal weighting in _f and _df functions */
-  test_fdf(gsl_multifit_nlinear_trust, params, xtol, gtol, ftol,
-           wnlin_epsrel, &wnlin_problem1, NULL);
-
-  /* weighting through nlinear_winit */
-  test_fdf(gsl_multifit_nlinear_trust, params, xtol, gtol, ftol,
-           wnlin_epsrel, &wnlin_problem2, wnlin_W);
 }
 
 /*
@@ -245,7 +239,6 @@ Inputs: T        - solver to use
         ftol     - tolerance in residual vector
         epsrel   - relative error tolerance in solution
         problem  - contains the nonlinear problem and solution point
-        wts      - weight vector (NULL for unweighted)
 */
 
 static void
@@ -253,8 +246,7 @@ test_fdf(const gsl_multifit_nlinear_type * T,
          const gsl_multifit_nlinear_parameters * params,
          const double xtol, const double gtol, const double ftol,
          const double epsrel,
-         test_fdf_problem *problem,
-         const double *wts)
+         test_fdf_problem *problem)
 {
   gsl_multifit_nlinear_fdf *fdf = problem->fdf;
   const size_t n = fdf->n;
@@ -292,9 +284,9 @@ test_fdf(const gsl_multifit_nlinear_type * T,
 
   gsl_vector_memcpy(x0, &x0v.vector);
 
-  if (wts)
+  if (problem->weights != NULL)
     {
-      gsl_vector_const_view wv = gsl_vector_const_view_array(wts, n);
+      gsl_vector_const_view wv = gsl_vector_const_view_array(problem->weights, n);
       gsl_multifit_nlinear_winit(x0, &wv.vector, fdf, w);
     }
   else
@@ -308,7 +300,7 @@ test_fdf(const gsl_multifit_nlinear_type * T,
   /* check solution */
   test_fdf_checksol(sname, pname, epsrel, w, problem);
 
-  if (wts == NULL)
+  if (problem->weights == NULL)
     {
       /* test again with weighting matrix W = I */
       gsl_vector *wv = gsl_vector_alloc(n);

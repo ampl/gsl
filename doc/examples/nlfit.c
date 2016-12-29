@@ -134,7 +134,7 @@ main (void)
 
       weights[i] = 1.0 / (si * si);
       y[i] = yi + dy;
-      printf ("data: "F_ZU" %g %g\n", i, y[i], si);
+      printf ("data: %zu %g %g\n", i, y[i], si);
     };
 
   /* allocate workspace with default parameters */
@@ -164,10 +164,10 @@ main (void)
   fprintf(stderr, "summary from method '%s/%s'\n",
           gsl_multifit_nlinear_name(w),
           gsl_multifit_nlinear_trs_name(w));
-  fprintf(stderr, "number of iterations: "F_ZU"\n",
+  fprintf(stderr, "number of iterations: %zu\n",
           gsl_multifit_nlinear_niter(w));
-  fprintf(stderr, "function evaluations: "F_ZU"\n", fdf.nevalf);
-  fprintf(stderr, "Jacobian evaluations: "F_ZU"\n", fdf.nevaldf);
+  fprintf(stderr, "function evaluations: %zu\n", fdf.nevalf);
+  fprintf(stderr, "Jacobian evaluations: %zu\n", fdf.nevaldf);
   fprintf(stderr, "reason for stopping: %s\n",
           (info == 1) ? "small step size" : "small gradient");
   fprintf(stderr, "initial |f(x)| = %f\n", sqrt(chisq0));

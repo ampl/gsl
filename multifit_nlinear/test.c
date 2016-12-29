@@ -52,7 +52,7 @@ test_proc(const gsl_multifit_nlinear_trs *trs,
 int
 main (void)
 {
-  const gsl_multifit_nlinear_trs **nlinear_trs[5];
+  const gsl_multifit_nlinear_trs **nlinear_trs[6];
   const gsl_multifit_nlinear_solver **nlinear_solvers[4];
   const gsl_multifit_nlinear_scale **nlinear_scales[3];
   const gsl_multifit_nlinear_trs **trs;
@@ -68,8 +68,8 @@ main (void)
   nlinear_trs[1] = &gsl_multifit_nlinear_trs_lmaccel;
   nlinear_trs[2] = &gsl_multifit_nlinear_trs_dogleg;
   nlinear_trs[3] = &gsl_multifit_nlinear_trs_ddogleg;
-  /*nlinear_trs[4] = &gsl_multifit_nlinear_trs_subspace2D;*/
-  nlinear_trs[4] = NULL;
+  nlinear_trs[4] = &gsl_multifit_nlinear_trs_subspace2D;
+  nlinear_trs[5] = NULL;
 
   nlinear_solvers[0] = &gsl_multifit_nlinear_solver_cholesky;
   nlinear_solvers[1] = &gsl_multifit_nlinear_solver_qr;

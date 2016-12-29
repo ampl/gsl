@@ -568,6 +568,7 @@ This selects the double dogleg algorithm.
 @end defvr
 
 @defvr {Option} gsl_multifit_nlinear_trs_subspace2D
+@defvrx {Option} gsl_multilarge_nlinear_trs_subspace2D
 This selects the 2D subspace algorithm.
 @end defvr
 
@@ -1847,9 +1848,7 @@ and the normal equations matrix is given by
 \beforedisplay
 $$
 J^T J =
-\left(
 \alpha I_p + 4 x x^T
-\right)
 $$
 \afterdisplay
 @end tex
@@ -1895,16 +1894,17 @@ program output is shown below.
 @smallformat
 @verbatim
 Method                    NITER NFEV NJUEV NJTJEV NAEV Init Cost  Final cost cond(J) Final |x|^2 Time (s)  
-levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  45.73
-levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.82
-dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.83  2.5044e-01  56.84
-double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.68  2.5044e-01  53.89
+levenberg-marquardt       25    31   26    26     0    7.1218e+18 1.9555e-02 447.50  2.5044e-01  46.28
+levenberg-marquardt+accel 22    23   45    23     22   7.1218e+18 1.9555e-02 447.64  2.5044e-01  33.92
+dogleg                    37    87   36    36     0    7.1218e+18 1.9555e-02 447.59  2.5044e-01  56.05
+double-dogleg             35    88   34    34     0    7.1218e+18 1.9555e-02 447.62  2.5044e-01  52.65
+2D-subspace               37    88   36    36     0    7.1218e+18 1.9555e-02 447.71  2.5044e-01  59.75
 steihaug-toint            35    88   345   0      0    7.1218e+18 1.9555e-02 inf     2.5044e-01  0.09
 @end verbatim
 @end smallformat
 
 @noindent
-The first four rows use methods based on factoring the dense @math{J^T J} matrix
+The first five rows use methods based on factoring the dense @math{J^T J} matrix
 while the last row uses the iterative Steihaug-Toint method. While the number
 of Jacobian matrix-vector products (NJUEV) is less for the dense methods, the added time
 to construct and factor the @math{J^T J} matrix (NJTJEV) results in a much larger runtime than the

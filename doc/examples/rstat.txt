@@ -3,3 +3,11 @@ The sample mean is 16.54
 The estimated variance is 5.373
 The largest value is 18.3
 The smallest value is 12.6
+The median is 16.5
+The standard deviation is 2.31797
+The root mean square is 16.6694
+The standard devation of the mean is 1.03663
+The skew is -0.829058
+The kurtosis -1.2217
+There are 5 items in the accumulator
+There are 0 items in the accumulator

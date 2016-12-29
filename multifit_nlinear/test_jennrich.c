@@ -19,7 +19,7 @@ jennrich_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < jennrich_P; ++i)
     {
-      gsl_test_rel(x[i], jennrich_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], jennrich_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -104,6 +104,7 @@ static test_fdf_problem jennrich_problem =
 {
   "jennrich",
   jennrich_x0,
+  NULL,
   NULL,
   &jennrich_epsrel,
   &jennrich_checksol,

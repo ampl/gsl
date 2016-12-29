@@ -1,6 +1,6 @@
 /* complex/math.c
  * 
- * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Jorma Olavi Tähtinen, Brian Gough
+ * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Jorma Olavi Tï¿½htinen, Brian Gough
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 /* Basic complex arithmetic functions
 
- * Original version by Jorma Olavi Tähtinen <jotahtin@cc.hut.fi>
+ * Original version by Jorma Olavi Tï¿½htinen <jotahtin@cc.hut.fi>
  *
  * Modified for GSL by Brian Gough, 3/2000
  */
@@ -489,14 +489,10 @@ gsl_complex_tan (gsl_complex a)
     }
   else
     {
-      double u = exp (-I);
-      double C = 2 * u / (1 - pow (u, 2.0));
-      double D = 1 + pow (cos (R), 2.0) * pow (C, 2.0);
+      double D = pow (cos (R), 2.0) + pow (sinh (I), 2.0);
+      double F = 1 + pow(cos (R)/sinh (I), 2.0);
 
-      double S = pow (C, 2.0);
-      double T = 1.0 / tanh (I);
-
-      GSL_SET_COMPLEX (&z, 0.5 * sin (2 * R) * S / D, T / D);
+      GSL_SET_COMPLEX (&z, 0.5 * sin (2 * R) / D, 1 / (tanh (I) * F));
     }
 
   return z;

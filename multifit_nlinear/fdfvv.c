@@ -104,8 +104,8 @@ Inputs: h    - step size for finite difference
         J    - Jacobian matrix J(x), n-by-p
         swts - sqrt data weights (set to NULL if not needed)
         fdf  - fdf
-        fvv  - (output) approximate second directional derivative
-               vector, size n
+        fvv  - (output) approximate (weighted) second directional derivative
+               vector, size n, sqrt(W) fvv
         work - workspace, size p
 
 Return: success or error

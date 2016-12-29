@@ -113,7 +113,7 @@ struct freal listreal[] =
 struct fzreal listzreal[] =
 {
 #include "results_zreal.h"
-  {"", 0, 0, 0, 0}
+  {"", 0, 0, 0, 0, 0, 0}
 };
 
 

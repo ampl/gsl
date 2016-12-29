@@ -136,6 +136,7 @@ static test_fdf_problem box_problem =
   "box3d",
   box_x0,
   NULL,
+  NULL,
   &box_epsrel,
   &box_checksol,
   &box_func

@@ -48,7 +48,7 @@ bard_checksol(const double x[], const double sumsq,
       if (!gsl_finite(bard_x[i]))
         continue;
 
-      gsl_test_rel(x[i], bard_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], bard_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -145,6 +145,7 @@ static test_fdf_problem bard_problem =
 {
   "bard",
   bard_x0,
+  NULL,
   NULL,
   &bard_epsrel,
   &bard_checksol,

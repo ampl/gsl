@@ -508,12 +508,12 @@ test_fdfridge(const gsl_multifit_fdfsolver_type * T, const double xtol,
 
         if (fabs(xi) < eps)
           {
-            gsl_test_abs(yi, xi, eps, "%s/%s ridge lambda=%g i="F_ZU,
+            gsl_test_abs(yi, xi, eps, "%s/%s ridge lambda=%g i=%zu",
                          sname, pname, lambda, i);
           }
         else
           {
-            gsl_test_rel(yi, xi, eps, "%s/%s ridge lambda=%g i="F_ZU,
+            gsl_test_rel(yi, xi, eps, "%s/%s ridge lambda=%g i=%zu",
                          sname, pname, lambda, i);
           }
       }

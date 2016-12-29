@@ -26,7 +26,7 @@ meyerscal_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < meyerscal_P; ++i)
     {
-      gsl_test_rel(x[i], meyerscal_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], meyerscal_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -124,6 +124,7 @@ static test_fdf_problem meyerscal_problem =
 {
   "meyerscal",
   meyerscal_x0,
+  NULL,
   NULL,
   &meyerscal_epsrel,
   &meyerscal_checksol,

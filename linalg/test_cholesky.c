@@ -195,7 +195,7 @@ test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
 
       gsl_linalg_cholesky_rcond(V, &rcond, work);
 
-      gsl_test_rel(rcond, expected_rcond, 1.0e-10,
+      gsl_test_rel(rcond, expected_rcond, 1.0e-6,
                    "%s rcond: (%3lu,%3lu): %22.18g   %22.18g\n",
                    desc, N, N, rcond, expected_rcond);
 
@@ -349,7 +349,7 @@ test_mcholesky_decomp_eps(const int posdef, const int scale, const gsl_matrix * 
       /* ||E|| should be 0 */
       double norm = gsl_blas_dnrm2(E);
       s = norm != 0.0;
-      gsl_test(s, "%s: ("F_ZU","F_ZU"): ||E|| = %.12e",
+      gsl_test(s, "%s: (%zu,%zu): ||E|| = %.12e",
                desc, N, N, norm);
 
       /* check that D is decreasing */
@@ -363,7 +363,7 @@ test_mcholesky_decomp_eps(const int posdef, const int scale, const gsl_matrix * 
             s = 1;
         }
 
-      gsl_test(s, "%s: ("F_ZU","F_ZU"): D is not decreasing",
+      gsl_test(s, "%s: (%zu,%zu): D is not decreasing",
                desc, N, N);
     }
   
@@ -687,7 +687,7 @@ test_pcholesky_decomp_eps(const int scale, const gsl_matrix * m,
         s = 1;
     }
 
-  gsl_test(s, "%s: ("F_ZU","F_ZU"): D is not decreasing",
+  gsl_test(s, "%s: (%zu,%zu): D is not decreasing",
            desc, N, N);
   
   /* compute L and LT */
@@ -786,8 +786,8 @@ test_pcholesky_decomp(gsl_rng * r)
       gsl_matrix * m = gsl_matrix_alloc(N, N);
 
       create_posdef_matrix(m, r);
-      test_pcholesky_decomp_eps(0, m, -1.0, 20.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp unscaled random");
-      test_pcholesky_decomp_eps(1, m, -1.0, 20.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp scaled random");
+      test_pcholesky_decomp_eps(0, m, -1.0, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp unscaled random");
+      test_pcholesky_decomp_eps(1, m, -1.0, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp scaled random");
 
       if (N <= 12)
         {

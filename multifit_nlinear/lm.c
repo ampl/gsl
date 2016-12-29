@@ -42,15 +42,15 @@
 
 typedef struct
 {
-  size_t n;                  /* number of observations */
-  size_t p;                  /* number of parameters */
-  gsl_vector *fvv;           /* D_v^2 f(x), size n */
-  gsl_vector *vel;           /* geodesic velocity (standard LM step), size p */
-  gsl_vector *acc;           /* geodesic acceleration, size p */
-  gsl_vector *workp;         /* workspace, length p */
-  gsl_vector *workn;         /* workspace, length n */
+  size_t n;           /* number of observations */
+  size_t p;           /* number of parameters */
+  gsl_vector *fvv;    /* D_v^2 f(x), size n */
+  gsl_vector *vel;    /* geodesic velocity (standard LM step), size p */
+  gsl_vector *acc;    /* geodesic acceleration, size p */
+  gsl_vector *workp;  /* workspace, length p */
+  gsl_vector *workn;  /* workspace, length n */
 
-  int accel;                 /* use geodesic acceleration? */
+  int accel;          /* use geodesic acceleration? */
 
   /* tunable parameters */
   gsl_multifit_nlinear_parameters params;

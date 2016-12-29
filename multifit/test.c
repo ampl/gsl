@@ -45,8 +45,10 @@ main (void)
   /* test linear regression */
   test_linear();
 
+#if 0 /* fdfsolver interface now deprecated */
   /* test nonlinear regression */
   test_nonlinear();
+#endif
 
   exit (gsl_test_summary ());
 }

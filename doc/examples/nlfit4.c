@@ -205,6 +205,9 @@ main (void)
   fdf_params.trs = gsl_multilarge_nlinear_trs_ddogleg;
   solve_system(x, &fdf, &fdf_params);
 
+  fdf_params.trs = gsl_multilarge_nlinear_trs_subspace2D;
+  solve_system(x, &fdf, &fdf_params);
+
   fdf_params.trs = gsl_multilarge_nlinear_trs_cgst;
   solve_system(x, &fdf, &fdf_params);
 

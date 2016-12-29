@@ -61,7 +61,7 @@ eckerle_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < eckerle_P; ++i)
     {
-      gsl_test_rel(new_x[i], eckerle_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(new_x[i], eckerle_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }

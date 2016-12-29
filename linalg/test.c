@@ -4706,7 +4706,7 @@ test_tri_invert2(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_rng * r, const double
               double Bij = gsl_matrix_get(B, i, j);
               double expected = (i == j) ? 1.0 : 0.0;
 
-              gsl_test_rel(Bij, expected, tol, "tri_invert N="F_ZU" %s %s",
+              gsl_test_rel(Bij, expected, tol, "tri_invert N=%zu %s %s",
                            n,
                            (Uplo == CblasUpper) ? "Upper" : "Lower",
                            (Diag == CblasNonUnit) ? "NonUnit" : "Unit");

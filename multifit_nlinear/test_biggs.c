@@ -21,7 +21,7 @@ biggs_checksol(const double x[], const double sumsq,
 
   for (i = 0; i < biggs_P; ++i)
     {
-      gsl_test_rel(x[i], biggs_x[i], epsrel, "%s/%s i="F_ZU,
+      gsl_test_rel(x[i], biggs_x[i], epsrel, "%s/%s i=%zu",
                    sname, pname, i);
     }
 }
@@ -132,6 +132,7 @@ static test_fdf_problem biggs_problem =
 {
   "biggs",
   biggs_x0,
+  NULL,
   NULL,
   &biggs_epsrel,
   &biggs_checksol,

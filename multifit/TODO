@@ -15,3 +15,5 @@ The following features should be added to the nonlinear least squares routines:
 2. robust nonlinear least squares and robust ridge regression
 
 3. covariance matrices for ridge regression
+
+4. min_workspace_p is dynamically allocated in gsl_multifit_linear_gcv_min - fix

@@ -363,6 +363,24 @@ which have zero singular value (to machine precision) are discarded
 from the fit.
 @end deftypefun
 
+@deftypefun int gsl_multifit_linear_tsvd (const gsl_matrix * @var{X}, const gsl_vector * @var{y}, const double @var{tol}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, size_t * @var{rank}, gsl_multifit_linear_workspace * @var{work})
+This function computes the best-fit parameters @var{c} of the model
+@math{y = X c} for the observations @var{y} and the matrix of
+predictor variables @var{X}, using a truncated SVD expansion.
+Singular values which satisfy @math{s_i \le tol \times s_0}
+are discarded from the fit, where @math{s_0} is the largest singular value.
+The @math{p}-by-@math{p} variance-covariance matrix of the model parameters
+@var{cov} is set to @math{\sigma^2 (X^T X)^{-1}}, where @math{\sigma} is
+the standard deviation of the fit residuals.
+The sum of squares of the residuals from the best-fit,
+@math{\chi^2}, is returned in @var{chisq}. The effective rank
+(number of singular values used in solution) is returned in @var{rank}.
+If the coefficient of
+determination is desired, it can be computed from the expression
+@math{R^2 = 1 - \chi^2 / TSS}, where the total sum of squares (TSS) of
+the observations @var{y} may be computed from @code{gsl_stats_tss}.
+@end deftypefun
+
 @deftypefun int gsl_multifit_wlinear (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, gsl_multifit_linear_workspace * @var{work})
 This function computes the best-fit parameters @var{c} of the weighted
 model @math{y = X c} for the observations @var{y} with weights @var{w}
@@ -371,6 +389,23 @@ workspace provided in @var{work}.  The @math{p}-by-@math{p} covariance matrix of
 parameters @var{cov} is computed as @math{(X^T W X)^{-1}}. The weighted
 sum of squares of the residuals from the best-fit, @math{\chi^2}, is
 returned in @var{chisq}. If the coefficient of determination is
+desired, it can be computed from the expression @math{R^2 = 1 - \chi^2
+/ WTSS}, where the weighted total sum of squares (WTSS) of the
+observations @var{y} may be computed from @code{gsl_stats_wtss}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_wlinear_tsvd (const gsl_matrix * @var{X}, const gsl_vector * @var{w}, const gsl_vector * @var{y}, const double @var{tol}, gsl_vector * @var{c}, gsl_matrix * @var{cov}, double * @var{chisq}, size_t * @var{rank}, gsl_multifit_linear_workspace * @var{work})
+This function computes the best-fit parameters @var{c} of the weighted
+model @math{y = X c} for the observations @var{y} with weights @var{w}
+and the matrix of predictor variables @var{X}, using a truncated SVD expansion.
+Singular values which satisfy @math{s_i \le tol \times s_0}
+are discarded from the fit, where @math{s_0} is the largest singular value.
+The @math{p}-by-@math{p} covariance matrix of the model
+parameters @var{cov} is computed as @math{(X^T W X)^{-1}}. The weighted
+sum of squares of the residuals from the best-fit, @math{\chi^2}, is
+returned in @var{chisq}. The effective rank of the system (number of
+singular values used in the solution) is returned in @var{rank}.
+If the coefficient of determination is
 desired, it can be computed from the expression @math{R^2 = 1 - \chi^2
 / WTSS}, where the weighted total sum of squares (WTSS) of the
 observations @var{y} may be computed from @code{gsl_stats_wtss}.
@@ -388,6 +423,13 @@ at the point @var{x}.
 This function computes the vector of residuals @math{r = y - X c} for
 the observations @var{y}, coefficients @var{c} and matrix of predictor
 variables @var{X}.
+@end deftypefun
+
+@deftypefun size_t gsl_multifit_linear_rank (const double @var{tol}, const gsl_multifit_linear_workspace * @var{work})
+This function returns the rank of the matrix @math{X} which must first have its
+singular value decomposition computed. The rank is computed by counting the number
+of singular values @math{\sigma_j} which satisfy @math{\sigma_j > tol \times \sigma_0},
+where @math{\sigma_0} is the largest singular value.
 @end deftypefun
 
 @node Regularized regression
@@ -419,8 +461,12 @@ the @math{p}-by-@math{1} solution vector,
 and @math{||r||_W^2 = r^T W r}.
 In cases where the least squares matrix @math{X} is ill-conditioned,
 small perturbations (ie: noise) in the observation vector could lead to
-widely different solution vectors @math{c}. In these cases it is often
-advantageous to include a regularization term in the least squares
+widely different solution vectors @math{c}.
+One way of dealing with ill-conditioned matrices is to use a ``truncated SVD''
+in which small singular values, below some given tolerance, are discarded
+from the solution. The truncated SVD method is available using the functions
+@code{gsl_multifit_linear_tsvd} and @code{gsl_multifit_wlinear_tsvd}. Another way
+to help solve ill-posed problems is to include a regularization term in the least squares
 minimization
 @tex
 \beforedisplay
@@ -521,6 +567,30 @@ corresponding to this corner is often chosen as the optimal
 value. GSL provides routines to calculate the L-curve for all
 relevant regularization parameters as well as locating the corner.
 
+Another method of choosing the regularization parameter is known
+as Generalized Cross Validation (GCV). This method is based on
+the idea that if an arbitrary element @math{y_i} is left out of the
+right hand side, the resulting regularized solution should predict this element
+accurately. This leads to choosing the parameter @math{\lambda}
+which minimizes the GCV function
+@tex
+\beforedisplay
+$$
+G(\lambda) = {||y - X c_{\lambda}||^2 \over \textrm{Tr}(I_n - X X_{\lambda}^I)^2}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+G(\lambda) = (||y - X c_@{\lambda@}||^2) / Tr(I_n - X X^I)^2
+@end example
+
+@end ifinfo
+where @math{X_{\lambda}^I} is the matrix which relates the solution @math{c_{\lambda}}
+to the right hand side @math{y}, ie: @math{c_{\lambda} = X_{\lambda}^I y}. GSL
+provides routines to compute the GCV curve and its minimum.
+
 @noindent
 For most applications, the steps required to solve a regularized least
 squares problem are as follows:
@@ -535,7 +605,7 @@ step can be skipped if @math{L = I_p} and @math{W = I_n}.
 @item Calculate the SVD of @math{\tilde{X}}.
 
 @item Determine an appropriate regularization parameter @math{\lambda} (using for example
-L-curve analysis).
+L-curve or GCV analysis).
 
 @item Solve the standard form system using the chosen @math{\lambda} and the SVD of @math{\tilde{X}}.
 
@@ -689,6 +759,47 @@ estimate of the curvature can be obtained. The array index
 corresponding to maximum curvature (ie: the corner) is returned
 in @var{idx}. If the input arrays contain colinear points,
 this function could fail and return @code{GSL_EINVAL}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_linear_gcv_init(const gsl_vector * @var{y}, gsl_vector * @var{reg_param}, gsl_vector * @var{UTy}, double * @var{delta0}, gsl_multifit_linear_workspace * @var{work})
+This function performs some initialization in preparation for computing
+the GCV curve and its minimum. The right hand side vector is provided
+in @var{y}. On output, @var{reg_param} is set to a vector of regularization
+parameters in decreasing order and may be of any size. The vector
+@var{UTy} of size @math{p} is set to @math{U^T y}. The parameter
+@var{delta0} is needed for subsequent steps of the GCV calculation.
+@end deftypefun
+
+@deftypefun int gsl_multifit_linear_gcv_curve(const gsl_vector * @var{reg_param}, const gsl_vector * @var{UTy}, const double @var{delta0}, gsl_vector * @var{G}, gsl_multifit_linear_workspace * @var{work})
+This funtion calculates the GCV curve @math{G(\lambda)} and stores it in
+@var{G} on output, which must be the same size as @var{reg_param}. The
+inputs @var{reg_param}, @var{UTy} and @var{delta0} are computed in
+@code{gsl_multifit_linear_gcv_init}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_linear_gcv_min(const gsl_vector * @var{reg_param}, const gsl_vector * @var{UTy}, const gsl_vector * @var{G}, const double @var{delta0}, double * @var{lambda}, gsl_multifit_linear_workspace * @var{work})
+This function computes the value of the regularization parameter
+which minimizes the GCV curve @math{G(\lambda)} and stores it in
+@var{lambda}. The input @var{G} is calculated by
+@code{gsl_multifit_linear_gcv_curve} and the inputs
+@var{reg_param}, @var{UTy} and @var{delta0} are computed by
+@code{gsl_multifit_linear_gcv_init}.
+@end deftypefun
+
+@deftypefun double gsl_multifit_linear_gcv_calc(const double @var{lambda}, const gsl_vector * @var{UTy}, const double @var{delta0}, gsl_multifit_linear_workspace * @var{work})
+This function returns the value of the GCV curve @math{G(\lambda)} corresponding
+to the input @var{lambda}.
+@end deftypefun
+
+@deftypefun int gsl_multifit_linear_gcv(const gsl_vector * @var{y}, gsl_vector * @var{reg_param}, gsl_vector * @var{G}, double * @var{lambda}, double * @var{G_lambda}, gsl_multifit_linear_workspace * @var{work})
+This function combines the steps @code{gcv_init}, @code{gcv_curve},
+and @code{gcv_min} defined above into a single function. The input
+@var{y} is the right hand side vector. On output, @var{reg_param} and
+@var{G}, which must be the same size, are set to vectors of
+@math{\lambda} and @math{G(\lambda)} values respectively. The
+output @var{lambda} is set to the optimal value of @math{\lambda}
+which minimizes the GCV curve. The minimum value of the GCV curve is
+returned in @var{G_lambda}.
 @end deftypefun
 
 @deftypefun int gsl_multifit_linear_Lk (const size_t @var{p}, const size_t @var{k}, gsl_matrix * @var{L})
@@ -1530,7 +1641,8 @@ The example programs in this section demonstrate the various linear regression m
 @menu
 * Fitting linear regression example::
 * Fitting multi-parameter linear regression example::
-* Fitting regularized linear regression example::
+* Fitting regularized linear regression example 1::
+* Fitting regularized linear regression example 2::
 * Fitting robust linear regression example::
 * Fitting large linear systems example::
 @end menu
@@ -1667,8 +1779,8 @@ of freedom is 1.4, indicating a reasonable fit to the data.
 @center @image{fit-wlinear2,3.0in}
 @end iftex
 
-@node Fitting regularized linear regression example
-@subsection Regularized Linear Regression Example
+@node Fitting regularized linear regression example 1
+@subsection Regularized Linear Regression Example 1
 
 The next program demonstrates the difference between ordinary and
 regularized least squares when the design matrix is near-singular.
@@ -1686,29 +1798,125 @@ Here is the program output:
 matrix condition number = 1.025113e+04
 === Unregularized fit ===
 best fit: y = -43.6588 u + 45.6636 v
+residual norm = 31.6248
+solution norm = 63.1764
 chisq/dof = 1.00213
-=== Regularized fit ===
+=== Regularized fit (L-curve) ===
 optimal lambda: 4.51103
 best fit: y = 1.00113 u + 1.0032 v
+residual norm = 31.6547
+solution norm = 1.41728
 chisq/dof = 1.04499
+=== Regularized fit (GCV) ===
+optimal lambda: 0.0232029
+best fit: y = -19.8367 u + 21.8417 v
+residual norm = 31.6332
+solution norm = 29.5051
+chisq/dof = 1.00314
 @end example
 
 @noindent
-We see that the regularized method with the optimal
+We see that the ordinary least squares solution is completely wrong,
+while the L-curve regularized method with the optimal
 @math{\lambda = 4.51103} finds the correct solution
-@math{c_1 \approx c_2 \approx 1}, while the ordinary least squares
-solution is completely wrong. The optimal regularization
-parameter @math{\lambda} is found by calculating the L-curve and
-finding its corner. The L-curve and its computed corner are plotted below.
+@math{c_1 \approx c_2 \approx 1}. The GCV regularized method finds
+a regularization parameter @math{\lambda = 0.0232029} which is too
+small to give an accurate solution, although it performs better than OLS.
+The L-curve and its computed corner, as well as the GCV curve and its
+minimum are plotted below.
 
 @iftex
 @sp 1
-@center @image{lcurve,3.0in}
+@center @image{regularized,5.0in}
 @end iftex
 
 @noindent The program is given below.
 @example
 @verbatiminclude examples/fitreg.c
+@end example
+
+@node Fitting regularized linear regression example 2
+@subsection Regularized Linear Regression Example 2
+
+The following example program minimizes the cost function
+@tex
+\beforedisplay
+$$
+||y - X c||^2 + \lambda^2 ||x||^2
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+||y - X c||^2 + \lambda^2 ||x||^2
+@end example
+
+@end ifinfo
+@noindent
+where @math{X} is the @math{10}-by-@math{8} Hilbert matrix whose
+entries are given by
+@tex
+\beforedisplay
+$$
+X_{ij} = {1 \over i + j - 1}
+$$
+\afterdisplay
+@end tex
+@ifinfo
+
+@example
+X_@{ij@} = 1 / (i + j - 1)
+@end example
+
+@end ifinfo
+@noindent
+and the right hand side vector is given by
+@math{y = [1,-1,1,-1,1,-1,1,-1,1,-1]^T}. Solutions
+are computed for @math{\lambda = 0} (unregularized) as
+well as for optimal parameters @math{\lambda} chosen by
+analyzing the L-curve and GCV curve.
+
+@noindent
+Here is the program output:
+@example
+matrix condition number = 3.565872e+09
+=== Unregularized fit ===
+residual norm = 2.15376
+solution norm = 2.92217e+09
+chisq/dof = 2.31934
+=== Regularized fit (L-curve) ===
+optimal lambda: 7.11407e-07
+residual norm = 2.60386
+solution norm = 424507
+chisq/dof = 3.43565
+=== Regularized fit (GCV) ===
+optimal lambda: 1.72278
+residual norm = 3.1375
+solution norm = 0.139357
+chisq/dof = 4.95076
+@end example
+
+@noindent
+Here we see the unregularized solution results in a large solution
+norm due to the ill-conditioned matrix. The L-curve solution finds
+a small value of @math{\lambda = 7.11e-7} which still results in
+a badly conditioned system and a large solution norm. The GCV method
+finds a parameter @math{\lambda = 1.72} which results in a well-conditioned
+system and small solution norm.
+
+@noindent
+The L-curve and its computed corner, as well as the GCV curve and its
+minimum are plotted below.
+
+@iftex
+@sp 1
+@center @image{regularized2,5.0in}
+@end iftex
+
+@noindent The program is given below.
+@example
+@verbatiminclude examples/fitreg2.c
 @end example
 
 @node Fitting robust linear regression example

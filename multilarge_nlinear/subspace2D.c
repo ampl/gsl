@@ -1,4 +1,4 @@
-/* multifit_nlinear/subspace2D.c
+/* multilarge_nlinear/subspace2D.c
  * 
  * Copyright (C) 2016 Patrick Alken
  * 
@@ -22,7 +22,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
-#include <gsl/gsl_multifit_nlinear.h>
+#include <gsl/gsl_multilarge_nlinear.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_poly.h>
@@ -113,10 +113,11 @@ typedef struct
   gsl_vector *dx_sd;         /* steepest descent step, size p */
   double norm_Dgn;           /* || D dx_gn || */
   double norm_Dsd;           /* || D dx_sd || */
-  gsl_vector *workp;         /* workspace, length p */
+  gsl_vector *workp1;        /* workspace, length p */
+  gsl_vector *workp2;        /* workspace, length p */
   gsl_vector *workn;         /* workspace, length n */
   gsl_matrix *W;             /* orthonormal basis for 2D subspace, p-by-2 */
-  gsl_matrix *JQ;            /* J * Q, n-by-p */
+  gsl_matrix *work_JTJ;      /* D^{-1} J^T J D^{-1}, p-by-p */
   gsl_vector *tau;           /* Householder scalars */
   gsl_vector *subg;          /* subspace gradient = W^T g, 2-by-1 */
   gsl_matrix *subB;          /* subspace Hessian = W^T B W, 2-by-2 */
@@ -133,7 +134,7 @@ typedef struct
   gsl_poly_complex_workspace *poly_p;
 
   /* tunable parameters */
-  gsl_multifit_nlinear_parameters params;
+  gsl_multilarge_nlinear_parameters params;
 } subspace2D_state_t;
 
 #include "common.c"
@@ -149,14 +150,14 @@ static int subspace2D_preduction(const void * vtrust_state, const gsl_vector * d
 static int subspace2D_solution(const double lambda, gsl_vector * x,
                                subspace2D_state_t * state);
 static double subspace2D_objective(const gsl_vector * x, subspace2D_state_t * state);
-static int subspace2D_calc_gn(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vector * dx);
-static int subspace2D_calc_sd(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vector * dx,
+static int subspace2D_calc_gn(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx);
+static int subspace2D_calc_sd(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx,
                               subspace2D_state_t * state);
 
 static void *
 subspace2D_alloc (const void * params, const size_t n, const size_t p)
 {
-  const gsl_multifit_nlinear_parameters *par = (const gsl_multifit_nlinear_parameters *) params;
+  const gsl_multilarge_nlinear_parameters *par = (const gsl_multilarge_nlinear_parameters *) params;
   subspace2D_state_t *state;
   
   state = calloc(1, sizeof(subspace2D_state_t));
@@ -177,10 +178,16 @@ subspace2D_alloc (const void * params, const size_t n, const size_t p)
       GSL_ERROR_NULL ("failed to allocate space for dx_sd", GSL_ENOMEM);
     }
 
-  state->workp = gsl_vector_alloc(p);
-  if (state->workp == NULL)
+  state->workp1 = gsl_vector_alloc(p);
+  if (state->workp1 == NULL)
     {
-      GSL_ERROR_NULL ("failed to allocate space for workp", GSL_ENOMEM);
+      GSL_ERROR_NULL ("failed to allocate space for workp1", GSL_ENOMEM);
+    }
+
+  state->workp2 = gsl_vector_alloc(p);
+  if (state->workp2 == NULL)
+    {
+      GSL_ERROR_NULL ("failed to allocate space for workp2", GSL_ENOMEM);
     }
 
   state->workn = gsl_vector_alloc(n);
@@ -195,10 +202,10 @@ subspace2D_alloc (const void * params, const size_t n, const size_t p)
       GSL_ERROR_NULL ("failed to allocate space for W", GSL_ENOMEM);
     }
 
-  state->JQ = gsl_matrix_alloc(n, p);
-  if (state->JQ == NULL)
+  state->work_JTJ = gsl_matrix_alloc(p, p);
+  if (state->work_JTJ == NULL)
     {
-      GSL_ERROR_NULL ("failed to allocate space for JQ", GSL_ENOMEM);
+      GSL_ERROR_NULL ("failed to allocate space for work_JTJ", GSL_ENOMEM);
     }
 
   state->tau = gsl_vector_alloc(2);
@@ -250,8 +257,11 @@ subspace2D_free(void *vstate)
   if (state->dx_sd)
     gsl_vector_free(state->dx_sd);
 
-  if (state->workp)
-    gsl_vector_free(state->workp);
+  if (state->workp1)
+    gsl_vector_free(state->workp1);
+
+  if (state->workp2)
+    gsl_vector_free(state->workp2);
 
   if (state->workn)
     gsl_vector_free(state->workn);
@@ -259,8 +269,8 @@ subspace2D_free(void *vstate)
   if (state->W)
     gsl_matrix_free(state->W);
 
-  if (state->JQ)
-    gsl_matrix_free(state->JQ);
+  if (state->work_JTJ)
+    gsl_matrix_free(state->work_JTJ);
 
   if (state->tau)
     gsl_vector_free(state->tau);
@@ -319,8 +329,8 @@ static int
 subspace2D_preloop(const void * vtrust_state, void * vstate)
 {
   int status;
-  const gsl_multifit_nlinear_trust_state *trust_state =
-    (const gsl_multifit_nlinear_trust_state *) vtrust_state;
+  const gsl_multilarge_nlinear_trust_state *trust_state =
+    (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   subspace2D_state_t *state = (subspace2D_state_t *) vstate;
   gsl_vector_view v;
   double work_data[2];
@@ -374,42 +384,54 @@ subspace2D_preloop(const void * vtrust_state, void * vstate)
        * subB = Q^T D^{-1} B D^{-1} Q where B = J^T J
        */
       const size_t p = state->p;
-      size_t i;
-      gsl_matrix_view JQ = gsl_matrix_submatrix(state->JQ, 0, 0, state->n, GSL_MIN(2, p));
+      size_t i, j;
       double B00, B10, B11, g0, g1;
 
       /* compute subg */
-      gsl_vector_memcpy(state->workp, trust_state->g);
-      gsl_vector_div(state->workp, trust_state->diag);
-      gsl_linalg_QR_QTvec(state->W, state->tau, state->workp);
+      gsl_vector_memcpy(state->workp1, trust_state->g);
+      gsl_vector_div(state->workp1, trust_state->diag);
+      gsl_linalg_QR_QTvec(state->W, state->tau, state->workp1);
 
-      g0 = gsl_vector_get(state->workp, 0);
-      g1 = gsl_vector_get(state->workp, 1);
+      g0 = gsl_vector_get(state->workp1, 0);
+      g1 = gsl_vector_get(state->workp1, 1);
 
       gsl_vector_set(state->subg, 0, g0);
       gsl_vector_set(state->subg, 1, g1);
 
       /* compute subB */
 
-      /* compute J D^{-1} */
-      gsl_matrix_memcpy(state->JQ, trust_state->J);
-
-      for (i = 0; i < p; ++i)
+      /* compute work_JTJ = D^{-1} J^T J D^{-1} using lower triangle */
+      for (j = 0; j < p; ++j)
         {
-          gsl_vector_view c = gsl_matrix_column(state->JQ, i);
-          double di = gsl_vector_get(trust_state->diag, i);
-          gsl_vector_scale(&c.vector, 1.0 / di);
+          double dj = gsl_vector_get(trust_state->diag, j);
+
+          for (i = j; i < p; ++i)
+            {
+              double di = gsl_vector_get(trust_state->diag, i);
+              double Aij = gsl_matrix_get(trust_state->JTJ, i, j);
+
+              gsl_matrix_set(state->work_JTJ, i, j, Aij / (di * dj));
+            }
         }
 
-      /* compute J D^{-1} Q */
-      gsl_linalg_QR_matQ(state->W, state->tau, state->JQ);
+      gsl_matrix_transpose_tricpy('L', 0, state->work_JTJ, state->work_JTJ);
 
+      /* compute work_JTJ = Q^T D^{-1} J^T J D^{-1} Q */
+      gsl_linalg_QR_matQ(state->W, state->tau, state->work_JTJ);
+      gsl_linalg_QR_QTmat(state->W, state->tau, state->work_JTJ);
+
+#if 0
       /* compute subB = Q^T D^{-1} J^T J D^{-1} Q */
       gsl_blas_dsyrk(CblasLower, CblasTrans, 1.0, &JQ.matrix, 0.0, state->subB);
+#endif
 
-      B00 = gsl_matrix_get(state->subB, 0, 0);
-      B10 = gsl_matrix_get(state->subB, 1, 0);
-      B11 = gsl_matrix_get(state->subB, 1, 1);
+      B00 = gsl_matrix_get(state->work_JTJ, 0, 0);
+      B10 = gsl_matrix_get(state->work_JTJ, 1, 0);
+      B11 = gsl_matrix_get(state->work_JTJ, 1, 1);
+
+      gsl_matrix_set(state->subB, 0, 0, B00);
+      gsl_matrix_set(state->subB, 1, 0, B10);
+      gsl_matrix_set(state->subB, 1, 1, B11);
 
       state->trB = B00 + B11;
       state->detB = B00*B11 - B10*B10;
@@ -440,8 +462,8 @@ static int
 subspace2D_step(const void * vtrust_state, const double delta,
                 gsl_vector * dx, void * vstate)
 {
-  const gsl_multifit_nlinear_trust_state *trust_state =
-    (const gsl_multifit_nlinear_trust_state *) vtrust_state;
+  const gsl_multilarge_nlinear_trust_state *trust_state =
+    (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   subspace2D_state_t *state = (subspace2D_state_t *) vstate;
 
   if (state->norm_Dgn <= delta)
@@ -558,13 +580,13 @@ subspace2D_step(const void * vtrust_state, const double delta,
 
 static int
 subspace2D_preduction(const void * vtrust_state, const gsl_vector * dx,
-                  double * pred, void * vstate)
+                      double * pred, void * vstate)
 {
-  const gsl_multifit_nlinear_trust_state *trust_state =
-    (const gsl_multifit_nlinear_trust_state *) vtrust_state;
+  const gsl_multilarge_nlinear_trust_state *trust_state =
+    (const gsl_multilarge_nlinear_trust_state *) vtrust_state;
   subspace2D_state_t *state = (subspace2D_state_t *) vstate;
 
-  *pred = quadratic_preduction(trust_state->f, trust_state->J, dx, state->workn);
+  *pred = quadratic_preduction(trust_state, dx, state->workn);
 
   return GSL_SUCCESS;
 }
@@ -616,21 +638,21 @@ subspace2D_objective(const gsl_vector * x, subspace2D_state_t * state)
 
 /*
 subspace2D_calc_gn()
-  Calculate Gauss-Newton step which satisfies:
+  Calculate Gauss-Newton step by solving
 
-J dx_gn = -f
+J^T J dx_gn = -J^T f
 
 Inputs: trust_state - trust state variables
-        dx          - (output) Gauss-Newton step
+        dx          - (output) Gauss-Newton step vector
 
 Return: success/error
 */
 
 static int
-subspace2D_calc_gn(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vector * dx)
+subspace2D_calc_gn(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx)
 {
   int status;
-  const gsl_multifit_nlinear_parameters *params = trust_state->params;
+  const gsl_multilarge_nlinear_parameters *params = trust_state->params;
 
   /* initialize linear least squares solver */
   status = (params->solver->init)(trust_state, trust_state->solver_state);
@@ -643,7 +665,7 @@ subspace2D_calc_gn(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vec
     return status;
 
   /* solve: J dx_gn = -f for Gauss-Newton step */
-  status = (params->solver->solve)(trust_state->f,
+  status = (params->solver->solve)(trust_state->g,
                                    dx,
                                    trust_state,
                                    trust_state->solver_state);
@@ -667,7 +689,7 @@ Return: success/error
 */
 
 static int
-subspace2D_calc_sd(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vector * dx,
+subspace2D_calc_sd(const gsl_multilarge_nlinear_trust_state * trust_state, gsl_vector * dx,
                    subspace2D_state_t * state)
 {
   double norm_Dinvg;   /* || D^{-1} g || */
@@ -675,29 +697,32 @@ subspace2D_calc_sd(const gsl_multifit_nlinear_trust_state * trust_state, gsl_vec
   double alpha;        /* || D^{-1} g ||^2 / || J D^{-2} g ||^2 */
   double u;
 
-  /* compute workp = D^{-1} g and its norm */
-  gsl_vector_memcpy(state->workp, trust_state->g);
-  gsl_vector_div(state->workp, trust_state->diag);
-  norm_Dinvg = gsl_blas_dnrm2(state->workp);
+  /* compute workp1 = D^{-1} g and its norm */
+  gsl_vector_memcpy(state->workp1, trust_state->g);
+  gsl_vector_div(state->workp1, trust_state->diag);
+  norm_Dinvg = gsl_blas_dnrm2(state->workp1);
 
-  /* compute workp = D^{-2} g */
-  gsl_vector_div(state->workp, trust_state->diag);
+  /* compute workp1 = D^{-2} g */
+  gsl_vector_div(state->workp1, trust_state->diag);
 
-  /* compute: workn = J D^{-2} g */
-  gsl_blas_dgemv(CblasNoTrans, 1.0, trust_state->J, state->workp, 0.0, state->workn);
-  norm_JDinv2g = gsl_blas_dnrm2(state->workn);
+  /* compute workp2 = J^T J D^{-2} g */
+  gsl_blas_dsymv(CblasLower, 1.0, trust_state->JTJ, state->workp1, 0.0, state->workp2);
+
+  /* compute norm_JDinv2g = || J D^{-2} g || */
+  gsl_blas_ddot(state->workp1, state->workp2, &u);
+  norm_JDinv2g = sqrt(u);
 
   u = norm_Dinvg / norm_JDinv2g;
   alpha = u * u;
 
   /* dx_sd = -alpha D^{-2} g */
-  gsl_vector_memcpy(dx, state->workp);
+  gsl_vector_memcpy(dx, state->workp1);
   gsl_vector_scale(dx, -alpha);
 
   return GSL_SUCCESS;
 }
 
-static const gsl_multifit_nlinear_trs subspace2D_type =
+static const gsl_multilarge_nlinear_trs subspace2D_type =
 {
   "2D-subspace",
   subspace2D_alloc,
@@ -708,4 +733,4 @@ static const gsl_multifit_nlinear_trs subspace2D_type =
   subspace2D_free
 };
 
-const gsl_multifit_nlinear_trs *gsl_multifit_nlinear_trs_subspace2D = &subspace2D_type;
+const gsl_multilarge_nlinear_trs *gsl_multilarge_nlinear_trs_subspace2D = &subspace2D_type;

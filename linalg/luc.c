@@ -211,7 +211,7 @@ gsl_linalg_complex_LU_svx (const gsl_matrix_complex * LU, const gsl_permutation 
 
 
 int
-gsl_linalg_complex_LU_refine (const gsl_matrix_complex * A, const gsl_matrix_complex * LU, const gsl_permutation * p, const gsl_vector_complex * b, gsl_vector_complex * x, gsl_vector_complex * residual)
+gsl_linalg_complex_LU_refine (const gsl_matrix_complex * A, const gsl_matrix_complex * LU, const gsl_permutation * p, const gsl_vector_complex * b, gsl_vector_complex * x, gsl_vector_complex * work)
 {
   if (A->size1 != A->size2)
     {
@@ -237,6 +237,10 @@ gsl_linalg_complex_LU_refine (const gsl_matrix_complex * A, const gsl_matrix_com
     {
       GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
     }
+  else if (LU->size1 != work->size)
+    {
+      GSL_ERROR ("matrix size must match workspace size", GSL_EBADLEN);
+    }
   else if (singular (LU)) 
     {
       GSL_ERROR ("matrix is singular", GSL_EDOM);
@@ -245,23 +249,23 @@ gsl_linalg_complex_LU_refine (const gsl_matrix_complex * A, const gsl_matrix_com
     {
       int status;
 
-      /* Compute residual, residual = (A * x  - b) */
+      /* Compute residual = (A * x  - b) */
 
-      gsl_vector_complex_memcpy (residual, b);
+      gsl_vector_complex_memcpy (work, b);
 
       {
         gsl_complex one = GSL_COMPLEX_ONE;
         gsl_complex negone = GSL_COMPLEX_NEGONE;
-        gsl_blas_zgemv (CblasNoTrans, one, A, x, negone, residual);
+        gsl_blas_zgemv (CblasNoTrans, one, A, x, negone, work);
       }
 
       /* Find correction, delta = - (A^-1) * residual, and apply it */
 
-      status = gsl_linalg_complex_LU_svx (LU, p, residual);
+      status = gsl_linalg_complex_LU_svx (LU, p, work);
 
       {
         gsl_complex negone= GSL_COMPLEX_NEGONE;
-        gsl_blas_zaxpy (negone, residual, x);
+        gsl_blas_zaxpy (negone, work, x);
       }
 
       return status;

@@ -99,6 +99,7 @@ static test_fdf_problem lin2_problem =
   "linear_rank1",
   lin2_x0,
   NULL,
+  NULL,
   &lin2_epsrel,
   &lin2_checksol,
   &lin2_func

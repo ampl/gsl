@@ -158,7 +158,7 @@ test_poisson(const size_t N, const double epsrel, const int compress)
     }
   while (status == GSL_CONTINUE && ++iter < max_iter);
 
-  gsl_test(status, "%s poisson status s=%d N="F_ZU, desc, status, N);
+  gsl_test(status, "%s poisson status s=%d N=%zu", desc, status, N);
 
   /* check solution against analytic */
   for (i = 0; i < n; ++i)
@@ -167,7 +167,7 @@ test_poisson(const size_t N, const double epsrel, const int compress)
       double u_gsl = gsl_vector_get(u, i);
       double u_exact = sin(M_PI * xi);
 
-      gsl_test_rel(u_gsl, u_exact, epsrel, "%s poisson N="F_ZU" i="F_ZU,
+      gsl_test_rel(u_gsl, u_exact, epsrel, "%s poisson N=%zu i=%zu",
                    desc, N, i);
     }
 
@@ -183,7 +183,7 @@ test_poisson(const size_t N, const double epsrel, const int compress)
     normb = gsl_blas_dnrm2(b);
 
     status = (normr <= tol*normb) != 1;
-    gsl_test(status, "%s poisson residual N="F_ZU" normr=%.12e normb=%.12e",
+    gsl_test(status, "%s poisson residual N=%zu normr=%.12e normb=%.12e",
              desc, N, normr, normb);
 
     gsl_vector_free(r);
@@ -257,7 +257,7 @@ test_toeplitz(const size_t N, const double a, const double b,
     }
   while (status == GSL_CONTINUE && ++iter < max_iter);
 
-  gsl_test(status, "%s toeplitz status s=%d N="F_ZU" a=%f b=%f c=%f",
+  gsl_test(status, "%s toeplitz status s=%d N=%zu a=%f b=%f c=%f",
            desc, status, N, a, b, c);
 
   /* check that the residual satisfies ||r|| <= tol*||b|| */
@@ -272,7 +272,7 @@ test_toeplitz(const size_t N, const double a, const double b,
     normb = gsl_blas_dnrm2(rhs);
 
     status = (normr <= tol*normb) != 1;
-    gsl_test(status, "%s toeplitz residual N="F_ZU" a=%f b=%f c=%f normr=%.12e normb=%.12e",
+    gsl_test(status, "%s toeplitz residual N=%zu a=%f b=%f c=%f normr=%.12e normb=%.12e",
              desc, N, a, b, c, normr, normb);
 
     gsl_vector_free(r);
@@ -308,7 +308,7 @@ test_random(const size_t N, const gsl_rng *r, const int compress)
     B = A;
 
   status = gsl_splinalg_itersolve_iterate(B, b, tol, x, w);
-  gsl_test(status, "%s random status s=%d N="F_ZU, desc, status, N);
+  gsl_test(status, "%s random status s=%d N=%zu", desc, status, N);
 
   /* check that the residual satisfies ||r|| <= tol*||b|| */
   {
@@ -322,7 +322,7 @@ test_random(const size_t N, const gsl_rng *r, const int compress)
     normb = gsl_blas_dnrm2(b);
 
     status = (normr <= tol*normb) != 1;
-    gsl_test(status, "%s random residual N="F_ZU" normr=%.12e normb=%.12e",
+    gsl_test(status, "%s random residual N=%zu normr=%.12e normb=%.12e",
              desc, N, normr, normb);
 
     gsl_vector_free(res);

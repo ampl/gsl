@@ -172,6 +172,7 @@ static test_fdf_problem penalty2_problem =
   "penalty2",
   penalty2_x0,
   NULL,
+  NULL,
   &penalty2_epsrel,
   &penalty2_checksol,
   &penalty2_func

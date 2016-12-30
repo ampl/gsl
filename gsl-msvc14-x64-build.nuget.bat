@@ -94,8 +94,6 @@ xcopy %BUILDTREE%Static\Release\gsl* %BINDIR%
 REM # make nuget packages from binaries #
 cd %BUILDTREE%
 nuget pack %SRC%\gsl-msvc14-x64.nuspec
-
-GOTO:eof
-
+cd %SRC%
 REM --- exit ----
 GOTO:eof

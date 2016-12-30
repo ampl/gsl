@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>gsl-msvc14-x86</id>
-        <version>2.2.1.2677</version>
+        <version>2.3.0.2778</version>
         <authors>administrator</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Release GSL as NuGet package.</description>

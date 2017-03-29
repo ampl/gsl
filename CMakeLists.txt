@@ -675,21 +675,11 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
         RUNTIME DESTINATION bin/${config}
         ARCHIVE DESTINATION lib/${config})
     endforeach ()
-    install(FILES ${PROJECT_BINARY_DIR}/Debug/gsl.pdb
-                  ${PROJECT_BINARY_DIR}/Debug/gslcblas.pdb
-          DESTINATION lib/Debug
-          CONFIGURATIONS Debug)
   else ()
     install(TARGETS gsl gslcblas
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin
       ARCHIVE DESTINATION lib)
-    if (MSVC)
-      install(FILES ${PROJECT_BINARY_DIR}/Debug/gsl.pdb
-                    ${PROJECT_BINARY_DIR}/Debug/gslcblas.pdb
-            DESTINATION lib
-            CONFIGURATIONS Debug)
-    endif ()
   endif ()
   install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)
   set(PC_FILE ${CMAKE_BINARY_DIR}/gsl.pc)

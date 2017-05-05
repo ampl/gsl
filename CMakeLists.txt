@@ -589,7 +589,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake "
   endforeach ()")
 
 add_custom_command(OUTPUT ${GSL_HEADERS}
-  COMMAND ${CMAKE_COMMAND} -P copy-headers.cmake)
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake)
 add_custom_target(copy-headers DEPENDS ${GSL_HEADERS})
 
 macro(get_sources dir line source_var)

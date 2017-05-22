@@ -687,7 +687,7 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   install(FILES ${PC_FILE} DESTINATION lib/pkgconfig)
 
   # Read config file and replace placeholders.
-  file(READ "${CMAKE_SOURCE_DIR}/gsl-config.in" GSL_CONFIG_FILE)
+  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/gsl-config.in" GSL_CONFIG_FILE)
   string(REPLACE ";" "@SEMICOLON@" GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")
   # Replace
   string(REPLACE @prefix@ ${CMAKE_INSTALL_PREFIX} GSL_CONFIG_FILE "${GSL_CONFIG_FILE}")

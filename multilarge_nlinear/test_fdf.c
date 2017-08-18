@@ -191,7 +191,6 @@ test_fdf_main(const gsl_multilarge_nlinear_parameters * params)
     {
       test_fdf_problem *problem = test_problems[i];
       double epsrel = *(problem->epsrel);
-      gsl_multilarge_nlinear_fdf fdf;
 
       /*XXX: finite difference fvv not working yet */
       if (problem->fdf->fvv == NULL)

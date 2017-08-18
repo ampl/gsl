@@ -98,7 +98,9 @@ libgslintegration_la_LIBADD =
 am_libgslintegration_la_OBJECTS = qk15.lo qk21.lo qk31.lo qk41.lo \
 	qk51.lo qk61.lo qk.lo qng.lo qag.lo qags.lo qagp.lo \
 	workspace.lo qcheb.lo qawc.lo qmomo.lo qaws.lo qmomof.lo \
-	qawo.lo qawf.lo glfixed.lo cquad.lo
+	qawo.lo qawf.lo glfixed.lo cquad.lo fixed.lo chebyshev.lo \
+	chebyshev2.lo legendre.lo hermite.lo laguerre.lo gegenbauer.lo \
+	jacobi.lo exponential.lo rational.lo
 libgslintegration_la_OBJECTS = $(am_libgslintegration_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -107,8 +109,10 @@ am__v_lt_1 =
 am_test_OBJECTS = test.$(OBJEXT) tests.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_DEPENDENCIES = libgslintegration.la \
-	../ieee-utils/libgslieeeutils.la ../err/libgslerr.la \
-	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+	../ieee-utils/libgslieeeutils.la ../specfunc/libgslspecfunc.la \
+	../complex/libgslcomplex.la ../poly/libgslpoly.la \
+	../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la \
+	../utils/libutils.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -522,12 +526,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslintegration.la
 AM_CPPFLAGS = -I$(top_srcdir)
-libgslintegration_la_SOURCES = qk15.c qk21.c qk31.c qk41.c qk51.c qk61.c qk.c qng.c qng.h qag.c	qags.c qagp.c workspace.c qcheb.c qawc.c qmomo.c qaws.c	qmomof.c qawo.c	qawf.c glfixed.c cquad.c
+libgslintegration_la_SOURCES = qk15.c qk21.c qk31.c qk41.c qk51.c qk61.c qk.c qng.c qng.h qag.c	qags.c qagp.c workspace.c qcheb.c qawc.c qmomo.c qaws.c	qmomof.c qawo.c	qawf.c glfixed.c cquad.c fixed.c chebyshev.c chebyshev2.c legendre.c hermite.c laguerre.c gegenbauer.c jacobi.c exponential.c rational.c
 pkginclude_HEADERS = gsl_integration.h
 noinst_HEADERS = qpsrt.c qpsrt2.c qelg.c qc25c.c qc25s.c qc25f.c ptsort.c util.c err.c positivity.c append.c initialise.c set_initial.c reset.c cquad_const.c
 TESTS = $(check_PROGRAMS)
 test_SOURCES = test.c tests.c tests.h
-test_LDADD = libgslintegration.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+test_LDADD = libgslintegration.la ../ieee-utils/libgslieeeutils.la ../specfunc/libgslspecfunc.la ../complex/libgslcomplex.la ../poly/libgslpoly.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
 all: all-am
 
 .SUFFIXES:
@@ -596,8 +600,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chebyshev.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chebyshev2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cquad.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponential.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fixed.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gegenbauer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glfixed.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hermite.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jacobi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/laguerre.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/legendre.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qag.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qagp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qags.Plo@am__quote@
@@ -616,6 +629,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmomo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmomof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qng.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rational.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/workspace.Plo@am__quote@

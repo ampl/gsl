@@ -71,7 +71,7 @@ main()
     gsl_multifit_linear_solve(0.0, X, y, c, &rnorm, &snorm, w);
     chisq = pow(rnorm, 2.0);
 
-    fprintf(stderr, "=== Unregularized fit ===\n");
+    fprintf(stderr, "\n=== Unregularized fit ===\n");
     fprintf(stderr, "residual norm = %g\n", rnorm);
     fprintf(stderr, "solution norm = %g\n", snorm);
     fprintf(stderr, "chisq/dof = %g\n", chisq / (n - p));
@@ -87,7 +87,7 @@ main()
     gsl_multifit_linear_solve(lambda_l, X, y, c_lcurve, &rnorm, &snorm, w);
     chisq = pow(rnorm, 2.0) + pow(lambda_l * snorm, 2.0);
 
-    fprintf(stderr, "=== Regularized fit (L-curve) ===\n");
+    fprintf(stderr, "\n=== Regularized fit (L-curve) ===\n");
     fprintf(stderr, "optimal lambda: %g\n", lambda_l);
     fprintf(stderr, "residual norm = %g\n", rnorm);
     fprintf(stderr, "solution norm = %g\n", snorm);
@@ -100,7 +100,7 @@ main()
     gsl_multifit_linear_solve(lambda_gcv, X, y, c_gcv, &rnorm, &snorm, w);
     chisq = pow(rnorm, 2.0) + pow(lambda_gcv * snorm, 2.0);
 
-    fprintf(stderr, "=== Regularized fit (GCV) ===\n");
+    fprintf(stderr, "\n=== Regularized fit (GCV) ===\n");
     fprintf(stderr, "optimal lambda: %g\n", lambda_gcv);
     fprintf(stderr, "residual norm = %g\n", rnorm);
     fprintf(stderr, "solution norm = %g\n", snorm);

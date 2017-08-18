@@ -22,12 +22,6 @@ FUNCTION(gsl_vector, view_array) (QUALIFIER ATOMIC * base, size_t n)
 {
   QUALIFIED_VIEW(_gsl_vector,view) view = NULL_VECTOR_VIEW;
 
-  if (n == 0)
-    {
-      GSL_ERROR_VAL ("vector length n must be positive integer", 
-                     GSL_EINVAL, view);
-    }
-
   {
     TYPE(gsl_vector) v = NULL_VECTOR;
 
@@ -48,12 +42,6 @@ FUNCTION(gsl_vector, view_array_with_stride) (QUALIFIER ATOMIC * base,
                                               size_t n)
 {
   QUALIFIED_VIEW(_gsl_vector,view) view = NULL_VECTOR_VIEW;
-
-  if (n == 0)
-    {
-      GSL_ERROR_VAL ("vector length n must be positive integer", 
-                     GSL_EINVAL, view);
-    }
 
   if (stride == 0)
     {

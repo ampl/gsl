@@ -56,7 +56,7 @@ main()
     gsl_multifit_linear_svd(X, w);
 
     rcond = gsl_multifit_linear_rcond(w);
-    fprintf(stderr, "matrix condition number = %e\n", 1.0 / rcond);
+    fprintf(stderr, "matrix condition number = %e\n\n", 1.0 / rcond);
 
     /* unregularized (standard) least squares fit, lambda = 0 */
     gsl_multifit_linear_solve(0.0, X, y, c, &rnorm, &snorm, w);
@@ -80,7 +80,7 @@ main()
     gsl_multifit_linear_solve(lambda_l, X, y, c_lcurve, &rnorm, &snorm, w);
     chisq = pow(rnorm, 2.0) + pow(lambda_l * snorm, 2.0);
 
-    fprintf(stderr, "=== Regularized fit (L-curve) ===\n");
+    fprintf(stderr, "\n=== Regularized fit (L-curve) ===\n");
     fprintf(stderr, "optimal lambda: %g\n", lambda_l);
     fprintf(stderr, "best fit: y = %g u + %g v\n",
             gsl_vector_get(c_lcurve, 0), gsl_vector_get(c_lcurve, 1));
@@ -95,7 +95,7 @@ main()
     gsl_multifit_linear_solve(lambda_gcv, X, y, c_gcv, &rnorm, &snorm, w);
     chisq = pow(rnorm, 2.0) + pow(lambda_gcv * snorm, 2.0);
 
-    fprintf(stderr, "=== Regularized fit (GCV) ===\n");
+    fprintf(stderr, "\n=== Regularized fit (GCV) ===\n");
     fprintf(stderr, "optimal lambda: %g\n", lambda_gcv);
     fprintf(stderr, "best fit: y = %g u + %g v\n",
             gsl_vector_get(c_gcv, 0), gsl_vector_get(c_gcv, 1));

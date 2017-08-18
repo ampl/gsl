@@ -22,11 +22,14 @@ bard_checksol(const double x[], const double sumsq,
                                    1.133036092245175,
                                    2.343695178435405 };
   const double sumsq_exact2 = 17.42869333333333;
-  const double bard_x2[bard_P] = { 8.406666666666666e-01,
-                                   GSL_NAN,    /* -inf */
-                                   GSL_NAN };  /* -inf */
+  double bard_x2[bard_P] = { 8.406666666666666e-01,
+                             0.0,    /* -inf */
+                             0.0 };  /* -inf */
   const double *bard_x;
   double sumsq_exact;
+
+  bard_x2[1] = GSL_NAN;
+  bard_x2[2] = GSL_NAN;
 
   if (fabs(x[1]) < 10.0 && fabs(x[2]) < 10.0)
     {

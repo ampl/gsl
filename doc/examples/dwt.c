@@ -8,6 +8,7 @@ main (int argc, char **argv)
 {
   (void)(argc); /* avoid unused parameter warning */
   int i, n = 256, nc = 20;
+  double *orig_data = malloc (n * sizeof (double));
   double *data = malloc (n * sizeof (double));
   double *abscoeff = malloc (n * sizeof (double));
   size_t *p = malloc (n * sizeof (size_t));
@@ -22,7 +23,8 @@ main (int argc, char **argv)
   f = fopen (argv[1], "r");
   for (i = 0; i < n; i++)
     {
-      fscanf (f, "%lg", &data[i]);
+      fscanf (f, "%lg", &orig_data[i]);
+      data[i] = orig_data[i];
     }
   fclose (f);
 
@@ -42,13 +44,14 @@ main (int argc, char **argv)
   
   for (i = 0; i < n; i++)
     {
-      printf ("%g\n", data[i]);
+      printf ("%g %g\n", orig_data[i], data[i]);
     }
   
   gsl_wavelet_free (w);
   gsl_wavelet_workspace_free (work);
 
   free (data);
+  free (orig_data);
   free (abscoeff);
   free (p);
   return 0;

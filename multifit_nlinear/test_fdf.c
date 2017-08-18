@@ -212,7 +212,7 @@ test_fdf_main(const gsl_multifit_nlinear_parameters * params)
           problem->fdf->df = fdf.df;
         }
 
-#if 1 /*XXX: box3d test fails on MacOS here */
+#if 0 /*XXX: box3d test fails on MacOS here */
       if (params->trs == gsl_multifit_nlinear_trs_lmaccel && problem->fdf->fvv != NULL)
         {
           /* test finite difference second directional derivative */

@@ -20,8 +20,13 @@ osborne_checksol(const double x[], const double sumsq,
                  const char *pname)
 {
   const double sumsq_exact = 5.464894697482687e-05;
-  const double osborne_x[osborne_P] = {
-    3.754100521058740e-01, GSL_NAN, GSL_NAN, GSL_NAN, GSL_NAN };
+  double osborne_x[osborne_P];
+
+  osborne_x[0] = 3.754100521058740e-01;
+  osborne_x[1] = GSL_NAN;
+  osborne_x[2] = GSL_NAN;
+  osborne_x[3] = GSL_NAN;
+  osborne_x[4] = GSL_NAN;
 
   gsl_test_rel(sumsq, sumsq_exact, epsrel, "%s/%s sumsq",
                sname, pname);

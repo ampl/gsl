@@ -293,10 +293,10 @@ test_legendre_schmidt(const size_t lmax, const double csphase, const char *desc)
       /* check p = p2 */
       for (i = 0; i < nlm; ++i)
         {
-          if (fabs(p2[i]) < GSL_DBL_MIN)
-            continue;
-
-          gsl_test_rel(p[i], p2[i], 1.0e-10, "%s deriv2 i=%zu", desc, i);
+          if (fabs(p2[i]) < 1.0e3 * GSL_DBL_EPSILON)
+            gsl_test_abs(p[i], p2[i], 1.0e-10, "%s deriv2 i=%zu", desc, i);
+          else
+            gsl_test_rel(p[i], p2[i], 1.0e-10, "%s deriv2 i=%zu", desc, i);
         }
 
       for (l = 0; l <= lmax; ++l)

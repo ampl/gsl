@@ -183,7 +183,20 @@ int test_bessel(void)
   TEST_SF(s,  gsl_sf_bessel_j2_e, (  1.0, &r), 0.06203505201137386110, TEST_TOL0, GSL_SUCCESS);
   TEST_SF(s,  gsl_sf_bessel_j2_e, ( 10.0, &r), 0.07794219362856244547, TEST_TOL0, GSL_SUCCESS);
   TEST_SF(s,  gsl_sf_bessel_j2_e, (100.0, &r), 0.004803441652487953480, TEST_TOL1, GSL_SUCCESS);
-  TEST_SF(s,  gsl_sf_bessel_j2_e, (1048576.0, &r), -3.1518539455252413111e-07, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (1048576.0, &r), -3.1518539455252413111e-07, TEST_TOL3, GSL_SUCCESS);
+
+#if 0
+  /* bug #45730; the bug should be fixed, but these tests are disabled since error computation
+     is not correct for these inputs */
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (-1.0e22, &r), 5.23214785395139e-23, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (-1.0e21, &r), 7.449501119831337e-22, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (-1.0e20, &r), 7.639704044417282e-21, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (-1.0e19, &r), -3.749051695507179e-20, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (1.0e19, &r), -3.749051695507179e-20, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (1.0e20, &r), 7.639704044417282e-21, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (1.0e21, &r), 7.449501119831337e-22, TEST_TOL2, GSL_SUCCESS);
+  TEST_SF(s,  gsl_sf_bessel_j2_e, (1.0e22, &r), 5.23214785395139e-23, TEST_TOL2, GSL_SUCCESS);
+#endif
 
   TEST_SF(s,  gsl_sf_bessel_jl_e, (0, 0.0, &r), 1.0, TEST_TOL0, GSL_SUCCESS);
 

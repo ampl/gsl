@@ -22,13 +22,7 @@ FUNCTION(gsl_vector, subvector) (QUALIFIED_TYPE(gsl_vector) * v, size_t offset, 
 {
   QUALIFIED_VIEW(_gsl_vector,view) view = NULL_VECTOR_VIEW;
 
-  if (n == 0)
-    {
-      GSL_ERROR_VAL ("vector length n must be positive integer", 
-                     GSL_EINVAL, view);
-    }
-
-  if (offset + (n - 1) >= v->size)
+  if (offset + (n > 0 ? n - 1 : 0) >= v->size)
     {
       GSL_ERROR_VAL ("view would extend past end of vector", 
                      GSL_EINVAL, view);
@@ -53,19 +47,13 @@ FUNCTION(gsl_vector, subvector_with_stride) (QUALIFIED_TYPE(gsl_vector) * v, siz
 {
   QUALIFIED_VIEW(_gsl_vector,view) view = NULL_VECTOR_VIEW;
 
-  if (n == 0)
-    {
-      GSL_ERROR_VAL ("vector length n must be positive integer", 
-                     GSL_EINVAL, view);
-    }
-
   if (stride == 0)
     {
       GSL_ERROR_VAL ("stride must be positive integer", 
                      GSL_EINVAL, view);
     }
 
-  if (offset + (n - 1) * stride >= v->size)
+  if (offset + (n > 0 ? n - 1 : 0) * stride >= v->size)
     {
       GSL_ERROR_VAL ("view would extend past end of vector", 
                      GSL_EINVAL, view);

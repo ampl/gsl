@@ -22,12 +22,6 @@ FUNCTION (gsl_block, alloc) (const size_t n)
 {
   TYPE (gsl_block) * b;
 
-  if (n == 0)
-    {
-      GSL_ERROR_VAL ("block length n must be positive integer",
-                        GSL_EINVAL, 0);
-    }
-
   b = (TYPE (gsl_block) *) malloc (sizeof (TYPE (gsl_block)));
 
   if (b == 0)
@@ -38,7 +32,7 @@ FUNCTION (gsl_block, alloc) (const size_t n)
 
   b->data = (ATOMIC *) malloc (MULTIPLICITY * n * sizeof (ATOMIC));
 
-  if (b->data == 0)
+  if (b->data == 0 && n > 0) /* malloc may return NULL when n == 0 */
     {
       free (b);         /* exception in constructor, avoid memory leak */
 

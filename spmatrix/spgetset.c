@@ -40,6 +40,11 @@ gsl_spmatrix_get(const gsl_spmatrix *m, const size_t i, const size_t j)
     {
       GSL_ERROR_VAL("second index out of range", GSL_EINVAL, 0.0);
     }
+  else if (m->nz == 0)
+    {
+      /* no non-zero elements added to matrix */
+      return (0.0);
+    }
   else
     {
       if (GSL_SPMATRIX_ISTRIPLET(m))

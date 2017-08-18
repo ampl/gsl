@@ -13,6 +13,9 @@ this undesirable behavior.
 
 * Someone to volunteer to do Cubature, e.g as provided by Cubpack.
 
+* Someone to volunteer to port IQPACK, the Hermite quadrature has already
+  been ported
+
 *     ACM Transactions on Mathematical Software (TOMS)   archive                  
    Volume 33 ,  Issue 3  (August 2007)                                         
 

@@ -2,7 +2,7 @@
 #define powell3_P         2
 
 static double powell3_x0[powell3_P] = { 0.0, 1.0 };
-static double powell3_epsrel = 1.0e-10;
+static double powell3_epsrel = 1.0e-6;
 
 static double powell3_J[powell3_N * powell3_P];
 

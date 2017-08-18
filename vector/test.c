@@ -30,6 +30,7 @@
 #endif
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <gsl/gsl_math.h>
@@ -211,6 +212,38 @@ main (void)
           test_complex_long_double_file (stride, N);
         }
     }
+
+    test_alloc_zero_length ();
+    test_float_alloc_zero_length ();
+    test_long_double_alloc_zero_length ();
+    test_ulong_alloc_zero_length ();
+    test_long_alloc_zero_length ();
+    test_uint_alloc_zero_length ();
+    test_int_alloc_zero_length ();
+    test_ushort_alloc_zero_length ();
+    test_short_alloc_zero_length ();
+    test_uchar_alloc_zero_length ();
+    test_char_alloc_zero_length ();
+
+    test_complex_alloc_zero_length ();
+    test_complex_float_alloc_zero_length ();
+    test_complex_long_double_alloc_zero_length ();
+
+    test_calloc_zero_length ();
+    test_float_calloc_zero_length ();
+    test_long_double_calloc_zero_length ();
+    test_ulong_calloc_zero_length ();
+    test_long_calloc_zero_length ();
+    test_uint_calloc_zero_length ();
+    test_int_calloc_zero_length ();
+    test_ushort_calloc_zero_length ();
+    test_short_calloc_zero_length ();
+    test_uchar_calloc_zero_length ();
+    test_char_calloc_zero_length ();
+
+    test_complex_calloc_zero_length ();
+    test_complex_float_calloc_zero_length ();
+    test_complex_long_double_calloc_zero_length ();
 
 #if GSL_RANGE_CHECK
   gsl_set_error_handler (&my_error_handler);

@@ -56,20 +56,6 @@ typedef struct
     gsl_matrix *dB;     /* temporary derivative results */
 } gsl_bspline_workspace;
 
-#ifndef GSL_DISABLE_DEPRECATED
-
-typedef struct
-{
-    size_t k; /* spline order */
-    gsl_matrix *A; /* work matrix */
-    gsl_matrix *dB; /* temporary derivative results */
-} gsl_bspline_deriv_workspace;
-
-gsl_bspline_deriv_workspace *gsl_bspline_deriv_alloc(const size_t k);
-void gsl_bspline_deriv_free(gsl_bspline_deriv_workspace *w);
-
-#endif /* !GSL_DISABLE_DEPRECATED */
-
 gsl_bspline_workspace *
 gsl_bspline_alloc(const size_t k, const size_t nbreak);
 

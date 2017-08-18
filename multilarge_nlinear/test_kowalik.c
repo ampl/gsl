@@ -2,7 +2,7 @@
 #define kowalik_P         4
 
 static double kowalik_x0[kowalik_P] = { 0.25, 0.39, 0.415, 0.39 };
-static double kowalik_epsrel = 1.0e-7;
+static double kowalik_epsrel = 1.0e-6;
 
 static double kowalik_J[kowalik_N * kowalik_P];
 
@@ -30,12 +30,16 @@ kowalik_checksol(const double x[], const double sumsq,
                                          1.230565070690708e-01,
                                          1.360623308065148e-01 };
   const double sumsq_exact2 = 0.00102734304869549252;
-  const double kowalik_x2[kowalik_P] = { GSL_NAN,   /* inf */
-                                         -14.0758834005984603,
-                                         GSL_NAN,   /* -inf */
-                                         GSL_NAN }; /* -inf */
+  double kowalik_x2[kowalik_P] = { 0.0,   /* inf */
+                                   -14.0758834005984603,
+                                   0.0,   /* -inf */
+                                   0.0 }; /* -inf */
   const double *kowalik_x;
   double sumsq_exact;
+
+  kowalik_x2[0] = GSL_NAN;
+  kowalik_x2[2] = GSL_NAN;
+  kowalik_x2[3] = GSL_NAN;
 
   if (norm < 10.0)
     {

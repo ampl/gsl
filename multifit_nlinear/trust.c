@@ -230,10 +230,19 @@ trust_init(void *vstate, const gsl_vector *swts,
 
   /* initialize trust region method solver */
   {
-    const gsl_multifit_nlinear_trust_state trust_state = { x, f, g, J, state->diag,
-                                                           swts, &(state->mu), params,
-                                                           state->solver_state, fdf,
-                                                           &(state->avratio) };
+    gsl_multifit_nlinear_trust_state trust_state;
+    
+    trust_state.x = x;
+    trust_state.f = f;
+    trust_state.g = g;
+    trust_state.J = J;
+    trust_state.diag = state->diag;
+    trust_state.sqrt_wts = swts;
+    trust_state.mu = &(state->mu);
+    trust_state.params = params;
+    trust_state.solver_state = state->solver_state;
+    trust_state.fdf = fdf;
+    trust_state.avratio = &(state->avratio);
 
     status = (params->trs->init)(&trust_state, state->trs_state);
 
@@ -288,19 +297,26 @@ trust_iterate(void *vstate, const gsl_vector *swts,
   trust_state_t *state = (trust_state_t *) vstate;
   const gsl_multifit_nlinear_parameters *params = &(state->params);
   const gsl_multifit_nlinear_trs *trs = params->trs;
-
-  /* collect all state parameters needed by low level methods */
-  const gsl_multifit_nlinear_trust_state trust_state = { x, f, g, J, state->diag,
-                                                         swts, &(state->mu), params,
-                                                         state->solver_state, fdf,
-                                                         &(state->avratio) };
-
+  gsl_multifit_nlinear_trust_state trust_state;
   gsl_vector *x_trial = state->x_trial;       /* trial x + dx */
   gsl_vector *f_trial = state->f_trial;       /* trial f(x + dx) */
   gsl_vector *diag = state->diag;             /* diag(D) */
   double rho;                                 /* ratio actual_reduction/predicted_reduction */
   int foundstep = 0;                          /* found step dx */
   int bad_steps = 0;                          /* consecutive rejected steps */
+
+  /* store all state parameters needed by low level methods */
+  trust_state.x = x;
+  trust_state.f = f;
+  trust_state.g = g;
+  trust_state.J = J;
+  trust_state.diag = state->diag;
+  trust_state.sqrt_wts = swts;
+  trust_state.mu = &(state->mu);
+  trust_state.params = params;
+  trust_state.solver_state = state->solver_state;
+  trust_state.fdf = fdf;
+  trust_state.avratio = &(state->avratio);
 
   /* initialize trust region subproblem with this Jacobian */
   status = (trs->preloop)(&trust_state, state->trs_state);
@@ -464,12 +480,9 @@ trust_calc_rho(const gsl_vector * f, const gsl_vector * f_trial,
   int status;
   const gsl_multifit_nlinear_parameters *params = &(state->params);
   const gsl_multifit_nlinear_trs *trs = params->trs;
-  const gsl_multifit_nlinear_trust_state trust_state = { NULL, f, g, J, state->diag,
-                                                         NULL, &(state->mu), params,
-                                                         state->solver_state, NULL,
-                                                         &(state->avratio) };
   const double normf = gsl_blas_dnrm2(f);
   const double normf_trial = gsl_blas_dnrm2(f_trial);
+  gsl_multifit_nlinear_trust_state trust_state;
   double rho;
   double actual_reduction;
   double pred_reduction;
@@ -478,6 +491,18 @@ trust_calc_rho(const gsl_vector * f, const gsl_vector * f_trial,
   /* if ||f(x+dx)|| > ||f(x)|| reject step immediately */
   if (normf_trial >= normf)
     return -1.0;
+
+  trust_state.x = NULL;
+  trust_state.f = f;
+  trust_state.g = g;
+  trust_state.J = J;
+  trust_state.diag = state->diag;
+  trust_state.sqrt_wts = NULL;
+  trust_state.mu = &(state->mu);
+  trust_state.params = params;
+  trust_state.solver_state = state->solver_state;
+  trust_state.fdf = NULL;
+  trust_state.avratio = &(state->avratio);
 
   /* compute numerator of rho (actual reduction) */
   u = normf_trial / normf;

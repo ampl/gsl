@@ -2748,6 +2748,7 @@ int main(int argc, char * argv[])
   gsl_test(test_fermidirac(),  "Fermi-Dirac Functions");
   gsl_test(test_gamma(),       "Gamma Functions");
   gsl_test(test_gegen(),       "Gegenbauer Polynomials");
+  gsl_test(test_hermite(),     "Hermite Functions");
   gsl_test(test_hyperg(),      "Hypergeometric Functions");
   gsl_test(test_laguerre(),    "Laguerre Polynomials");
   gsl_test(test_lambert(),     "Lambert W Functions");

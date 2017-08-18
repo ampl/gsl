@@ -718,44 +718,32 @@ FUNCTION (test, file) (size_t stride, size_t N)
 
   size_t i;
 
-  char filename[] = "test.XXXXXX";
-#if !defined( _WIN32 )
-  int fd = mkstemp(filename);
-#else
-  char * fd = _mktemp(filename);
-#  define fdopen fopen
-#endif
-  {
-    FILE *f = fdopen (fd, "wb");
+  FILE *f = tmpfile();
 
-    for (i = 0; i < N; i++)
-      {
-        FUNCTION (gsl_vector, set) (v, i, (ATOMIC) (N - i));
-      };
+  /* write file */
 
-    FUNCTION (gsl_vector, fwrite) (f, v);
+  for (i = 0; i < N; i++)
+    {
+      FUNCTION (gsl_vector, set) (v, i, (ATOMIC) (N - i));
+    };
 
-    fclose (f);
-  }
+  FUNCTION (gsl_vector, fwrite) (f, v);
 
-  {
-    FILE *f = fopen (filename, "rb");
+  /* read file */
 
-    FUNCTION (gsl_vector, fread) (f, w);
+  rewind(f);
+  FUNCTION (gsl_vector, fread) (f, w);
 
-    status = 0;
-    for (i = 0; i < N; i++)
-      {
-        if (w->data[i*stride] != (ATOMIC) (N - i))
-          status = 1;
-      };
+  status = 0;
+  for (i = 0; i < N; i++)
+    {
+      if (w->data[i*stride] != (ATOMIC) (N - i))
+        status = 1;
+    };
 
-    TEST (status, "_write and read");
+  TEST (status, "_write and read");
 
-    fclose (f);
-  }
-
-  unlink(filename);
+  fclose(f);
 
   FUNCTION (gsl_vector, free) (v);      /* free whatever is in v */
   FUNCTION (gsl_vector, free) (w);      /* free whatever is in w */
@@ -772,44 +760,32 @@ FUNCTION (test, text) (size_t stride, size_t N)
 
   size_t i;
 
-  char filename[] = "test.XXXXXX";
-#if !defined( _WIN32 )
-   int fd = mkstemp(filename);
-#else
-   char * fd = _mktemp(filename);
-#  define fdopen fopen
-#endif
-  {
-    FILE *f = fdopen (fd, "w");
+  FILE *f = tmpfile();
 
-    for (i = 0; i < N; i++)
-      {
-        FUNCTION (gsl_vector, set) (v, i, (ATOMIC) i);
-      };
+  /* write file */
 
-    FUNCTION (gsl_vector, fprintf) (f, v, OUT_FORMAT);
+  for (i = 0; i < N; i++)
+    {
+      FUNCTION (gsl_vector, set) (v, i, (ATOMIC) i);
+    };
 
-    fclose (f);
-  }
+  FUNCTION (gsl_vector, fprintf) (f, v, OUT_FORMAT);
 
-  {
-    FILE *f = fopen (filename, "r");
+  /* read file */
 
-    FUNCTION (gsl_vector, fscanf) (f, w);
+  rewind(f);
+  FUNCTION (gsl_vector, fscanf) (f, w);
 
-    status = 0;
-    for (i = 0; i < N; i++)
-      {
-        if (w->data[i*stride] != (ATOMIC) i)
-          status = 1;
-      };
+  status = 0;
+  for (i = 0; i < N; i++)
+    {
+      if (w->data[i*stride] != (ATOMIC) i)
+        status = 1;
+    };
 
-    gsl_test (status, NAME (gsl_vector) "_fprintf and fscanf");
+  gsl_test (status, NAME (gsl_vector) "_fprintf and fscanf");
 
-    fclose (f);
-  }
-
-  unlink(filename);
+  fclose (f);
 
   FUNCTION (gsl_vector, free) (v);
   FUNCTION (gsl_vector, free) (w);
@@ -855,7 +831,24 @@ FUNCTION (test, trap) (size_t stride, size_t N)
   FUNCTION (gsl_vector, free) (v);      /* free whatever is in v */
 }
 
+void
+FUNCTION (test, alloc_zero_length) (void)
+{
+  TYPE (gsl_vector) * b = FUNCTION (gsl_vector, alloc) (0);
 
+  gsl_test (b == 0, NAME (gsl_vector) "_alloc permits zero length");
+  gsl_test (b->size != 0, NAME (gsl_vector) "_alloc reflects zero length");
 
+  FUNCTION (gsl_vector, free) (b);
+}
 
+void
+FUNCTION (test, calloc_zero_length) (void)
+{
+  TYPE (gsl_vector) * b = FUNCTION (gsl_vector, calloc) (0);
 
+  gsl_test (b == 0, NAME (gsl_vector) "_calloc permits zero length");
+  gsl_test (b->size != 0, NAME (gsl_vector) "_calloc reflects zero length");
+
+  FUNCTION (gsl_vector, free) (b);
+}

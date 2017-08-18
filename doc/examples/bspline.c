@@ -48,7 +48,6 @@ main (void)
   cov = gsl_matrix_alloc(ncoeffs, ncoeffs);
   mw = gsl_multifit_linear_alloc(n, ncoeffs);
 
-  printf("#m=0,S=0\n");
   /* this is the data to be fitted */
   for (i = 0; i < n; ++i)
     {
@@ -96,11 +95,12 @@ main (void)
   fprintf(stderr, "chisq/dof = %e, Rsq = %f\n", 
                    chisq / dof, Rsq);
 
+  printf("\n\n");
+
   /* output the smoothed curve */
   {
     double xi, yi, yerr;
 
-    printf("#m=1,S=0\n");
     for (xi = 0.0; xi < 15.0; xi += 0.1)
       {
         gsl_bspline_eval(xi, B, bw);

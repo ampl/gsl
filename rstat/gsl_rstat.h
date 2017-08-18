@@ -62,18 +62,18 @@ typedef struct
 
 gsl_rstat_workspace *gsl_rstat_alloc(void);
 void gsl_rstat_free(gsl_rstat_workspace *w);
-size_t gsl_rstat_n(gsl_rstat_workspace *w);
+size_t gsl_rstat_n(const gsl_rstat_workspace *w);
 int gsl_rstat_add(const double x, gsl_rstat_workspace *w);
-double gsl_rstat_min(gsl_rstat_workspace *w);
-double gsl_rstat_max(gsl_rstat_workspace *w);
-double gsl_rstat_mean(gsl_rstat_workspace *w);
-double gsl_rstat_variance(gsl_rstat_workspace *w);
-double gsl_rstat_sd(gsl_rstat_workspace *w);
-double gsl_rstat_rms(gsl_rstat_workspace *w);
-double gsl_rstat_sd_mean(gsl_rstat_workspace *w);
+double gsl_rstat_min(const gsl_rstat_workspace *w);
+double gsl_rstat_max(const gsl_rstat_workspace *w);
+double gsl_rstat_mean(const gsl_rstat_workspace *w);
+double gsl_rstat_variance(const gsl_rstat_workspace *w);
+double gsl_rstat_sd(const gsl_rstat_workspace *w);
+double gsl_rstat_rms(const gsl_rstat_workspace *w);
+double gsl_rstat_sd_mean(const gsl_rstat_workspace *w);
 double gsl_rstat_median(gsl_rstat_workspace *w);
-double gsl_rstat_skew(gsl_rstat_workspace *w);
-double gsl_rstat_kurtosis(gsl_rstat_workspace *w);
+double gsl_rstat_skew(const gsl_rstat_workspace *w);
+double gsl_rstat_kurtosis(const gsl_rstat_workspace *w);
 int gsl_rstat_reset(gsl_rstat_workspace *w);
 
 __END_DECLS

@@ -10,7 +10,7 @@ main (void)
   int i;
   double xi, yi, x[10], y[10];
 
-  printf ("#m=0,S=2\n");
+  printf ("#m=0,S=17\n");
 
   for (i = 0; i < 10; i++)
     {

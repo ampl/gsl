@@ -132,10 +132,6 @@ int gsl_linalg_hessenberg_set_zero(gsl_matrix * H);
 int gsl_linalg_hessenberg_submatrix(gsl_matrix *M, gsl_matrix *A,
                                     size_t top, gsl_vector *tau);
 
-/* To support gsl-1.9 interface: DEPRECATED */
-int gsl_linalg_hessenberg(gsl_matrix *A, gsl_vector *tau);
-
-
 /* Hessenberg-Triangular reduction */
 
 int gsl_linalg_hesstri_decomp(gsl_matrix * A, gsl_matrix * B,
@@ -378,15 +374,20 @@ int gsl_linalg_COD_decomp(gsl_matrix * A, gsl_vector * tau_Q, gsl_vector * tau_Z
 int gsl_linalg_COD_decomp_e(gsl_matrix * A, gsl_vector * tau_Q, gsl_vector * tau_Z,
                             gsl_permutation * p, double tol, size_t * rank, gsl_vector * work);
 
-int gsl_linalg_COD_lssolve (const gsl_matrix * QRZ, const gsl_vector * tau_Q, const gsl_vector * tau_Z,
+int gsl_linalg_COD_lssolve (const gsl_matrix * QRZT, const gsl_vector * tau_Q, const gsl_vector * tau_Z,
                             const gsl_permutation * perm, const size_t rank, const gsl_vector * b,
                             gsl_vector * x, gsl_vector * residual);
 
-int gsl_linalg_COD_unpack(const gsl_matrix * QRZ, const gsl_vector * tau_Q,
+int
+gsl_linalg_COD_lssolve2 (const double lambda, const gsl_matrix * QRZT, const gsl_vector * tau_Q, const gsl_vector * tau_Z,
+                         const gsl_permutation * perm, const size_t rank, const gsl_vector * b,
+                         gsl_vector * x, gsl_vector * residual, gsl_matrix * S, gsl_vector * work);
+
+int gsl_linalg_COD_unpack(const gsl_matrix * QRZT, const gsl_vector * tau_Q,
                           const gsl_vector * tau_Z, const size_t rank, gsl_matrix * Q,
                           gsl_matrix * R, gsl_matrix * Z);
 
-int gsl_linalg_COD_matZ(const gsl_matrix * QRZ, const gsl_vector * tau_Z, const size_t rank,
+int gsl_linalg_COD_matZ(const gsl_matrix * QRZT, const gsl_vector * tau_Z, const size_t rank,
                         gsl_matrix * A, gsl_vector * work);
 
 /* LQ decomposition */

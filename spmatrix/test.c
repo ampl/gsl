@@ -18,8 +18,10 @@
  */
 
 #include <config.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <unistd.h>
 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
@@ -103,6 +105,42 @@ test_getset(const size_t M, const size_t N,
 {
   int status;
   size_t i, j;
+
+  /* test that a newly allocated matrix is initialized to zero */
+  {
+    size_t nzmax = (size_t) (0.5 * M * N);
+    gsl_spmatrix *mt = gsl_spmatrix_alloc_nzmax(M, N, nzmax, GSL_SPMATRIX_TRIPLET);
+    gsl_spmatrix *mccs = gsl_spmatrix_alloc_nzmax(M, N, nzmax, GSL_SPMATRIX_CCS);
+    gsl_spmatrix *mcrs = gsl_spmatrix_alloc_nzmax(M, N, nzmax, GSL_SPMATRIX_CRS);
+
+    status = 0;
+    for (i = 0; i < M; ++i)
+      {
+        for (j = 0; j < N; ++j)
+          {
+            double mtij = gsl_spmatrix_get(mt, i, j);
+            double mcij = gsl_spmatrix_get(mccs, i, j);
+            double mrij = gsl_spmatrix_get(mcrs, i, j);
+
+            if (mtij != 0.0)
+              status = 1;
+
+            if (mcij != 0.0)
+              status = 2;
+
+            if (mrij != 0.0)
+              status = 3;
+          }
+      }
+
+    gsl_test(status == 1, "test_getset: triplet M=%zu N=%zu not initialized to zero", M, N);
+    gsl_test(status == 2, "test_getset: CCS M=%zu N=%zu not initialized to zero", M, N);
+    gsl_test(status == 3, "test_getset: CRS M=%zu N=%zu not initialized to zero", M, N);
+
+    gsl_spmatrix_free(mt);
+    gsl_spmatrix_free(mccs);
+    gsl_spmatrix_free(mcrs);
+  }
 
   /* test triplet versions of _get and _set */
   {
@@ -544,17 +582,11 @@ test_io_ascii(const size_t M, const size_t N,
   int status;
   gsl_spmatrix *A = create_random_sparse_int(M, N, density, r);
 
-  char filename[] = "test.XXXXXX";
-#if !defined( _WIN32 )
-  int fd = mkstemp(filename);
-#else
-  char * fd = _mktemp(filename);
-# define fdopen fopen
-#endif
+  char filename[] = "test.dat";
 
   /* test triplet I/O */
   {
-    FILE *f = fdopen(fd, "w");
+    FILE *f = fopen(filename, "w");
 
     gsl_spmatrix_fprintf(f, A, "%g");
 
@@ -629,17 +661,11 @@ test_io_binary(const size_t M, const size_t N,
   gsl_spmatrix *A = create_random_sparse(M, N, density, r);
   gsl_spmatrix *A_ccs, *A_crs;
 
-  char filename[] = "test.XXXXXX";
-#if !defined( _WIN32 )
-  int fd = mkstemp(filename);
-#else
-  char * fd = _mktemp(filename);
-# define fdopen fopen
-#endif
+  char filename[] = "test.dat";
 
   /* test triplet I/O */
   {
-    FILE *f = fdopen(fd, "wb");
+    FILE *f = fopen(filename, "wb");
 
     gsl_spmatrix_fwrite(f, A);
 

@@ -179,7 +179,7 @@ static const size_t GLAWSIZE = sizeof(glaw)/sizeof(glaw[0]);
 
 
 gsl_integration_glfixed_table *
-  gsl_integration_glfixed_table_alloc (size_t n)
+gsl_integration_glfixed_table_alloc (size_t n)
 {
   int i;
   double *x = 0;
@@ -194,7 +194,7 @@ gsl_integration_glfixed_table *
     }
 
   /* Use a predefined table of size n if possible */
-  for (i = 0; i < GLAWSIZE;i++)
+  for (i = 0; i < (int) GLAWSIZE;i++)
     {
       if (n == glaw[i].n)
         {
@@ -245,7 +245,7 @@ gsl_integration_glfixed_table *
 }
 
 void
-  gsl_integration_glfixed_table_free (gsl_integration_glfixed_table * t)
+gsl_integration_glfixed_table_free (gsl_integration_glfixed_table * t)
 {
   /* We only free the table memory if we allocated it */
   /* Leave precomputed, static tables alone */
@@ -277,10 +277,10 @@ int(f(t),t=a..b) = A*sum(w[i]*f(A*x[i]+B),i=0..n-1)
 */
 
 double
-  gsl_integration_glfixed (const gsl_function *f,
-                           double a,
-                           double b,
-                           const gsl_integration_glfixed_table * t)
+gsl_integration_glfixed (const gsl_function *f,
+                         double a,
+                         double b,
+                         const gsl_integration_glfixed_table * t)
 {
   const double * const x = t->x;
   const double * const w = t->w;
@@ -324,12 +324,12 @@ double
    are indexed and presented in increasing order to the caller.
 */
 int
-  gsl_integration_glfixed_point (double a,
-                                 double b,
-                                 size_t i,
-                                 double *xi,
-                                 double *wi,
-                                 const gsl_integration_glfixed_table * t)
+gsl_integration_glfixed_point (double a,
+                               double b,
+                               size_t i,
+                               double *xi,
+                               double *wi,
+                               const gsl_integration_glfixed_table * t)
 {
   const double A = (b - a) / 2;  /* Length of [a,b] */
   const double B = (a + b) / 2;  /* Midpoint of [a,b] */

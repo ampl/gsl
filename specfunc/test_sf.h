@@ -99,6 +99,7 @@ int test_coulomb(void);
 int test_dilog(void);
 int test_gamma(void);
 int test_mathieu(void);
+int test_hermite(void);
 int test_hyperg(void);
 int test_legendre(void);
 

@@ -71,7 +71,7 @@ gsl_linalg_cholesky_decomp (gsl_matrix * A)
 /*
 gsl_linalg_cholesky_decomp1()
   Perform Cholesky decomposition of a symmetric positive
-definite matrix
+definite matrix using lower triangle
 
 Inputs: A - (input) symmetric, positive definite matrix
             (output) lower triangle contains Cholesky factor
@@ -81,6 +81,8 @@ Return: success/error
 Notes:
 1) Based on algorithm 4.2.1 (Gaxpy Cholesky) of Golub and
 Van Loan, Matrix Computations (4th ed).
+
+2) original matrix is saved in upper triangle on output
 */
 
 int
@@ -96,6 +98,9 @@ gsl_linalg_cholesky_decomp1 (gsl_matrix * A)
   else
     {
       size_t j;
+
+      /* save original matrix in upper triangle for later rcond calculation */
+      gsl_matrix_transpose_tricpy('L', 0, A, A);
 
       for (j = 0; j < N; ++j)
         {

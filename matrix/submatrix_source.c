@@ -32,14 +32,6 @@ FUNCTION (gsl_matrix, submatrix) (QUALIFIED_TYPE(gsl_matrix) * m,
     {
       GSL_ERROR_VAL ("column index is out of range", GSL_EINVAL, view);
     }
-  else if (n1 == 0)
-    {
-      GSL_ERROR_VAL ("first dimension must be non-zero", GSL_EINVAL, view);
-    }
-  else if (n2 == 0)
-    {
-      GSL_ERROR_VAL ("second dimension must be non-zero", GSL_EINVAL, view);
-    }
   else if (i + n1 > m->size1)
     {
       GSL_ERROR_VAL ("first dimension overflows matrix", GSL_EINVAL, view);

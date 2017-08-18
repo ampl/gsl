@@ -127,6 +127,8 @@ int gsl_sf_bessel_j2_e(const double x, gsl_sf_result * result)
     return GSL_SUCCESS;
   }
   else {
+    /* bug #45730: switch from gsl_sf_{cos,sin} to cos/sin to fix large inputs */
+#if 0
     gsl_sf_result cos_result;
     gsl_sf_result sin_result;
     const int stat_cos = gsl_sf_cos_e(x, &cos_result);
@@ -139,6 +141,16 @@ int gsl_sf_bessel_j2_e(const double x, gsl_sf_result * result)
     result->err += 2.0 * GSL_DBL_EPSILON * (fabs(f*sin_x/x) + 3.0*fabs(cos_x/(x*x)));
     result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
     return GSL_ERROR_SELECT_2(stat_cos, stat_sin);
+#else
+    const double cos_x = cos(x);
+    const double sin_x = sin(x);
+    const double f = (3.0/(x*x) - 1.0);
+    result->val  = (f * sin_x - 3.0*cos_x/x)/x;
+    result->err = 2.0 * GSL_DBL_EPSILON * (fabs(f*sin_x/x) + 3.0*fabs(cos_x/(x*x)));
+    result->err += 2.0 * GSL_DBL_EPSILON * fabs(result->val);
+    /*return GSL_ERROR_SELECT_2(stat_cos, stat_sin);*/
+    return GSL_SUCCESS;
+#endif
   }
 }
 

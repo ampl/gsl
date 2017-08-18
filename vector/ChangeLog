@@ -1,3 +1,13 @@
+2017-01-07  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* init_source.c: permit zero-length vectors (#49988)
+	* subvector_source.c: permit zero-length subvectors (#49988)
+	* test.c: change trap into alloc_zero_length, add calloc tests
+	* test_complex_source.c: zero-length for alloc and calloc
+	* test_source.c: zero-length for alloc and calloc
+	* view_source.c: permit zero-length views
+	* Audit range checking regarding n - 1 underflow for n = 0
+
 2010-03-12  Brian Gough  <bjg@network-theory.co.uk>
 
 	* prop_source.c (FUNCTION): added a function to test if two

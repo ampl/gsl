@@ -1,3 +1,10 @@
+2017-01-07  Rhys Ulerich  <rhys.ulerich@gmail.com>
+
+	* init_source.c: permit zero-dimensioned matrices (#49988)
+	* submatrix_source.c: permit zero-dimensioned submatrices (#49988)
+	* view_source.c: permit zero-dimensioned views
+	* Audit for n-1 underflows when n = 0
+
 2011-10-16  Rhys Ulerich  <rhys.ulerich@gmail.com>
 
 	* file_source.c: applied patch provided by Matthias Sitte

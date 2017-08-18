@@ -1,4 +1,47 @@
-* What is new in gsl-2.3:
+* What is new in gsl-2.4:
+
+** migrated documentation to Sphinx software, which has built-in
+   support for latex equations and figures in HTML output
+
+** add const to declaration of appropriate gsl_rstat routines
+
+** bug fix for #45730: change gsl_sf_sin/cos to libm sin/cos
+
+** fix Cholesky documentation regarding upper triangle on output
+
+** added routines to compute integrals with fixed-point quadrature,
+   based on IQPACK (Konrad Griessinger)
+
+** added routines for Hermite polynomials, gsl_sf_hermite_*
+   (Konrad Griessinger)
+
+** added new nonlinear least squares example for fitting
+   a Gaussian to data
+
+** deprecated routines:
+     gsl_sf_coupling_6j_INCORRECT
+     gsl_sf_coupling_6j_INCORRECT_e
+
+** deprecated routine 'gsl_linalg_hessenberg' (replaced
+   by gsl_linalg_hessenberg_decomp)
+
+** removed routines which were deprecated in v2.1:
+     gsl_bspline_deriv_alloc
+     gsl_bspline_deriv_free
+
+** changed COD expression to Q R Z^T instead of Q R Z to
+   be consistent with standard texts
+
+** added check for nz == 0 in gsl_spmatrix_get
+   (reported by Manuel Schmitz)
+
+** permit zero-dimension blocks, vectors, matrics, subvectors,
+   submatrices, and views of the above (bug #49988)
+
+** added routine gsl_linalg_COD_lssolve2 for regularized
+   least squares problems
+
+* What was new in gsl-2.3:
 
 ** bug fix in documentation for gsl_linalg_LU_refine
    (bug #49728, Joey De Pauw)

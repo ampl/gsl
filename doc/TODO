@@ -1,0 +1,4 @@
+1. fix specfunc-hyperg.rst re: math expressions for texinfo
+2. in fft.rst, we reference doc/fftalgorithms.tex - make sure this file
+   is in the right place in the final dir structure
+3. Histogram2d figure - need to write gnuplot script

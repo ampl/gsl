@@ -28,9 +28,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_permutation.h>
 
-static int create_random_vector(gsl_vector * v, gsl_rng * r);
-static int create_posdef_matrix(gsl_matrix * m, gsl_rng * r);
-static int create_hilbert_matrix2(gsl_matrix * m);
+#include "test_common.c"
 
 static int test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
                                     const double expected_rcond, const double eps,
@@ -57,81 +55,6 @@ double hilb_rcond[] = { 1.000000000000e+00, 3.703703703704e-02, 1.336898395722e-
                         3.524229074890e-05, 1.059708198754e-06, 3.439939465186e-08,
                         1.015027593823e-09, 2.952221630602e-11, 9.093751565191e-13,
                         2.828277420229e-14, 8.110242564869e-16, 2.409320075800e-17 };
-
-static int
-create_random_vector(gsl_vector * v, gsl_rng * r)
-{
-  const size_t N = v->size;
-  size_t i;
-
-  for (i = 0; i < N; ++i)
-    {
-      double vi = gsl_rng_uniform(r);
-      gsl_vector_set(v, i, vi);
-    }
-
-  return GSL_SUCCESS;
-}
-
-static int
-create_symm_matrix(gsl_matrix * m, gsl_rng * r)
-{
-  const size_t N = m->size1;
-  size_t i, j;
-
-  for (i = 0; i < N; ++i)
-    {
-      for (j = 0; j <= i; ++j)
-        {
-          double mij = gsl_rng_uniform(r);
-          gsl_matrix_set(m, i, j, mij);
-        }
-    }
-
-  /* copy lower triangle to upper */
-  gsl_matrix_transpose_tricpy('L', 0, m, m);
-
-  return GSL_SUCCESS;
-}
-
-static int
-create_posdef_matrix(gsl_matrix * m, gsl_rng * r)
-{
-  const size_t N = m->size1;
-  const double alpha = 10.0 * N;
-  size_t i;
-
-  /* The idea is to make a symmetric diagonally dominant
-   * matrix. Make a symmetric matrix and add alpha*I to
-   * its diagonal */
-
-  create_symm_matrix(m, r);
-
-  for (i = 0; i < N; ++i)
-    {
-      double mii = gsl_matrix_get(m, i, i);
-      gsl_matrix_set(m, i, i, mii + alpha);
-    }
-
-  return GSL_SUCCESS;
-}
-
-static int
-create_hilbert_matrix2(gsl_matrix * m)
-{
-  const size_t N = m->size1;
-  size_t i, j;
-
-  for (i = 0; i < N; i++)
-    {
-      for (j = 0; j < N; j++)
-        {
-          gsl_matrix_set(m, i, j, 1.0/(i+j+1.0));
-        }
-    }
-
-  return GSL_SUCCESS;
-}
 
 static int
 test_cholesky_decomp_eps(const int scale, const gsl_matrix * m,
@@ -223,8 +146,8 @@ test_cholesky_decomp(gsl_rng * r)
       gsl_matrix * m = gsl_matrix_alloc(N, N);
 
       create_posdef_matrix(m, r);
-      test_cholesky_decomp_eps(0, m, -1.0, 10.0 * N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
-      test_cholesky_decomp_eps(1, m, -1.0, 20.0 * N * GSL_DBL_EPSILON, "cholesky_decomp scaled random");
+      test_cholesky_decomp_eps(0, m, -1.0, 1.0e2 * N * GSL_DBL_EPSILON, "cholesky_decomp unscaled random");
+      test_cholesky_decomp_eps(1, m, -1.0, 1.0e2 * N * GSL_DBL_EPSILON, "cholesky_decomp scaled random");
 
       if (N <= 12)
         {
@@ -235,7 +158,7 @@ test_cholesky_decomp(gsl_rng * r)
 
           create_hilbert_matrix2(m);
 
-          test_cholesky_decomp_eps(0, m, expected_rcond, GSL_DBL_EPSILON, "cholesky_decomp unscaled hilbert");
+          test_cholesky_decomp_eps(0, m, expected_rcond, N * GSL_DBL_EPSILON, "cholesky_decomp unscaled hilbert");
           test_cholesky_decomp_eps(1, m, expected_rcond, N * GSL_DBL_EPSILON, "cholesky_decomp scaled hilbert");
         }
 
@@ -490,7 +413,7 @@ test_mcholesky_decomp(gsl_rng * r)
 
           create_hilbert_matrix2(m);
 
-          test_mcholesky_decomp_eps(1, 0, m, expected_rcond, N * GSL_DBL_EPSILON, "mcholesky_decomp unscaled hilbert");
+          test_mcholesky_decomp_eps(1, 0, m, expected_rcond, 128.0 * N * GSL_DBL_EPSILON, "mcholesky_decomp unscaled hilbert");
         }
 
       gsl_matrix_free(m);
@@ -557,7 +480,7 @@ test_mcholesky_solve(gsl_rng * r)
         {
           create_hilbert_matrix2(m);
           gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
-          test_mcholesky_solve_eps(m, rhs, sol, 512.0 * N * GSL_DBL_EPSILON, "mcholesky_solve hilbert");
+          test_mcholesky_solve_eps(m, rhs, sol, 1.0e3 * N * GSL_DBL_EPSILON, "mcholesky_solve hilbert");
         }
 
       gsl_matrix_free(m);
@@ -798,8 +721,8 @@ test_pcholesky_decomp(gsl_rng * r)
 
           create_hilbert_matrix2(m);
 
-          test_pcholesky_decomp_eps(0, m, expected_rcond, N * GSL_DBL_EPSILON, "pcholesky_decomp unscaled hilbert");
-          test_pcholesky_decomp_eps(1, m, expected_rcond, N * GSL_DBL_EPSILON, "pcholesky_decomp scaled hilbert");
+          test_pcholesky_decomp_eps(0, m, expected_rcond, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp unscaled hilbert");
+          test_pcholesky_decomp_eps(1, m, expected_rcond, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_decomp scaled hilbert");
         }
 
       gsl_matrix_free(m);
@@ -871,7 +794,7 @@ test_pcholesky_solve(gsl_rng * r)
       test_pcholesky_solve_eps(0, m, rhs, sol, 64.0 * N * GSL_DBL_EPSILON, "pcholesky_solve unscaled random");
       test_pcholesky_solve_eps(1, m, rhs, sol, 64.0 * N * GSL_DBL_EPSILON, "pcholesky_solve scaled random");
 
-      if (N <= 4)
+      if (N <= 3)
         {
           create_hilbert_matrix2(m);
           gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
@@ -945,7 +868,7 @@ test_pcholesky_invert(gsl_rng * r)
       if (N <= 4)
         {
           create_hilbert_matrix2(m);
-          test_pcholesky_invert_eps(m, 256.0 * N * GSL_DBL_EPSILON, "pcholesky_invert unscaled hilbert");
+          test_pcholesky_invert_eps(m, 1024.0 * N * GSL_DBL_EPSILON, "pcholesky_invert unscaled hilbert");
         }
 
       gsl_matrix_free(m);

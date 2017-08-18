@@ -1,0 +1,5 @@
+m               = 10
+intervals       = 6
+result          =  54.115231635459096537
+exact result    =  54.115231635459025483
+actual error    =  0.000000000000071054

@@ -1,6 +1,7 @@
 /* integration/test.c
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Brian Gough
+ * Copyright (C) 2017 Patrick Alken, Konrad Griessinger
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +27,18 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_test.h>
 #include <gsl/gsl_ieee_utils.h>
+#include <gsl/gsl_sf_hyperg.h>
+#include <gsl/gsl_sf_gamma.h>
 
 #include "tests.h"
+
+#define SQRT15             3.8729833462074168852
+#define SQRT30             5.4772255750516611346
+#define SQRT70             8.3666002653407554798
+#define CONST1             0.86113631159405257522 /* sqrt((3+2*sqrt(6./5))/7) */
+#define CONST2             0.33998104358485626480 /* sqrt((3-2*sqrt(6./5))/7) */
+#define CONST3             0.90617984593866399280 /* sqrt((5+2*sqrt(10./7)))/3 */
+#define CONST4             0.53846931010568309104 /* sqrt((5-2*sqrt(10./7)))/3 */
 
 gsl_function make_function (double (* f) (double, void *), double * p);
 
@@ -73,8 +84,29 @@ gsl_function make_counter (gsl_function * f, struct counter_params * p)
 void my_error_handler (const char *reason, const char *file,
                        int line, int err);
 
+static int
+test_fixed_quadrature(const gsl_integration_fixed_type * T, const size_t n,
+                      const double a, const double b, const double alpha, const double beta,
+                      const double tol, const double exact, const gsl_function * f, const char * desc)
+{
+  int status = GSL_SUCCESS;
+  gsl_integration_fixed_workspace * w = gsl_integration_fixed_alloc(T, n, a, b, alpha, beta);
+  char buf[2048];
+  double result;
 
-int main (void)
+  sprintf(buf, "%s a=%g b=%g alpha=%g beta=%g", desc, a, b, alpha, beta);
+
+  gsl_integration_fixed(f, &result, w);
+  gsl_test_rel (result, exact, tol, "%s", buf);
+
+  gsl_integration_fixed_free(w);
+
+  return status;
+}
+
+
+int
+main (void)
 {
   gsl_ieee_env_setup ();
   gsl_set_error_handler (&my_error_handler); 
@@ -2230,26 +2262,26 @@ int main (void)
       {0, 2 }
     };
     const double e2[2][2] = {
-      {-1/sqrt(3), 1},
-      { 1/sqrt(3), 1}
+      {-1.0/M_SQRT3, 1},
+      { 1.0/M_SQRT3, 1}
     };
     const double e3[3][2] = {
-      {-sqrt(15)/5, 5./9},
+      {-SQRT15/5, 5./9},
       {          0, 8./9},
-      { sqrt(15)/5, 5./9}
+      { SQRT15/5, 5./9}
     };
     const double e4[4][2] = {
-      {-sqrt((3+2*sqrt(6./5))/7), (18-sqrt(30))/36},
-      {-sqrt((3-2*sqrt(6./5))/7), (18+sqrt(30))/36},
-      { sqrt((3-2*sqrt(6./5))/7), (18+sqrt(30))/36},
-      { sqrt((3+2*sqrt(6./5))/7), (18-sqrt(30))/36}
+      {-CONST1, (18-SQRT30)/36},
+      {-CONST2, (18+SQRT30)/36},
+      { CONST2, (18+SQRT30)/36},
+      { CONST1, (18-SQRT30)/36}
     };
     const double e5[5][2] = {
-      {-sqrt((5+2*sqrt(10./7)))/3, (322-13*sqrt(70))/900},
-      {-sqrt((5-2*sqrt(10./7)))/3, (322+13*sqrt(70))/900},
-      {                         0, 128./225             },
-      { sqrt((5-2*sqrt(10./7)))/3, (322+13*sqrt(70))/900},
-      { sqrt((5+2*sqrt(10./7)))/3, (322-13*sqrt(70))/900}
+      {-CONST3, (322-13*SQRT70)/900},
+      {-CONST4, (322+13*SQRT70)/900},
+      {      0, 128./225           },
+      { CONST4, (322+13*SQRT70)/900},
+      { CONST3, (322-13*SQRT70)/900}
     };
 
     n = 1;
@@ -2338,21 +2370,21 @@ int main (void)
   {
     typedef double (*fptr) ( double , void * );
     
-    const static fptr funs[25] = { &cqf1 , &cqf2 , &cqf3 , &cqf4 , &cqf5 , &cqf6 , &cqf7 , 
-                                   &cqf8 , &cqf9 , &cqf10 , &cqf11 , &cqf12 , &cqf13 , &cqf14 , &cqf15 , &cqf16 , &cqf17 ,
-                                   &cqf18 , &cqf19 , &cqf20 , &cqf21 , &cqf22 , &cqf23 , &cqf24 , &cqf25 };
+    const fptr funs[25] = { &cqf1 , &cqf2 , &cqf3 , &cqf4 , &cqf5 , &cqf6 , &cqf7 , 
+                            &cqf8 , &cqf9 , &cqf10 , &cqf11 , &cqf12 , &cqf13 , &cqf14 , &cqf15 , &cqf16 , &cqf17 ,
+                            &cqf18 , &cqf19 , &cqf20 , &cqf21 , &cqf22 , &cqf23 , &cqf24 , &cqf25 };
     
-    const static double ranges[50] = { 0, 1 , 0, 1 , 0, 1 , -1, 1 , -1, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 1 , 
-                                       0, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 10 , 0, 10 , 0, 10 , 0, 1 , 0, M_PI ,
-                                       0, 1 , -1, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 3 , 0, 5 };
-    const static double f_exact[25] = { 1.7182818284590452354 , 0.7 , 2.0/3 , 0.4794282266888016674 , 
-                                        1.5822329637296729331 , 0.4 , 2 , 0.86697298733991103757 , 
-                                        1.1547005383792515290 , 0.69314718055994530942 , 0.3798854930417224753 , 
-                                        0.77750463411224827640 , 0.49898680869304550249 , 
-                                        0.5 , 1 , 0.13263071079267703209e+08 , 0.49898680869304550249 , 
-                                        0.83867634269442961454 , -1 , 1.5643964440690497731 , 
-                                        0.16349494301863722618 , -0.63466518254339257343 , 
-                                        0.013492485649467772692 , 17.664383539246514971 , 7.5 };
+    const double ranges[50] = { 0, 1 , 0, 1 , 0, 1 , -1, 1 , -1, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 1 , 
+                                0, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 10 , 0, 10 , 0, 10 , 0, 1 , 0, M_PI ,
+                                0, 1 , -1, 1 , 0, 1 , 0, 1 , 0, 1 , 0, 3 , 0, 5 };
+    const double f_exact[25] = { 1.7182818284590452354 , 0.7 , 2.0/3 , 0.4794282266888016674 , 
+                                 1.5822329637296729331 , 0.4 , 2 , 0.86697298733991103757 , 
+                                 1.1547005383792515290 , 0.69314718055994530942 , 0.3798854930417224753 , 
+                                 0.77750463411224827640 , 0.49898680869304550249 , 
+                                 0.5 , 1 , 0.13263071079267703209e+08 , 0.49898680869304550249 , 
+                                 0.83867634269442961454 , -1 , 1.5643964440690497731 , 
+                                 0.16349494301863722618 , -0.63466518254339257343 , 
+                                 0.013492485649467772692 , 17.664383539246514971 , 7.5 };
     
     double result, abserr;
     size_t neval;
@@ -2373,8 +2405,193 @@ int main (void)
 
       gsl_integration_cquad_workspace_free(ws);
     }
-  }        
+  }
 
+  /* test fixed quadrature */
+  {
+    size_t n;
+    struct monomial_params params;
+    gsl_function f;
+    double exact;
+    double a, b;
+    int deg = 5; /* monomial degree */
+    double dterm = (deg % 2) == 0 ? 1.0 : -1.0;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = deg;
+    params.constant = 1.0;
+
+    n = 15;
+    for (b = 1.1; b <= 4.0; b += 0.1)
+      {
+        /* test with a < b */
+        a = b - 1.0;
+
+        /* Legendre quadrature */
+        exact = (pow(b,params.degree+1.0) - pow(a,params.degree+1.0))/(params.degree+1.0);
+        test_fixed_quadrature(gsl_integration_fixed_legendre, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "legendre monomial");
+
+        /* Chebyshev type 1 quadrature */
+        exact = GSL_SIGN(b-a)*M_PI*pow(0.5*(a+b),params.degree)*gsl_sf_hyperg_2F1(0.5*(1-params.degree),-0.5*params.degree,1.0,(b-a)*(b-a)/((b+a)*(b+a)));
+        test_fixed_quadrature(gsl_integration_fixed_chebyshev, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "chebyshev monomial");
+
+        /* Laguerre quadrature */
+        exact = pow(b, -1.0 - deg) * exp(a * b) * gsl_sf_gamma_inc(1.0 + deg, a * b);
+        test_fixed_quadrature(gsl_integration_fixed_laguerre, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "laguerre monomial");
+
+        /* Hermite quadrature */
+        exact = 0.5 * pow(b, -0.5*deg) * (-(-1.0 + dterm) * a * deg * gsl_sf_gamma(0.5*deg) * gsl_sf_hyperg_1F1(0.5 - 0.5*deg, 1.5, -a*a*b) +
+                                           (1.0 + dterm) * gsl_sf_gamma(0.5*(1.0+deg)) * gsl_sf_hyperg_1F1(-0.5*deg, 0.5, -a*a*b) / sqrt(b));
+        test_fixed_quadrature(gsl_integration_fixed_hermite, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "hermite monomial");
+
+        /* Chebyshev type 2 quadrature */
+        exact = GSL_SIGN(b-a)*M_PI_2*pow(0.5*(a+b),params.degree)*gsl_sf_hyperg_2F1(0.5*(1-params.degree),-0.5*params.degree,2.0,(b-a)*(b-a)/((b+a)*(b+a)))*0.25*(b-a)*(b-a);
+        test_fixed_quadrature(gsl_integration_fixed_chebyshev2, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "chebyshev2 monomial");
+
+        /* now test with a > b */
+        a = b + 1.0;
+
+        /* Legendre quadrature */
+        exact = (pow(b,params.degree+1.0) - pow(a,params.degree+1.0))/(params.degree+1.0);
+        test_fixed_quadrature(gsl_integration_fixed_legendre, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "legendre monomial");
+
+        /* Laguerre quadrature */
+        exact = pow(b, -1.0 - deg) * exp(a * b) * gsl_sf_gamma_inc(1.0 + deg, a * b);
+        test_fixed_quadrature(gsl_integration_fixed_laguerre, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "laguerre monomial");
+
+        /* Hermite quadrature */
+        exact = 0.5 * pow(b, -0.5*deg) * (-(-1.0 + dterm) * a * deg * gsl_sf_gamma(0.5*deg) * gsl_sf_hyperg_1F1(0.5 - 0.5*deg, 1.5, -a*a*b) +
+                                           (1.0 + dterm) * gsl_sf_gamma(0.5*(1.0+deg)) * gsl_sf_hyperg_1F1(-0.5*deg, 0.5, -a*a*b) / sqrt(b));
+        test_fixed_quadrature(gsl_integration_fixed_hermite, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "hermite monomial");
+
+#if 0 /* FIXME: Chebyshev doesn't work when a > b */
+        /* Chebyshev type 1 quadrature */
+        exact = -M_PI / 8.0 * (3.0*a*a + 2.0*a*b + 3.0*b*b);
+        test_fixed_quadrature(gsl_integration_fixed_chebyshev, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "chebyshev monomial");
+
+        /* Chebyshev type 2 quadrature */
+        exact = -M_PI / 128.0 * (a - b) * (a - b) *(5.0*a*a + 6.0*a*b + 5.0*b*b);
+        test_fixed_quadrature(gsl_integration_fixed_chebyshev2, n, a, b, 0.0, 0.0, 1.0e-12, exact, &f, "chebyshev2 monomial");
+#endif
+      }
+
+    /* now test on myfn1 */
+    f = make_function(&myfn1, 0);
+    n = 200;
+
+    test_fixed_quadrature(gsl_integration_fixed_legendre, n, 1.2, 1.6, 0.0, 0.0, 1.0e-12, 0.01505500344456001, &f, "legendre myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_chebyshev, n, 1.2, 2.6, 0.0, 0.0, 1.0e-12, 0.0582346516219999, &f, "chebyshev myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_gegenbauer, n, 1.2, 1.6, 2.0, 0.0, 1.0e-12, 1.2279468957162412661311711271e-5, &f, "gegenbauer myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_gegenbauer, n, 1.2, 1.6, -0.5, 0.0, 1.0e-12, 1.228256086101808986e-1, &f, "gegenbauer myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_jacobi, n, 1.2, 1.6, 2.0, 1.5, 1.0e-12, 3.173064776410033e-5, &f, "jacobi myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_jacobi, n, 1.2, 1.6, -0.5, -0.5, 1.0e-12, 1.228256086101808986e-1, &f, "jacobi myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_laguerre, n, 1.2, 0.6, 0.5, 0.0, 1.0e-12, 0.006604180366378123, &f, "laguerre myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_hermite, n, 1.2, 0.6, 1.0, 0.0, 1.0e-12, 0.6542819629825344, &f, "hermite myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_exponential, n, 1.2, 1.6, 2.0, 0.0, 1.0e-12, 2.1315535492168832898083633e-4, &f, "exponential myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_rational, 15, 1.2, 1.6, 2.0, -33.4, 1.0e-9, 4.8457468060064844e-20, &f, "rational myfn1");
+    test_fixed_quadrature(gsl_integration_fixed_chebyshev2, n, 1.2, 2.6, 0.0, 0.0, 1.0e-12, 0.0081704088896491, &f, "chebyshev2 myfn1");
+  }
+
+  /* test Gegenbauer quadrature */
+  {
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    const double exactarray[5] = {4.15933612154155020161400717857e-7, 744697.808572324010134504819452, 55.2024994284578980512106835228, 7.95574829722734114107142857143, 0.00179653588816666666666666666667};
+    const double aarray[5] = {0.123,7.747,1.47,-1.47,0.0};
+    const double barray[5] = {0.456,12.0,2.0,2.0,0.47};
+    const double alphaarray[5] = {2.0,0.5,-0.5,1.0,0.0};
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( k = 0; k < 5; k++)
+      {
+        test_fixed_quadrature(gsl_integration_fixed_gegenbauer, n, aarray[k], barray[k], alphaarray[k], 0.0,
+                              1.0e-12, exactarray[k], &f, "gegenbauer monomial");
+      }
+  }
+
+  /* test Jacobi quadrature */
+  {
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    const double exactarray[5] = {9.052430592016123480501898e-7,3.131716150347619771233591755e6,0.04435866422797298224404592896,5.287059602300844442782407,2.5337038518475893688512749675e-6};
+    const double aarray[5] = {0.123,7.747,1.47,-1.47,0.0};
+    const double barray[5] = {0.456,12.0,2.0,2.0,0.47};
+    double alpha, beta;
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    alpha = 2.0;
+    beta = 1.5;
+    n = 50;
+    for ( k = 0; k < 5; k++)
+      {
+        test_fixed_quadrature(gsl_integration_fixed_jacobi, n, aarray[k], barray[k], alpha, beta,
+                              1.0e-12, exactarray[k], &f, "jacobi monomial");
+      }
+  }
+
+  /* test Exponential quadrature */
+  {
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    const double exactarray[5] = {1.598864206823942764921875e-4, 624615.81848571833291063083819, 0.222578063871903188095238095238, 28.8968950008739567709168294271, 4.62725113500425479890950520833e-7};
+    const double aarray[5] = {0.123,7.747,1.47,-1.47,0.0};
+    const double barray[5] = {0.456,12.0,2.0,2.0,0.47};
+    const double alphaarray[5] = {1.0,1.5,2.0,3.0,5.0};
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 50;
+    for ( k = 0; k < 5; k++)
+      {
+        test_fixed_quadrature(gsl_integration_fixed_exponential, n, aarray[k], barray[k], alphaarray[k], 0.0,
+                              1.0e-12, exactarray[k], &f, "exponential monomial");
+      }
+  }
+
+  /* test Rational quadrature */
+  {
+    size_t n, k;
+    struct monomial_params params;
+    gsl_function f;
+    const double exactarray[6] = {1.312245361412108703130374957e-10,0.0170362044485924082779613124672, 8.93065131938394658578136414201e-11, 7.17990217357447544326794457270e-13, -11.0760676986664098133970869634, 0.00290392485414197833688178206557};
+    const double aarray[6] = {0.0,0.123,7.747,1.47,-1.47,0.0};
+    const double barray[6] = {2.0,0.456,12.0,2.0,2.0,0.47};
+    const double alphaarray[6] = {0.0,1.0,1.5,2.0,3.0,5.0};
+    const double betaarray[6] = {-21.0,-12.0,-13.0,-22.0,-21.0,-16.0};
+
+    f.function = &f_monomial;
+    f.params = &params;
+
+    params.degree   = 5;
+    params.constant = 1.0;
+
+    n = 5;
+    for ( k = 0; k < 5; k++)
+      {
+        test_fixed_quadrature(gsl_integration_fixed_rational, n, aarray[k], barray[k], alphaarray[k], betaarray[k],
+                              1.0e-12, exactarray[k], &f, "rational monomial");
+      }
+  }
 
   exit (gsl_test_summary());
 } 

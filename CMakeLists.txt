@@ -514,11 +514,12 @@ foreach (i RANGE ${length})
   string(REPLACE "<semi>" ";" line "${line}")
   set(CONFIG_OUT "${CONFIG_OUT}${line}")
 endforeach ()
-file(WRITE ${GSL_BINARY_DIR}/config.h
-"/* config.h.  Generated from config.h.in by configure.  */
-/* config.h.in.  Generated from configure.ac by autoheader.  */
+# file(WRITE ${GSL_BINARY_DIR}/config.h
+# "/* config.h.  Generated from config.h.in by configure.  */
+# /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-${CONFIG_OUT}")
+# ${CONFIG_OUT}")
+configure_file(config.h.cmake.in ${GSL_BINARY_DIR}/config.h)
 
 include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})
 add_definitions(-DHAVE_CONFIG_H)

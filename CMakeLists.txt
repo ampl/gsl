@@ -663,6 +663,7 @@ endif ()
 add_library(gsl ${shared} ${GSL_SOURCES})
 set_target_properties(gsl PROPERTIES COMPILE_DEFINITIONS DLL_EXPORT)
 target_link_libraries(gsl gslcblas)
+target_include_directories(gsl PUBLIC ${GSL_BINARY_DIR})
 add_dependencies(gsl copy-headers)
 
 option(GSL_INSTALL_MULTI_CONFIG "Install libraries in lib/<config> directory" OFF)

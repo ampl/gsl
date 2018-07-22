@@ -1,7 +1,25 @@
 # CMake build script for the GNU Scientific Library.
 
-# Use CMake 2.8.3 for CMakeParseArguments.
-cmake_minimum_required(VERSION 2.8.3)
+# Examples:
+# 1. VS 2015, 32-bit static libs (run cmake from the $build_dir)
+#    cmake -G"Visual Studio 14 2015" -DGSL_INSTALL_MULTI_CONFIG=ON \
+#          [-DCMAKE_INSTALL_PREFIX=<path>] <path to gsl sources>
+#    cmake --build . --config Release [--target gsl|install]
+#    ctest [-j <N>] [-VV]
+# 2. VS 2017, 64-bit shared libs and dynamic runtime
+#    cmake -G"Visual Studio 15 2017 Win64" -DGSL_INSTALL_MULTI_CONFIG=ON \
+#          -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON \
+#          <path to gsl sources>
+#    cmake --build . --config Release [--target gsl|install]
+#    ctest [-j <N>] [-VV]
+# 3. Linux (run cmake from $build_dir)
+#    cmake <path to gsl sources>
+#    make [-j] [gsl|install]
+#    ctest [-j <N>] [-VV]
+
+# Use CMake 3.4 for target property WINDOWS_EXPORT_ALL_SYMBOLS.
+# Ref: https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
+cmake_minimum_required(VERSION 3.4)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(init)
@@ -16,13 +34,18 @@ if (POLICY CMP0053)
   cmake_policy(SET CMP0053 NEW)
 endif( )
 
+# Advertise user-settable parameters (and defaults) in cmake-gui
+option(BUILD_SHARED_LIBS "Export symbols to library." OFF)
+option(GSL_DISABLE_WARNINGS "disable warnings." ON)
+option(MSVC_RUNTIME_DYNAMIC "Use dynamically-linked runtime: /MD(d)" OFF)
+option(GSL_INSTALL_MULTI_CONFIG "Install libraries in lib/<config> directory" OFF)
+
 set(PACKAGE "gsl")
 set(PACKAGE_NAME ${PACKAGE})
 set(PACKAGE_TARNAME ${PACKAGE})
 set(PACKAGE_BUGREPORT "")
 set(PACKAGE_URL "")
 set(LT_OBJDIR ".libs/")
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 # The following part of config.h is hard to derive from configure.ac.
@@ -528,15 +551,13 @@ if (GSL_DISABLE_WARNINGS)
   if (MSVC)
     add_definitions(
       -D_CRT_SECURE_NO_WARNINGS
-      /wd4018 /wd4028 /wd4056 /wd4244 /wd4267 /wd4334 /wd4700 /wd4723 /wd4756)
+      /wd4018 /wd4028 /wd4056 /wd4101 /wd4244 /wd4267 /wd4334 /wd4477 /wd4700 /wd4723 /wd4756 /wd4996)
   else ()
     foreach (flag -Wall -Wextra -pedantic)
       string(REPLACE ${flag} "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     endforeach ()
   endif ()
 endif ()
-
-option(MSVC_RUNTIME_DYNAMIC "Use dynamically-linked runtime: /MD(d)" OFF)
 
 if (MSVC_RUNTIME_DYNAMIC)
   set(CMAKE_COMPILER_FLAGS_VARIABLES
@@ -615,12 +636,9 @@ foreach (dir "." ${dirs})
     if (line MATCHES "_la_SOURCES[ \t]*=")
       get_sources(${dir} "${line}" SOURCES)
       if (dir STREQUAL cblas)
-        # Build gslcblas as a static library on MSVC because it doesn't have a .def file.
-        if (MSVC)
-          set(GSLCBLAS_TYPE STATIC)
-        endif ()
-        add_library(gslcblas ${GSLCBLAS_TYPE} ${SOURCES})
+        add_library(gslcblas ${SOURCES})
         target_link_libraries(gslcblas ${CMAKE_REQUIRED_LIBRARIES})
+        set_target_properties(gslcblas PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON )
         add_dependencies(gslcblas copy-headers)
       else ()
         set(GSL_SOURCES ${GSL_SOURCES} ${SOURCES})
@@ -640,31 +658,19 @@ if (BUILD_SHARED_LIBS)
     add_definitions(-fPIC)
   endif ()
   if (WIN32)
+    # only needed for global variables that must be exported.  Exporting of
+    # all functions is done with target property WINDOWS_EXPORT_ALL_SYMBOLS.
     add_definitions(-DGSL_DLL)
-    # Extract function names from header and generate a .def file.
-    file(WRITE gsl.def "LIBRARY GSL\nEXPORTS\n")
-    foreach (header ${GSL_HEADER_PATHS})
-      file(READ ${header} content)
-      string(REGEX REPLACE
-        "/\\*([^*]|[\r\n]|(\\*+([^*/]|[\r\n])))*\\*+/" " " content "${content}")
-      set(RE "\n([^\n]*[ *])?(gsl_[A-Za-z0-9_]+)[ ]*\\(")
-      string(REGEX MATCHALL "${RE}" candidates "${content}")
-      foreach (line ${candidates})
-        if (NOT line MATCHES typedef AND line MATCHES "${RE}")
-          file(APPEND gsl.def "   ${CMAKE_MATCH_2}\n")
-        endif ()
-      endforeach ()
-    endforeach ()
-    set(GSL_SOURCES ${GSL_SOURCES} gsl.def)
-  endif ()
+  endif()
 endif ()
 
-add_library(gsl ${shared} ${GSL_SOURCES})
-set_target_properties(gsl PROPERTIES COMPILE_DEFINITIONS DLL_EXPORT)
+add_library(gsl ${GSL_SOURCES})
+set_target_properties(gsl
+  PROPERTIES
+    COMPILE_DEFINITIONS DLL_EXPORT
+    WINDOWS_EXPORT_ALL_SYMBOLS ON )
 target_link_libraries(gsl gslcblas)
 add_dependencies(gsl copy-headers)
-
-option(GSL_INSTALL_MULTI_CONFIG "Install libraries in lib/<config> directory" OFF)
 
 if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   if (MSVC AND GSL_INSTALL_MULTI_CONFIG)

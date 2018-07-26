@@ -671,6 +671,7 @@ set_target_properties(gsl
     COMPILE_DEFINITIONS DLL_EXPORT
     WINDOWS_EXPORT_ALL_SYMBOLS ON )
 target_link_libraries(gsl gslcblas)
+target_include_directories(gsl PUBLIC ${GSL_BINARY_DIR})
 add_dependencies(gsl copy-headers)
 
 if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)

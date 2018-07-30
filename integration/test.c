@@ -1,7 +1,8 @@
 /* integration/test.c
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Brian Gough
- * Copyright (C) 2017 Patrick Alken, Konrad Griessinger
+ * Copyright (C) 2017, 2018 Patrick Alken
+ * Copyright (C) 2017 Konrad Griessinger
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2124,6 +2125,42 @@ main (void)
     gsl_integration_workspace_free (wc) ;
     gsl_integration_workspace_free (w) ;
 
+  }
+
+  /* test Romberg integration */
+  {
+    int status = 0, i;
+    double result;
+    size_t neval;
+    double exp_result;
+    int exp_ier = 0;
+
+    gsl_function f;
+    gsl_integration_romberg_workspace * w = gsl_integration_romberg_alloc (20);
+    
+    f = make_function(&f_sin, NULL);
+    exp_result = 1.0;
+
+    status = gsl_integration_romberg(&f, 0.0, M_PI_2, 0.0, 1e-10, &result, &neval, w);
+    gsl_test_int(status, exp_ier, "romberg(f_sin) status") ;
+    gsl_test_rel(result, exp_result, 1e-15, "romberg(f_sin) result") ;
+
+    status = gsl_integration_romberg(&f, M_PI_2, 0.0, 0.0, 1e-10, &result, &neval, w);
+    gsl_test_int(status, exp_ier, "romberg(f_sin) reverse status") ;
+    gsl_test_rel(result, -exp_result, 1e-15, "romberg(f_sin) reverse result") ;
+
+    f = make_function(&cqf11, NULL);
+    exp_result = 5.0;
+
+    status = gsl_integration_romberg(&f, -5.0, 5.0, 0.0, 1e-10, &result, &neval, w);
+    gsl_test_int(status, exp_ier, "romberg(cqf11) status") ;
+    gsl_test_rel(result, exp_result, 1e-15, "romberg(cqf11) result") ;
+
+    status = gsl_integration_romberg(&f, 5.0, -5.0, 0.0, 1e-10, &result, &neval, w);
+    gsl_test_int(status, exp_ier, "romberg(cqf11) reverse status") ;
+    gsl_test_rel(result, -exp_result, 1e-15, "romberg(cqf11) reverse result") ;
+
+    gsl_integration_romberg_free(w);
   }
 
   /* Sanity check monomial test function for fixed Gauss-Legendre rules */

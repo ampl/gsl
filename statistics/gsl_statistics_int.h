@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_INT_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -72,8 +73,23 @@ size_t gsl_stats_int_max_index (const int data[], const size_t stride, const siz
 size_t gsl_stats_int_min_index (const int data[], const size_t stride, const size_t n);
 void gsl_stats_int_minmax_index (size_t * min_index, size_t * max_index, const int data[], const size_t stride, const size_t n);
 
+int gsl_stats_int_select(int data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_int_median_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_int_median (int sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_int_quantile_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, const double f) ;
+
+double gsl_stats_int_trmean_from_sorted_data (const double trim, const int sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_int_gastwirth_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n) ;
+
+double gsl_stats_int_mad0(const int data[], const size_t stride, const size_t n, double work[]);
+double gsl_stats_int_mad(const int data[], const size_t stride, const size_t n, double work[]);
+
+int gsl_stats_int_Sn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
+double gsl_stats_int_Sn_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[]) ;
+
+int gsl_stats_int_Qn0_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[], int work_int[]) ;
+double gsl_stats_int_Qn_from_sorted_data (const int sorted_data[], const size_t stride, const size_t n, int work[], int work_int[]) ;
 
 __END_DECLS
 

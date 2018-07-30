@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gsl],[2.4])
+AC_INIT([gsl],[2.5])
 AC_CONFIG_SRCDIR(gsl_math.h)
 
 AM_INIT_AUTOMAKE([gnu])
@@ -34,6 +34,7 @@ dnl gsl-2.2    libgsl 20:0:1   libgslcblas 0:0:0
 dnl gsl-2.2.1  libgsl 21:0:2   libgslcblas 0:0:0 
 dnl gsl-2.3    libgsl 22:0:3   libgslcblas 0:0:0 
 dnl gsl-2.4    libgsl 23:0:0   libgslcblas 0:0:0 
+dnl gsl-2.5    libgsl 24:0:1   libgslcblas 0:0:0 
 dnl 
 dnl (*) There was an error on this release.  Firstly, the versioning
 dnl numbers were not updated.  Secondly, 2 functions were removed, but
@@ -60,9 +61,9 @@ dnl See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-i
 dnl for more detailed info
 
 dnl
-GSL_CURRENT=23
+GSL_CURRENT=24
 GSL_REVISION=0
-GSL_AGE=0
+GSL_AGE=1
 dnl
 CBLAS_CURRENT=0
 CBLAS_REVISION=0
@@ -604,8 +605,9 @@ doc/Makefile                 \
 doc/examples/Makefile        \
 eigen/Makefile               \
 err/Makefile                 \
-fit/Makefile                 \
 fft/Makefile                 \
+filter/Makefile              \
+fit/Makefile                 \
 gsl/Makefile                 \
 histogram/Makefile           \
 ieee-utils/Makefile          \
@@ -615,6 +617,7 @@ linalg/Makefile              \
 matrix/Makefile              \
 min/Makefile                 \
 monte/Makefile               \
+movstat/Makefile             \
 multifit/Makefile            \
 multifit_nlinear/Makefile    \
 multilarge/Makefile          \

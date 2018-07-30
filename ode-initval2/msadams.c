@@ -850,13 +850,13 @@ msadams_apply (void *vstate, size_t dim, double t, double h,
 #endif
         }
 
-      /* If step is repeatedly rejected, then reset method */
-
       state->failcount++;
 
       {
         const size_t max_failcount = 3;
         
+        /* If step is repeatedly rejected, then reset method */
+
         if (state->failcount > max_failcount && state->ni > 1)
           {
             msadams_reset (vstate, dim);
@@ -866,6 +866,19 @@ msadams_apply (void *vstate, size_t dim, double t, double h,
             printf ("-- max_failcount reached, msadams_reset called\n");
 #endif
           }
+
+        /* Attempt to decrease order twice is indicative of system stiffness.
+           Reset method to enable fast recovery. */
+
+        else if ((int)state->ordprev - (int)ord >= 2)
+          {
+            msadams_reset (vstate, dim);
+            ord = state->ord;
+          
+#ifdef DEBUG
+            printf ("-- order decreased by two, msadams_reset called\n");
+#endif
+          } 
       }
     }
   else

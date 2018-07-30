@@ -39,6 +39,9 @@ int gsl_sf_bessel_IJ_taylor_e(const double nu, const double x,
 int gsl_sf_bessel_Jnu_asympx_e(const double nu, const double x, gsl_sf_result * result);
 int gsl_sf_bessel_Ynu_asympx_e(const double nu, const double x, gsl_sf_result * result);
 
+int gsl_sf_bessel_Jnupos_e(const double nu, const double x, gsl_sf_result * result);
+int gsl_sf_bessel_Ynupos_e(const double nu, const double x, gsl_sf_result * result);
+
 int gsl_sf_bessel_Inu_scaled_asympx_e(const double nu, const double x, gsl_sf_result * result);
 int gsl_sf_bessel_Knu_scaled_asympx_e(const double nu, const double x, gsl_sf_result * result);
 

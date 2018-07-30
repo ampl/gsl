@@ -127,7 +127,7 @@ main()
   {
     const size_t N = 2000000;
     double *data = random_data(N, r);
-    double data2[] = { 4.0, 7.0, 13.0, 16.0 };
+    double data2[] = { 4.0, 7.0, 13.0, 16.0, -5.0 };
     size_t i;
 
     test_basic(2, data, tol1);
@@ -139,10 +139,10 @@ main()
     test_basic(1500000, data, tol1);
     test_basic(2000000, data, tol1);
 
-    for (i = 0; i < 4; ++i)
+    for (i = 0; i < 5; ++i)
       data2[i] += 1.0e9;
 
-    test_basic(4, data2, tol1);
+    test_basic(5, data2, tol1);
 
     free(data);
   }

@@ -1,6 +1,6 @@
 /* specfunc/bessel_Jnu.c
  * 
- * Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman
+ * Copyright (C) 1996, 1997, 1998, 1999, 2000 Gerard Jungman, 2017 Konrad Griessinger
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_sincos_pi.h>
 
 #include "error.h"
 
@@ -74,14 +75,11 @@ bessel_J_recur_asymp(const double nu, const double x,
 /*-*-*-*-*-*-*-*-*-*-*-* Functions with Error Codes *-*-*-*-*-*-*-*-*-*-*-*/
 
 int
-gsl_sf_bessel_Jnu_e(const double nu, const double x, gsl_sf_result * result)
+gsl_sf_bessel_Jnupos_e(const double nu, const double x, gsl_sf_result * result)
 {
   /* CHECK_POINTER(result) */
-
-  if(x < 0.0 || nu < 0.0) {
-    DOMAIN_ERROR(result);
-  }
-  else if(x == 0.0) {
+  
+  if(x == 0.0) {
     if(nu == 0.0) {
       result->val = 1.0;
       result->err = 0.0;
@@ -173,6 +171,35 @@ gsl_sf_bessel_Jnu_e(const double nu, const double x, gsl_sf_result * result)
       return GSL_ERROR_SELECT_2(stat_CF2, stat_CF1);
     }
   }
+}
+
+int
+gsl_sf_bessel_Jnu_e(const double nu, const double x, gsl_sf_result * result)
+{
+  /* CHECK_POINTER(result) */
+
+  if(x <= 0.0) {
+    DOMAIN_ERROR(result);
+  }
+  else if (nu < 0.0) {
+    int Jstatus = gsl_sf_bessel_Jnupos_e(-nu, x, result);
+    double Jval = result->val;
+    double Jerr = result->err;
+    int Ystatus = gsl_sf_bessel_Ynupos_e(-nu, x, result);
+    double Yval = result->val;
+    double Yerr = result->err;
+    /* double s = sin(M_PI*nu), c = cos(M_PI*nu); */
+    int sinstatus = gsl_sf_sin_pi_e(nu, result);
+    double s = result->val;
+    double serr = result->err;
+    int cosstatus = gsl_sf_cos_pi_e(nu, result);
+    double c = result->val;
+    double cerr = result->err;
+    result->val = s*Yval + c*Jval;
+    result->err = fabs(c*Yerr) + fabs(s*Jerr) + fabs(cerr*Yval) + fabs(serr*Jval);
+    return GSL_ERROR_SELECT_4(Jstatus, Ystatus, sinstatus, cosstatus);
+  }
+  else return gsl_sf_bessel_Jnupos_e(nu, x, result);
 }
 
 /*-*-*-*-*-*-*-*-*-* Functions w/ Natural Prototypes *-*-*-*-*-*-*-*-*-*-*/

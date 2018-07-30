@@ -1634,10 +1634,10 @@ The Hypergeometric Distribution
 
 |newpage|
 
+.. index:: Logarithmic random variates
+
 The Logarithmic Distribution
 ============================
-
-.. index:: Logarithmic random variates
 
 .. function:: unsigned int gsl_ran_logarithmic (const gsl_rng * r, double p)
 
@@ -1664,6 +1664,40 @@ The Logarithmic Distribution
    using the formula given above.
 
    .. image:: /images/rand-logarithmic.png
+
+|newpage|
+
+.. index:: Wishart random variates
+
+The Wishart Distribution
+========================
+
+.. function:: int gsl_ran_wishart (const gsl_rng * r, const double n, const gsl_matrix * L, gsl_matrix * result, gsl_matrix * work)
+
+   This function computes a random symmetric :math:`p`-by-:math:`p` matrix from the Wishart distribution.
+   The probability distribution for Wishart random variates is,
+
+   .. only:: not texinfo
+
+      .. math:: p(X) = \frac{|X|^{(n-p-1)/2} e^{-\textrm{tr}\left( V^{-1} X\right)/2}}{2^{\frac{np}{2}} \left| V \right|^{n/2} \Gamma_p(\frac{n}{2})}
+
+   .. only:: texinfo
+
+      .. math:: p(X) = \frac{|X|^{(n-p-1)/2} e^{-tr( V^{-1} X)/2}}{2^{(np)/2} |V|^{n/2} \Gamma_p(n/2)}
+
+   Here, :math:`n > p - 1` is the number of degrees of freedom, :math:`V` is a symmetric positive definite
+   :math:`p`-by-:math:`p` scale matrix, whose Cholesky factor is specified by :data:`L`, and :data:`work` is
+   :math:`p`-by-:math:`p` workspace. The :math:`p`-by-:math:`p` Wishart distributed matrix :math:`X` is stored
+   in :data:`result` on output.
+
+.. function:: int gsl_ran_wishart_pdf (const gsl_matrix * X, const gsl_matrix * L_X, const double n, const gsl_matrix * L, double * result, gsl_matrix * work)
+              int gsl_ran_wishart_log_pdf (const gsl_matrix * X, const gsl_matrix * L_X, const double n, const gsl_matrix * L, double * result, gsl_matrix * work)
+
+   These functions compute :math:`p(X)` or :math:`\log{p(X)}` for the :math:`p`-by-:math:`p` matrix
+   :data:`X`, whose Cholesky factor is specified in :data:`L_X`. The degrees of freedom is
+   given by :data:`n`, the Cholesky factor of the scale matrix :math:`V` is specified in :data:`L`,
+   and :data:`work` is :math:`p`-by-:math:`p` workspace. The probably density value is returned
+   in :data:`result`.
 
 |newpage|
 

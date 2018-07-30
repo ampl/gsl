@@ -230,6 +230,67 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
                   NAME(gsl_stats) "_median_from_sorted_data (odd)");
   }
 
+  {
+    BASE * work = (BASE *) malloc (stridea * ina * sizeof(BASE));
+    double expected = 18;
+    double median;
+
+    for (i = 0; i < ina; i++)
+      work[i * stridea] = (BASE) irawa[i];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, ina) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (even)");
+
+    free(work);
+  }
+
+  {
+    BASE * work = (BASE *) malloc (stridea * (ina - 1) * sizeof(BASE));
+    double expected = 18;
+    double median;
+
+    for (i = 0; i < ina - 1; i++)
+      work[i * stridea] = sorted[i * stridea];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, ina - 1) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (odd)");
+
+    free(work);
+  }
+
+  {
+    const double trim = 0.31;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, ina) ;
+    double expected = 17.875;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (even)");
+  }
+
+  {
+    const double trim = 0.3;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, ina - 1) ;
+    double expected = 17.66666666666666;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (odd)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, ina) ;
+    double expected = 17.9;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (even)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, ina - 1) ;
+    double expected = 17.4;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (odd)");
+  }
 
   {
     double zeroth = FUNCTION(gsl_stats,quantile_from_sorted_data)(sorted, stridea, ina, 0.0) ;
@@ -257,6 +318,85 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     double expected = 18;
     gsl_test_rel (median,expected, rel,
                   NAME(gsl_stats) "_quantile_from_sorted_data (50, odd)");
+  }
+
+  {
+    size_t k;
+    BASE * work = (BASE *) malloc (stridea * ina * sizeof(BASE));
+
+    for (k = 0; k < ina; ++k)
+      {
+        int expected = sorted[k * stridea];
+        int kselect;
+
+        /* copy irawa[] for each k, since gsl_stats_select() changes input array */
+        for (i = 0; i < ina; i++)
+          work[i * stridea] = (BASE) irawa[i];
+
+        kselect = FUNCTION(gsl_stats,select)(work, stridea, ina, k);
+
+        gsl_test (kselect != expected,
+                  NAME(gsl_stats) "_select (%d observed vs %d expected)",
+                  kselect, expected);
+      }
+
+    free(work);
+  }
+
+  {
+    double * work = (double *) malloc (ina * sizeof(double));
+    double expected = 2.0;
+    double mad0 = FUNCTION(gsl_stats,mad0)(igroupa, stridea, ina, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (even)");
+    free(work);
+  }
+
+  {
+    double * work = (double *) malloc ((ina - 1) * sizeof(double));
+    double expected = 2.0;
+    double mad0 = FUNCTION(gsl_stats,mad0)(igroupa, stridea, ina - 1, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (odd)");
+    free(work);
+  }
+
+  {
+    BASE * work = malloc(ina * sizeof(BASE));
+    double sn = FUNCTION(gsl_stats,Sn_from_sorted_data)(sorted, stridea, ina, work) ;
+    double expected = 2.3852;
+    gsl_test_rel (sn, expected, rel,
+                  NAME(gsl_stats) "_Sn_from_sorted_data (even)");
+    free(work);
+  }
+
+  {
+    BASE * work = malloc((ina - 1) * sizeof(BASE));
+    double sn = FUNCTION(gsl_stats,Sn_from_sorted_data)(sorted, stridea, ina - 1, work) ;
+    double expected = 2.503801104972376;
+    gsl_test_rel (sn, expected, rel,
+                  NAME(gsl_stats) "_Sn_from_sorted_data (odd)");
+    free(work);
+  }
+
+  {
+    BASE * work = malloc(3 * ina * sizeof(BASE));
+    int * work_int = malloc(5 * ina * sizeof(int));
+    double qn = FUNCTION(gsl_stats,Qn_from_sorted_data)(sorted, stridea, ina, work, work_int) ;
+    double expected = 3.732513488036874;
+    gsl_test_rel (qn, expected, rel,
+                  NAME(gsl_stats) "_Qn_from_sorted_data (even)");
+    free(work);
+    free(work_int);
+  }
+
+  {
+    BASE * work = malloc(3 * (ina - 1) * sizeof(BASE));
+    int * work_int = malloc(5 * (ina - 1) * sizeof(int));
+    double qn = FUNCTION(gsl_stats,Qn_from_sorted_data)(sorted, stridea, ina - 1, work, work_int) ;
+    double expected = 4.118443402621429;
+    gsl_test_rel (qn, expected, rel,
+                  NAME(gsl_stats) "_Qn_from_sorted_data (odd)");
+    free(work);
+    free(work_int);
   }
 
   free (sorted);

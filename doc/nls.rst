@@ -1325,7 +1325,8 @@ fitting function is given by,
 
 .. math:: f_i = (A \exp(-\lambda t_i) + b) - y_i
 
-where we have chosen :math:`t_i = i`.  The Jacobian matrix :math:`J` is
+where we have chosen :math:`t_i = i T / (N - 1)`, where :math:`N` is the number
+of data points fitted, so that :math:`t_i \in [0, T]`. The Jacobian matrix :math:`J` is
 the derivative of these functions with respect to the three parameters
 (:math:`A`, :math:`\lambda`, :math:`b`).  It is given by,
 
@@ -1362,40 +1363,43 @@ The :math:`i`-th row of the Jacobian is therefore
 The main part of the program sets up a Levenberg-Marquardt solver and
 some simulated random data. The data uses the known parameters
 (5.0,0.1,1.0) combined with Gaussian noise (standard deviation = 0.1)
-over a range of 40 timesteps. The initial guess for the parameters is
+with a maximum time :math:`T = 40` and :math:`N = 100` timesteps.
+The initial guess for the parameters is
 chosen as (1.0, 1.0, 0.0). The iteration terminates when the relative
 change in x is smaller than :math:`10^{-8}`, or when the magnitude of
 the gradient falls below :math:`10^{-8}`. Here are the results of running
 the program::
 
-  iter  0: A = 1.0000, lambda = 1.0000, b = 0.0000, cond(J) =      inf, |f(x)| = 62.2029
-  iter  1: A = 1.2196, lambda = 0.3663, b = 0.0436, cond(J) =  53.6368, |f(x)| = 59.8062
-  iter  2: A = 1.6062, lambda = 0.1506, b = 0.1054, cond(J) =  23.8178, |f(x)| = 53.9039
-  iter  3: A = 2.4528, lambda = 0.0583, b = 0.2470, cond(J) =  20.0493, |f(x)| = 28.8039
-  iter  4: A = 2.9723, lambda = 0.0494, b = 0.3727, cond(J) =  94.5601, |f(x)| = 15.3252
-  iter  5: A = 3.3473, lambda = 0.0477, b = 0.4410, cond(J) = 229.3627, |f(x)| = 10.7511
-  iter  6: A = 3.6690, lambda = 0.0508, b = 0.4617, cond(J) = 298.3589, |f(x)| = 9.7373
-  iter  7: A = 3.9907, lambda = 0.0580, b = 0.5433, cond(J) = 250.0194, |f(x)| = 8.7661
-  iter  8: A = 4.2353, lambda = 0.0731, b = 0.7989, cond(J) = 154.8571, |f(x)| = 7.4299
-  iter  9: A = 4.6573, lambda = 0.0958, b = 1.0302, cond(J) = 140.2265, |f(x)| = 6.1893
-  iter 10: A = 5.0138, lambda = 0.1060, b = 1.0329, cond(J) = 109.4141, |f(x)| = 5.4961
-  iter 11: A = 5.1505, lambda = 0.1103, b = 1.0497, cond(J) = 100.8762, |f(x)| = 5.4552
-  iter 12: A = 5.1724, lambda = 0.1110, b = 1.0526, cond(J) =  97.3403, |f(x)| = 5.4542
-  iter 13: A = 5.1737, lambda = 0.1110, b = 1.0528, cond(J) =  96.7136, |f(x)| = 5.4542
-  iter 14: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) =  96.6678, |f(x)| = 5.4542
-  iter 15: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) =  96.6663, |f(x)| = 5.4542
-  iter 16: A = 5.1738, lambda = 0.1110, b = 1.0528, cond(J) =  96.6663, |f(x)| = 5.4542
+  iter  0: A = 1.0000, lambda = 1.0000, b = 0.0000, cond(J) =      inf, |f(x)| = 100.8779
+  iter  1: A = 1.2692, lambda = 0.3924, b = 0.0443, cond(J) =  69.5973, |f(x)| = 97.1734
+  iter  2: A = 1.6749, lambda = 0.1685, b = 0.1072, cond(J) =  29.5220, |f(x)| = 88.6636
+  iter  3: A = 2.5579, lambda = 0.0544, b = 0.2552, cond(J) =  22.9334, |f(x)| = 42.7765
+  iter  4: A = 3.0167, lambda = 0.0472, b = 0.3704, cond(J) = 120.2912, |f(x)| = 23.0102
+  iter  5: A = 3.3590, lambda = 0.0455, b = 0.4321, cond(J) = 266.5620, |f(x)| = 16.0680
+  iter  6: A = 3.6552, lambda = 0.0479, b = 0.4426, cond(J) = 343.8946, |f(x)| = 14.6421
+  iter  7: A = 3.9546, lambda = 0.0532, b = 0.4897, cond(J) = 301.4985, |f(x)| = 13.5266
+  iter  8: A = 4.1421, lambda = 0.0633, b = 0.6783, cond(J) = 203.9164, |f(x)| = 12.3149
+  iter  9: A = 4.3752, lambda = 0.0800, b = 0.9228, cond(J) = 158.2267, |f(x)| = 11.2475
+  iter 10: A = 4.6371, lambda = 0.0891, b = 0.9588, cond(J) = 136.6189, |f(x)| = 10.5457
+  iter 11: A = 4.7684, lambda = 0.0937, b = 0.9860, cond(J) = 125.4740, |f(x)| = 10.4753
+  iter 12: A = 4.7977, lambda = 0.0948, b = 0.9917, cond(J) = 120.1098, |f(x)| = 10.4723
+  iter 13: A = 4.8006, lambda = 0.0949, b = 0.9924, cond(J) = 118.9113, |f(x)| = 10.4723
+  iter 14: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7661, |f(x)| = 10.4723
+  iter 15: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7550, |f(x)| = 10.4723
+  iter 16: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
+  iter 17: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
+  iter 18: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
   summary from method 'trust-region/levenberg-marquardt'
-  number of iterations: 16
-  function evaluations: 23
-  Jacobian evaluations: 17
+  number of iterations: 18
+  function evaluations: 25
+  Jacobian evaluations: 19
   reason for stopping: small step size
-  initial |f(x)| = 62.202928
-  final   |f(x)| = 5.454180
-  chisq/dof = 0.804002
-  A      = 5.17379 +/- 0.27938
-  lambda = 0.11104 +/- 0.00817
-  b      = 1.05283 +/- 0.05365
+  initial |f(x)| = 100.877904
+  final   |f(x)| = 10.472268
+  chisq/dof = 1.1306
+  A      = 4.80085 +/- 0.17652
+  lambda = 0.09488 +/- 0.00527
+  b      = 0.99249 +/- 0.04419
   status = success
 
 The approximate values of the parameters are found correctly, and the

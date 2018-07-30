@@ -299,9 +299,70 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     double median = FUNCTION(gsl_stats,median_from_sorted_data)(sorted, stridea, na - 1) ;
     double expected = 0.0728;
     gsl_test_rel  (median,expected, rel,
-                   NAME(gsl_stats) "_median_from_sorted_data");
+                   NAME(gsl_stats) "_median_from_sorted_data (odd)");
   }
 
+  {
+    BASE * work = (BASE *) malloc (stridea * na * sizeof(BASE));
+    double expected = 0.07505;
+    double median;
+
+    for (i = 0; i < na; i++)
+      work[i * stridea] = (BASE) rawa[i];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, na) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (even)");
+
+    free(work);
+  }
+
+  {
+    BASE * work = (BASE *) malloc (stridea * (na - 1) * sizeof(BASE));
+    double expected = 0.0728;
+    double median;
+
+    for (i = 0; i < na - 1; i++)
+      work[i * stridea] = (BASE) sorted[i * stridea];
+
+    median = FUNCTION(gsl_stats,median)(work, stridea, na - 1) ;
+
+    gsl_test_rel (median, expected, rel,
+                  NAME(gsl_stats) "_median (odd)");
+
+    free(work);
+  }
+
+  {
+    const double trim = 0.2;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, na) ;
+    double expected = 0.0719;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (even)");
+  }
+
+  {
+    const double trim = 0.2;
+    double trmean = FUNCTION(gsl_stats,trmean_from_sorted_data)(trim, sorted, stridea, na - 1) ;
+    double expected = 0.06806666666666666;
+    gsl_test_rel  (trmean, expected, rel,
+                   NAME(gsl_stats) "_trmean_from_sorted_data (odd)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, na) ;
+    double expected = 0.07271;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (even)");
+  }
+
+  {
+    double gastwirth = FUNCTION(gsl_stats,gastwirth_from_sorted_data)(sorted, stridea, na - 1) ;
+    double expected = 0.06794;
+    gsl_test_rel  (gastwirth, expected, rel,
+                   NAME(gsl_stats) "_gastwirth_from_sorted_data (odd)");
+  }
 
   {
     double zeroth = FUNCTION(gsl_stats,quantile_from_sorted_data)(sorted, stridea, na, 0.0) ;
@@ -330,6 +391,27 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     gsl_test_rel  (median,expected, rel,
                    NAME(gsl_stats) "_quantile_from_sorted_data (50odd)");
 
+  }
+
+  {
+    size_t k;
+    BASE * work = (BASE *) malloc (stridea * na * sizeof(BASE));
+
+    for (k = 0; k < na; ++k)
+      {
+        double expected = sorted[k * stridea];
+        double kselect;
+
+        /* copy rawa[] for each k, since gsl_stats_select() changes input array */
+        for (i = 0; i < na; i++)
+          work[i * stridea] = (BASE) rawa[i];
+
+        kselect = FUNCTION(gsl_stats,select)(work, stridea, na, k);
+
+        gsl_test_rel(kselect, expected, rel, NAME(gsl_stats) "_select");
+      }
+
+    free(work);
   }
 
   /* Test for IEEE handling - set third element to NaN */
@@ -414,6 +496,61 @@ FUNCTION (test, func) (const size_t stridea, const size_t strideb)
     gsl_test  (min_index != expected_min_index,
                NAME(gsl_stats) "_minmax_index min NaN (%u observed vs %u expected)", 
                min_index, expected_min_index);
+  }
+
+  /* restore */
+  groupa [3*stridea] = (BASE) rawa[3];
+
+  {
+    double * work = (double *) malloc (na * sizeof(double));
+    double expected = 0.02925;
+    double mad0 = FUNCTION(gsl_stats,mad0)(groupa, stridea, na, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (even)");
+    free(work);
+  }
+
+  {
+    double * work = (double *) malloc ((na - 1) * sizeof(double));
+    double expected = 0.02910;
+    double mad0 = FUNCTION(gsl_stats,mad0)(groupa, stridea, na - 1, work);
+    gsl_test_rel (mad0, expected, rel, NAME(gsl_stats) "_mad0 (odd)");
+    free(work);
+  }
+
+  {
+    BASE *work = malloc(na * sizeof(BASE));
+    double r = FUNCTION(gsl_stats,Sn_from_sorted_data) (sorted, stridea, na, work);
+    double expected = 0.04007136;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Sn_from_sorted_data (even)");
+    free(work);
+  }
+
+  {
+    BASE *work = malloc((na - 1) * sizeof(BASE));
+    double r = FUNCTION(gsl_stats,Sn_from_sorted_data) (sorted, stridea, na - 1, work);
+    double expected = 0.03728599834710744;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Sn_from_sorted_data (odd)");
+    free(work);
+  }
+
+  {
+    BASE *work = malloc(3 * na * sizeof(BASE));
+    int *work_int = malloc(5 * na * sizeof(int));
+    double r = FUNCTION(gsl_stats,Qn_from_sorted_data) (sorted, stridea, na, work, work_int);
+    double expected = 0.04113672759664409;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Qn_from_sorted_data (even)");
+    free(work);
+    free(work_int);
+  }
+
+  {
+    BASE *work = malloc(3 * (na - 1) * sizeof(BASE));
+    int *work_int = malloc(5 * (na - 1) * sizeof(int));
+    double r = FUNCTION(gsl_stats,Qn_from_sorted_data) (sorted, stridea, na - 1, work, work_int);
+    double expected = 0.03684305546303433;
+    gsl_test_rel (r, expected, rel, NAME(gsl_stats) "_Qn_from_sorted_data (odd)");
+    free(work);
+    free(work_int);
   }
 
   free (sorted);

@@ -246,36 +246,44 @@ FUNCTION (test, text) (const size_t M, const size_t N)
 {
   TYPE (gsl_matrix) * m = FUNCTION (gsl_matrix, alloc) (M, N);
 
-  size_t i, j;
-  int k = 0;
+  size_t i, j, k;
 
-  FILE *f = tmpfile();
+#ifdef NO_INLINE
+  char filename[] = "test_static.dat";
+#else
+  char filename[] = "test.dat";
+#endif
 
   /* write file */
+  {
+    FILE *f = fopen(filename, "w");
 
-  for (i = 0; i < M; i++)
-    {
-      for (j = 0; j < N; j++)
-        {
-          BASE z;
-          k++;
-          GSL_REAL (z) = (ATOMIC) k;
-          GSL_IMAG (z) = (ATOMIC) (k + 1000);
-          FUNCTION (gsl_matrix, set) (m, i, j, z);
-        }
-    }
+    k = 0;
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE z;
+            k++;
+            GSL_REAL (z) = (ATOMIC) k;
+            GSL_IMAG (z) = (ATOMIC) (k + 1000);
+            FUNCTION (gsl_matrix, set) (m, i, j, z);
+          }
+      }
 
-  FUNCTION (gsl_matrix, fprintf) (f, m, OUT_FORMAT);
+    FUNCTION (gsl_matrix, fprintf) (f, m, OUT_FORMAT);
+
+    fclose(f);
+  }
 
   /* read file */
-
-  rewind(f);
-
   {
+    FILE *f = fopen(filename, "r");
     TYPE (gsl_matrix) * mm = FUNCTION (gsl_matrix, alloc) (M, N);
     status = 0;
 
     FUNCTION (gsl_matrix, fscanf) (f, mm);
+
     k = 0;
     for (i = 0; i < M; i++)
       {
@@ -291,9 +299,10 @@ FUNCTION (test, text) (const size_t M, const size_t N)
     gsl_test (status, NAME (gsl_matrix) "_fprintf and fscanf");
 
     FUNCTION (gsl_matrix, free) (mm);
+
+    fclose (f);
   }
 
-  fclose (f);
   FUNCTION (gsl_matrix, free) (m);
 }
 #endif
@@ -303,36 +312,44 @@ FUNCTION (test, binary) (const size_t M, const size_t N)
 {
   TYPE (gsl_matrix) * m = FUNCTION (gsl_matrix, alloc) (M, N);
 
-  size_t i, j;
-  int k = 0;
+  size_t i, j, k;
 
-  FILE *f = tmpfile();
+#ifdef NO_INLINE
+  char filename[] = "test_static.dat";
+#else
+  char filename[] = "test.dat";
+#endif
 
   /* write file */
+  {
+    FILE *f = fopen(filename, "wb");
 
-  for (i = 0; i < M; i++)
-    {
-      for (j = 0; j < N; j++)
-        {
-          BASE z = ZERO;
-          k++;
-          GSL_REAL (z) = (ATOMIC) k;
-          GSL_IMAG (z) = (ATOMIC) (k + 1000);
-          FUNCTION (gsl_matrix, set) (m, i, j, z);
-        }
-    }
+    k = 0;
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE z = ZERO;
+            k++;
+            GSL_REAL (z) = (ATOMIC) k;
+            GSL_IMAG (z) = (ATOMIC) (k + 1000);
+            FUNCTION (gsl_matrix, set) (m, i, j, z);
+          }
+      }
 
-  FUNCTION (gsl_matrix, fwrite) (f, m);
+    FUNCTION (gsl_matrix, fwrite) (f, m);
+
+    fclose(f);
+  }
 
   /* read file */
-
-  rewind(f);
-
   {
+    FILE *f = fopen(filename, "rb");
     TYPE (gsl_matrix) * mm = FUNCTION (gsl_matrix, alloc) (M, N);
     status = 0;
 
     FUNCTION (gsl_matrix, fread) (f, mm);
+
     k = 0;
     for (i = 0; i < M; i++)
       {
@@ -348,9 +365,9 @@ FUNCTION (test, binary) (const size_t M, const size_t N)
     gsl_test (status, NAME (gsl_matrix) "_write and read");
 
     FUNCTION (gsl_matrix, free) (mm);
-  }
 
-  fclose (f);
+    fclose (f);
+  }
 
   FUNCTION (gsl_matrix, free) (m);
 }
@@ -361,37 +378,45 @@ FUNCTION (test, binary_noncontiguous) (const size_t M, const size_t N)
   TYPE (gsl_matrix) * l = FUNCTION (gsl_matrix, calloc) (M+1, N+1);
   VIEW (gsl_matrix, view) m = FUNCTION (gsl_matrix, submatrix) (l, 0, 0, M, N);
 
-  size_t i, j;
-  int k = 0;
+  size_t i, j, k;
 
-  FILE *f = tmpfile();
+#ifdef NO_INLINE
+  char filename[] = "test_static.dat";
+#else
+  char filename[] = "test.dat";
+#endif
 
   /* write file */
+  {
+    FILE *f = fopen(filename, "wb");
 
-  for (i = 0; i < M; i++)
-    {
-      for (j = 0; j < N; j++)
-        {
-          BASE z = ZERO;
-          k++;
-          GSL_REAL (z) = (ATOMIC) k;
-          GSL_IMAG (z) = (ATOMIC) (k + 1000);
-          FUNCTION (gsl_matrix, set) (&m.matrix, i, j, z);
-        }
-    }
+    k = 0;
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE z = ZERO;
+            k++;
+            GSL_REAL (z) = (ATOMIC) k;
+            GSL_IMAG (z) = (ATOMIC) (k + 1000);
+            FUNCTION (gsl_matrix, set) (&m.matrix, i, j, z);
+          }
+      }
 
-  FUNCTION (gsl_matrix, fwrite) (f, &m.matrix);
+    FUNCTION (gsl_matrix, fwrite) (f, &m.matrix);
+
+    fclose(f);
+  }
 
   /* read file */
-
-  rewind(f);
-
   {
+    FILE *f = fopen(filename, "rb");
     TYPE (gsl_matrix) * ll = FUNCTION (gsl_matrix, alloc) (M+1, N+1);
     VIEW (gsl_matrix, view) mm = FUNCTION (gsl_matrix, submatrix) (ll, 0, 0, M, N);
     status = 0;
 
     FUNCTION (gsl_matrix, fread) (f, &mm.matrix);
+
     k = 0;
     for (i = 0; i < M; i++)
       {
@@ -407,9 +432,10 @@ FUNCTION (test, binary_noncontiguous) (const size_t M, const size_t N)
     gsl_test (status, NAME (gsl_matrix) "_write and read (noncontiguous)");
 
     FUNCTION (gsl_matrix, free) (ll);
+
+    fclose (f);
   }
 
-  fclose (f);
   FUNCTION (gsl_matrix, free) (l);
 }
 

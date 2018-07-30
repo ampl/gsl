@@ -1,0 +1,2 @@
+1. medacc: add delete function and convert to movstat_apply format
+2. remove gsl_math.h / gsl_function_vec -- not used?

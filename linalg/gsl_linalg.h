@@ -474,9 +474,14 @@ int gsl_linalg_cholesky_decomp1 (gsl_matrix * A);
 int gsl_linalg_cholesky_solve (const gsl_matrix * cholesky,
                                const gsl_vector * b,
                                gsl_vector * x);
+int gsl_linalg_cholesky_solve_mat (const gsl_matrix * cholesky,
+                                   const gsl_matrix * B,
+                                   gsl_matrix * X);
 
 int gsl_linalg_cholesky_svx (const gsl_matrix * cholesky,
                              gsl_vector * x);
+int gsl_linalg_cholesky_svx_mat (const gsl_matrix * cholesky,
+                                 gsl_matrix * X);
 
 int gsl_linalg_cholesky_invert(gsl_matrix * cholesky);
 

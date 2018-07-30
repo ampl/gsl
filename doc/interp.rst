@@ -369,7 +369,7 @@ The interpolation function for a given dataset is stored in a
    data (:data:`xa`, :data:`ya`, :data:`za`) where :data:`xa` and :data:`ya` are arrays of
    the :math:`x` and :math:`y` grid points of size :data:`xsize` and :data:`ysize`
    respectively, and :data:`za` is an array of function values of size
-   :data:`xsize`*:data:`ysize`.  The interpolation object (:type:`gsl_interp2d`) does
+   :data:`xsize` * :data:`ysize`.  The interpolation object (:type:`gsl_interp2d`) does
    not save the data arrays :data:`xa`, :data:`ya`, and :data:`za` and only stores the
    static state computed from the data. The :data:`xa` and :data:`ya` data arrays
    are always assumed to be strictly ordered, with increasing :math:`x,y` values; 

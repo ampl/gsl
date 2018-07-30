@@ -186,7 +186,7 @@ specifies the type of normalization to use. The possible values are
    :code:`gsl_sf_legendre_array_index(l, m)`. To include or exclude
    the Condon-Shortley phase factor of :math:`(-1)^m`, set the parameter
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
-   :code:`_e` function. This factor is included by default.
+   :code:`_e` function. This factor is excluded by default.
 
 .. function:: int gsl_sf_legendre_deriv_array (const gsl_sf_legendre_t norm, const size_t lmax, const double x, double result_array[], double result_deriv_array[])
               int gsl_sf_legendre_deriv_array_e (const gsl_sf_legendre_t norm, const size_t lmax, const double x, const double csphase, double result_array[], double result_deriv_array[])
@@ -201,7 +201,7 @@ specifies the type of normalization to use. The possible values are
    To include or exclude
    the Condon-Shortley phase factor of :math:`(-1)^m`, set the parameter
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
-   :code:`_e` function. This factor is included by default.
+   :code:`_e` function. This factor is excluded by default.
 
 .. function:: int gsl_sf_legendre_deriv_alt_array (const gsl_sf_legendre_t norm, const size_t lmax, const double x, double result_array[], double result_deriv_array[])
               int gsl_sf_legendre_deriv_alt_array_e (const gsl_sf_legendre_t norm, const size_t lmax, const double x, const double csphase, double result_array[], double result_deriv_array[])
@@ -215,7 +215,7 @@ specifies the type of normalization to use. The possible values are
    To include or exclude
    the Condon-Shortley phase factor of :math:`(-1)^m`, set the parameter
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
-   :code:`_e` function. This factor is included by default.
+   :code:`_e` function. This factor is excluded by default.
 
 .. function:: int gsl_sf_legendre_deriv2_array (const gsl_sf_legendre_t norm, const size_t lmax, const double x, double result_array[], double result_deriv_array[], double result_deriv2_array[])
               int gsl_sf_legendre_deriv2_array_e (const gsl_sf_legendre_t norm, const size_t lmax, const double x, const double csphase, double result_array[], double result_deriv_array[], double result_deriv2_array[])
@@ -231,7 +231,7 @@ specifies the type of normalization to use. The possible values are
    To include or exclude
    the Condon-Shortley phase factor of :math:`(-1)^m`, set the parameter
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
-   :code:`_e` function. This factor is included by default.
+   :code:`_e` function. This factor is excluded by default.
 
 .. function:: int gsl_sf_legendre_deriv2_alt_array (const gsl_sf_legendre_t norm, const size_t lmax, const double x, double result_array[], double result_deriv_array[], double result_deriv2_array[])
               int gsl_sf_legendre_deriv2_alt_array_e (const gsl_sf_legendre_t norm, const size_t lmax, const double x, const double csphase, double result_array[], double result_deriv_array[], double result_deriv2_array[])
@@ -248,7 +248,7 @@ specifies the type of normalization to use. The possible values are
    To include or exclude
    the Condon-Shortley phase factor of :math:`(-1)^m`, set the parameter
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
-   :code:`_e` function. This factor is included by default.
+   :code:`_e` function. This factor is excluded by default.
 
 .. function:: size_t gsl_sf_legendre_array_n (const size_t lmax)
 

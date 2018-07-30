@@ -309,7 +309,7 @@ endif ()
 
 include(CheckCSourceCompiles)
 
-# Check for inline.
+# Check for inline. (also check for __forceinline?)
 foreach (keyword inline __inline__ __inline)
   check_c_source_compiles("
     static ${keyword} void foo() { return 0; }
@@ -680,7 +680,7 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       install(TARGETS gsl gslcblas
         CONFIGURATIONS ${config}
         LIBRARY DESTINATION lib/${config}
-        RUNTIME DESTINATION bin/${config}
+        RUNTIME DESTINATION lib/${config}
         ARCHIVE DESTINATION lib/${config})
     endforeach ()
   else ()

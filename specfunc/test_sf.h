@@ -102,6 +102,7 @@ int test_mathieu(void);
 int test_hermite(void);
 int test_hyperg(void);
 int test_legendre(void);
+int test_sincos_pi(void);
 
 
 #endif /* !TEST_SF_H */

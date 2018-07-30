@@ -81,21 +81,24 @@ host_triplet = @host@
 check_PROGRAMS = blas$(EXEEXT) block$(EXEEXT) cblas$(EXEEXT) \
 	cdf$(EXEEXT) cheb$(EXEEXT) combination$(EXEEXT) \
 	multiset$(EXEEXT) const$(EXEEXT) diff$(EXEEXT) eigen$(EXEEXT) \
-	fft$(EXEEXT) fftmr$(EXEEXT) fftreal$(EXEEXT) fitting$(EXEEXT) \
-	fitting2$(EXEEXT) fitting3$(EXEEXT) fitreg$(EXEEXT) \
-	fitreg2$(EXEEXT) histogram$(EXEEXT) histogram2d$(EXEEXT) \
-	ieee$(EXEEXT) ieeeround$(EXEEXT) integration$(EXEEXT) \
-	integration2$(EXEEXT) interp$(EXEEXT) interp2d$(EXEEXT) \
-	intro$(EXEEXT) linalglu$(EXEEXT) largefit$(EXEEXT) \
-	matrix$(EXEEXT) matrixw$(EXEEXT) min$(EXEEXT) monte$(EXEEXT) \
-	ntupler$(EXEEXT) ntuplew$(EXEEXT) ode-initval$(EXEEXT) \
-	permseq$(EXEEXT) permshuffle$(EXEEXT) polyroots$(EXEEXT) \
-	qrng$(EXEEXT) randpoisson$(EXEEXT) randwalk$(EXEEXT) \
-	rng$(EXEEXT) rngunif$(EXEEXT) robfit$(EXEEXT) \
-	rootnewt$(EXEEXT) roots$(EXEEXT) siman$(EXEEXT) \
-	siman_tsp$(EXEEXT) sortsmall$(EXEEXT) specfun$(EXEEXT) \
-	specfun_e$(EXEEXT) rstat$(EXEEXT) rquantile$(EXEEXT) \
-	stat$(EXEEXT) statsort$(EXEEXT) sum$(EXEEXT) vector$(EXEEXT) \
+	fft$(EXEEXT) fftmr$(EXEEXT) fftreal$(EXEEXT) \
+	filt_edge$(EXEEXT) fitting$(EXEEXT) fitting2$(EXEEXT) \
+	fitting3$(EXEEXT) fitreg$(EXEEXT) fitreg2$(EXEEXT) \
+	gaussfilt$(EXEEXT) gaussfilt2$(EXEEXT) histogram$(EXEEXT) \
+	histogram2d$(EXEEXT) ieee$(EXEEXT) ieeeround$(EXEEXT) \
+	impulse$(EXEEXT) integration$(EXEEXT) integration2$(EXEEXT) \
+	interp$(EXEEXT) interp2d$(EXEEXT) intro$(EXEEXT) \
+	linalglu$(EXEEXT) largefit$(EXEEXT) matrix$(EXEEXT) \
+	matrixw$(EXEEXT) min$(EXEEXT) monte$(EXEEXT) movstat1$(EXEEXT) \
+	movstat2$(EXEEXT) movstat3$(EXEEXT) ntupler$(EXEEXT) \
+	ntuplew$(EXEEXT) ode-initval$(EXEEXT) permseq$(EXEEXT) \
+	permshuffle$(EXEEXT) polyroots$(EXEEXT) qrng$(EXEEXT) \
+	randpoisson$(EXEEXT) randwalk$(EXEEXT) rng$(EXEEXT) \
+	rngunif$(EXEEXT) robfit$(EXEEXT) rootnewt$(EXEEXT) \
+	roots$(EXEEXT) siman$(EXEEXT) siman_tsp$(EXEEXT) \
+	sortsmall$(EXEEXT) specfun$(EXEEXT) specfun_e$(EXEEXT) \
+	rstat$(EXEEXT) rquantile$(EXEEXT) stat$(EXEEXT) \
+	statsort$(EXEEXT) sum$(EXEEXT) vector$(EXEEXT) \
 	vectorr$(EXEEXT) vectorview$(EXEEXT) vectorw$(EXEEXT) \
 	dwt$(EXEEXT) nlfit$(EXEEXT) nlfit2$(EXEEXT) nlfit2b$(EXEEXT) \
 	nlfit3$(EXEEXT) nlfit4$(EXEEXT) interpp$(EXEEXT) \
@@ -178,6 +181,10 @@ fftreal_SOURCES = fftreal.c
 fftreal_OBJECTS = fftreal.$(OBJEXT)
 fftreal_LDADD = $(LDADD)
 fftreal_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+filt_edge_SOURCES = filt_edge.c
+filt_edge_OBJECTS = filt_edge.$(OBJEXT)
+filt_edge_LDADD = $(LDADD)
+filt_edge_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
 fitreg_SOURCES = fitreg.c
 fitreg_OBJECTS = fitreg.$(OBJEXT)
 fitreg_LDADD = $(LDADD)
@@ -198,6 +205,14 @@ fitting3_SOURCES = fitting3.c
 fitting3_OBJECTS = fitting3.$(OBJEXT)
 fitting3_LDADD = $(LDADD)
 fitting3_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+gaussfilt_SOURCES = gaussfilt.c
+gaussfilt_OBJECTS = gaussfilt.$(OBJEXT)
+gaussfilt_LDADD = $(LDADD)
+gaussfilt_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+gaussfilt2_SOURCES = gaussfilt2.c
+gaussfilt2_OBJECTS = gaussfilt2.$(OBJEXT)
+gaussfilt2_LDADD = $(LDADD)
+gaussfilt2_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
 histogram_SOURCES = histogram.c
 histogram_OBJECTS = histogram.$(OBJEXT)
 histogram_LDADD = $(LDADD)
@@ -214,6 +229,10 @@ ieeeround_SOURCES = ieeeround.c
 ieeeround_OBJECTS = ieeeround.$(OBJEXT)
 ieeeround_LDADD = $(LDADD)
 ieeeround_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+impulse_SOURCES = impulse.c
+impulse_OBJECTS = impulse.$(OBJEXT)
+impulse_LDADD = $(LDADD)
+impulse_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
 integration_SOURCES = integration.c
 integration_OBJECTS = integration.$(OBJEXT)
 integration_LDADD = $(LDADD)
@@ -267,6 +286,18 @@ monte_SOURCES = monte.c
 monte_OBJECTS = monte.$(OBJEXT)
 monte_LDADD = $(LDADD)
 monte_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+movstat1_SOURCES = movstat1.c
+movstat1_OBJECTS = movstat1.$(OBJEXT)
+movstat1_LDADD = $(LDADD)
+movstat1_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+movstat2_SOURCES = movstat2.c
+movstat2_OBJECTS = movstat2.$(OBJEXT)
+movstat2_LDADD = $(LDADD)
+movstat2_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
+movstat3_SOURCES = movstat3.c
+movstat3_OBJECTS = movstat3.$(OBJEXT)
+movstat3_LDADD = $(LDADD)
+movstat3_DEPENDENCIES = ../../libgsl.la ../../cblas/libgslcblas.la
 multiset_SOURCES = multiset.c
 multiset_OBJECTS = multiset.$(OBJEXT)
 multiset_LDADD = $(LDADD)
@@ -447,30 +478,33 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = blas.c block.c bspline.c cblas.c cdf.c cheb.c combination.c \
 	const.c diff.c dwt.c eigen.c eigen_nonsymm.c fft.c fftmr.c \
-	fftreal.c fitreg.c fitreg2.c fitting.c fitting2.c fitting3.c \
-	histogram.c histogram2d.c ieee.c ieeeround.c integration.c \
-	integration2.c interp.c interp2d.c interp_compare.c interpp.c \
-	intro.c largefit.c linalglu.c matrix.c matrixw.c min.c monte.c \
-	multiset.c nlfit.c nlfit2.c nlfit2b.c nlfit3.c nlfit4.c \
-	ntupler.c ntuplew.c ode-initval.c permseq.c permshuffle.c \
-	poisson.c polyroots.c qrng.c randpoisson.c randwalk.c rng.c \
-	rngunif.c robfit.c rootnewt.c roots.c rquantile.c rstat.c \
-	siman.c siman_tsp.c sortsmall.c specfun.c specfun_e.c \
-	spmatrix.c stat.c statsort.c sum.c vector.c vectorr.c \
-	vectorview.c vectorw.c
-DIST_SOURCES = blas.c block.c bspline.c cblas.c cdf.c cheb.c \
-	combination.c const.c diff.c dwt.c eigen.c eigen_nonsymm.c \
-	fft.c fftmr.c fftreal.c fitreg.c fitreg2.c fitting.c \
-	fitting2.c fitting3.c histogram.c histogram2d.c ieee.c \
-	ieeeround.c integration.c integration2.c interp.c interp2d.c \
-	interp_compare.c interpp.c intro.c largefit.c linalglu.c \
-	matrix.c matrixw.c min.c monte.c multiset.c nlfit.c nlfit2.c \
+	fftreal.c filt_edge.c fitreg.c fitreg2.c fitting.c fitting2.c \
+	fitting3.c gaussfilt.c gaussfilt2.c histogram.c histogram2d.c \
+	ieee.c ieeeround.c impulse.c integration.c integration2.c \
+	interp.c interp2d.c interp_compare.c interpp.c intro.c \
+	largefit.c linalglu.c matrix.c matrixw.c min.c monte.c \
+	movstat1.c movstat2.c movstat3.c multiset.c nlfit.c nlfit2.c \
 	nlfit2b.c nlfit3.c nlfit4.c ntupler.c ntuplew.c ode-initval.c \
 	permseq.c permshuffle.c poisson.c polyroots.c qrng.c \
 	randpoisson.c randwalk.c rng.c rngunif.c robfit.c rootnewt.c \
 	roots.c rquantile.c rstat.c siman.c siman_tsp.c sortsmall.c \
 	specfun.c specfun_e.c spmatrix.c stat.c statsort.c sum.c \
 	vector.c vectorr.c vectorview.c vectorw.c
+DIST_SOURCES = blas.c block.c bspline.c cblas.c cdf.c cheb.c \
+	combination.c const.c diff.c dwt.c eigen.c eigen_nonsymm.c \
+	fft.c fftmr.c fftreal.c filt_edge.c fitreg.c fitreg2.c \
+	fitting.c fitting2.c fitting3.c gaussfilt.c gaussfilt2.c \
+	histogram.c histogram2d.c ieee.c ieeeround.c impulse.c \
+	integration.c integration2.c interp.c interp2d.c \
+	interp_compare.c interpp.c intro.c largefit.c linalglu.c \
+	matrix.c matrixw.c min.c monte.c movstat1.c movstat2.c \
+	movstat3.c multiset.c nlfit.c nlfit2.c nlfit2b.c nlfit3.c \
+	nlfit4.c ntupler.c ntuplew.c ode-initval.c permseq.c \
+	permshuffle.c poisson.c polyroots.c qrng.c randpoisson.c \
+	randwalk.c rng.c rngunif.c robfit.c rootnewt.c roots.c \
+	rquantile.c rstat.c siman.c siman_tsp.c sortsmall.c specfun.c \
+	specfun_e.c spmatrix.c stat.c statsort.c sum.c vector.c \
+	vectorr.c vectorview.c vectorw.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -641,8 +675,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-examples_src = blas.c block.c cblas.c cdf.c cheb.c combination.c multiset.c const.c demo_fn.c diff.c eigen.c fft.c fftmr.c fftreal.c fitting.c fitting2.c fitting3.c fitreg.c fitreg2.c histogram.c histogram2d.c ieee.c ieeeround.c integration.c integration2.c interp.c interp2d.c intro.c linalglu.c largefit.c matrix.c matrixw.c min.c monte.c ntupler.c ntuplew.c ode-initval.c odefixed.c permseq.c permshuffle.c polyroots.c qrng.c randpoisson.c randwalk.c rng.c rngunif.c robfit.c rootnewt.c roots.c siman.c siman_tsp.c sortsmall.c specfun.c specfun_e.c rstat.c rquantile.c stat.c statsort.c sum.c vector.c vectorr.c vectorview.c vectorw.c demo_fn.h dwt.c nlfit.c nlfit2.c nlfit2b.c nlfit3.c interpp.c eigen_nonsymm.c bspline.c multimin.c multiminfn.c nmsimplex.c ode-initval-low-level.c poisson.c interp_compare.c spmatrix.c
-examples_txt = blas.txt block.txt bspline.txt cblas.txt cdf.txt cheb.txt combination.txt const.txt diff.txt dwt.txt eigen_nonsymm.txt eigen.txt fftmr.txt fftreal.txt fft.txt fitreg.txt fitreg2.txt fitting2.txt fitting.txt histogram2d.txt ieeeround.txt ieee.txt integration.txt integration2a.txt integration2b.txt interp2d.txt interp_compare.txt interpp.txt interp.txt intro.txt largefit.txt largefit2.txt linalglu.txt matrix.txt matrixw.txt min.txt monte.txt multimin.txt multiset.txt nlfit.txt nlfit2.txt nlfit3.txt nmsimplex.txt ntuple.txt ode-initval.txt permseq.txt permshuffle.txt poisson.txt polyroots.txt qrng.txt randpoisson2.txt randpoisson.txt randwalk.txt rng.txt rngunif.txt rngunif2.txt robfit.txt rootnewt.txt roots.txt rquantile.txt rstat.txt siman.txt siman_tsp.txt sortsmall.txt specfun.txt specfun_e.txt spmatrix.txt statsort.txt stat.txt sum.txt vectorr.txt vectorview.txt
+examples_src = blas.c block.c cblas.c cdf.c cheb.c combination.c multiset.c const.c demo_fn.c diff.c eigen.c fft.c fftmr.c fftreal.c filt_edge.c fitting.c fitting2.c fitting3.c fitreg.c fitreg2.c gaussfilt.c gaussfilt2.c histogram.c histogram2d.c ieee.c ieeeround.c impulse.c integration.c integration2.c interp.c interp2d.c intro.c linalglu.c largefit.c matrix.c matrixw.c min.c monte.c movstat1.c movstat2.c movstat3.c ntupler.c ntuplew.c ode-initval.c odefixed.c permseq.c permshuffle.c polyroots.c qrng.c randpoisson.c randwalk.c rng.c rngunif.c robfit.c rootnewt.c roots.c siman.c siman_tsp.c sortsmall.c specfun.c specfun_e.c rstat.c rquantile.c stat.c statsort.c sum.c vector.c vectorr.c vectorview.c vectorw.c demo_fn.h dwt.c nlfit.c nlfit2.c nlfit2b.c nlfit3.c interpp.c eigen_nonsymm.c bspline.c multimin.c multiminfn.c nmsimplex.c ode-initval-low-level.c poisson.c interp_compare.c spmatrix.c
+examples_txt = blas.txt block.txt bspline.txt cblas.txt cdf.txt cheb.txt combination.txt const.txt diff.txt dwt.txt eigen_nonsymm.txt eigen.txt fftmr.txt fftreal.txt fft.txt fitreg.txt fitreg2.txt filt_edge.txt fitting2.txt fitting.txt gaussfilt.txt gaussfilt2.txt histogram2d.txt ieeeround.txt ieee.txt impulse.txt integration.txt integration2a.txt integration2b.txt interp2d.txt interp_compare.txt interpp.txt interp.txt intro.txt largefit.txt largefit2.txt linalglu.txt matrix.txt matrixw.txt min.txt monte.txt movstat1.txt movstat2.txt movstat3.txt multimin.txt multiset.txt nlfit.txt nlfit2.txt nlfit3.txt nmsimplex.txt ntuple.txt ode-initval.txt permseq.txt permshuffle.txt poisson.txt polyroots.txt qrng.txt randpoisson2.txt randpoisson.txt randwalk.txt rng.txt rngunif.txt rngunif2.txt robfit.txt rootnewt.txt roots.txt rquantile.txt rstat.txt siman.txt siman_tsp.txt sortsmall.txt specfun.txt specfun_e.txt spmatrix.txt statsort.txt stat.txt sum.txt vectorr.txt vectorview.txt
 dist_noinst_DATA = $(examples_src) $(examples_txt)
 LDADD = ../../libgsl.la ../../cblas/libgslcblas.la
 AM_DEFAULT_SOURCE_EXT = .c
@@ -750,6 +784,10 @@ fftreal$(EXEEXT): $(fftreal_OBJECTS) $(fftreal_DEPENDENCIES) $(EXTRA_fftreal_DEP
 	@rm -f fftreal$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(fftreal_OBJECTS) $(fftreal_LDADD) $(LIBS)
 
+filt_edge$(EXEEXT): $(filt_edge_OBJECTS) $(filt_edge_DEPENDENCIES) $(EXTRA_filt_edge_DEPENDENCIES) 
+	@rm -f filt_edge$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(filt_edge_OBJECTS) $(filt_edge_LDADD) $(LIBS)
+
 fitreg$(EXEEXT): $(fitreg_OBJECTS) $(fitreg_DEPENDENCIES) $(EXTRA_fitreg_DEPENDENCIES) 
 	@rm -f fitreg$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(fitreg_OBJECTS) $(fitreg_LDADD) $(LIBS)
@@ -770,6 +808,14 @@ fitting3$(EXEEXT): $(fitting3_OBJECTS) $(fitting3_DEPENDENCIES) $(EXTRA_fitting3
 	@rm -f fitting3$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(fitting3_OBJECTS) $(fitting3_LDADD) $(LIBS)
 
+gaussfilt$(EXEEXT): $(gaussfilt_OBJECTS) $(gaussfilt_DEPENDENCIES) $(EXTRA_gaussfilt_DEPENDENCIES) 
+	@rm -f gaussfilt$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gaussfilt_OBJECTS) $(gaussfilt_LDADD) $(LIBS)
+
+gaussfilt2$(EXEEXT): $(gaussfilt2_OBJECTS) $(gaussfilt2_DEPENDENCIES) $(EXTRA_gaussfilt2_DEPENDENCIES) 
+	@rm -f gaussfilt2$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gaussfilt2_OBJECTS) $(gaussfilt2_LDADD) $(LIBS)
+
 histogram$(EXEEXT): $(histogram_OBJECTS) $(histogram_DEPENDENCIES) $(EXTRA_histogram_DEPENDENCIES) 
 	@rm -f histogram$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(histogram_OBJECTS) $(histogram_LDADD) $(LIBS)
@@ -785,6 +831,10 @@ ieee$(EXEEXT): $(ieee_OBJECTS) $(ieee_DEPENDENCIES) $(EXTRA_ieee_DEPENDENCIES)
 ieeeround$(EXEEXT): $(ieeeround_OBJECTS) $(ieeeround_DEPENDENCIES) $(EXTRA_ieeeround_DEPENDENCIES) 
 	@rm -f ieeeround$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(ieeeround_OBJECTS) $(ieeeround_LDADD) $(LIBS)
+
+impulse$(EXEEXT): $(impulse_OBJECTS) $(impulse_DEPENDENCIES) $(EXTRA_impulse_DEPENDENCIES) 
+	@rm -f impulse$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(impulse_OBJECTS) $(impulse_LDADD) $(LIBS)
 
 integration$(EXEEXT): $(integration_OBJECTS) $(integration_DEPENDENCIES) $(EXTRA_integration_DEPENDENCIES) 
 	@rm -f integration$(EXEEXT)
@@ -837,6 +887,18 @@ min$(EXEEXT): $(min_OBJECTS) $(min_DEPENDENCIES) $(EXTRA_min_DEPENDENCIES)
 monte$(EXEEXT): $(monte_OBJECTS) $(monte_DEPENDENCIES) $(EXTRA_monte_DEPENDENCIES) 
 	@rm -f monte$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(monte_OBJECTS) $(monte_LDADD) $(LIBS)
+
+movstat1$(EXEEXT): $(movstat1_OBJECTS) $(movstat1_DEPENDENCIES) $(EXTRA_movstat1_DEPENDENCIES) 
+	@rm -f movstat1$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(movstat1_OBJECTS) $(movstat1_LDADD) $(LIBS)
+
+movstat2$(EXEEXT): $(movstat2_OBJECTS) $(movstat2_DEPENDENCIES) $(EXTRA_movstat2_DEPENDENCIES) 
+	@rm -f movstat2$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(movstat2_OBJECTS) $(movstat2_LDADD) $(LIBS)
+
+movstat3$(EXEEXT): $(movstat3_OBJECTS) $(movstat3_DEPENDENCIES) $(EXTRA_movstat3_DEPENDENCIES) 
+	@rm -f movstat3$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(movstat3_OBJECTS) $(movstat3_LDADD) $(LIBS)
 
 multiset$(EXEEXT): $(multiset_OBJECTS) $(multiset_DEPENDENCIES) $(EXTRA_multiset_DEPENDENCIES) 
 	@rm -f multiset$(EXEEXT)
@@ -1003,15 +1065,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fft.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fftmr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fftreal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filt_edge.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fitreg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fitreg2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fitting.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fitting2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fitting3.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gaussfilt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gaussfilt2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/histogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/histogram2d.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ieee.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ieeeround.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/impulse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integration.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integration2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interp.Po@am__quote@
@@ -1025,6 +1091,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matrixw.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/min.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/monte.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movstat1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movstat2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/movstat3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multiset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nlfit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nlfit2.Po@am__quote@

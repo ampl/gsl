@@ -100,7 +100,7 @@ am_libgslintegration_la_OBJECTS = qk15.lo qk21.lo qk31.lo qk41.lo \
 	workspace.lo qcheb.lo qawc.lo qmomo.lo qaws.lo qmomof.lo \
 	qawo.lo qawf.lo glfixed.lo cquad.lo fixed.lo chebyshev.lo \
 	chebyshev2.lo legendre.lo hermite.lo laguerre.lo gegenbauer.lo \
-	jacobi.lo exponential.lo rational.lo
+	jacobi.lo exponential.lo rational.lo romberg.lo
 libgslintegration_la_OBJECTS = $(am_libgslintegration_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -526,7 +526,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslintegration.la
 AM_CPPFLAGS = -I$(top_srcdir)
-libgslintegration_la_SOURCES = qk15.c qk21.c qk31.c qk41.c qk51.c qk61.c qk.c qng.c qng.h qag.c	qags.c qagp.c workspace.c qcheb.c qawc.c qmomo.c qaws.c	qmomof.c qawo.c	qawf.c glfixed.c cquad.c fixed.c chebyshev.c chebyshev2.c legendre.c hermite.c laguerre.c gegenbauer.c jacobi.c exponential.c rational.c
+libgslintegration_la_SOURCES = qk15.c qk21.c qk31.c qk41.c qk51.c qk61.c qk.c qng.c qng.h qag.c	qags.c qagp.c workspace.c qcheb.c qawc.c qmomo.c qaws.c	qmomof.c qawo.c	qawf.c glfixed.c cquad.c fixed.c chebyshev.c chebyshev2.c legendre.c hermite.c laguerre.c gegenbauer.c jacobi.c exponential.c rational.c romberg.c
 pkginclude_HEADERS = gsl_integration.h
 noinst_HEADERS = qpsrt.c qpsrt2.c qelg.c qc25c.c qc25s.c qc25f.c ptsort.c util.c err.c positivity.c append.c initialise.c set_initial.c reset.c cquad_const.c
 TESTS = $(check_PROGRAMS)
@@ -630,6 +630,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qmomof.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qng.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rational.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/romberg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/workspace.Plo@am__quote@

@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_FLOAT_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -92,8 +93,23 @@ size_t gsl_stats_float_max_index (const float data[], const size_t stride, const
 size_t gsl_stats_float_min_index (const float data[], const size_t stride, const size_t n);
 void gsl_stats_float_minmax_index (size_t * min_index, size_t * max_index, const float data[], const size_t stride, const size_t n);
 
+float gsl_stats_float_select(float data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_float_median_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_float_median (float sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_float_quantile_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, const double f) ;
+
+double gsl_stats_float_trmean_from_sorted_data (const double trim, const float sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_float_gastwirth_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n) ;
+
+double gsl_stats_float_mad0(const float data[], const size_t stride, const size_t n, double work[]);
+double gsl_stats_float_mad(const float data[], const size_t stride, const size_t n, double work[]);
+
+float gsl_stats_float_Sn0_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[]) ;
+double gsl_stats_float_Sn_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[]) ;
+
+float gsl_stats_float_Qn0_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[], int work_int[]) ;
+double gsl_stats_float_Qn_from_sorted_data (const float sorted_data[], const size_t stride, const size_t n, float work[], int work_int[]) ;
 
 __END_DECLS
 

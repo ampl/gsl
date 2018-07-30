@@ -606,10 +606,12 @@ Median and Percentiles
 ======================
 
 The median and percentile functions described in this section operate on
-sorted data.  For convenience we use *quantiles*, measured on a scale
+sorted data in :math:`O(1)` time. There is also a routine for computing
+the median of an unsorted input array in average :math:`O(n)` time using
+the quickselect algorithm. For convenience we use *quantiles*, measured on a scale
 of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
-.. function:: double gsl_stats_median_from_sorted_data (const double sorted_data[], size_t stride, size_t n)
+.. function:: double gsl_stats_median_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
 
    This function returns the median value of :data:`sorted_data`, a dataset
    of length :data:`n` with stride :data:`stride`.  The elements of the array
@@ -623,6 +625,14 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
    elements :math:`(n-1)/2` and :math:`n/2`.  Since the algorithm for
    computing the median involves interpolation this function always returns
    a floating-point number, even for integer data types.
+
+.. function:: double gsl_stats_median (double data[], const size_t stride, const size_t n)
+
+   This function returns the median value of :data:`data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The median is found
+   using the quickselect algorithm. The input array does not need to be
+   sorted, but note that the algorithm rearranges the array and so the input
+   is not preserved on output.
 
 .. function:: double gsl_stats_quantile_from_sorted_data (const double sorted_data[], size_t stride, size_t n, double f)
 
@@ -672,6 +682,237 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
 .. The t-test statistic measures the difference between the means of two
 .. datasets.
+
+Order Statistics
+================
+
+The :math:`k`-th *order statistic* of a sample is equal to its :math:`k`-th smallest value.
+The :math:`k`-th order statistic of a set of :math:`n` values :math:`x = \left\{ x_i \right\}, 1 \le i \le n` is
+denoted :math:`x_{(k)}`. The median of the set :math:`x` is equal to :math:`x_{\left( \frac{n}{2} \right)}` if
+:math:`n` is odd, or the average of :math:`x_{\left( \frac{n}{2} \right)}` and :math:`x_{\left( \frac{n}{2} + 1 \right)}`
+if :math:`n` is even. The :math:`k`-th smallest element of a length :math:`n` vector can be found
+in average :math:`O(n)` time using the quickselect algorithm.
+
+.. function:: gsl_stats_select(double data[], const size_t stride, const size_t n, const size_t k)
+
+   This function finds the :data:`k`-th smallest element of the input array :data:`data`
+   of length :data:`n` and stride :data:`stride` using the quickselect method. The
+   algorithm rearranges the elements of :data:`data` and so the input array is not preserved
+   on output.
+
+.. index::
+   single: robust location estimators
+   single: location estimation
+   single: estimation, location
+
+Robust Location Estimates
+=========================
+
+A *location estimate* refers to a typical or central value which best describes a given
+dataset. The mean and median are both examples of location estimators. However, the
+mean has a severe sensitivity to data outliers and can give erroneous values when
+even a small number of outliers are present. The median on the other hand, has
+a strong insensitivity to data outliers, but due to its non-smoothness it can
+behave unexpectedly in certain situations. GSL offers the following alternative
+location estimators, which are robust to the presence of outliers.
+
+.. index::
+   single: trimmed mean
+   single: truncated mean
+   single: mean, trimmed
+   single: mean, truncated
+
+Trimmed Mean
+------------
+
+The trimmed mean, or *truncated mean*, discards a certain number of smallest and largest
+samples from the input vector before computing the mean of the remaining samples. The
+amount of trimming is specified by a factor :math:`\alpha \in [0,0.5]`. Then the
+number of samples discarded from both ends of the input vector is
+:math:`\left\lfloor \alpha n \right\rfloor`, where :math:`n` is the length of the input.
+So to discard 25% of the samples from each end, one would set :math:`\alpha = 0.25`.
+
+.. function:: double gsl_stats_trmean_from_sorted_data (const double alpha, const double sorted_data[], const size_t stride, const size_t n)
+
+   This function returns the trimmed mean of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. The trimming factor :math:`\alpha` is given in :data:`alpha`.
+   If :math:`\alpha \ge 0.5`, then the median of the input is returned.
+
+.. index::
+   single: Gastwirth estimator
+
+Gastwirth Estimator
+-------------------
+
+Gastwirth's location estimator is a weighted sum of three order statistics,
+
+.. only:: not texinfo
+
+   .. math:: gastwirth = 0.3 \times Q_{\frac{1}{3}} + 0.4 \times Q_{\frac{1}{2}} + 0.3 \times Q_{\frac{2}{3}}
+
+.. only:: texinfo
+
+   ::
+
+      gastwirth = 0.3 * Q_{1/3} + 0.4 * Q_{1/2} + 0.3 * Q_{2/3}
+
+where :math:`Q_{\frac{1}{3}}` is the one-third quantile, :math:`Q_{\frac{1}{2}}` is the one-half
+quantile (i.e. median), and :math:`Q_{\frac{2}{3}}` is the two-thirds quantile.
+
+.. function:: double gsl_stats_gastwirth_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
+
+   This function returns the Gastwirth location estimator of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first.
+
+.. index::
+   single: robust scale estimators
+   single: scale estimation
+   single: estimation, scale
+
+Robust Scale Estimates
+======================
+
+A *robust scale estimate*, also known as a robust measure of scale, attempts to quantify
+the statistical dispersion (variability, scatter, spread) in a set of data which may contain outliers.
+In such datasets, the usual variance or standard deviation scale estimate can be rendered useless
+by even a single outlier.
+
+.. index::
+   single: median absolute deviation
+
+.. _sec_mad-statistic:
+
+Median Absolute Deviation (MAD)
+-------------------------------
+
+The median absolute deviation (MAD) is defined as
+
+.. only:: not texinfo
+
+   .. math:: MAD = 1.4826 \times \textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}
+
+.. only:: texinfo
+
+   ::
+
+      MAD = 1.4826 median { | x_i - median(x) | }
+
+In words, first the median of all samples is computed. Then the median
+is subtracted from all samples in the input to find the deviation of each sample
+from the median. The median of all absolute deviations is then the MAD.
+The factor :math:`1.4826` makes the MAD an unbiased estimator of the standard deviation for Gaussian data.
+The median absolute deviation has an asymptotic efficiency of 37%.
+
+.. function:: double gsl_stats_mad0 (const double data[], const size_t stride, const size_t n, double work[])
+.. function:: double gsl_stats_mad (const double data[], const size_t stride, const size_t n, double work[])
+
+   These functions return the median absolute deviation of :data:`data`, a dataset
+   of length :data:`n` and stride :data:`stride`.
+   The :code:`mad0` function calculates
+   :math:`\textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}`
+   (i.e. the :math:`MAD` statistic without the bias correction scale factor).
+   These functions require additional workspace of size :code:`n` provided in :data:`work`.
+
+.. index::
+   single: Sn statistic
+
+.. _sec_Sn-statistic:
+
+:math:`S_n` Statistic
+---------------------
+
+The :math:`S_n` statistic developed by Croux and Rousseeuw is defined as
+
+.. only:: not texinfo
+
+   .. math:: S_n = 1.1926 \times c_n \times \textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}
+
+.. only:: texinfo
+
+   ::
+
+      S_n = 1.1926 * c_n * median_i { median_j ( | x_i - x_j | ) }
+
+For each sample :math:`x_i, 1 \le i \le n`, the median of the values :math:`\left| x_i - x_j \right|` is computed for all
+:math:`x_j, 1 \le j \le n`. This yields :math:`n` values, whose median then gives the final :math:`S_n`.
+The factor :math:`1.1926` makes :math:`S_n` an unbiased estimate of the standard deviation for Gaussian data.
+The factor :math:`c_n` is a correction factor to correct bias in small sample sizes. :math:`S_n` has an asymptotic
+efficiency of 58%.
+
+.. function:: double gsl_stats_Sn0_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
+.. function:: double gsl_stats_Sn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
+
+   These functions return the :math:`S_n` statistic of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. The :code:`Sn0` function calculates
+   :math:`\textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}`
+   (i.e. the :math:`S_n` statistic without the bias correction scale factors).
+   These functions require additional workspace of size
+   :code:`n` provided in :data:`work`.
+
+.. index::
+   single: Qn statistic
+
+.. _sec_Qn-statistic:
+
+:math:`Q_n` Statistic
+---------------------
+
+The :math:`Q_n` statistic developed by Croux and Rousseeuw is defined as
+
+.. only:: not texinfo
+
+   .. math:: Q_n = 2.21914 \times d_n \times \left\{ \left| x_i - x_j \right|, i < j \right\}_{(k)}
+
+.. only:: texinfo
+
+   ::
+
+      Q_n = 2.21914 * d_n * { | x_i - x_j |, i < j }_{(k)}
+
+The factor :math:`2.21914` makes :math:`Q_n` an unbiased estimate of the standard deviation for Gaussian data.
+The factor :math:`d_n` is a correction factor to correct bias in small sample sizes. The order statistic
+is
+
+.. only:: not texinfo
+
+   .. math:: k = \left(
+                   \begin{array}{c}
+                     \left\lfloor \frac{n}{2} \right\rfloor + 1 \\
+                     2
+                   \end{array}
+                 \right)
+
+.. only:: texinfo
+
+   ::
+
+      k = ( floor(n/2) + 1 )
+          (       2        )
+
+:math:`Q_n` has an asymptotic efficiency of 82%.
+
+.. function:: double gsl_stats_Qn0_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[], int work_int[])
+              double gsl_stats_Qn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[], int work_int[])
+
+   These functions return the :math:`Q_n` statistic of :data:`sorted_data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The elements of the array
+   must be in ascending numerical order.  There are no checks to see
+   whether the data are sorted, so the function :func:`gsl_sort` should
+   always be used first. The :code:`Qn0` function calculates
+   :math:`\left\{ \left| x_i - x_j \right|, i < j \right\}_{(k)}`
+   (i.e. :math:`Q_n` without the bias correction scale factors).
+   These functions require additional workspace of size
+   :code:`3n` provided in :data:`work` and integer workspace of size :code:`5n`
+   provided in :data:`work_int`.
 
 Examples
 ========
@@ -724,3 +965,10 @@ Annual Review of Particle Physics.
 
 The Review of Particle Physics is available online at
 the website http://pdg.lbl.gov/.
+
+The following papers describe robust scale estimation,
+
+* C. Croux and P. J. Rousseeuw, *Time-Efficient algorithms for two highly robust
+  estimators of scale*, Comp. Stat., Physica, Heidelberg, 1992.
+* P. J. Rousseeuw and C. Croux, *Explicit scale estimators with high breakdown point*,
+  L1-Statistical Analysis and Related Methods, pp. 77-92, 1992.

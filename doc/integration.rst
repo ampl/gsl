@@ -96,9 +96,10 @@ the best approximation to an integral over a small range.  The
 difference between the results of the higher order rule and the lower
 order rule gives an estimate of the error in the approximation.
 
+.. index:: Gauss-Kronrod quadrature
+
 Integrands without weight functions
 -----------------------------------
-.. index:: Gauss-Kronrod quadrature
 
 The algorithms for general functions (without a weight function) are
 based on Gauss-Kronrod rules. 
@@ -115,6 +116,7 @@ estimate of the error in the approximation.
 
 Integrands with weight functions
 --------------------------------
+
 .. index::
    single: Clenshaw-Curtis quadrature
    single: Modified Clenshaw-Curtis quadrature
@@ -620,10 +622,11 @@ QAWF adaptive integration for Fourier integrals
    The integration over each subinterval uses the memory provided by
    :data:`cycle_workspace` as workspace for the QAWO algorithm.
 
-CQUAD doubly-adaptive integration
-=================================
 .. index::
    single: cquad, doubly-adaptive integration
+
+CQUAD doubly-adaptive integration
+=================================
 
 |cquad| is a new doubly-adaptive general-purpose quadrature
 routine which can handle most types of singularities,
@@ -680,6 +683,51 @@ rules is too large or a rule of maximum degree has been reached.
    provided by :data:`workspace`. If the error estimate or the number of 
    function evaluations is not needed, the pointers :data:`abserr` and :data:`nevals`
    can be set to :code:`NULL`.
+
+Romberg integration
+===================
+
+The Romberg integration method estimates the definite integral
+
+.. math:: I = \int_a^b f(x) dx
+
+by applying Richardson extrapolation on the trapezoidal rule, using
+equally spaced points with spacing
+
+.. math:: h_k = (b - a) 2^{-k}
+
+for :math:`k = 1, \dots, n`. For each :math:`k`, Richardson extrapolation
+is used :math:`k-1` times on previous approximations to improve the order
+of accuracy as much as possible. Romberg integration typically works
+well (and converges quickly) for smooth integrands with no singularities in
+the interval or at the end points.
+
+.. function:: gsl_integration_romberg_workspace * gsl_integration_romberg_alloc(const size_t n)
+
+   This function allocates a workspace for Romberg integration, specifying
+   a maximum of :math:`n` iterations, or divisions of the interval. Since
+   the number of divisions is :math:`2^n + 1`, :math:`n` can be kept relatively
+   small (i.e. :math:`10` or :math:`20`). It is capped at a maximum value of
+   :math:`30` to prevent overflow. The size of the workspace is :math:`O(2n)`.
+
+.. function:: void gsl_integration_romberg_free(gsl_integration_romberg_workspace * w)
+
+   This function frees the memory associated with the workspace :data:`w`.
+
+.. function:: int gsl_integration_romberg(const gsl_function * f, const double a, const double b, const double epsabs, const double epsrel, double * result, size_t * neval, gsl_integration_romberg_workspace * w)
+
+   This function integrates :math:`f(x)`, specified by :data:`f`, from :data:`a` to
+   :data:`b`, storing the answer in :data:`result`. At each step in the iteration,
+   convergence is tested by checking:
+
+   .. math:: | I_k - I_{k-1} | \le \textrm{max} \left( epsabs, epsrel \times |I_k| \right)
+
+   where :math:`I_k` is the current approximation and :math:`I_{k-1}` is the approximation
+   of the previous iteration. If the method does not converge within the previously
+   specified :math:`n` iterations, the function stores the best current estimate in
+   :data:`result` and returns :macro:`GSL_EMAXITER`. If the method converges, the function
+   returns :macro:`GSL_SUCCESS`. The total number of function evaluations is returned
+   in :data:`neval`.
 
 Gauss-Legendre integration
 ==========================
@@ -903,9 +951,17 @@ Fixed-point quadrature example
 In this example, we use a fixed-point quadrature rule to integrate the
 integral
 
-.. math:: \int_{-\infty}^{\infty} e^{-x^2} \left( x^m + 1 \right) dx
+.. math::
+   
+   \int_{-\infty}^{\infty} e^{-x^2} \left( x^m + 1 \right) dx =
+     \left\{
+       \begin{array}{cc}
+         \sqrt{\pi} + \Gamma{\left( \frac{m+1}{2} \right)}, & m \textrm{ even} \\
+         \sqrt{\pi}, & m \textrm{ odd}
+       \end{array}
+     \right.
 
-Consulting our :ref:`table <tab_fixed-quadratures>` of fixed point quadratures,
+for integer :math:`m`. Consulting our :ref:`table <tab_fixed-quadratures>` of fixed point quadratures,
 we see that this integral can be evaluated with a Hermite quadrature rule,
 setting :math:`\alpha = 0, a = 0, b = 1`. Since we are integrating a polynomial
 of degree :math:`m`, we need to choose the number of nodes :math:`n \ge (m+1)/2`

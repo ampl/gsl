@@ -1185,7 +1185,7 @@ test_evolve_system (const gsl_odeiv2_step_type * T,
       s = gsl_odeiv2_evolve_apply (d->e, d->c, d->s, sys, &t, t1, &h, y);
 
 #ifdef DEBUG
-      printf (" %.5e %.5e %.5e %d\n", t, y[0], y[1],
+      printf ("test_evolve_system at: %.5e %.5e %.5e %d\n", t, y[0], y[1],
               gsl_odeiv2_step_order (d->s));
 #endif
 
@@ -1270,7 +1270,7 @@ sys_driver (const gsl_odeiv2_step_type * T,
       s = gsl_odeiv2_evolve_apply (d->e, d->c, d->s, sys, &t, t1, &h, y);
 
 #ifdef DEBUG
-      printf ("%.5e %.5e %.5e %d\n", t, y[0], y[1],
+      printf ("sys_driver at: %.5e %.5e %.5e %d\n", t, y[0], y[1],
               gsl_odeiv2_step_order (d->s));
 #endif
 
@@ -1601,7 +1601,8 @@ test_stepfn (const gsl_odeiv2_step_type * T)
       status =
         gsl_odeiv2_evolve_apply (d->e, d->c, d->s, &sys, &t, 2, &h, &y);
 #ifdef DEBUG
-      printf ("i=%d status=%d t=%g h=%g y=%g\n", i, status, t, h, y);
+      printf ("test_stepfn at: i=%d status=%d t=%g h=%g y=%g\n",
+			  i, status, t, h, y);
 #endif
 
       if (status != GSL_SUCCESS)
@@ -1648,7 +1649,8 @@ test_stepfn2 (const gsl_odeiv2_step_type * T)
       status =
         gsl_odeiv2_evolve_apply (d->e, d->c, d->s, &sys, &t, 1.0, &h, &y);
 #ifdef DEBUG
-      printf ("i=%d status=%d t=%g h=%g y=%g\n", i, status, t, h, y);
+      printf ("test_stepfn2 at: i=%d status=%d t=%g h=%g y=%g\n",
+			  i, status, t, h, y);
 #endif
       if (status != GSL_SUCCESS)
         break;

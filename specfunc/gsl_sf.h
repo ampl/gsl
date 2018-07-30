@@ -31,6 +31,7 @@
 #include <gsl/gsl_sf_mathieu.h>
 #include <gsl/gsl_sf_pow_int.h>
 #include <gsl/gsl_sf_psi.h>
+#include <gsl/gsl_sf_sincos_pi.h>
 #include <gsl/gsl_sf_synchrotron.h>
 #include <gsl/gsl_sf_transport.h>
 #include <gsl/gsl_sf_trig.h>

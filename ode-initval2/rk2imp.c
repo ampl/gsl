@@ -243,6 +243,20 @@ rk2imp_apply (void *vstate, size_t dim, double t, double h,
 
   const modnewton1_state_t *esol = state->esol;
 
+#ifdef DEBUG
+  {
+    size_t di;
+
+    printf ("rk2imp_apply: t=%.5e, h=%.5e, y:", t, h);
+
+    for (di = 0; di < dim; di++)
+      {
+        printf ("%.5e ", y[di]);
+      }
+    printf ("\n");
+  }
+#endif
+
   /* Runge-Kutta coefficients */
   gsl_matrix *A = state->A;
   const double b[] = { 1.0 };
@@ -284,12 +298,36 @@ rk2imp_apply (void *vstate, size_t dim, double t, double h,
   /* Evaluate Jacobian for modnewton1 */
 
   {
+#ifdef DEBUG
+    printf ("-- evaluate jacobian\n");
+#endif
     int s = GSL_ODEIV_JA_EVAL (sys, t, y, dfdy->data, dfdt);
 
     if (s != GSL_SUCCESS)
       {
+#ifdef DEBUG
+        printf ("-- FAIL at jacobian function evaluation\n");
+#endif
         return s;
       }
+#ifdef DEBUG
+    size_t M;
+    size_t N;
+    size_t i;
+    size_t j;
+
+    M = dfdy->size1;
+    N = dfdy->size2;
+
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            double aij = gsl_matrix_get (dfdy, i, j);
+            printf ("(%3lu,%3lu)[%lu,%lu]: %22.18g\n", M, N, i, j, aij);
+          }
+      }
+#endif
   }
 
   /* Calculate a single step with size h */
@@ -301,17 +339,65 @@ rk2imp_apply (void *vstate, size_t dim, double t, double h,
       {
         return s;
       }
+
+#ifdef DEBUG
+    size_t M;
+    size_t N;
+    size_t i;
+    size_t j;
+
+    printf ("-- modnewton1_init IhAJ:\n");
+
+    M = esol->IhAJ->size1;
+    N = esol->IhAJ->size2;
+
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            double aij = gsl_matrix_get (esol->IhAJ, i, j);
+            printf ("(%3lu,%3lu)[%lu,%lu]: %22.18g\n", M, N, i, j, aij);
+          }
+      }
+
+    printf ("-- modnewton1_init p:\n");
+
+    M = esol->p->size;
+
+    for (i = 0; i < M; i++)
+      {
+        double pi = gsl_permutation_get (esol->p, i);
+        printf ("(%3lu)[%lu]: %22.18g\n", M, i, pi);
+      }
+#endif
   }
 
   {
     int s = modnewton1_solve ((void *) esol, A, c, t, h, y,
                               sys, YZ, errlev);
+#ifdef DEBUG
+    printf ("-- modnewton1_solve s=%d\n", s);
+#endif
 
     if (s != GSL_SUCCESS)
       {
         return s;
       }
   }
+
+#ifdef DEBUG
+  {
+    size_t di;
+
+    printf ("YZ:");
+
+    for (di = 0; di < dim * RK2IMP_STAGE; di++)
+      {
+        printf ("%.5e ", YZ[di]);
+      }
+    printf ("\n");
+  }
+#endif
 
   {
     int s = GSL_ODEIV_FN_EVAL (sys, t + c[0] * h, YZ, fYZ);
@@ -321,6 +407,20 @@ rk2imp_apply (void *vstate, size_t dim, double t, double h,
         return s;
       }
   }
+
+#ifdef DEBUG
+  {
+    size_t di;
+
+    printf ("fYZ:");
+
+    for (di = 0; di < dim * RK2IMP_STAGE; di++)
+      {
+        printf ("%.5e ", fYZ[di]);
+      }
+    printf ("\n");
+  }
+#endif
 
   {
     int s = rksubs (y_onestep, h, y, fYZ, b, RK2IMP_STAGE, dim);
@@ -421,6 +521,18 @@ rk2imp_apply (void *vstate, size_t dim, double t, double h,
           fabs (y_twostep[i] - y_onestep[i]) / 3.0;
       }
   }
+
+#ifdef DEBUG
+  {
+    size_t i;
+    printf ("-- error estimates: ");
+    for (i = 0; i < dim; i++)
+      {
+        printf ("%.5e ", yerr[i]);
+      }
+    printf ("\n");
+  }
+#endif
 
   /* Derivatives at output */
 

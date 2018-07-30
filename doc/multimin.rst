@@ -427,7 +427,7 @@ at each evaluation point.
             gsl_multimin_fminimizer_nmsimplex
 
       These methods use the Simplex algorithm of Nelder and Mead. 
-      Starting from the initial vector :math:`:data:`x` = p_0`, the algorithm
+      Starting from the initial vector :math:`x = p_0`, the algorithm
       constructs an additional :math:`n` vectors :math:`p_i`
       using the step size vector :math:`s = step\_size`
       as follows:

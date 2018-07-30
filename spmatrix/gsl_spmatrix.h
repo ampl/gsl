@@ -106,7 +106,12 @@ typedef struct
    * workspace of size MAX(size1,size2)*MAX(sizeof(double),sizeof(size_t))
    * used in various routines
    */
-  void *work;
+  union
+    {
+      void *work;
+      size_t *work_sze;
+      double *work_dbl;
+    };
 
   size_t sptype; /* sparse storage type */
 } gsl_spmatrix;

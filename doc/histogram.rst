@@ -1117,4 +1117,7 @@ a higher resolution grid we can see the original underlying histogram
 and also the statistical fluctuations caused by the events being
 uniformly distributed over the area of the original bins.
 
-@image{histogram2d,3.4in}
+.. figure:: /images/histogram2d.png
+   :scale: 60%
+
+   Distribution of simulated events from example program

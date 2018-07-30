@@ -96,20 +96,22 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgslstatistics_la_LIBADD =
 am_libgslstatistics_la_OBJECTS = mean.lo variance.lo absdev.lo skew.lo \
-	kurtosis.lo lag1.lo p_variance.lo minmax.lo ttest.lo median.lo \
-	covariance.lo quantiles.lo wmean.lo wvariance.lo wabsdev.lo \
+	kurtosis.lo lag1.lo p_variance.lo minmax.lo ttest.lo mad.lo \
+	median.lo covariance.lo quantiles.lo select.lo Sn.lo Qn.lo \
+	gastwirth.lo trmean.lo wmean.lo wvariance.lo wabsdev.lo \
 	wskew.lo wkurtosis.lo
 libgslstatistics_la_OBJECTS = $(am_libgslstatistics_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_test_OBJECTS = test.$(OBJEXT) test_nist.$(OBJEXT)
+am_test_OBJECTS = test.$(OBJEXT) test_nist.$(OBJEXT) \
+	test_robust.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_DEPENDENCIES = libgslstatistics.la ../sort/libgslsort.la \
 	../ieee-utils/libgslieeeutils.la ../err/libgslerr.la \
-	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la \
-	../vector/libgslvector.la
+	../rng/libgslrng.la ../test/libgsltest.la ../sys/libgslsys.la \
+	../utils/libutils.la ../vector/libgslvector.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -524,11 +526,11 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslstatistics.la
 pkginclude_HEADERS = gsl_statistics.h gsl_statistics_char.h gsl_statistics_double.h gsl_statistics_float.h gsl_statistics_int.h gsl_statistics_long.h gsl_statistics_long_double.h gsl_statistics_short.h gsl_statistics_uchar.h gsl_statistics_uint.h gsl_statistics_ulong.h gsl_statistics_ushort.h
 AM_CPPFLAGS = -I$(top_srcdir)
-libgslstatistics_la_SOURCES = mean.c variance.c absdev.c skew.c kurtosis.c lag1.c p_variance.c minmax.c ttest.c median.c covariance.c quantiles.c wmean.c wvariance.c wabsdev.c wskew.c wkurtosis.c
-noinst_HEADERS = mean_source.c variance_source.c covariance_source.c absdev_source.c skew_source.c kurtosis_source.c lag1_source.c p_variance_source.c minmax_source.c ttest_source.c median_source.c quantiles_source.c wmean_source.c wvariance_source.c wabsdev_source.c wskew_source.c wkurtosis_source.c test_float_source.c test_int_source.c
+libgslstatistics_la_SOURCES = mean.c variance.c absdev.c skew.c kurtosis.c lag1.c p_variance.c minmax.c ttest.c mad.c median.c covariance.c quantiles.c select.c Sn.c Qn.c gastwirth.c trmean.c wmean.c wvariance.c wabsdev.c wskew.c wkurtosis.c
+noinst_HEADERS = mean_source.c variance_source.c covariance_source.c absdev_source.c skew_source.c kurtosis_source.c lag1_source.c p_variance_source.c minmax_source.c ttest_source.c mad_source.c median_source.c quantiles_source.c select_source.c Sn_source.c Qn_source.c gastwirth_source.c trmean_source.c wmean_source.c wvariance_source.c wabsdev_source.c wskew_source.c wkurtosis_source.c test_float_source.c test_int_source.c
 TESTS = $(check_PROGRAMS)
-test_SOURCES = test.c test_nist.c
-test_LDADD = libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la ../vector/libgslvector.la
+test_SOURCES = test.c test_nist.c test_robust.c
+test_LDADD = libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../rng/libgslrng.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la ../vector/libgslvector.la
 all: all-am
 
 .SUFFIXES:
@@ -597,18 +599,25 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Qn.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sn.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/absdev.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/covariance.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gastwirth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kurtosis.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lag1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mad.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mean.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/median.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minmax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/p_variance.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quantiles.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/skew.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_nist.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_robust.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trmean.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ttest.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variance.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wabsdev.Plo@am__quote@

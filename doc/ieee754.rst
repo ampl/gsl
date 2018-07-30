@@ -310,7 +310,7 @@ logarithms, by summing a rapidly-decreasing series,
 
    .. math::
 
-      e &= 1 + {1 \over 2!} + {1 \over 3!} + {1 \over 4!} + \dots \\
+      e &= {1 \over 0!} + {1 \over 1!} + {1 \over 2!} + {1 \over 3!} + {1 \over 4!} + \dots \\
         &= 2.71828182846...
 
 .. only:: texinfo

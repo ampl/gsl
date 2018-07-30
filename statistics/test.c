@@ -30,6 +30,7 @@
 #include <gsl/gsl_ieee_utils.h>
 
 int test_nist (void);
+int test_robust (void);
 
 /* Test program for mean.c.  JimDavies 7.96 */
 
@@ -126,6 +127,7 @@ main (void)
     }
 
   test_nist();
+  test_robust();
 
   exit (gsl_test_summary ());
 }

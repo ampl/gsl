@@ -7,11 +7,12 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_multifit_nlinear.h>
 
-/* number of data points to fit */
-#define N 40
+#define N      100    /* number of data points to fit */
+#define TMAX   (40.0) /* time variable in [0,TMAX] */
 
 struct data {
   size_t n;
+  double * t;
   double * y;
 };
 
@@ -20,6 +21,7 @@ expb_f (const gsl_vector * x, void *data,
         gsl_vector * f)
 {
   size_t n = ((struct data *)data)->n;
+  double *t = ((struct data *)data)->t;
   double *y = ((struct data *)data)->y;
 
   double A = gsl_vector_get (x, 0);
@@ -30,9 +32,8 @@ expb_f (const gsl_vector * x, void *data,
 
   for (i = 0; i < n; i++)
     {
-      /* Model Yi = A * exp(-lambda * i) + b */
-      double t = i;
-      double Yi = A * exp (-lambda * t) + b;
+      /* Model Yi = A * exp(-lambda * t_i) + b */
+      double Yi = A * exp (-lambda * t[i]) + b;
       gsl_vector_set (f, i, Yi - y[i]);
     }
 
@@ -44,6 +45,7 @@ expb_df (const gsl_vector * x, void *data,
          gsl_matrix * J)
 {
   size_t n = ((struct data *)data)->n;
+  double *t = ((struct data *)data)->t;
 
   double A = gsl_vector_get (x, 0);
   double lambda = gsl_vector_get (x, 1);
@@ -54,14 +56,14 @@ expb_df (const gsl_vector * x, void *data,
     {
       /* Jacobian matrix J(i,j) = dfi / dxj, */
       /* where fi = (Yi - yi)/sigma[i],      */
-      /*       Yi = A * exp(-lambda * i) + b  */
+      /*       Yi = A * exp(-lambda * t_i) + b  */
       /* and the xj are the parameters (A,lambda,b) */
-      double t = i;
-      double e = exp(-lambda * t);
+      double e = exp(-lambda * t[i]);
       gsl_matrix_set (J, i, 0, e); 
-      gsl_matrix_set (J, i, 1, -t * A * e);
+      gsl_matrix_set (J, i, 1, -t[i] * A * e);
       gsl_matrix_set (J, i, 2, 1.0);
     }
+
   return GSL_SUCCESS;
 }
 
@@ -99,8 +101,8 @@ main (void)
   gsl_vector *f;
   gsl_matrix *J;
   gsl_matrix *covar = gsl_matrix_alloc (p, p);
-  double y[N], weights[N];
-  struct data d = { n, y };
+  double t[N], y[N], weights[N];
+  struct data d = { n, t, y };
   double x_init[3] = { 1.0, 1.0, 0.0 }; /* starting values */
   gsl_vector_view x = gsl_vector_view_array (x_init, p);
   gsl_vector_view wts = gsl_vector_view_array(weights, n);
@@ -127,14 +129,15 @@ main (void)
   /* this is the data to be fitted */
   for (i = 0; i < n; i++)
     {
-      double t = i;
-      double yi = 1.0 + 5 * exp (-0.1 * t);
+      double ti = i * TMAX / (n - 1.0);
+      double yi = 1.0 + 5 * exp (-0.1 * ti);
       double si = 0.1 * yi;
       double dy = gsl_ran_gaussian(r, si);
 
-      weights[i] = 1.0 / (si * si);
+      t[i] = ti;
       y[i] = yi + dy;
-      printf ("data: %zu %g %g\n", i, y[i], si);
+      weights[i] = 1.0 / (si * si);
+      printf ("data: %g %g %g\n", ti, y[i], si);
     };
 
   /* allocate workspace with default parameters */
@@ -147,8 +150,8 @@ main (void)
   f = gsl_multifit_nlinear_residual(w);
   gsl_blas_ddot(f, f, &chisq0);
 
-  /* solve the system with a maximum of 20 iterations */
-  status = gsl_multifit_nlinear_driver(20, xtol, gtol, ftol,
+  /* solve the system with a maximum of 100 iterations */
+  status = gsl_multifit_nlinear_driver(100, xtol, gtol, ftol,
                                        callback, NULL, &info, w);
 
   /* compute covariance of best fit parameters */

@@ -2758,6 +2758,7 @@ int main(int argc, char * argv[])
   gsl_test(test_pow_int(),     "Integer Powers");
   gsl_test(test_psi(),         "Psi Functions");
   gsl_test(test_psi_complex(), "Psi Function for complex argument");
+  gsl_test(test_sincos_pi(),   "sin_pi and cos_pi");
   gsl_test(test_synch(),       "Synchrotron Functions");
   gsl_test(test_transport(),   "Transport Functions");
   gsl_test(test_trig(),        "Trigonometric and Related Functions");

@@ -21,6 +21,7 @@
 #define __GSL_STATISTICS_CHAR_H__
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -72,8 +73,23 @@ size_t gsl_stats_char_max_index (const char data[], const size_t stride, const s
 size_t gsl_stats_char_min_index (const char data[], const size_t stride, const size_t n);
 void gsl_stats_char_minmax_index (size_t * min_index, size_t * max_index, const char data[], const size_t stride, const size_t n);
 
+char gsl_stats_char_select(char data[], const size_t stride, const size_t n, const size_t k);
+
 double gsl_stats_char_median_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_char_median (char sorted_data[], const size_t stride, const size_t n);
 double gsl_stats_char_quantile_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n, const double f) ;
+
+double gsl_stats_char_trmean_from_sorted_data (const double trim, const char sorted_data[], const size_t stride, const size_t n) ;
+double gsl_stats_char_gastwirth_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n) ;
+
+double gsl_stats_char_mad0(const char data[], const size_t stride, const size_t n, double work[]);
+double gsl_stats_char_mad(const char data[], const size_t stride, const size_t n, double work[]);
+
+char gsl_stats_char_Sn0_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n, char work[]) ;
+double gsl_stats_char_Sn_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n, char work[]) ;
+
+char gsl_stats_char_Qn0_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n, char work[], int work_int[]) ;
+double gsl_stats_char_Qn_from_sorted_data (const char sorted_data[], const size_t stride, const size_t n, char work[], int work_int[]) ;
 
 __END_DECLS
 

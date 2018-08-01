@@ -109,6 +109,24 @@ int gsl_ran_multivariate_gaussian_pdf (const gsl_vector * x,
 int gsl_ran_multivariate_gaussian_mean (const gsl_matrix * X, gsl_vector * mu_hat);
 int gsl_ran_multivariate_gaussian_vcov (const gsl_matrix * X, gsl_matrix * sigma_hat);
 
+int gsl_ran_wishart (const gsl_rng * r,
+                     const double df,
+                     const gsl_matrix * L,
+                     gsl_matrix * result,
+                     gsl_matrix * work);
+int gsl_ran_wishart_log_pdf (const gsl_matrix * X,
+                             const gsl_matrix * L_X,
+                             const double df,
+                             const gsl_matrix * L,
+                             double * result,
+                             gsl_matrix * work);
+int gsl_ran_wishart_pdf (const gsl_matrix * X,
+                         const gsl_matrix * L_X,
+                         const double df,
+                         const gsl_matrix * L,
+                         double * result,
+                         gsl_matrix * work);
+
 double gsl_ran_landau (const gsl_rng * r);
 double gsl_ran_landau_pdf (const double x);
 

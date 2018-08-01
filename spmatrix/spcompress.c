@@ -71,7 +71,7 @@ gsl_spmatrix_ccs(const gsl_spmatrix *T)
       gsl_spmatrix_cumsum(m->size2, Cp);
 
       /* make a copy of the column pointers */
-      w = (size_t *) m->work;
+      w = m->work_sze;
       for (n = 0; n < m->size2; ++n)
         w[n] = Cp[n];
 
@@ -142,7 +142,7 @@ gsl_spmatrix_crs(const gsl_spmatrix *T)
       gsl_spmatrix_cumsum(m->size1, Cp);
 
       /* make a copy of the row pointers */
-      w = (size_t *) m->work;
+      w = m->work_sze;
       for (n = 0; n < m->size1; ++n)
         w[n] = Cp[n];
 

@@ -29,6 +29,8 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_ieee_utils.h>
 
+int test_nist (void);
+
 int
 test_nist (void)
 {

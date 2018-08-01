@@ -103,8 +103,8 @@ gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
   else
     {
       int status = GSL_SUCCESS;
-      size_t *w = (size_t *) a->work;
-      double *x = (double *) b->work;
+      size_t *w = a->work_sze;
+      double *x = c->work_dbl;
       size_t *Cp, *Ci;
       double *Cd;
       size_t j, p;

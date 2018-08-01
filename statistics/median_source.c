@@ -42,3 +42,26 @@ FUNCTION(gsl_stats,median_from_sorted_data) (const BASE sorted_data[],
   return median ;
 }
 
+double
+FUNCTION(gsl_stats,median) (BASE data[], const size_t stride, const size_t n)
+{
+  double median;
+  const size_t lhs = (n - 1) / 2 ;
+  const size_t rhs = n / 2 ;
+  
+  if (n == 0)
+    return 0.0;
+
+  if (lhs == rhs)
+    {
+      median = (double) FUNCTION(gsl_stats,select)(data, stride, n, lhs);
+    }
+  else 
+    {
+      BASE a = FUNCTION(gsl_stats,select)(data, stride, n, lhs);
+      BASE b = FUNCTION(gsl_stats,select)(data, stride, n, rhs);
+      median = 0.5 * (a + b);
+    }
+
+  return median;
+}

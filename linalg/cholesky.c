@@ -184,6 +184,62 @@ gsl_linalg_cholesky_svx (const gsl_matrix * LLT,
     }
 }
 
+int
+gsl_linalg_cholesky_solve_mat (const gsl_matrix * LLT,
+                               const gsl_matrix * B,
+                               gsl_matrix * X)
+{
+  if (LLT->size1 != LLT->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (LLT->size1 != B->size1)
+    {
+      GSL_ERROR ("matrix size must match B size", GSL_EBADLEN);
+    }
+  else if (LLT->size2 != X->size1)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+
+      /* copy X <- B */
+      gsl_matrix_memcpy (X, B);
+
+      status = gsl_linalg_cholesky_svx_mat(LLT, X);
+
+      return status;
+    }
+}
+
+int
+gsl_linalg_cholesky_svx_mat (const gsl_matrix * LLT,
+                             gsl_matrix * X)
+{
+  if (LLT->size1 != LLT->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (LLT->size2 != X->size1)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      /* solve for C using forward-substitution, L C = B */
+      gsl_blas_dtrsm (CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit, 1.0,
+                      LLT, X);
+
+      /* perform back-substitution, L^T X = C */
+      gsl_blas_dtrsm (CblasLeft, CblasLower, CblasTrans, CblasNonUnit, 1.0,
+                      LLT, X);
+
+      return GSL_SUCCESS;
+    }
+}
+
 /*
 gsl_linalg_cholesky_invert()
   Compute the inverse of a symmetric positive definite matrix in

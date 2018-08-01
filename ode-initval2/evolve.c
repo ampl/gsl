@@ -140,22 +140,22 @@ gsl_odeiv2_evolve_apply (gsl_odeiv2_evolve * e,
 
   /* Calculate initial dydt once or reuse previous value if the method
      can benefit. */
-  
+
   if (step->type->can_use_dydt_in)
     {
       if (e->count == 0)
-	{
-	  int status = GSL_ODEIV_FN_EVAL (dydt, t0, y, e->dydt_in);
+        {
+          int status = GSL_ODEIV_FN_EVAL (dydt, t0, y, e->dydt_in);
 
-	  if (status)
-	    {
-	      return status;
-	    }
-	}
+          if (status)
+            {
+              return status;
+            }
+        }
       else
-	{
-	  DBL_MEMCPY (e->dydt_in, e->dydt_out, e->dimension);
-	}
+        {
+          DBL_MEMCPY (e->dydt_in, e->dydt_out, e->dimension);
+        }
     }
 
 try_step:
@@ -200,6 +200,10 @@ try_step:
 
       h0 *= 0.5;
 
+#ifdef DEBUG
+      printf ("-- gsl_odeiv2_evolve_apply h0=%.5e\n", h0);
+#endif
+
       /* Check that an actual decrease in h0 occured and the
          suggested h0 will change the time by at least 1 ulp */
 
@@ -209,17 +213,22 @@ try_step:
 
         if (fabs (h0) < fabs (h_old) && t_next != t_curr)
           {
-            
+
             /* Step was decreased. Undo step, and try again with new h0. */
-            
+
             DBL_MEMCPY (y, e->y0, dydt->dimension);
             e->failed_steps++;
             goto try_step;
           }
         else
           {
-            *h = h0;              /* notify user of step-size which caused the failure */
-            *t = t0;              /* restore original t value */
+#ifdef DEBUG
+            printf
+              ("-- gsl_odeiv2_evolve_apply h0=%.5e, t0=%.5e, step_status=%d\n",
+               h0, t0, step_status);
+#endif
+            *h = h0;            /* notify user of step-size which caused the failure */
+            *t = t0;            /* restore original t value */
             return step_status;
           }
       }

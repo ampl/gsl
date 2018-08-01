@@ -275,22 +275,18 @@ gsl_multilarge_nlinear_test (const double xtol, const double gtol,
                              const gsl_multilarge_nlinear_workspace * w);
 
 /* fdjac.c */
-/*
 int
 gsl_multilarge_nlinear_df(const double h, const gsl_multilarge_nlinear_fdtype fdtype,
                           const gsl_vector *x, const gsl_vector *wts,
                           gsl_multilarge_nlinear_fdf *fdf,
                           const gsl_vector *f, gsl_matrix *J, gsl_vector *work);
-						  */
 
 /* fdfvv.c */
-/*
 int
 gsl_multilarge_nlinear_fdfvv(const double h, const gsl_vector *x, const gsl_vector *v,
                              const gsl_vector *f, const gsl_matrix *J,
                              const gsl_vector *swts, gsl_multilarge_nlinear_fdf *fdf,
                              gsl_vector *fvv, gsl_vector *work);
-							 */
 
 /* top-level algorithms */
 GSL_VAR const gsl_multilarge_nlinear_type * gsl_multilarge_nlinear_trust;

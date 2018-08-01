@@ -15,7 +15,7 @@ test_SOURCES = test.c
 
 test_static_SOURCES = test_static.c
 
-CLEANFILES = test.txt test.dat
+CLEANFILES = test.txt test.dat test_static.dat
 
 noinst_HEADERS = init_source.c file_source.c rowcol_source.c swap_source.c copy_source.c test_complex_source.c test_source.c minmax_source.c prop_source.c oper_source.c getset_source.c view_source.c submatrix_source.c oper_complex_source.c
 

@@ -20,7 +20,8 @@
 /* the code in this module performs fixed-point quadrature calculations for
  * integrands and is based on IQPACK */
 
-#include <stdio.h>
+#include <config.h>
+#include <stdlib.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>

@@ -259,29 +259,25 @@ typedef struct
 gsl_integration_glfixed_table;
 
 
-gsl_integration_glfixed_table *
-  gsl_integration_glfixed_table_alloc (size_t n);
+gsl_integration_glfixed_table * gsl_integration_glfixed_table_alloc (size_t n);
 
-void
-  gsl_integration_glfixed_table_free (gsl_integration_glfixed_table * t);
+void gsl_integration_glfixed_table_free (gsl_integration_glfixed_table * t);
 
 /* Routine for fixed-order Gauss-Legendre integration */
 
-double
-  gsl_integration_glfixed (const gsl_function *f,
-                           double a,
-                           double b,
-                           const gsl_integration_glfixed_table * t);
+double gsl_integration_glfixed (const gsl_function *f,
+                                double a,
+                                double b,
+                                const gsl_integration_glfixed_table * t);
 
 /* Routine to retrieve the i-th Gauss-Legendre point and weight from t */
 
-int
-  gsl_integration_glfixed_point (double a,
-                                 double b,
-                                 size_t i,
-                                 double *xi,
-                                 double *wi,
-                                 const gsl_integration_glfixed_table * t);
+int gsl_integration_glfixed_point (double a,
+                                   double b,
+                                   size_t i,
+                                   double *xi,
+                                   double *wi,
+                                   const gsl_integration_glfixed_table * t);
 
 
 /* Cquad integration - Pedro Gonnet */
@@ -316,6 +312,21 @@ gsl_integration_cquad (const gsl_function * f, double a, double b,
 		                   double epsabs, double epsrel,
 		                   gsl_integration_cquad_workspace * ws,
 		                   double *result, double *abserr, size_t * nevals);
+
+/* Romberg integration workspace and routines */
+
+typedef struct
+{
+  size_t n;       /* maximum number of steps */
+  double *work1;  /* workspace for a row of R matrix, size n */
+  double *work2;  /* workspace for a row of R matrix, size n */
+} gsl_integration_romberg_workspace;
+
+gsl_integration_romberg_workspace *gsl_integration_romberg_alloc(const size_t n);
+void gsl_integration_romberg_free(gsl_integration_romberg_workspace * w);
+int gsl_integration_romberg(const gsl_function * f, const double a, const double b,
+                            const double epsabs, const double epsrel, double * result,
+                            size_t * neval, gsl_integration_romberg_workspace * w);
 
 /* IQPACK related structures and routines */
 

@@ -1,4 +1,63 @@
-* What is new in gsl-2.4:
+* What is new in gsl-2.5:
+
+** doc bug fix in binomial distribution figure (Damien Desfontaines)
+
+** added Wishart distribution (Timothée Flutre)
+
+** added new module for digital filtering (gsl_filter); current filters include:
+     Gaussian filter
+     median filter
+     recursive median filter
+     impulse detection filter
+
+** added new module for moving window statistics (gsl_movstat)
+
+** added statistics functions:
+     gsl_stats_median()
+     gsl_stats_select()
+     gsl_stats_mad()
+     gsl_stats_mad0()
+     gsl_stats_Sn_from_sorted_data()
+     gsl_stats_Qn_from_sorted_data()
+     gsl_stats_gastwirth_from_sorted_data()
+     gsl_stats_trmean_from_sorted_data()
+
+** added Romberg integration (gsl_integration_romberg)
+
+** bug fix in deprecated functions gsl_multifit_wlinear_svd and
+   gsl_multifit_wlinear_usvd (reported by Vlad Koli)
+
+** documention corrected to state that gsl_sf_legendre functions do
+   not include Condon-Shortley phase by default
+
+** bug fix in exponential fitting example when using larger number
+   of points (reported by Anna Russo)
+
+** changed internal workspace inside gsl_spmatrix to a union to
+   avoid casting (suggested by Manuel Schmitz)
+
+** bug fixes in ode-initval2 for very rare solver crashing cases:
+   #52230 in msadams (reported by Michael Kaufman) and
+   #52336 in msbdf (reported by Andrew Benson). As a fix,
+   the maximum scaling of controlled step length was decreased
+   from 5.0 to 4.9.
+
+** add histogram2d figure to manual (was missing in 2.4)
+
+** bug fix in gsl_spmatrix_add for duplicate input arguments
+   (reported by Alfredo Correa)
+
+** add support for negative arguments nu in gsl_sf_bessel_Jnu and
+   gsl_sf_bessel_Ynu (Konrad Griessinger)
+
+** better texinfo documentation for gsl_sf_hyperg functions
+
+** fix vector and matrix fread/fwrite testing on windows systems
+   when tmpfile() fails
+
+** fix for rstat/test.c on PPC64 (reported by Adam Majer)
+
+* What was new in gsl-2.4:
 
 ** migrated documentation to Sphinx software, which has built-in
    support for latex equations and figures in HTML output

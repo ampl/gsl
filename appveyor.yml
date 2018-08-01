@@ -6,7 +6,7 @@ clone_depth: 3
 
 environment:
   OMP_NUM_THREADS: 4
-  
+
 build_script:
 # we start at $(APPVEYOR_BUILD_FOLDER) = c:\projects\gsl
   - cd ..

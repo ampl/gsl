@@ -20,7 +20,7 @@ env:
     - CTEST=$VENDOR_DIR/cmake-${CMAKE_VER}/bin/ctest
     - OMP_NUM_THREADS=4
   matrix:
-  - WERROR=ON CMAKE_BUILD_TYPE=Debug COVERAGE=ON 
+  - WERROR=ON CMAKE_BUILD_TYPE=Debug COVERAGE=ON
   - WERROR=ON CMAKE_BUILD_TYPE=Release
 
 addons:

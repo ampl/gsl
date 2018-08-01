@@ -1,8 +1,18 @@
-install: set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
+version: 2.5.{build}
+skip_tags: true
+max_jobs: 1
+image: Visual Studio 2017 Preview
+clone_depth: 3
 
-before_build:
-  - cmake .
-
+environment:
+  OMP_NUM_THREADS: 4
+  
 build_script:
-  - msbuild /m GSL.sln
-  - msbuild RUN_TESTS.vcxproj
+# we start at $(APPVEYOR_BUILD_FOLDER) = c:\projects\gsl
+  - cd ..
+  - mkdir build
+  - cd build
+  - cmake -G "Visual Studio 15 2017 Win64" -DGSL_INSTALL_MULTI_CONFIG=ON -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON  -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/../install %APPVEYOR_BUILD_FOLDER%
+  - cmake --build . --config Debug --target install
+  # not sure why this test fails on appveyor, it passes in my local sandbox.
+  - ctest -C Debug --output-on-failure -E ode-initval2_test

@@ -4,13 +4,13 @@
 # 1. VS 2015, 32-bit static libs (run cmake from the $build_dir)
 #    cmake -G"Visual Studio 14 2015" -DGSL_INSTALL_MULTI_CONFIG=ON \
 #          [-DCMAKE_INSTALL_PREFIX=<path>] <path to gsl sources>
-#    cmake --build . --config Release [--target gsl|install]
+#    cmake --build . --config Release [--target gsl|install] [-j 8]
 #    ctest [-j <N>] [-VV]
 # 2. VS 2017, 64-bit shared libs and dynamic runtime
 #    cmake -G"Visual Studio 15 2017 Win64" -DGSL_INSTALL_MULTI_CONFIG=ON \
 #          -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON \
 #          <path to gsl sources>
-#    cmake --build . --config Release [--target gsl|install]
+#    cmake --build . --config Release [--target gsl|install] [-j 8]
 #    ctest [-j <N>] [-VV]
 # 3. Linux (run cmake from $build_dir)
 #    cmake <path to gsl sources>
@@ -544,7 +544,6 @@ endforeach ()
 # ${CONFIG_OUT}")
 configure_file(config.h.cmake.in ${GSL_BINARY_DIR}/config.h)
 
-include_directories(${GSL_BINARY_DIR} ${GSL_SOURCE_DIR})
 add_definitions(-DHAVE_CONFIG_H)
 
 if (GSL_DISABLE_WARNINGS)
@@ -681,20 +680,32 @@ set_target_properties(gsl
     COMPILE_DEFINITIONS DLL_EXPORT
     WINDOWS_EXPORT_ALL_SYMBOLS ON )
 target_link_libraries(gsl gslcblas)
-target_include_directories(gsl PUBLIC ${GSL_BINARY_DIR})
+target_include_directories(gslcblas
+  PUBLIC 
+    $<BUILD_INTERFACE:${GSL_BINARY_DIR}>
+    $<BUILD_INTERFACE:${GSL_SOURCE_DIR}> )
+target_include_directories(gsl 
+  PUBLIC $<BUILD_INTERFACE:${GSL_BINARY_DIR}>  )
 add_dependencies(gsl copy-headers)
 
 if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
-  if (MSVC AND GSL_INSTALL_MULTI_CONFIG)
-    foreach(config ${CMAKE_CONFIGURATION_TYPES})
-      install(TARGETS gsl gslcblas
-        CONFIGURATIONS ${config}
-        LIBRARY DESTINATION lib/${config}
-        RUNTIME DESTINATION bin/${config}
-        ARCHIVE DESTINATION lib/${config})
-    endforeach ()
+  if (MSVC AND GSL_INSTALL_MULTI_CONFIG)   
+    install(TARGETS gsl gslcblas
+      EXPORT "gsl-targets"
+      CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}
+      LIBRARY DESTINATION lib/$<CONFIG>
+      RUNTIME DESTINATION bin/$<CONFIG>
+      ARCHIVE DESTINATION lib/$<CONFIG>)
+    # For Debug under VS, also install the pdb files.
+    install(
+      FILES 
+        ${PROJECT_BINARY_DIR}/bin/Debug/gsl.pdb
+        ${PROJECT_BINARY_DIR}/bin/Debug/gslcblas.pdb
+      CONFIGURATIONS Debug 
+      DESTINATION bin/$<CONFIG>)
   else ()
     install(TARGETS gsl gslcblas
+      EXPORT "gsl-targets"
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin
       ARCHIVE DESTINATION lib)
@@ -725,5 +736,26 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
 
   # Install gsl-config
   install(PROGRAMS ${CMAKE_BINARY_DIR}/gsl-config DESTINATION bin)
+  
+  # Create cmake files that can be used to import GSL into another project. 
+  include(CMakePackageConfigHelpers)
+  install( 
+    EXPORT gsl-targets
+    DESTINATION lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION}
+    NAMESPACE GSL:: )
+  configure_package_config_file(
+    ${CMAKE_SOURCE_DIR}/cmake/${PACKAGE_NAME}-config.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config.cmake
+    INSTALL_DESTINATION cmake/${PACKAGE_NAME} )
+  write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config-version.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY SameMajorVersion )
+  install(
+    FILES
+      ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config.cmake
+      ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config-version.cmake
+    DESTINATION 
+      lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION} )
 
 endif ()

@@ -78,7 +78,7 @@ gsl_integration_qag (const gsl_function *f,
       integration_rule = gsl_integration_qk61 ;
       break ;      
     default:
-      GSL_ERROR("value of key does specify a known integration rule", 
+      GSL_ERROR("value of key does not specify a known integration rule", 
                 GSL_EINVAL) ;
     }
 

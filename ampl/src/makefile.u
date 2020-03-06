@@ -1,0 +1,29 @@
+# For Linux
+
+.SUFFIXES: .c .o
+
+# $S = ampl/solvers directory
+S = ..
+CC = cc
+GSLdir = gsl
+GSLinclude = $(GSLdir)/gsl
+GSLlibdir = $(GSLdir)
+CFLAGS = -fPIC -I$S -I$(GSLdir) -I$(GSLinclude) -O2
+
+.c.o:
+	$(CC) -c $(CFLAGS) $*.c
+
+all: amplgsl.dll gsl.ampl
+
+amplgsl.dll: amplgsl.o default.o
+	$(CC) -shared -o amplgsl.dll amplgsl.o $(GSLlibdir)/libgsl.a $(GSLlibdir)/libgslcblas.a
+
+# variant for using shared GSL libs:
+#	$(CC) -shared -o amplgsl.dll amplgsl.o -L$(GSLlibdir) -lgsl -lgslcblas
+
+gen-decls: gen-decls.o
+	$(CC) -o gen-decls gen-decls.o amplgsl.dll -lm
+
+gsl.ampl: gen-decls
+	LD_LIBRARY_PATH=. ./gen-decls > gsl.ampl
+

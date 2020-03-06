@@ -3,3 +3,4 @@ CMakeFiles
 build-*/
 gsl.def
 *.nupkg
+/build

@@ -1,0 +1,14 @@
+BUILTINS =
+NPROC = 1
+G = /home/dmg/Downloads/gsl-1.15
+S = /home/dmg/h/solvers
+CC = cc -m32
+g = -O2
+L = lib32
+CFLAGS = -I$S -I$G/include -fPIC $g
+
+amplgsl.dll: amplgsl.c default.c
+	$CC $CFLAGS -shared -o $target $prereq $G/$L/libgsl.a $G/$L/libgslcblas.a -lm
+
+amplgsl.o: amplgsl.c
+	$CC -c $CFLAGS $prereq

@@ -1,4 +1,6 @@
-# CMake build script for the GNU Scientific Library.
+# CMake build script for the GNU Scientific Library and AMPL bindings
+# Define the variable NO_AMPL_BINDINGS to skip generation of the AMPL bindings,
+# note that in this case, the submodule ASL is not needed
 
 # Examples:
 # 1. VS 2015, 32-bit static libs (run cmake from the $build_dir)
@@ -687,7 +689,6 @@ target_include_directories(gslcblas
 target_include_directories(gsl 
   PUBLIC $<BUILD_INTERFACE:${GSL_BINARY_DIR}>  )
 add_dependencies(gsl copy-headers)
-
 if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   if (MSVC AND GSL_INSTALL_MULTI_CONFIG)   
     install(TARGETS gsl gslcblas
@@ -757,5 +758,12 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config-version.cmake
     DESTINATION 
       lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION} )
-
 endif ()
+if(NOT MSVC)
+    target_compile_options(gsl PRIVATE -fPIC)
+    target_compile_options(gslcblas PRIVATE -fPIC)
+endif()
+
+if(NOT DEFINED NO_AMPL_BINDINGS)
+  add_subdirectory(ampl)
+endif()

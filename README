@@ -27,9 +27,7 @@ AMPL bindings and CMake support
 
 This repository adds CMake support and AMPL bindings (AMPLGSL) to the GSL distribution. 
 Detailed instructions on how to use CMake to support compilation of GSL can 
-be found in the main `CMake build script`__. 
-
-__ https://github.com/ampl/gsl/blob/master/CMakeLists.txt
+be found in the main CMake build script (https://github.com/ampl/gsl/blob/master/CMakeLists.txt)
 
 CMake works by generating native makefiles or project files that can
 be used in the compiler environment of your choice. The typical
@@ -49,7 +47,7 @@ last shell statement with::
 
   cmake -DARCH=64 -DNO_AMPL_BINDINGS=true ..
 
-Documentation about the AMPL bindings can be found at the `AMPLGSL documentation <http://ampl.github.io/amplgsl>`.
+Documentation about the AMPL bindings can be found at the http://ampl.github.io/amplgsl.
 
 Installation
 ============

@@ -1,5 +1,5 @@
-GSL - GNU Scientific Library
-============================
+GSL - GNU Scientific Library and AMPL bindings
+==============================================
 
 This is GSL, the GNU Scientific Library, a collection of numerical
 routines for scientific computing.
@@ -21,6 +21,35 @@ The current stable version of GSL is always available from ftp.gnu.org
 in the directory /pub/gnu/gsl.
 
 A list of mirror sites can be found at http://www.gnu.org/order/ftp.html
+
+AMPL bindings and CMake support
+===============================
+
+This repository adds CMake support and AMPL bindings (AMPLGSL) to the GSL distribution. 
+Detailed instructions on how to use CMake to support compilation of GSL can 
+be found in the main `CMake build script`__. 
+
+__ https://github.com/ampl/gsl/blob/master/CMakeLists.txt
+
+CMake works by generating native makefiles or project files that can
+be used in the compiler environment of your choice. The typical
+workflow starts with::
+
+  git clone https://github.com/ampl/gsl.git
+  cd gsl
+  git submodule init 
+  git submodule update
+  mkdir build  # Create a directory to hold the build output.
+  cd build
+  cmake -DARCH=64 ..  # Generate native build scripts.
+
+Please note that if no AMPL bindings are needed,the ASL dependency can be avoided by 
+defining the cmake variable `NO_AMPL_BINDINGS`, which can be done by replacing the 
+last shell statement with::
+
+  cmake -DARCH=64 -DNO_AMPL_BINDINGS=true ..
+
+Documentation about the AMPL bindings can be found at the `AMPLGSL documentation <http://ampl.github.io/amplgsl>`.
 
 Installation
 ============

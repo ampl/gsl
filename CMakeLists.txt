@@ -1,6 +1,6 @@
 # CMake build script for the GNU Scientific Library and AMPL bindings
-# Define the variable NO_AMPL_BINDINGS to skip generation of the AMPL bindings,
-# note that in this case, the submodule ASL is not needed
+# Define the variable NO_AMPL_BINDINGS to skip generation of the AMPL bindings;
+# this case, the submodule ASL is not needed
 
 # Examples:
 # 1. VS 2015, 32-bit static libs (run cmake from the $build_dir)
@@ -10,6 +10,18 @@
 #    ctest [-j <N>] [-VV]
 # 2. VS 2017, 64-bit shared libs and dynamic runtime
 #    cmake -G"Visual Studio 15 2017 Win64" -DGSL_INSTALL_MULTI_CONFIG=ON \
+#          -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON \
+#          <path to gsl sources>
+#    cmake --build . --config Release [--target gsl|install] [-j 8]
+#    ctest [-j <N>] [-VV]
+# 2. VS 2019, 64-bit shared libs and dynamic runtime
+#    cmake -G"Visual Studio 16 2019" -DGSL_INSTALL_MULTI_CONFIG=ON \
+#          -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON \
+#          <path to gsl sources>
+#    cmake --build . --config Release [--target gsl|install] [-j 8]
+#    ctest [-j <N>] [-VV]
+# 2. VS 2019, 32-bit shared libs and dynamic runtime
+#    cmake -G"Visual Studio 16 2019" -A Win32 -DGSL_INSTALL_MULTI_CONFIG=ON \
 #          -DBUILD_SHARED_LIBS=ON -DMSVC_RUNTIME_DYNAMIC=ON \
 #          <path to gsl sources>
 #    cmake --build . --config Release [--target gsl|install] [-j 8]

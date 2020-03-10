@@ -62,6 +62,23 @@ set(PACKAGE_URL "")
 set(LT_OBJDIR ".libs/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
+# If submodule is present, use its cmake infrastructure
+# to allow for painless 32 bits builds on 64 bits
+set(ASL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ampl/thirdparty/asl)
+if (EXISTS ${ASL_DIR}/CMakeLists.txt)
+  set(AMPL_CMAKE_MODULE_DIR ${ASL_DIR}/support/cmake)
+  message("AMPL_CMAKE_MODULE_DIR ${AMPL_CMAKE_MODULE_DIR}")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${AMPL_CMAKE_MODULE_DIR})
+  # Define the ARCH variable (32 or 64)
+  include(initArchitecture)
+  # Set generic architecture compiler flags
+  include(setArchitecture)
+  getArchitectureFlags(${ARCH} CCFLAGS LLFLAGS)
+  add_compile_options(${CCFLAGS})
+  add_link_options(${LLFLAGS})
+endif()
+
+
 # The following part of config.h is hard to derive from configure.ac.
 string(REGEX MATCHALL "[^\n]*\n" CONFIG
 "/* Define if you have inline with C99 behavior */

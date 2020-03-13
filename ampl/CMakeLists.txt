@@ -35,36 +35,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gsl.ampl
     DESTINATION ${AMPL_LIBRARY_DIR})
 
  # Helper library from mp
-find_package(Threads)
-include(CheckCXXCompilerFlag)
-check_cxx_source_compiles("
-  #include <initializer_list>
-  int main() {}" MP_INITIALIZER_LISTS)
-if (NOT MP_VARIADIC_TEMPLATES OR NOT MP_INITIALIZER_LISTS)
-  add_definitions(-DGTEST_LANG_CXX11=0)
-endif ()
-set(MP_TEST_SOURCES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mptest/function.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mptest/format.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mptest/test-main.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gmock/gmock-gtest-all.cc)
-add_library(amplgsl-test-support STATIC ${MP_TEST_SOURCES})
-target_include_directories(amplgsl-test-support PRIVATE 
-   ${ASL1_INCLUDE_DIRS})
-target_link_libraries(amplgsl-test-support PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(amplgsl-test-support PUBLIC 
-   ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mptest
-   ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
-# Workaround GTest bug https://github.com/google/googletest/issues/705.
-check_cxx_compiler_flag(
-  -fno-delete-null-pointer-checks HAVE_FNO_DELETE_NULL_POINTER_CHECKS)
-if (HAVE_FNO_DELETE_NULL_POINTER_CHECKS)
-  target_compile_options(amplgsl-test-support PUBLIC -fno-delete-null-pointer-checks)
-endif ()
-# Workaround a bug in implementation of variadic templates in MSVC11.
-if (MSVC)
-  target_compile_definitions(amplgsl-test-support PUBLIC _VARIADIC_MAX=10)
-endif ()
+add_subdirectory(thirdparty/test-support)
 
 # Test target
 add_executable(amplgsl-test test/gsl-test.cc)
@@ -72,7 +43,7 @@ if (MINGW)
    set_target_properties(amplgsl-test PROPERTIES
      LINK_FLAGS "-static-libgcc -static-libstdc++")
 endif()
-target_link_libraries(amplgsl-test amplgsl amplgsl-test-support)
+target_link_libraries(amplgsl-test amplgsl test-support)
 if(MSVC)
     target_compile_options(amplgsl-test PRIVATE /bigobj)
 endif()

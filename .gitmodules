@@ -1,0 +1,3 @@
+[submodule "ampl/thirdparty/asl"]
+	path = ampl/thirdparty/asl
+	url = https://github.com/ampl/asl.git

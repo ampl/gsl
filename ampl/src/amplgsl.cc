@@ -29,6 +29,7 @@
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_trig.h>
 #include <gsl/gsl_version.h>
 
 #include "funcadd.h"
@@ -2555,7 +2556,37 @@ static double amplgsl_sf_transport_5(arglist *al) {
   return check_result(al, gsl_sf_transport_5(x));
 }
 
+
+static double amplgsl_sf_sinc(arglist* al) {
+  double x = al->ra[0];
+  double sinc = gsl_sf_sinc(x);
+  if (x != 0)
+  {
+    double pix = M_PI * x;
+    double cospi = cos(pix);
+    double xsquare = gsl_sf_pow_int(x, 2);
+    if (al->derivs) {
+      *al->derivs = ((cospi * M_PI) - sinc) / x;
+      if (al->hes) {
+        *al->hes = -(sinc * gsl_sf_pow_int(M_PI,2)) + 2 * (sinc / xsquare) 
+          - 2 * (cospi) / xsquare;
+      }
+    }
+  }
+  else
+  {
+    if (al->derivs) {
+      *al->derivs = 0;
+      if (al->hes) {
+        *al->hes = -1 / 3;
+      }
+    }
+  }
+  return check_result(al, sinc);
+}
+
 static double amplgsl_sf_zeta_int(arglist *al) {
+  
   if (!check_int_arg(al, 0, "n"))
     return 0;
   return check_result(al, gsl_sf_zeta_int((int)al->ra[0]));
@@ -5285,8 +5316,29 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    */
   ADDFUNC(gsl_sf_transport_5, 1);
 
-  /* AMPL has built-in trigonometric functions so wrappers
-     are not provided for their GSL equivalents. */
+  
+
+  /**
+  * @file trig
+  *
+  * Trigonometric Functions
+  * =======================
+  *
+  * A subset of the trigonometric functions defined in GSL is exported here
+  *
+  * .. index:: trigonometric functions
+  */
+
+  /**
+ * .. function:: gsl_sf_sinc(x)
+ *
+ *  This routine computes the :index:`Sinc function`
+ *
+ *  .. math::
+ *    \operatorname{Si}(x) = \int_0^x \sin(t)/t dt.
+ */
+  ADDFUNC(gsl_sf_sinc, 1);
+
 
   /**
    * @file zeta

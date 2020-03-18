@@ -3,6 +3,11 @@ add_subdirectory(thirdparty/asl)
 # Install location
 set(AMPL_LIBRARY_DIR gsl)
 
+if (MSVC)
+  # Disable useless MSVC warnings suggesting nonportable "secure" alternatives.
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+endif ()
+
 # Macro to build an AMPL library (links with ASL and has dll extension)
 macro(add_ampl_library name)
   cmake_parse_arguments(add_ampl_library PRIVATE "" "" ${ARGN})

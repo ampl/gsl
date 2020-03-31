@@ -1041,7 +1041,7 @@ Resampling from 2D histograms
 As in the one-dimensional case, a two-dimensional histogram made by
 counting events can be regarded as a measurement of a probability
 distribution.  Allowing for statistical error, the height of each bin
-represents the probability of an event where (:math:`x`,:math:`y`) falls in
+represents the probability of an event where (:math:`x`, :math:`y`) falls in
 the range of that bin.  For a two-dimensional histogram the probability
 distribution takes the form :math:`p(x,y) dx dy` where,
 

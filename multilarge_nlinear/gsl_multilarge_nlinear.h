@@ -306,6 +306,7 @@ GSL_VAR const gsl_multilarge_nlinear_scale * gsl_multilarge_nlinear_scale_more;
 
 /* linear solvers */
 GSL_VAR const gsl_multilarge_nlinear_solver * gsl_multilarge_nlinear_solver_cholesky;
+GSL_VAR const gsl_multilarge_nlinear_solver * gsl_multilarge_nlinear_solver_mcholesky;
 GSL_VAR const gsl_multilarge_nlinear_solver * gsl_multilarge_nlinear_solver_none;
 
 __END_DECLS

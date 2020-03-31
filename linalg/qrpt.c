@@ -636,7 +636,7 @@ gsl_linalg_QRPT_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work)
       gsl_matrix_const_view R = gsl_matrix_const_submatrix (QR, 0, 0, N, N);
       int status;
 
-      status = gsl_linalg_tri_upper_rcond(&R.matrix, rcond, work);
+      status = gsl_linalg_tri_rcond(CblasUpper, &R.matrix, rcond, work);
 
       return status;
     }

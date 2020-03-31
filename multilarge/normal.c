@@ -27,7 +27,6 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_multifit.h>
 #include <gsl/gsl_multilarge.h>
-#include <gsl/gsl_permutation.h>
 
 typedef struct
 {
@@ -36,7 +35,6 @@ typedef struct
   gsl_vector *ATb;       /* A^T b, p-by-1 */
   double normb;          /* || b || */
   gsl_matrix *work_ATA;  /* workspace for chol(ATA), p-by-p */
-  gsl_permutation *perm; /* permutation vector */
   gsl_vector *workp;     /* workspace size p */
   gsl_vector *work3p;    /* workspace size 3*p */
   gsl_vector *D;         /* scale factors for ATA, size p */
@@ -116,13 +114,6 @@ normal_alloc(const size_t p)
       GSL_ERROR_NULL("failed to allocate ATb vector", GSL_ENOMEM);
     }
 
-  state->perm = gsl_permutation_alloc(p);
-  if (state->perm == NULL)
-    {
-      normal_free(state);
-      GSL_ERROR_NULL("failed to allocate perm", GSL_ENOMEM);
-    }
-
   state->D = gsl_vector_alloc(p);
   if (state->D == NULL)
     {
@@ -176,9 +167,6 @@ normal_free(void *vstate)
 
   if (state->ATb)
     gsl_vector_free(state->ATb);
-
-  if (state->perm)
-    gsl_permutation_free(state->perm);
 
   if (state->D)
     gsl_vector_free(state->D);
@@ -312,7 +300,7 @@ normal_rcond(double * rcond, void * vstate)
   int status = GSL_SUCCESS;
   double rcond_ATA;
 
-  status = gsl_linalg_pcholesky_rcond(state->work_ATA, state->perm, &rcond_ATA, state->work3p);
+  status = gsl_linalg_cholesky_rcond(state->work_ATA, &rcond_ATA, state->work3p);
   if (status == GSL_SUCCESS)
     *rcond = sqrt(rcond_ATA);
 
@@ -404,10 +392,10 @@ normal_solve_system(const double lambda, gsl_vector * x, normal_state_t *state)
   gsl_vector_view d = gsl_matrix_diagonal(state->work_ATA);
 
   /* copy ATA matrix to temporary workspace and regularize */
-  gsl_matrix_tricpy('L', 1, state->work_ATA, state->ATA);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, state->work_ATA, state->ATA);
   gsl_vector_add_constant(&d.vector, lambda_sq);
 
-  /* solve with LDL decomposition */
+  /* solve with Cholesky decomposition */
   status = normal_solve_cholesky(state->work_ATA, state->ATb, x, state);
   if (status)
     return status;
@@ -421,11 +409,11 @@ normal_solve_cholesky(gsl_matrix * ATA, const gsl_vector * ATb,
 {
   int status;
 
-  status = gsl_linalg_pcholesky_decomp2(ATA, state->perm, state->D);
+  status = gsl_linalg_cholesky_decomp2(ATA, state->D);
   if (status)
     return status;
 
-  status = gsl_linalg_pcholesky_solve2(ATA, state->perm, state->D, ATb, x);
+  status = gsl_linalg_cholesky_solve2(ATA, state->D, ATb, x);
   if (status)
     return status;
 
@@ -483,7 +471,7 @@ normal_eigen(normal_state_t *state)
   int status;
 
   /* copy lower triangle of ATA to temporary workspace */
-  gsl_matrix_tricpy('L', 1, state->work_ATA, state->ATA);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, state->work_ATA, state->ATA);
 
   /* compute eigenvalues of ATA */
   status = gsl_eigen_symm(state->work_ATA, state->workp, state->eigen_p);

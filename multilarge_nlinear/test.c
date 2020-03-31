@@ -44,6 +44,12 @@ test_proc(const gsl_multilarge_nlinear_trs *trs,
   fdf_params.scale = scale;
   fdf_params.fdtype = fdtype;
 
+  if (trs == gsl_multilarge_nlinear_trs_lm ||
+      trs == gsl_multilarge_nlinear_trs_lmaccel)
+    fdf_params.solver = gsl_multilarge_nlinear_solver_cholesky;
+  else
+    fdf_params.solver = gsl_multilarge_nlinear_solver_mcholesky;
+
   test_fdf_main(&fdf_params);
 }
 

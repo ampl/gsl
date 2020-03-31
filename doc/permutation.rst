@@ -153,6 +153,9 @@ Permutation functions
 Applying Permutations
 =====================
 
+The following functions are defined in the header files :file:`gsl_permute.h`
+and :file:`gsl_permute_vector.h`.
+
 .. function:: int gsl_permute (const size_t * p, double * data, size_t stride, size_t n)
 
    This function applies the permutation :data:`p` to the array :data:`data` of
@@ -179,7 +182,7 @@ Applying Permutations
    an inverse permutation matrix from the right, :math:`v' = v P^T`.  Note
    that for permutation matrices the inverse is the same as the transpose.
    The :math:`j`-th column of the permutation matrix :math:`P` is given by
-   the :math:`:data:`p`_j`-th column of the identity matrix. The permutation :data:`p`
+   the :math:`p_j`-th column of the identity matrix. The permutation :data:`p`
    and the vector :data:`v` must have the same length.
 
 .. function:: int gsl_permute_matrix (const gsl_permutation * p, gsl_matrix * A)

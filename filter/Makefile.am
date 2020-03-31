@@ -12,4 +12,4 @@ check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)
 
 test_SOURCES = test.c
-test_LDADD = libgslfilter.la ../movstat/libgslmovstat.la ../statistics/libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../randist/libgslrandist.la ../rng/libgslrng.la ../specfunc/libgslspecfunc.la ../complex/libgslcomplex.la ../err/libgslerr.la ../test/libgsltest.la ../vector/libgslvector.la ../block/libgslblock.la ../poly/libgslpoly.la ../sys/libgslsys.la ../utils/libutils.la
+test_LDADD = libgslfilter.la ../movstat/libgslmovstat.la ../statistics/libgslstatistics.la ../sort/libgslsort.la ../ieee-utils/libgslieeeutils.la ../randist/libgslrandist.la ../rng/libgslrng.la ../specfunc/libgslspecfunc.la ../complex/libgslcomplex.la ../err/libgslerr.la ../test/libgsltest.la ../vector/libgslvector.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../block/libgslblock.la ../poly/libgslpoly.la ../sys/libgslsys.la ../utils/libutils.la

@@ -1,7 +1,6 @@
-/* spswap.c
+/* spmatrix/swap_source.c
  * 
- * Copyright (C) 2014 Patrick Alken
- * Copyright (C) 2016 Alexis Tantet
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,102 +17,58 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_spmatrix.h>
-
-#include "avl.c"
-
-/*
-gsl_spmatrix_transpose()
-  Replace the sparse matrix src by its transpose,
-keeping the matrix in the same storage format
-
-Inputs: A - (input/output) sparse matrix to transpose.
-*/
-
 int
-gsl_spmatrix_transpose(gsl_spmatrix * m)
+FUNCTION (gsl_spmatrix, transpose) (TYPE (gsl_spmatrix) * m)
 {
-  if (GSL_SPMATRIX_ISTRIPLET(m))
+  /* swap dimensions - this must be done before the tree_rebuild step */
+  if (m->size1 != m->size2)
+    {
+      size_t tmp = m->size1;
+      m->size1 = m->size2;
+      m->size2 = tmp;
+    }
+  
+  if (GSL_SPMATRIX_ISCOO(m))
     {
       size_t n;
 
       /* swap row/column indices */
       for (n = 0; n < m->nz; ++n)
         {
-          size_t tmp = m->p[n];
+          int tmp = m->p[n];
           m->p[n] = m->i[n];
           m->i[n] = tmp;
         }
 
-      /* need to rebuild AVL tree, or element searches won't
+      /* need to rebuild binary tree, or element searches won't
        * work correctly with transposed indices */
-      gsl_spmatrix_tree_rebuild(m);
+      FUNCTION (gsl_spmatrix, tree_rebuild) (m);
+    }
+  else if (GSL_SPMATRIX_ISCSC(m))
+    {
+      m->sptype = GSL_SPMATRIX_CSR;
+    }
+  else if (GSL_SPMATRIX_ISCSR(m))
+    {
+      m->sptype = GSL_SPMATRIX_CSC;
     }
   else
     {
       GSL_ERROR("unknown sparse matrix type", GSL_EINVAL);
     }
   
-  /* swap dimensions */
-  if (m->size1 != m->size2)
-    {
-      size_t tmp = m->size1;
-      m->size1 = m->size2;
-      m->size2 = tmp;
-    }
-  
   return GSL_SUCCESS;
 }
 
-/*
-gsl_spmatrix_transpose2()
-  Replace the sparse matrix src by its transpose either by
-  swapping its row and column indices if it is in triplet storage,
-  or by switching its major if it is in compressed storage.
-
-Inputs: A - (input/output) sparse matrix to transpose.
-*/
-
+/* FIXME XXX: deprecated function */
 int
-gsl_spmatrix_transpose2(gsl_spmatrix * m)
+FUNCTION (gsl_spmatrix, transpose2) (TYPE (gsl_spmatrix) * m)
 {
-  if (GSL_SPMATRIX_ISTRIPLET(m))
-    {
-      return gsl_spmatrix_transpose(m);
-    }
-  else if (GSL_SPMATRIX_ISCCS(m))
-    {
-      m->sptype = GSL_SPMATRIX_CRS;
-    }
-  else if (GSL_SPMATRIX_ISCRS(m))
-    {
-      m->sptype = GSL_SPMATRIX_CCS;
-    }
-  else
-    {
-      GSL_ERROR("unknown sparse matrix type", GSL_EINVAL);
-    }
-  
-  /* swap dimensions */
-  if (m->size1 != m->size2)
-    {
-      size_t tmp = m->size1;
-      m->size1 = m->size2;
-      m->size2 = tmp;
-    }
-  
-  return GSL_SUCCESS;
+  return FUNCTION (gsl_spmatrix, transpose) (m);
 }
 
 int
-gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
+FUNCTION (gsl_spmatrix, transpose_memcpy) (TYPE (gsl_spmatrix) * dest, const TYPE (gsl_spmatrix) * src)
 {
   const size_t M = src->size1;
   const size_t N = src->size2;
@@ -130,53 +85,56 @@ gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
     }
   else
     {
-      int s = GSL_SUCCESS;
+      int status = GSL_SUCCESS;
       const size_t nz = src->nz;
 
       if (dest->nzmax < src->nz)
         {
-          s = gsl_spmatrix_realloc(src->nz, dest);
-          if (s)
-            return s;
+          status = FUNCTION (gsl_spmatrix, realloc) (src->nz, dest);
+          if (status)
+            return status;
         }
 
-      if (GSL_SPMATRIX_ISTRIPLET(src))
+      if (GSL_SPMATRIX_ISCOO(src))
         {
-          size_t n;
+          size_t n, r;
           void *ptr;
 
           for (n = 0; n < nz; ++n)
             {
               dest->i[n] = src->p[n];
               dest->p[n] = src->i[n];
-              dest->data[n] = src->data[n];
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                dest->data[MULTIPLICITY * n + r] = src->data[MULTIPLICITY * n + r];
 
               /* copy binary tree data */
-              ptr = avl_insert(dest->tree_data->tree, &dest->data[n]);
+              ptr = gsl_bst_insert(&dest->data[MULTIPLICITY * n], dest->tree);
               if (ptr != NULL)
                 {
                   GSL_ERROR("detected duplicate entry", GSL_EINVAL);
                 }
             }
         }
-      else if (GSL_SPMATRIX_ISCCS(src))
+      else if (GSL_SPMATRIX_ISCSC(src))
         {
-          size_t *Ai = src->i;
-          size_t *Ap = src->p;
-          double *Ad = src->data;
-          size_t *ATi = dest->i;
-          size_t *ATp = dest->p;
-          double *ATd = dest->data;
-          size_t *w = dest->work_sze;
-          size_t p, j;
+          int * Ai = src->i;
+          int * Ap = src->p;
+          ATOMIC * Ad = src->data;
+          int * ATi = dest->i;
+          int * ATp = dest->p;
+          ATOMIC * ATd = dest->data;
+          int * w = dest->work.work_int;
+          int p;
+          size_t j, r;
 
           /* initialize to 0 */
-          for (p = 0; p < M + 1; ++p)
-            ATp[p] = 0;
+          for (j = 0; j < M + 1; ++j)
+            ATp[j] = 0;
 
           /* compute row counts of A (= column counts for A^T) */
-          for (p = 0; p < nz; ++p)
-            ATp[Ai[p]]++;
+          for (j = 0; j < nz; ++j)
+            ATp[Ai[j]]++;
 
           /* compute row pointers for A (= column pointers for A^T) */
           gsl_spmatrix_cumsum(M, ATp);
@@ -189,30 +147,33 @@ gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
             {
               for (p = Ap[j]; p < Ap[j + 1]; ++p)
                 {
-                  size_t k = w[Ai[p]]++;
+                  int k = w[Ai[p]]++;
                   ATi[k] = j;
-                  ATd[k] = Ad[p];
+
+                  for (r = 0; r < MULTIPLICITY; ++r)
+                    ATd[MULTIPLICITY * k + r] = Ad[MULTIPLICITY * p + r];
                 }
             }
         }
-      else if (GSL_SPMATRIX_ISCRS(src))
+      else if (GSL_SPMATRIX_ISCSR(src))
         {
-          size_t *Aj = src->i;
-          size_t *Ap = src->p;
-          double *Ad = src->data;
-          size_t *ATj = dest->i;
-          size_t *ATp = dest->p;
-          double *ATd = dest->data;
-          size_t *w = dest->work_sze;
-          size_t p, i;
+          int * Aj = src->i;
+          int * Ap = src->p;
+          ATOMIC * Ad = src->data;
+          int * ATj = dest->i;
+          int * ATp = dest->p;
+          ATOMIC * ATd = dest->data;
+          int * w = dest->work.work_int;
+          int p;
+          size_t i, r;
 
           /* initialize to 0 */
-          for (p = 0; p < N + 1; ++p)
-            ATp[p] = 0;
+          for (i = 0; i < N + 1; ++i)
+            ATp[i] = 0;
 
           /* compute column counts of A (= row counts for A^T) */
-          for (p = 0; p < nz; ++p)
-            ATp[Aj[p]]++;
+          for (i = 0; i < nz; ++i)
+            ATp[Aj[i]]++;
 
           /* compute column pointers for A (= row pointers for A^T) */
           gsl_spmatrix_cumsum(N, ATp);
@@ -227,7 +188,9 @@ gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
                 {
                   size_t k = w[Aj[p]]++;
                   ATj[k] = i;
-                  ATd[k] = Ad[p];
+
+                  for (r = 0; r < MULTIPLICITY; ++r)
+                    ATd[MULTIPLICITY * k + r] = Ad[MULTIPLICITY * p + r];
                 }
             }
         }
@@ -238,6 +201,6 @@ gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
 
       dest->nz = nz;
 
-      return s;
+      return status;
     }
-} /* gsl_spmatrix_transpose_memcpy() */
+}

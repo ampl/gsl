@@ -24,14 +24,17 @@ The functions described in this chapter are declared in the header file
 LU Decomposition
 ================
 
-A general :math:`N`-by-:math:`N` square matrix :math:`A` has an :math:`LU` decomposition into
-upper and lower triangular matrices,
+A general :math:`M`-by-:math:`N` matrix :math:`A` has an :math:`LU` decomposition
 
 .. math:: P A = L U
 
-where :math:`P` is a permutation matrix, :math:`L` is unit lower
-triangular matrix and :math:`U` is upper triangular matrix. For square
-matrices this decomposition can be used to convert the linear system
+where :math:`P` is an :math:`M`-by-:math:`M` permutation matrix, :math:`L` is
+:math:`M`-by-:math:`\min(M,N)` and :math:`U` is :math:`\min(M,N)`-by-:math:`N`.
+For square matrices, :math:`L` is a lower unit triangular matrix and
+:math:`U` is upper triangular. For :math:`M > N`, :math:`L` is a unit lower
+trapezoidal matrix of size :math:`M`-by-:math:`N`. For :math:`M < N`,
+:math:`U` is upper trapezoidal of size :math:`M`-by-:math:`N`.
+For square matrices this decomposition can be used to convert the linear system
 :math:`A x = b` into a pair of triangular systems (:math:`L y = P b`,
 :math:`U x = y`), which can be solved by forward and back-substitution.
 Note that the :math:`LU` decomposition is valid for singular matrices.
@@ -39,10 +42,10 @@ Note that the :math:`LU` decomposition is valid for singular matrices.
 .. function:: int gsl_linalg_LU_decomp (gsl_matrix * A, gsl_permutation * p, int * signum)
               int gsl_linalg_complex_LU_decomp (gsl_matrix_complex * A, gsl_permutation * p, int * signum)
 
-   These functions factorize the square matrix :data:`A` into the :math:`LU`
+   These functions factorize the matrix :data:`A` into the :math:`LU`
    decomposition :math:`PA = LU`.  On output the diagonal and upper
-   triangular part of the input matrix :data:`A` contain the matrix
-   :math:`U`. The lower triangular part of the input matrix (excluding the
+   triangular (or trapezoidal) part of the input matrix :data:`A` contain the matrix
+   :math:`U`. The lower triangular (or trapezoidal) part of the input matrix (excluding the
    diagonal) contains :math:`L`.  The diagonal elements of :math:`L` are
    unity, and are not stored.
 
@@ -56,7 +59,8 @@ Note that the :math:`LU` decomposition is valid for singular matrices.
 
    The algorithm used in the decomposition is Gaussian Elimination with
    partial pivoting (Golub & Van Loan, *Matrix Computations*,
-   Algorithm 3.4.1).
+   Algorithm 3.4.1), combined with a recursive algorithm based on
+   Level 3 BLAS (Peise and Bientinesi, 2016).
 
 .. index:: linear systems, solution of
 
@@ -96,9 +100,26 @@ Note that the :math:`LU` decomposition is valid for singular matrices.
 
    These functions compute the inverse of a matrix :math:`A` from its
    :math:`LU` decomposition (:data:`LU`, :data:`p`), storing the result in the
-   matrix :data:`inverse`. The inverse is computed by solving the system
-   :math:`A x = b` for each column of the identity matrix.  It is preferable
+   matrix :data:`inverse`.  The inverse is computed by computing the inverses
+   :math:`U^{-1}`, :math:`L^{-1}` and finally forming the product
+   :math:`A^{-1} = U^{-1} L^{-1} P`. Each step is based on Level 3 BLAS calls.
+   
+   It is preferable
    to avoid direct use of the inverse whenever possible, as the linear
+   solver functions can obtain the same result more efficiently and
+   reliably (consult any introductory textbook on numerical linear algebra
+   for details).
+
+.. function:: int gsl_linalg_LU_invx (gsl_matrix * LU, const gsl_permutation * p)
+              int gsl_linalg_complex_LU_invx (gsl_matrix_complex * LU, const gsl_permutation * p)
+
+   These functions compute the inverse of a matrix :math:`A` from its
+   :math:`LU` decomposition (:data:`LU`, :data:`p`), storing the result in-place
+   in the matrix :data:`LU`. The inverse is computed by computing the inverses
+   :math:`U^{-1}`, :math:`L^{-1}` and finally forming the product
+   :math:`A^{-1} = U^{-1} L^{-1} P`. Each step is based on Level 3 BLAS calls.
+
+   It is preferable to avoid direct use of the inverse whenever possible, as the linear
    solver functions can obtain the same result more efficiently and
    reliably (consult any introductory textbook on numerical linear algebra
    for details).
@@ -136,6 +157,8 @@ Note that the :math:`LU` decomposition is valid for singular matrices.
 
 .. index:: QR decomposition
 
+.. _linalg-qr:
+
 QR Decomposition
 ================
 
@@ -146,12 +169,61 @@ an :math:`M`-by-:math:`N` right-triangular matrix :math:`R`,
 
 .. math:: A = Q R
 
-This decomposition can be used to convert the linear system :math:`A x = b`
+This decomposition can be used to convert the square linear system :math:`A x = b`
 into the triangular system :math:`R x = Q^T b`, which can be solved by
 back-substitution. Another use of the :math:`QR` decomposition is to
 compute an orthonormal basis for a set of vectors. The first :math:`N`
 columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
 :math:`ran(A)`, when :math:`A` has full column rank.
+
+When :math:`M > N`, the bottom :math:`M - N` rows of :math:`R` are zero,
+and so :math:`A` can be naturally partioned as
+
+.. only:: not texinfo
+
+   .. math:: A = \begin{pmatrix} Q_1 & Q_2 \end{pmatrix} \begin{pmatrix} R_1 \\ 0 \end{pmatrix} = Q_1 R_1
+
+.. only:: texinfo
+
+   ::
+
+     A = [ Q_1 Q_2 ] [ R_1  ] = Q_1 R_1
+                     [  0   ]
+
+where :math:`R_1` is :math:`N`-by-:math:`N` upper triangular, :math:`Q_1` is :math:`M`-by-:math:`N`, and
+:math:`Q_2` is :math:`M`-by-:math:`(M-N)`. :math:`Q_1 R_1` is sometimes called the *thin* or *reduced*
+QR decomposition. The solution of the least squares problem :math:`\min_x || b - A x ||^2` when :math:`A`
+has full rank is:
+
+.. math:: x = R_1^{-1} c_1
+
+where :math:`c_1` is the first :math:`N` elements of :math:`Q^T b`. If :math:`A` is rank deficient,
+see :ref:`linalg-qrpt` and :ref:`linalg-cod`.
+
+GSL offers two interfaces for the :math:`QR` decomposition. The first proceeds by zeroing
+out columns below the diagonal of :math:`A`, one column at a time using Householder transforms.
+In this method, the factor :math:`Q` is represented as a product of Householder reflectors:
+
+.. math:: Q = H_n \cdots H_2 H_1
+
+where each :math:`H_i = I - \tau_i v_i v_i^T` for a scalar :math:`\tau_i` and column vector
+:math:`v_i`. In this method, functions which compute the full matrix :math:`Q` or apply
+:math:`Q^T` to a right hand side vector operate by applying the Householder matrices one
+at a time using Level 2 BLAS.
+
+The second interface is based on a Level 3 BLAS block recursive algorithm developed by
+Elmroth and Gustavson. In this case, :math:`Q` is written in block form as
+
+.. math:: Q = I - V T V^T
+
+where :math:`V` is an :math:`M`-by-:math:`N` matrix of the column vectors :math:`v_i`
+and :math:`T` is an :math:`N`-by-:math:`N` upper triangular matrix, whose diagonal elements
+are the :math:`\tau_i`. Computing the full :math:`T`, while requiring more flops than
+the Level 2 approach, offers the advantage that all standard operations can take advantage
+of cache efficient Level 3 BLAS operations, and so this method often performs faster
+than the Level 2 approach. The functions for the recursive block algorithm have a
+:code:`_r` suffix, and it is recommended to use this interface for performance
+critical applications.
 
 .. function:: int gsl_linalg_QR_decomp (gsl_matrix * A, gsl_vector * tau)
 
@@ -162,29 +234,46 @@ columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
    part of the matrix :data:`A` contain the Householder coefficients and
    Householder vectors which encode the orthogonal matrix :data:`Q`.  The
    vector :data:`tau` must be of length :math:`k=\min(M,N)`. The matrix
-   :math:`Q` is related to these components by, :math:`Q = Q_k ... Q_2 Q_1`
-   where :math:`Q_i = I - \tau_i v_i v_i^T` and :math:`v_i` is the
+   :math:`Q` is related to these components by, :math:`Q = H_k ... H_2 H_1`
+   where :math:`H_i = I - \tau_i v_i v_i^T` and :math:`v_i` is the
    Householder vector :math:`v_i = (0,...,1,A(i+1,i),A(i+2,i),...,A(m,i))`.
    This is the same storage scheme as used by |lapack|.
 
    The algorithm used to perform the decomposition is Householder QR (Golub
-   & Van Loan, "Matrix Computations", Algorithm 5.2.1).
+   & Van Loan, "Matrix Computations", Algorithm 5.2.1). It is recommended to
+   use this function only for small to modest sized matrices, or if
+   :math:`M < N`.
+
+.. function:: int gsl_linalg_QR_decomp_r (gsl_matrix * A, gsl_matrix * T)
+
+   This function factors the :math:`M`-by-:math:`N` matrix :data:`A` into
+   the :math:`QR` decomposition :math:`A = Q R` using the recursive Level 3 BLAS
+   algorithm of Elmroth and Gustavson.  On output the diagonal and
+   upper triangular part of :data:`A` contain the matrix
+   :math:`R`.  The :math:`N`-by-:math:`N`
+   matrix :data:`T` stores the upper triangular factor appearing in :math:`Q`.
+   The matrix :math:`Q` is given by :math:`Q = I - V T V^T`, where the elements
+   below the diagonal of :data:`A` contain the columns of :math:`V` on output.
+
+   This algorithm requires :math:`M \ge N` and performs best for
+   "tall-skinny" matrices, i.e. :math:`M \gg N`.
 
 .. function:: int gsl_linalg_QR_solve (const gsl_matrix * QR, const gsl_vector * tau, const gsl_vector * b, gsl_vector * x)
+              int gsl_linalg_QR_solve_r (const gsl_matrix * QR, const gsl_matrix * T, const gsl_vector * b, gsl_vector * x)
 
-   This function solves the square system :math:`A x = b` using the :math:`QR`
-   decomposition of :math:`A` held in (:data:`QR`, :data:`tau`) which must 
-   have been computed previously with :func:`gsl_linalg_QR_decomp`. 
-   The least-squares solution for 
-   rectangular systems can be found using :func:`gsl_linalg_QR_lssolve`.
+   These functions solve the square system :math:`A x = b` using the :math:`QR`
+   decomposition of :math:`A` held in (:data:`QR`, :data:`tau`) or (:data:`QR`, :data:`T`) which must 
+   have been computed previously with :func:`gsl_linalg_QR_decomp` or
+   :func:`gsl_linalg_QR_decomp_r`.
+   The least-squares solution for rectangular systems can be found using :func:`gsl_linalg_QR_lssolve`
+   or :func:`gsl_linalg_QR_lssolve_r`.
 
 .. function:: int gsl_linalg_QR_svx (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * x)
 
    This function solves the square system :math:`A x = b` in-place using
    the :math:`QR` decomposition of :math:`A` held in (:data:`QR`, :data:`tau`)
-   which must have been computed previously by
-   :func:`gsl_linalg_QR_decomp`.  On input :data:`x` should contain the
-   right-hand side :math:`b`, which is replaced by the solution on output.
+   which must have been computed previously by :func:`gsl_linalg_QR_decomp`.
+   On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the solution on output.
 
 .. function:: int gsl_linalg_QR_lssolve (const gsl_matrix * QR, const gsl_vector * tau, const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
 
@@ -197,13 +286,32 @@ columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
    :func:`gsl_linalg_QR_decomp`.  The solution is returned in :data:`x`.  The
    residual is computed as a by-product and stored in :data:`residual`.
 
-.. function:: int gsl_linalg_QR_QTvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * v)
+.. function:: int gsl_linalg_QR_lssolve_r (const gsl_matrix * QR, const gsl_matrix * T, const gsl_vector * b, gsl_vector * x, gsl_vector * work)
 
-   This function applies the matrix :math:`Q^T` encoded in the decomposition
-   (:data:`QR`, :data:`tau`) to the vector :data:`v`, storing the result :math:`Q^T v`
-   in :data:`v`.  The matrix multiplication is carried out directly using
-   the encoding of the Householder vectors without needing to form the full
+   This function finds the least squares solution to the overdetermined
+   system :math:`A x = b` where the matrix :data:`A` has more rows than
+   columns.  The least squares solution minimizes the Euclidean norm of the
+   residual, :math:`||b - Ax||`.The routine requires as input 
+   the :math:`QR` decomposition
+   of :math:`A` into (:data:`QR`, :data:`T`) given by
+   :func:`gsl_linalg_QR_decomp_r`. The parameter :data:`x` is of length :math:`M`.
+   The solution :math:`x` is returned in the first :math:`N` rows of :data:`x`,
+   i.e. :math:`x =` :code:`x[0], x[1], ..., x[N-1]`. The last :math:`M - N` rows
+   of :data:`x` contain a vector whose norm is equal to the residual norm
+   :math:`|| b - A x ||`. This similar to the behavior of LAPACK DGELS.
+   Additional workspace of length :math:`N` is required in :data:`work`.
+
+.. function:: int gsl_linalg_QR_QTvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * v)
+              int gsl_linalg_QR_QTvec_r (const gsl_matrix * QR, const gsl_matrix * T, gsl_vector * v, gsl_vector * work)
+
+   These functions apply the matrix :math:`Q^T` encoded in the decomposition
+   (:data:`QR`, :data:`tau`) or (:data:`QR`, :data:`T`) to the vector :data:`v`,
+   storing the result :math:`Q^T v` in :data:`v`.  The matrix multiplication is carried
+   out directly using the encoding of the Householder vectors without needing to form the full
    matrix :math:`Q^T`.
+
+   The recursive variant :code:`QTvec_r` requires additional workspace of size
+   :math:`N` in :data:`work`.
 
 .. function:: int gsl_linalg_QR_Qvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector * v)
 
@@ -213,13 +321,17 @@ columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
    the encoding of the Householder vectors without needing to form the full
    matrix :math:`Q`.
 
-.. function:: int gsl_linalg_QR_QTmat (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix * A)
+.. function:: int gsl_linalg_QR_QTmat (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix * B)
+              int gsl_linalg_QR_QTmat_r (const gsl_matrix * QR, const gsl_matrix * T, gsl_matrix * B, gsl_matrix * work)
 
    This function applies the matrix :math:`Q^T` encoded in the decomposition
-   (:data:`QR`, :data:`tau`) to the matrix :data:`A`, storing the result :math:`Q^T A`
-   in :data:`A`.  The matrix multiplication is carried out directly using
-   the encoding of the Householder vectors without needing to form the full
+   (:data:`QR`, :data:`tau`) or (:data:`QR`, :data:`T`) to the :math:`M`-by-:math:`K` matrix :data:`B`,
+   storing the result :math:`Q^T B` in :data:`B`.  The matrix multiplication is carried
+   out directly using the encoding of the Householder vectors without needing to form the full
    matrix :math:`Q^T`.
+
+   The recursive variant :code:`QTmat_r` requires additional workspace of size
+   :math:`N`-by-:math:`K` in :data:`work`.
 
 .. function:: int gsl_linalg_QR_Rsolve (const gsl_matrix * QR, const gsl_vector * b, gsl_vector * x)
 
@@ -240,6 +352,14 @@ columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
    This function unpacks the encoded :math:`QR` decomposition
    (:data:`QR`, :data:`tau`) into the matrices :data:`Q` and :data:`R`, where
    :data:`Q` is :math:`M`-by-:math:`M` and :data:`R` is :math:`M`-by-:math:`N`. 
+
+.. function:: int gsl_linalg_QR_unpack_r (const gsl_matrix * QR, const gsl_matrix * T, gsl_matrix * Q, gsl_matrix * R)
+
+   This function unpacks the encoded :math:`QR` decomposition
+   (:data:`QR`, :data:`T`) as output from :func:`gsl_linalg_QR_decomp_r` into the matrices
+   :data:`Q` and :data:`R`, where :data:`Q` is :math:`M`-by-:math:`M` and :data:`R` is :math:`N`-by-:math:`N`.
+   Note that the full :math:`R` matrix is :math:`M`-by-:math:`N`, however the lower trapezoidal portion
+   is zero, so only the upper triangular factor is stored.
 
 .. function:: int gsl_linalg_QR_QRsolve (gsl_matrix * Q, gsl_matrix * R, const gsl_vector * b, gsl_vector * x)
 
@@ -266,7 +386,63 @@ columns of :math:`Q` form an orthonormal basis for the range of :math:`A`,
    input :data:`x` should contain the right-hand side :math:`b`, which is
    replaced by the solution on output.
 
+.. function:: int gsl_linalg_QR_rcond (const gsl_matrix * QR, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the :math:`R` factor,
+   stored in the upper triangle of :data:`QR`. The reciprocal condition number estimate, defined as
+   :math:`1 / (||R||_1 \cdot ||R^{-1}||_1)`, is stored in :data:`rcond`.
+   Additional workspace of size :math:`3 N` is required in :data:`work`.
+
+Triangle on Top of Rectangle
+----------------------------
+
+This section provides routines for computing the :math:`QR` decomposition of the
+specialized matrix
+
+.. only:: not texinfo
+
+   .. math:: \begin{pmatrix} S \\ A \end{pmatrix} = Q R
+
+.. only:: texinfo
+
+   ::
+
+     [ S ] = Q R
+     [ A ]
+
+where :math:`S` is an :math:`N`-by-:math:`N` upper triangular matrix, and :math:`A` is
+an :math:`M`-by-:math:`N` dense matrix. This type of matrix arises, for example,
+in the sequential TSQR algorithm. The Elmroth and Gustavson algorithm is used to
+efficiently factor this matrix. Due to the upper triangular factor, the :math:`Q`
+matrix takes the form
+
+.. math:: Q = I - V T V^T
+
+with
+
+.. only:: not texinfo
+
+   .. math:: V = \begin{pmatrix} I \\ Y \end{pmatrix}
+
+.. only:: texinfo
+
+   ::
+
+     V = [ I ]
+         [ Y ]
+
+and :math:`Y` is dense and of the same dimensions as :math:`A`.
+
+.. function:: int gsl_linalg_QR_TR_decomp (gsl_matrix * S, gsl_matrix * A, gsl_matrix * T)
+
+   This function computes the :math:`QR` decomposition of the matrix :math:`(S ; A)`, where
+   :math:`S` is :math:`N`-by-:math:`N` upper triangular and :math:`A` is :math:`M`-by-:math:`N`
+   dense. On output, :math:`S` is replaced by the :math:`R` factor, and :math:`A` is replaced
+   by :math:`Y`.
+
 .. index:: QR decomposition with column pivoting
+
+.. _linalg-qrpt:
 
 QR Decomposition with Column Pivoting
 =====================================
@@ -278,7 +454,7 @@ can be extended to the rank deficient case by introducing a column permutation :
 
 The first :math:`r` columns of :math:`Q` form an orthonormal basis
 for the range of :math:`A` for a matrix with column rank :math:`r`.  This
-decomposition can also be used to convert the linear system :math:`A x = b`
+decomposition can also be used to convert the square linear system :math:`A x = b`
 into the triangular system :math:`R y = Q^T b, x = P y`, which can be
 solved by back-substitution and permutation.  We denote the :math:`QR`
 decomposition with column pivoting by :math:`QRP^T` since :math:`A = Q R P^T`.
@@ -333,7 +509,7 @@ can be obtained as
 
 where :math:`c_1` consists of the first :math:`r` elements of :math:`Q^T b`.
 This basic solution is not guaranteed to be the minimum norm solution unless
-:math:`R_{12} = 0` (see :ref:`Complete Orthogonal Decomposition <cod>`).
+:math:`R_{12} = 0` (see :ref:`Complete Orthogonal Decomposition <linalg-cod>`).
 
 .. function:: int gsl_linalg_QRPT_decomp (gsl_matrix * A, gsl_vector * tau, gsl_permutation * p, int * signum, gsl_vector * norm)
 
@@ -444,9 +620,80 @@ This basic solution is not guaranteed to be the minimum norm solution unless
    :math:`1 / (||R||_1 \cdot ||R^{-1}||_1)`, is stored in :data:`rcond`.
    Additional workspace of size :math:`3 N` is required in :data:`work`.
 
+.. index:: LQ decomposition
+
+LQ Decomposition
+================
+
+A general rectangular :math:`M`-by-:math:`N` matrix :math:`A` has a
+:math:`LQ` decomposition into the product of a lower trapezoidal
+:math:`M`-by-:math:`N` matrix :math:`L` and an orthogonal
+:math:`N`-by-:math:`N` square matrix :math:`Q`:
+
+.. math:: A = L Q
+
+If :math:`M \le N`, then :math:`L` can be written as :math:`L = (L_1 \quad 0)` where
+:math:`L_1` is :math:`M`-by-:math:`M` lower triangular,
+and
+
+.. math:: A =
+          \begin{pmatrix}
+            L_1 & 0
+          \end{pmatrix}
+          \begin{pmatrix}
+            Q_1 \\ Q_2
+          \end{pmatrix} = L_1 Q_1
+
+where :math:`Q_1` consists of the first :math:`M` rows of :math:`Q`, and :math:`Q_2`
+contains the remaining :math:`N - M` rows. The :math:`LQ` factorization of :math:`A`
+is essentially the same as the :ref:`QR factorization <linalg-qr>` of :math:`A^T`.
+
+The :math:`LQ` factorization may be used to find the minimum norm solution of
+an underdetermined system of equations :math:`A x = b`, where :math:`A` is
+:math:`M`-by-:math:`N` and :math:`M \le N`. The solution is
+
+.. math:: x = Q^T
+              \begin{pmatrix}
+                L_1^{-1} b \\
+                0
+              \end{pmatrix}
+
+.. function:: int gsl_linalg_LQ_decomp (gsl_matrix * A, gsl_vector * tau)
+
+   This function factorizes the :math:`M`-by-:math:`N` matrix :data:`A` into
+   the :math:`LQ` decomposition :math:`A = L Q`.  On output the diagonal and
+   lower trapezoidal part of the input matrix contain the matrix
+   :math:`L`. The vector :data:`tau` and the elements above the diagonal
+   of the matrix :data:`A` contain the Householder coefficients and
+   Householder vectors which encode the orthogonal matrix :data:`Q`.  The
+   vector :data:`tau` must be of length :math:`k=\min(M,N)`. The matrix
+   :math:`Q` is related to these components by, :math:`Q = Q_k ... Q_2 Q_1`
+   where :math:`Q_i = I - \tau_i v_i v_i^T` and :math:`v_i` is the
+   Householder vector :math:`v_i = (0,...,1,A(i,i+1),A(i,i+2),...,A(i,N))`.
+   This is the same storage scheme as used by |lapack|.
+
+.. function:: int gsl_linalg_LQ_lssolve (const gsl_matrix * LQ, const gsl_vector * tau, const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
+
+   This function finds the minimum norm least squares solution to the underdetermined system :math:`A x = b`,
+   where the :math:`M`-by-:math:`N` matrix :data:`A` has :math:`M \le N`.
+   The routine requires as input the :math:`LQ` decomposition of :math:`A` into (:data:`LQ`, :data:`tau`)
+   given by :func:`gsl_linalg_LQ_decomp`.  The solution is returned in :data:`x`.  The
+   residual, :math:`b - Ax`, is computed as a by-product and stored in :data:`residual`.
+
+.. function:: int gsl_linalg_LQ_unpack (const gsl_matrix * LQ, const gsl_vector * tau, gsl_matrix * Q, gsl_matrix * L)
+
+   This function unpacks the encoded :math:`LQ` decomposition
+   (:data:`LQ`, :data:`tau`) into the matrices :data:`Q` and :data:`L`, where
+   :data:`Q` is :math:`N`-by-:math:`N` and :data:`L` is :math:`M`-by-:math:`N`. 
+
+.. function:: int gsl_linalg_LQ_QTvec (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * v)
+
+   This function applies :math:`Q^T` to the vector :data:`v`, storing the result :math:`Q^T v` in
+   :data:`v` on output.
+
 .. index:: complete orthogonal decomposition
 
-.. _cod:
+.. _linalg-cod:
 
 Complete Orthogonal Decomposition
 =================================
@@ -759,12 +1006,13 @@ both the scaled and unscaled systems.
    for the complex case). On input, the values from the diagonal and lower-triangular
    part of the matrix :data:`A` are used (the upper triangular part is ignored).  On output
    the diagonal and lower triangular part of the input matrix :data:`A` contain the matrix
-   :math:`L`, while the upper triangular part is unmodified.  If the matrix is not
+   :math:`L`, while the upper triangular part contains the original matrix.  If the matrix is not
    positive-definite then the decomposition will fail, returning the
    error code :macro:`GSL_EDOM`.
 
    When testing whether a matrix is positive-definite, disable the error
-   handler first to avoid triggering an error.
+   handler first to avoid triggering an error. These functions use
+   Level 3 BLAS to compute the Cholesky factorization (Peise and Bientinesi, 2016).
 
 .. function:: int gsl_linalg_cholesky_decomp (gsl_matrix * A)
 
@@ -860,11 +1108,11 @@ both the scaled and unscaled systems.
 Pivoted Cholesky Decomposition
 ==============================
 
-A symmetric, positive definite square matrix :math:`A` has an alternate
+A symmetric positive semi-definite square matrix :math:`A` has an alternate
 Cholesky decomposition into a product of a lower unit triangular matrix :math:`L`,
-a diagonal matrix :math:`D` and :math:`L^T`, given by :math:`L D L^T`. This is
-equivalent to the Cholesky formulation discussed above, with
-the standard Cholesky lower triangular factor given by :math:`L D^{1 \over 2}`.
+a diagonal matrix :math:`D` and :math:`L^T`, given by :math:`L D L^T`. For
+postive definite matrices, this is equivalent to the Cholesky formulation discussed
+above, with the standard Cholesky lower triangular factor given by :math:`L D^{1 \over 2}`.
 For ill-conditioned matrices, it can help to use a pivoting strategy to
 prevent the entries of :math:`D` and :math:`L` from growing too large, and also
 ensure :math:`D_1 \ge D_2 \ge \cdots \ge D_n > 0`, where :math:`D_i` are
@@ -1005,6 +1253,69 @@ well conditioned.
    This function estimates the reciprocal condition number (using the 1-norm) of the perturbed matrix
    :math:`A + E`, using its pivoted Cholesky decomposition provided in :data:`LDLT`.
    The reciprocal condition number estimate, defined as :math:`1 / (||A + E||_1 \cdot ||(A + E)^{-1}||_1)`, is stored
+   in :data:`rcond`.  Additional workspace of size :math:`3 N` is required in :data:`work`.
+
+.. index::
+   single: LDL decomposition
+   single: LDLT decomposition
+   single: Cholesky decomposition, square root free
+
+.. _sec_ldlt-decomposition:
+
+LDLT Decomposition
+==================
+
+If :math:`A` is a symmetric, nonsingular square matrix, then it has a unique
+factorization of the form
+
+.. math:: A = L D L^T
+
+where :math:`L` is a unit lower triangular matrix and :math:`D` is diagonal.
+If :math:`A` is positive definite, then this factorization is equivalent
+to the Cholesky factorization, where the lower triangular Cholesky factor
+is :math:`L D^{\frac{1}{2}}`. Some indefinite matrices for which no
+Cholesky decomposition exists have an :math:`L D L^T` decomposition
+with negative entries in :math:`D`. The :math:`L D L^T` algorithm
+is sometimes referred to as the *square root free* Cholesky
+decomposition, as the algorithm does not require the computation of
+square roots. The algorithm is stable for positive definite matrices,
+but is not guaranteed to be stable for indefinite matrices.
+
+.. function:: int gsl_linalg_ldlt_decomp (gsl_matrix * A)
+
+   This function factorizes the symmetric, non-singular square matrix
+   :data:`A` into the decomposition :math:`A = L D L^T`.
+   On input, the values from the diagonal and lower-triangular
+   part of the matrix :data:`A` are used. The upper triangle of :data:`A`
+   is used as temporary workspace.  On output
+   the diagonal of :data:`A` contains the matrix :math:`D` and the lower
+   triangle of :data:`A` contains the unit lower triangular matrix :math:`L`.
+   The matrix 1-norm, :math:`||A||_1` is stored in the upper right corner
+   on output, for later use by :func:`gsl_linalg_ldlt_rcond`.
+
+   If the matrix is detected to be singular, the function returns
+   the error code :macro:`GSL_EDOM`.
+
+.. function:: int gsl_linalg_ldlt_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the system :math:`A x = b` using the :math:`L D L^T`
+   decomposition of :math:`A` held in the matrix :data:`LDLT` which must
+   have been previously computed by :func:`gsl_linalg_ldlt_decomp`.
+
+.. function:: int gsl_linalg_ldlt_svx (const gsl_matrix * LDLT, gsl_vector * x)
+
+   This function solves the system :math:`A x = b` in-place using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT`
+   which must have been previously computed by
+   :func:`gsl_linalg_ldlt_decomp`.  On input :data:`x` should
+   contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
+
+.. function:: int gsl_linalg_ldlt_rcond (const gsl_matrix * LDLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric
+   nonsingular matrix :math:`A`, using its :math:`L D L^T` decomposition provided in :data:`LDLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
    in :data:`rcond`.  Additional workspace of size :math:`3 N` is required in :data:`work`.
 
 .. index:: tridiagonal decomposition
@@ -1306,9 +1617,9 @@ Householder Transformations
 
 A Householder transformation is a rank-1 modification of the identity
 matrix which can be used to zero out selected elements of a vector.  A
-Householder matrix :math:`P` takes the form,
+Householder matrix :math:`H` takes the form,
 
-.. math:: P = I - \tau v v^T
+.. math:: H = I - \tau v v^T
 
 where :math:`v` is a vector (called the *Householder vector*) and
 :math:`\tau = 2/(v^T v)`. The functions described in this section use the
@@ -1318,36 +1629,36 @@ Householder transformations efficiently.
 .. function:: double gsl_linalg_householder_transform (gsl_vector * w)
               gsl_complex gsl_linalg_complex_householder_transform (gsl_vector_complex * w)
 
-   This function prepares a Householder transformation :math:`P = I - \tau v v^T`
+   This function prepares a Householder transformation :math:`H = I - \tau v v^T`
    which can be used to zero all the elements of the input vector :data:`w`
    except the first. On output the Householder vector :data:`v` is stored in
    :data:`w` and the scalar :math:`\tau` is returned. The householder vector
    :data:`v` is normalized so that :code:`v[0] = 1`, however this 1 is not
    stored in the output vector. Instead, :code:`w[0]` is set to
    the first element of the transformed vector, so that if
-   :math:`u = P w`, :code:`w[0] = u[0]` on output and the remainder
+   :math:`u = H w`, :code:`w[0] = u[0]` on output and the remainder
    of :math:`u` is zero.
 
 .. function:: int gsl_linalg_householder_hm (double tau, const gsl_vector * v, gsl_matrix * A)
               int gsl_linalg_complex_householder_hm (gsl_complex tau, const gsl_vector_complex * v, gsl_matrix_complex * A)
 
-   This function applies the Householder matrix :math:`P` defined by the
+   This function applies the Householder matrix :math:`H` defined by the
    scalar :data:`tau` and the vector :data:`v` to the left-hand side of the
-   matrix :data:`A`. On output the result :math:`P A` is stored in :data:`A`.
+   matrix :data:`A`. On output the result :math:`H A` is stored in :data:`A`.
 
 .. function:: int gsl_linalg_householder_mh (double tau, const gsl_vector * v, gsl_matrix * A)
               int gsl_linalg_complex_householder_mh (gsl_complex tau, const gsl_vector_complex * v, gsl_matrix_complex * A)
 
-   This function applies the Householder matrix :math:`P` defined by the
+   This function applies the Householder matrix :math:`H` defined by the
    scalar :data:`tau` and the vector :data:`v` to the right-hand side of the
-   matrix :data:`A`. On output the result :math:`A P` is stored in :data:`A`.
+   matrix :data:`A`. On output the result :math:`A H` is stored in :data:`A`.
 
 .. function:: int gsl_linalg_householder_hv (double tau, const gsl_vector * v, gsl_vector * w)
               int gsl_linalg_complex_householder_hv (gsl_complex tau, const gsl_vector_complex * v, gsl_vector_complex * w)
 
-   This function applies the Householder transformation :math:`P` defined by
+   This function applies the Householder transformation :math:`H` defined by
    the scalar :data:`tau` and the vector :data:`v` to the vector :data:`w`.  On
-   output the result :math:`P w` is stored in :data:`w`.
+   output the result :math:`H w` is stored in :data:`w`.
 
 .. @deftypefun int gsl_linalg_householder_hm1 (double tau, gsl_matrix * A)
 .. This function applies the Householder transform, defined by the scalar
@@ -1520,24 +1831,270 @@ the error code :macro:`GSL_ESING`.
 Triangular Systems
 ==================
 
-.. function:: int gsl_linalg_tri_upper_invert (gsl_matrix * T)
-              int gsl_linalg_tri_lower_invert (gsl_matrix * T)
-              int gsl_linalg_tri_upper_unit_invert (gsl_matrix * T)
-              int gsl_linalg_tri_lower_unit_invert (gsl_matrix * T)
+.. function:: int gsl_linalg_tri_invert (CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix * T)
+              int gsl_linalg_complex_tri_invert (CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix_complex * T)
 
-   These functions calculate the in-place inverse of the triangular matrix :data:`T`. When
-   the :code:`upper` prefix is specified, then the upper triangle of :data:`T` is used, and when
-   the :code:`lower` prefix is specified, the lower triangle is used. If the :code:`unit`
-   prefix is specified, then the diagonal elements of the matrix :data:`T` are taken as
-   unity and are not referenced. Otherwise the diagonal elements are used in the inversion.
+   These functions compute the in-place inverse of the triangular matrix :data:`T`, stored in
+   the lower triangle when :data:`Uplo` = :code:`CblasLower` and upper triangle
+   when :data:`Uplo` = :code:`CblasUpper`. The parameter :data:`Diag` = :code:`CblasUnit`, :code:`CblasNonUnit`
+   specifies whether the matrix is unit triangular.
 
-.. function:: int gsl_linalg_tri_upper_rcond (const gsl_matrix * T, double * rcond, gsl_vector * work)
-              int gsl_linalg_tri_lower_rcond (const gsl_matrix * T, double * rcond, gsl_vector * work)
+.. function:: int gsl_linalg_tri_LTL (gsl_matrix * L)
+              int gsl_linalg_complex_tri_LHL (gsl_matrix_complex * L)
 
-   These functions estimate the reciprocal condition number, in the 1-norm, of the upper or lower
-   :math:`N`-by-:math:`N` triangular matrix :data:`T`. The reciprocal condition number
-   is stored in :data:`rcond` on output, and is defined by :math:`1 / (||T||_1 \cdot ||T^{-1}||_1)`.
-   Additional workspace of size :math:`3 N` is required in :data:`work`.
+   These functions compute the product :math:`L^T L` (or :math:`L^{\dagger} L`)
+   in-place and stores it in the lower triangle of :data:`L` on output.
+
+.. function:: int gsl_linalg_tri_UL (gsl_matrix * LU)
+              int gsl_linalg_complex_tri_UL (gsl_matrix_complex * LU)
+
+   These functions compute the product :math:`U L` where :math:`U` is upper
+   triangular and :math:`L` is unit lower triangular, stored in :data:`LU`, as
+   computed by :func:`gsl_linalg_LU_decomp` or :func:`gsl_linalg_complex_LU_decomp`.
+   The product is computed in-place using Level 3 BLAS.
+
+.. function:: int gsl_linalg_tri_rcond (CBLAS_UPLO_t Uplo, const gsl_matrix * A, double * rcond, gsl_vector * work)
+
+   This function estimates the 1-norm reciprocal condition number of the triangular matrix :data:`A`,
+   using the lower triangle when :data:`Uplo` is :code:`CblasLower` and upper triangle when
+   :data:`Uplo` is :code:`CblasUpper`. The reciprocal condition number
+   :math:`1 / \left( \left|\left| A \right|\right|_1 \left|\left| A^{-1} \right|\right|_1 \right)`
+   is stored in :data:`rcond` on output. Additional workspace of size :math:`3N` is required
+   in :data:`work`.
+
+.. index::
+   single: banded matrices
+   single: matrices, banded
+
+Banded Systems
+==============
+
+Band matrices are sparse matrices whose non-zero entries are confined to a diagonal
+*band*. From a storage point of view, significant savings can be achieved by
+storing only the non-zero diagonals of a banded matrix. Algorithms such as LU and
+Cholesky factorizations preserve the band structure of these matrices. Computationally,
+working with compact banded matrices is preferable to working on the full dense
+matrix with many zero entries.
+
+.. index::
+   single: banded general matrices
+
+General Banded Format
+---------------------
+
+An example of a general banded matrix is given below.
+
+.. math::
+
+   A = \begin{pmatrix}
+         \alpha_1 & \beta_1 & \gamma_1 & 0 & 0 & 0 \\
+         \delta_1 & \alpha_2 & \beta_2 & \gamma_2 & 0 & 0 \\
+         0 & \delta_2 & \alpha_3 & \beta_3 & \gamma_3 & 0 \\
+         0 & 0 & \delta_3 & \alpha_4 & \beta_4 & \gamma_4 \\
+         0 & 0 & 0 & \delta_4 & \alpha_5 & \beta_5 \\
+         0 & 0 & 0 & 0 & \delta_5 & \alpha_6
+       \end{pmatrix}
+
+This matrix has a *lower bandwidth* of 1 and an *upper bandwidth* of 2.
+The lower bandwidth is the number of non-zero subdiagonals, and the
+upper bandwidth is the number of non-zero superdiagonals. A
+:math:`(p,q)` banded matrix has a lower bandwidth :math:`p` and
+upper bandwidth :math:`q`. For example, diagonal matrices are
+:math:`(0,0)`, tridiagonal matrices are :math:`(1,1)`, and
+upper triangular matrices are :math:`(0,N-1)` banded matrices.
+
+The corresponding :math:`6`-by-:math:`4` packed banded matrix looks like
+
+.. math::
+
+   AB = \begin{pmatrix}
+          * & * & \alpha_1 & \delta_1 \\
+          * & \beta_1 & \alpha_2 & \delta_2 \\
+          \gamma_1 & \beta_2 & \alpha_3 & \delta_3 \\
+          \gamma_2 & \beta_3 & \alpha_4 & \delta_4 \\
+          \gamma_3 & \beta_4 & \alpha_5 & \delta_5 \\
+          \gamma_4 & \beta_5 & \alpha_6 & *
+        \end{pmatrix}
+
+where the superdiagonals are stored in columns, followed by the diagonal,
+followed by the subdiagonals.
+The entries marked by :math:`*` are not referenced by the banded
+routines. With this format, each row of :math:`AB` corresponds to
+the non-zero entries of the corresponding column of :math:`A`.
+For an :math:`N`-by-:math:`N` matrix :math:`A`, the dimension
+of :math:`AB` will be :math:`N`-by-:math:`(p+q+1)`.
+
+.. index::
+   single: banded symmetric matrices
+   single: symmetric matrices, banded
+
+.. _sec_symmetric-banded:
+
+Symmetric Banded Format
+-----------------------
+
+Symmetric banded matrices allow for additional storage savings.
+As an example, consider the following :math:`6 \times 6` symmetric banded matrix
+with lower bandwidth :math:`p = 2`:
+
+.. math::
+
+   A = \begin{pmatrix}
+         \alpha_1 & \beta_1 & \gamma_1 & 0 & 0 & 0 \\
+         \beta_1 & \alpha_2 & \beta_2 & \gamma_2 & 0 & 0 \\
+         \gamma_1 & \beta_2 & \alpha_3 & \beta_3 & \gamma_3 & 0 \\
+         0 & \gamma_2 & \beta_3 & \alpha_4 & \beta_4 & \gamma_4 \\
+         0 & 0 & \gamma_3 & \beta_4 & \alpha_5 & \beta_5 \\
+         0 & 0 & 0 & \gamma_4 & \beta_5 & \alpha_6
+       \end{pmatrix}
+
+The packed symmetric banded :math:`6 \times 3` matrix will look like:
+
+.. math::
+
+   AB = \begin{pmatrix}
+          \alpha_1 & \beta_1 & \gamma_1 \\
+          \alpha_2 & \beta_2 & \gamma_2 \\
+          \alpha_3 & \beta_3 & \gamma_3 \\
+          \alpha_4 & \beta_4 & \gamma_4 \\
+          \alpha_5 & \beta_5 & * \\
+          \alpha_6 & * & *
+        \end{pmatrix}
+
+The entries marked by :math:`*` are not referenced by the symmetric banded
+routines.
+
+.. warning::
+
+   Note that this format is the transpose of the symmetric banded format used by
+   |LAPACK|. In order to develop efficient routines for symmetric banded matrices,
+   it helps to have the nonzero elements in each column in contiguous memory locations.
+   Since C uses row-major order, GSL stores the columns in the rows of the packed
+   banded format, while |LAPACK|, written in Fortran, uses the transposed format.
+
+.. index::
+   single: Cholesky decomposition, banded
+   single: banded Cholesky Decomposition
+
+Banded Cholesky Decomposition
+-----------------------------
+
+The routines in this section are designed to factor and solve
+:math:`N`-by-:math:`N` linear systems of the form :math:`A x = b`
+where :math:`A` is a banded, symmetric, and positive definite matrix
+with lower bandwidth :math:`p`. See
+:ref:`Cholesky Decomposition <sec_cholesky-decomposition>` for more
+information on the factorization.  The lower triangular
+factor of the Cholesky decomposition preserves the same
+banded structure as the matrix :math:`A`, enabling an efficient
+algorithm which overwrites the original matrix with the
+:math:`L` factor.
+
+.. function:: int gsl_linalg_cholesky_band_decomp(gsl_matrix * A)
+
+   This function factorizes the symmetric, positive-definite square matrix
+   :data:`A` into the Cholesky decomposition :math:`A = L L^T`. The input matrix
+   :data:`A` is given in :ref:`symmetric banded format <sec_symmetric-banded>`, and has dimensions
+   :math:`N`-by-:math:`(p + 1)`, where :math:`p` is the lower bandwidth of the matrix.
+   On output, the entries of :data:`A` are replaced by the entries of the matrix
+   :math:`L` in the same format. In addition, the lower right element of :data:`A` is
+   used to store the matrix 1-norm, used later by :func:`gsl_linalg_cholesky_band_rcond` to
+   calculate the reciprocal condition number.
+
+   If the matrix is not positive-definite then the decomposition will fail, returning the
+   error code :macro:`GSL_EDOM`. When testing whether a matrix is positive-definite, disable the error
+   handler first to avoid triggering an error.
+
+.. function:: int gsl_linalg_cholesky_band_solve (const gsl_matrix * LLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` using the Cholesky
+   decomposition of :math:`A` held in the matrix :data:`LLT` which must
+   have been previously computed by :func:`gsl_linalg_cholesky_band_decomp`.
+
+.. function:: int gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` in-place using the
+   Cholesky decomposition of :math:`A` held in the matrix :data:`LLT`
+   which must have been previously computed by :func:`gsl_linalg_cholesky_band_decomp`.
+   On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
+
+.. function:: int gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv)
+
+   This function computes the inverse of a symmetric banded matrix from its Cholesky
+   decomposition :data:`LLT`, which must have been previously computed
+   by :func:`gsl_linalg_cholesky_band_decomp`. On output, the inverse is
+   stored in :data:`Ainv`, using both the lower and upper portions.
+
+.. function:: int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L)
+
+   This function unpacks the lower triangular Cholesky factor from :data:`LLT` and stores
+   it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
+   upper triangular portion of :data:`L` is not referenced.
+
+.. function:: int gsl_linalg_cholesky_band_rcond (const gsl_matrix * LLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric banded positive
+   definite matrix :math:`A`, using its Cholesky decomposition provided in :data:`LLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
+   in :data:`rcond`. Additional workspace of size :math:`3 N` is required in :data:`work`.
+
+.. index::
+   single: banded LDLT decomposition
+   single: LDLT decomposition, banded
+
+Banded LDLT Decomposition
+-------------------------
+
+The routines in this section are designed to factor and solve
+:math:`N`-by-:math:`N` linear systems of the form :math:`A x = b`
+where :math:`A` is a banded, symmetric, and non-singular matrix
+with lower bandwidth :math:`p`. See :ref:`sec_ldlt-decomposition`
+for more information on the factorization. The lower triangular
+factor of the :math:`L D L^T` decomposition preserves the same
+banded structure as the matrix :math:`A`, enabling an efficient
+algorithm which overwrites the original matrix with the
+:math:`L` and :math:`D` factors.
+
+.. function:: int gsl_linalg_ldlt_band_decomp (gsl_matrix * A)
+
+   This function factorizes the symmetric, non-singular square matrix
+   :data:`A` into the decomposition :math:`A = L D L^T`. The input matrix
+   :data:`A` is given in :ref:`symmetric banded format <sec_symmetric-banded>`, and has dimensions
+   :math:`N`-by-:math:`(p + 1)`, where :math:`p` is the lower bandwidth of the matrix.
+   On output, the entries of :data:`A` are replaced by the entries of the matrices
+   :math:`D` and :math:`L` in the same format.
+
+   If the matrix is singular then the decomposition will fail, returning the
+   error code :macro:`GSL_EDOM`.
+
+.. function:: int gsl_linalg_ldlt_band_solve (const gsl_matrix * LDLT, const gsl_vector * b, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT` which must
+   have been previously computed by :func:`gsl_linalg_ldlt_band_decomp`.
+
+.. function:: int gsl_linalg_ldlt_band_svx (const gsl_matrix * LDLT, gsl_vector * x)
+
+   This function solves the symmetric banded system :math:`A x = b` in-place using the
+   :math:`L D L^T` decomposition of :math:`A` held in the matrix :data:`LDLT`
+   which must have been previously computed by :func:`gsl_linalg_ldlt_band_decomp`.
+   On input :data:`x` should contain the right-hand side :math:`b`, which is replaced by the
+   solution on output.
+
+.. function:: gsl_linalg_ldlt_band_unpack (const gsl_matrix * LDLT, gsl_matrix * L, gsl_vector * D)
+
+   This function unpacks the unit lower triangular factor :math:`L` from :data:`LDLT` and stores
+   it in the lower triangular portion of the :math:`N`-by-:math:`N` matrix :data:`L`. The
+   upper triangular portion of :data:`L` is not referenced. The diagonal matrix
+   :math:`D` is stored in the vector :data:`D`.
+
+.. function:: int gsl_linalg_ldlt_band_rcond (const gsl_matrix * LDLT, double * rcond, gsl_vector * work)
+
+   This function estimates the reciprocal condition number (using the 1-norm) of the symmetric banded
+   nonsingular matrix :math:`A`, using its :math:`L D L^T` decomposition provided in :data:`LDLT`.
+   The reciprocal condition number estimate, defined as :math:`1 / (||A||_1 \cdot ||A^{-1}||_1)`, is stored
+   in :data:`rcond`. Additional workspace of size :math:`3 N` is required in :data:`work`.
 
 .. index:: balancing matrices
 
@@ -1656,6 +2213,18 @@ The |lapack| library is described in the following manual,
 
 The |lapack| source code can be found at http://www.netlib.org/lapack,
 along with an online copy of the users guide.
+
+Further information on recursive Level 3 BLAS algorithms may be
+found in the following paper,
+
+* E. Peise and P. Bientinesi, "Recursive algorithms for dense linear algebra: the ReLAPACK collection",
+  http://arxiv.org/abs/1602.06763, 2016.
+
+The recursive Level 3 BLAS QR decomposition is described in the following paper,
+
+* E. Elmroth and F. G. Gustavson, 2000. Applying recursion to serial and parallel QR
+  factorization leads to better performance. IBM Journal of Research and Development,
+  44(4), pp.605-624.
 
 The Modified Golub-Reinsch algorithm is described in the following paper,
 

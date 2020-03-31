@@ -96,8 +96,8 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgslmultifit_nlinear_la_LIBADD =
 am_libgslmultifit_nlinear_la_OBJECTS = cholesky.lo convergence.lo \
-	covar.lo dogleg.lo fdf.lo fdfvv.lo fdjac.lo lm.lo qr.lo \
-	scaling.lo subspace2D.lo svd.lo trust.lo
+	covar.lo dogleg.lo fdf.lo fdfvv.lo fdjac.lo lm.lo mcholesky.lo \
+	qr.lo scaling.lo subspace2D.lo svd.lo trust.lo
 libgslmultifit_nlinear_la_OBJECTS =  \
 	$(am_libgslmultifit_nlinear_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -530,7 +530,7 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslmultifit_nlinear.la 
 pkginclude_HEADERS = gsl_multifit_nlinear.h
 AM_CPPFLAGS = -I$(top_srcdir)
-libgslmultifit_nlinear_la_SOURCES = cholesky.c convergence.c covar.c dogleg.c fdf.c fdfvv.c fdjac.c lm.c qr.c scaling.c subspace2D.c svd.c trust.c
+libgslmultifit_nlinear_la_SOURCES = cholesky.c convergence.c covar.c dogleg.c fdf.c fdfvv.c fdjac.c lm.c mcholesky.c qr.c scaling.c subspace2D.c svd.c trust.c
 noinst_HEADERS = \
 common.c                \
 nielsen.c               \
@@ -654,6 +654,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fdfvv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fdjac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scaling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/subspace2D.Plo@am__quote@

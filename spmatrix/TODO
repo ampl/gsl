@@ -1,2 +1,15 @@
 1. extend transpose to CCS/CRS (in-place)
 2. extend spblas_dgemm to CRS
+3. range checking on get/set - move part of the routine into the .h header file, and put the rest in a _source file ?
+4. sorted csc,csr
+5. document: spmatrix_compress
+6. _csc, _csr : should these accept matrix input argument? instead of allocating matrix ?
+7. example program for parallel assembly / FLG_FIXED flag documentation
+8. scipy routines:
+   gsl_spmatrix_diagonal - extract diagonal
+   gsl_spmatrix_memcpy - convert CSR to CSC etc, csr_tocsc
+   csr_tobsr ?
+   csr_sort_indices
+   get_csr_submatrix
+9. spmatrix_max_index + tests for min/max_index
+10. document FLG_FIXED and FLG_GROW ?

@@ -1,7 +1,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Disable deprecated functions and enums while building */
-#define GSL_DISABLE_DEPRECATED 1
+#undef GSL_DISABLE_DEPRECATED
 
 /* Define if you have inline with C99 behavior */
 #undef HAVE_C99_INLINE

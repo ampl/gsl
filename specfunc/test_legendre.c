@@ -451,7 +451,7 @@ test_legendre_unnorm(const size_t lmax_orig, const char *desc)
                                    p_schmidt, dp_schmidt, d2p_schmidt);
       gsl_sf_legendre_deriv2_array(GSL_SF_LEGENDRE_NONE, lmax, x, p, dp, d2p);
 
-      for (l = 0; l <= lmax; ++l)
+      for (l = 0; l <= (size_t) lmax; ++l)
         {
           double a_lm = sqrt(2.0 / (double)l / (l + 1.0));
           size_t idx;
@@ -493,7 +493,7 @@ test_legendre_unnorm(const size_t lmax_orig, const char *desc)
 
       gsl_sf_legendre_array(GSL_SF_LEGENDRE_NONE, lmax, x, p2);
       /* test if p = p2 */
-      for (l = 0; l <= lmax; ++l)
+      for (l = 0; l <= (size_t) lmax; ++l)
         {
           for (m = 0; m <= l; ++m)
             {

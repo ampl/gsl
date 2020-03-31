@@ -118,8 +118,18 @@ FUNCTION(gsl_vector, div) (TYPE(gsl_vector) * a, const TYPE(gsl_vector) * b)
 }
 
 int 
-FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const double x)
+FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const ATOMIC x)
 {
+#if defined(BASE_DOUBLE)
+
+  gsl_blas_dscal(x, a);
+
+#elif defined(BASE_FLOAT)
+
+  gsl_blas_sscal(x, a);
+
+#else
+
   const size_t N = a->size;
   const size_t stride = a->stride;
   
@@ -129,7 +139,9 @@ FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const double x)
     {
       a->data[i * stride] *= x;
     }
-  
+
+#endif
+
   return GSL_SUCCESS;
 }
 
@@ -149,3 +161,42 @@ FUNCTION(gsl_vector, add_constant) (TYPE(gsl_vector) * a, const double x)
   return GSL_SUCCESS;
 }
 
+int
+FUNCTION (gsl_vector, axpby) (const BASE alpha,
+                              const TYPE (gsl_vector) * x,
+                              const BASE beta,
+                              TYPE (gsl_vector) * y)
+{
+  const size_t x_size = x->size;
+
+  if (x_size != y->size)
+    {
+      GSL_ERROR ("vector lengths are not equal", GSL_EBADLEN);
+    }
+  else if (beta == (ATOMIC) 0)
+    {
+      const size_t x_stride = x->stride;
+      const size_t y_stride = y->stride;
+      size_t j;
+
+      for (j = 0; j < x_size; j++)
+        {
+          y->data[y_stride * j] = alpha * x->data[x_stride * j];
+        }
+
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      const size_t x_stride = x->stride;
+      const size_t y_stride = y->stride;
+      size_t j;
+
+      for (j = 0; j < x_size; j++)
+        {
+          y->data[y_stride * j] = alpha * x->data[x_stride * j] + beta * y->data[y_stride * j];
+        }
+
+      return GSL_SUCCESS;
+    }
+}

@@ -12,5 +12,5 @@ TESTS = $(check_PROGRAMS)
 check_PROGRAMS = test
 
 test_SOURCES = test.c
-test_LDADD = libgslsort.la ../permutation/libgslpermutation.la ../vector/libgslvector.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la
+test_LDADD = libgslsort.la ../permutation/libgslpermutation.la ../vector/libgslvector.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la
 

@@ -1,6 +1,6 @@
 /* eigen/genherm.c
  * 
- * Copyright (C) 2007 Patrick Alken
+ * Copyright (C) 2007, 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,16 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 
+#include "recurse.h"
+
 /*
  * This module computes the eigenvalues of a complex generalized
  * hermitian-definite eigensystem A x = \lambda B x, where A and
  * B are hermitian, and B is positive-definite.
  */
+
+static int genherm_standardize_L2(gsl_matrix_complex *A, const gsl_matrix_complex *B);
+static int genherm_standardize_L3(gsl_matrix_complex *A, const gsl_matrix_complex *B);
 
 /*
 gsl_eigen_genherm_alloc()
@@ -169,8 +174,33 @@ Notes: A is overwritten by L^{-1} A L^{-H}
 */
 
 int
-gsl_eigen_genherm_standardize(gsl_matrix_complex *A,
-                              const gsl_matrix_complex *B)
+gsl_eigen_genherm_standardize(gsl_matrix_complex *A, const gsl_matrix_complex *B)
+{
+  return genherm_standardize_L3(A, B);
+}
+
+/*
+genherm_standardize_L2()
+  Reduce the generalized hermitian-definite eigenproblem to
+the standard hermitian eigenproblem by computing
+
+C = L^{-1} A L^{-H}
+
+where L L^H is the Cholesky decomposition of B
+
+Inputs: A - (input/output) complex hermitian matrix
+        B - complex hermitian, positive definite matrix in Cholesky form
+
+Return: success
+
+Notes:
+1) A is overwritten by L^{-1} A L^{-H}
+
+2) Based on LAPACK ZHEGS2 using Level 2 BLAS
+*/
+
+static int
+genherm_standardize_L2(gsl_matrix_complex *A, const gsl_matrix_complex *B)
 {
   const size_t N = A->size1;
   size_t i;
@@ -224,4 +254,87 @@ gsl_eigen_genherm_standardize(gsl_matrix_complex *A,
     }
 
   return GSL_SUCCESS;
-} /* gsl_eigen_genherm_standardize() */
+}
+
+/*
+genherm_standardize_L3()
+  Reduce the generalized hermitian-definite eigenproblem to
+the standard hermitian eigenproblem by computing
+
+C = L^{-1} A L^{-H}
+
+where L L^H is the Cholesky decomposition of B
+
+Inputs: A - (input/output) complex hermitian matrix
+        B - complex hermitian, positive definite matrix in Cholesky form
+
+Return: success
+
+Notes:
+1) A is overwritten by L^{-1} A L^{-H}
+
+2) Based on ReLAPACK using Level 3 BLAS
+*/
+
+static int
+genherm_standardize_L3(gsl_matrix_complex *A, const gsl_matrix_complex *B)
+{
+  const size_t N = A->size1;
+
+  if (N <= CROSSOVER_GENHERM)
+    {
+      /* use Level 2 algorithm */
+      return genherm_standardize_L2(A, B);
+    }
+  else
+    {
+      /*
+       * partition matrices:
+       *
+       * A11 A12  and  B11 B12
+       * A21 A22       B21 B22
+       *
+       * where A11 and B11 are N1-by-N1
+       */
+      int status;
+      const size_t N1 = GSL_EIGEN_SPLIT_COMPLEX(N);
+      const size_t N2 = N - N1;
+
+      gsl_matrix_complex_view A11 = gsl_matrix_complex_submatrix(A, 0, 0, N1, N1);
+      gsl_matrix_complex_view A21 = gsl_matrix_complex_submatrix(A, N1, 0, N2, N1);
+      gsl_matrix_complex_view A22 = gsl_matrix_complex_submatrix(A, N1, N1, N2, N2);
+
+      gsl_matrix_complex_const_view B11 = gsl_matrix_complex_const_submatrix(B, 0, 0, N1, N1);
+      gsl_matrix_complex_const_view B21 = gsl_matrix_complex_const_submatrix(B, N1, 0, N2, N1);
+      gsl_matrix_complex_const_view B22 = gsl_matrix_complex_const_submatrix(B, N1, N1, N2, N2);
+
+      const gsl_complex MHALF = gsl_complex_rect(-0.5, 0.0);
+
+      /* recursion on (A11, B11) */
+      status = genherm_standardize_L3(&A11.matrix, &B11.matrix);
+      if (status)
+        return status;
+
+      /* A21 = A21 * B11^{-1} */
+      gsl_blas_ztrsm(CblasRight, CblasLower, CblasConjTrans, CblasNonUnit, GSL_COMPLEX_ONE, &B11.matrix, &A21.matrix);
+
+      /* A21 = A21 - 1/2 B21 A11 */
+      gsl_blas_zhemm(CblasRight, CblasLower, MHALF, &A11.matrix, &B21.matrix, GSL_COMPLEX_ONE, &A21.matrix);
+
+      /* A22 = A22 - A21 * B21' - B21 * A21' */
+      gsl_blas_zher2k(CblasLower, CblasNoTrans, GSL_COMPLEX_NEGONE, &A21.matrix, &B21.matrix, 1.0, &A22.matrix);
+
+      /* A21 = A21 - 1/2 B21 A11 */
+      gsl_blas_zhemm(CblasRight, CblasLower, MHALF, &A11.matrix, &B21.matrix, GSL_COMPLEX_ONE, &A21.matrix);
+
+      /* A21 = B22 * A21^{-1} */
+      gsl_blas_ztrsm(CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit, GSL_COMPLEX_ONE, &B22.matrix, &A21.matrix);
+
+      /* recursion on (A22, B22) */
+      status = genherm_standardize_L3(&A22.matrix, &B22.matrix);
+      if (status)
+        return status;
+
+      return GSL_SUCCESS;
+    }
+}

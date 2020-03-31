@@ -61,12 +61,13 @@ gsl_spblas_dgemv(const CBLAS_TRANSPOSE_t TransA, const double alpha,
     }
   else
     {
-      size_t j, p;
+      size_t j;
       size_t incX, incY;
       size_t lenX, lenY;
       double *X, *Y;
       double *Ad;
-      size_t *Ap, *Ai, *Aj;
+      int *Ap, *Ai, *Aj;
+      int p;
 
       if (TransA == CblasNoTrans)
         {
@@ -151,7 +152,7 @@ gsl_spblas_dgemv(const CBLAS_TRANSPOSE_t TransA, const double alpha,
               Aj = A->i;
             }
 
-          for (p = 0; p < A->nz; ++p)
+          for (p = 0; p < (int) A->nz; ++p)
             {
               Y[Ai[p] * incY] += alpha * Ad[p] * X[Aj[p] * incX];
             }

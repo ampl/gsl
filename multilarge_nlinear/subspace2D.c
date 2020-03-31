@@ -414,7 +414,7 @@ subspace2D_preloop(const void * vtrust_state, void * vstate)
             }
         }
 
-      gsl_matrix_transpose_tricpy('L', 0, state->work_JTJ, state->work_JTJ);
+      gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, state->work_JTJ, state->work_JTJ);
 
       /* compute work_JTJ = Q^T D^{-1} J^T J D^{-1} Q */
       gsl_linalg_QR_matQ(state->W, state->tau, state->work_JTJ);

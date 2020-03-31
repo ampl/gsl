@@ -18,7 +18,7 @@ Simone Piccardi (piccardi@fi.infn.it) - Ntuples
 Carlo Perassi (carlo@linux.it) - Additional random number generators
 Dan, Ho-Jin (hjdan@sys713.kaist.ac.kr) - divided differences interpolation
 Szymon Jaroszewicz (sj@cs.umb.edu) - combinations
-Nicolas Darnis (ndarnis@cvf.fr) - cyclic functions and the initial functions for
+Nicolas Darnis (ndarnis@free.fr) - cyclic functions and the initial functions for
  canonical permutations.
 Tuomo Keskitalo (tuomo.keskitalo@iki.fi) - multidimensional minimization and 
  ode-initval2 routines for ordinary differential equations

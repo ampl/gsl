@@ -358,6 +358,23 @@ test_sf_sgn (gsl_sf_result r, double sgn, double val_in, double tol, double expe
   return local_s;
 }
 
+int
+test_sf_return (int status, int expect_return, const char * desc)
+{
+  char message_buff[4096];
+  int local_s = 0;
+
+  message_buff[0] = '\0';
+
+  local_s |= test_sf_check_return(message_buff, status, expect_return);
+
+  gsl_test(local_s, desc);
+  if(local_s != 0) {
+    printf("%s", message_buff);
+  }
+  return local_s;
+}
+
 int test_clausen(void)
 {
   gsl_sf_result r;

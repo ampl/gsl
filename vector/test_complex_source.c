@@ -625,6 +625,60 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
     TEST2 (status, "_div division");
   }
 
+  {
+    BASE alpha, beta;
+
+    GSL_REAL(alpha) = (ATOMIC) 1;
+    GSL_IMAG(alpha) = (ATOMIC) 2;
+    GSL_REAL(beta) = (ATOMIC) 3;
+    GSL_IMAG(beta) = (ATOMIC) 4;
+    FUNCTION(gsl_vector, memcpy) (v, a);
+    FUNCTION(gsl_vector, axpby) (alpha, b, beta, v);
+  }
+  
+  {
+    int status = 0;
+    
+    for (i = 0; i < N; i++)
+      {
+        BASE r = FUNCTION(gsl_vector,get) (v, i);
+        ATOMIC real = (-3*(ATOMIC)i-81);
+        ATOMIC imag = (90+13*(ATOMIC)i);
+        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
+            fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+          status = 1;
+      }
+
+    TEST2 (status, "_axpby first");
+  }
+
+  {
+    BASE alpha, beta;
+
+    GSL_REAL(alpha) = (ATOMIC) 1;
+    GSL_IMAG(alpha) = (ATOMIC) 2;
+    GSL_REAL(beta) = (ATOMIC) 0;
+    GSL_IMAG(beta) = (ATOMIC) 0;
+    FUNCTION(gsl_vector, memcpy) (v, a);
+    FUNCTION(gsl_vector, axpby) (alpha, b, beta, v);
+  }
+  
+  {
+    int status = 0;
+    
+    for (i = 0; i < N; i++)
+      {
+        BASE r = FUNCTION(gsl_vector,get) (v, i);
+        ATOMIC real = (-2*(ATOMIC)i-38);
+        ATOMIC imag = (39+6*(ATOMIC)i);
+        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
+            fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+          status = 1;
+      }
+
+    TEST2 (status, "_axpby second");
+  }
+
   FUNCTION(gsl_vector, free) (a);
   FUNCTION(gsl_vector, free) (b);
   FUNCTION(gsl_vector, free) (v);

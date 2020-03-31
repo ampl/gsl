@@ -96,7 +96,7 @@ gsl_linalg_mcholesky_decomp (gsl_matrix * A, gsl_permutation * p,
       size_t i, j;
 
       /* save a copy of A in upper triangle (for later rcond calculation) */
-      gsl_matrix_transpose_tricpy('L', 0, A, A);
+      gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, A, A);
 
       gsl_permutation_init(p);
 

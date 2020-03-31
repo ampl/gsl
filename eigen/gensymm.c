@@ -27,11 +27,16 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 
+#include "recurse.h"
+
 /*
  * This module computes the eigenvalues of a real generalized
  * symmetric-definite eigensystem A x = \lambda B x, where A and
  * B are symmetric, and B is positive-definite.
  */
+
+static int gensymm_standardize_L2(gsl_matrix *A, const gsl_matrix *B);
+static int gensymm_standardize_L3(gsl_matrix *A, const gsl_matrix *B);
 
 /*
 gsl_eigen_gensymm_alloc()
@@ -169,6 +174,32 @@ Notes: A is overwritten by L^{-1} A L^{-t}
 int
 gsl_eigen_gensymm_standardize(gsl_matrix *A, const gsl_matrix *B)
 {
+  return gensymm_standardize_L3(A, B);
+}
+
+/*
+gensymm_standardize_L2()
+  Reduce the generalized symmetric-definite eigenproblem to
+the standard symmetric eigenproblem by computing
+
+C = L^{-1} A L^{-t}
+
+where L L^t is the Cholesky decomposition of B
+
+Inputs: A - (input/output) real symmetric matrix
+        B - real symmetric, positive definite matrix in Cholesky form
+
+Return: success
+
+Notes:
+1) A is overwritten by L^{-1} A L^{-t}
+
+2) Based on LAPACK DSYGS2 using Level 2 BLAS
+*/
+
+static int
+gensymm_standardize_L2(gsl_matrix *A, const gsl_matrix *B)
+{
   const size_t N = A->size1;
   size_t i;
   double a, b, c;
@@ -210,4 +241,85 @@ gsl_eigen_gensymm_standardize(gsl_matrix *A, const gsl_matrix *B)
     }
 
   return GSL_SUCCESS;
-} /* gsl_eigen_gensymm_standardize() */
+}
+
+/*
+gensymm_standardize_L3()
+  Reduce the generalized symmetric-definite eigenproblem to
+the standard symmetric eigenproblem by computing
+
+C = L^{-1} A L^{-t}
+
+where L L^t is the Cholesky decomposition of B
+
+Inputs: A - (input/output) real symmetric matrix
+        B - real symmetric, positive definite matrix in Cholesky form
+
+Return: success
+
+Notes:
+1) A is overwritten by L^{-1} A L^{-t}
+
+2) Based on ReLAPACK recursive algorithm using Level 3 BLAS
+*/
+
+static int
+gensymm_standardize_L3(gsl_matrix *A, const gsl_matrix *B)
+{
+  const size_t N = A->size1;
+
+  if (N <= CROSSOVER_GENSYMM)
+    {
+      /* use Level 2 algorithm */
+      return gensymm_standardize_L2(A, B);
+    }
+  else
+    {
+      /*
+       * partition matrices:
+       *
+       * A11 A12  and  B11 B12
+       * A21 A22       B21 B22
+       *
+       * where A11 and B11 are N1-by-N1
+       */
+      int status;
+      const size_t N1 = GSL_EIGEN_SPLIT(N);
+      const size_t N2 = N - N1;
+
+      gsl_matrix_view A11 = gsl_matrix_submatrix(A, 0, 0, N1, N1);
+      gsl_matrix_view A21 = gsl_matrix_submatrix(A, N1, 0, N2, N1);
+      gsl_matrix_view A22 = gsl_matrix_submatrix(A, N1, N1, N2, N2);
+
+      gsl_matrix_const_view B11 = gsl_matrix_const_submatrix(B, 0, 0, N1, N1);
+      gsl_matrix_const_view B21 = gsl_matrix_const_submatrix(B, N1, 0, N2, N1);
+      gsl_matrix_const_view B22 = gsl_matrix_const_submatrix(B, N1, N1, N2, N2);
+
+      /* recursion on (A11, B11) */
+      status = gensymm_standardize_L3(&A11.matrix, &B11.matrix);
+      if (status)
+        return status;
+
+      /* A21 = A21 * B11^{-1} */
+      gsl_blas_dtrsm(CblasRight, CblasLower, CblasTrans, CblasNonUnit, 1.0, &B11.matrix, &A21.matrix);
+
+      /* A21 = A21 - 1/2 B21 A11 */
+      gsl_blas_dsymm(CblasRight, CblasLower, -0.5, &A11.matrix, &B21.matrix, 1.0, &A21.matrix);
+
+      /* A22 = A22 - A21 * B21' - B21 * A21' */
+      gsl_blas_dsyr2k(CblasLower, CblasNoTrans, -1.0, &A21.matrix, &B21.matrix, 1.0, &A22.matrix);
+
+      /* A21 = A21 - 1/2 B21 A11 */
+      gsl_blas_dsymm(CblasRight, CblasLower, -0.5, &A11.matrix, &B21.matrix, 1.0, &A21.matrix);
+
+      /* A21 = B22 * A21^{-1} */
+      gsl_blas_dtrsm(CblasLeft, CblasLower, CblasNoTrans, CblasNonUnit, 1.0, &B22.matrix, &A21.matrix);
+
+      /* recursion on (A22, B22) */
+      status = gensymm_standardize_L3(&A22.matrix, &B22.matrix);
+      if (status)
+        return status;
+
+      return GSL_SUCCESS;
+    }
+}

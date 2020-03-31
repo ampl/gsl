@@ -97,9 +97,7 @@ gsl_linalg_LQ_decomp (gsl_matrix * A, gsl_vector * tau)
           /* Compute the Householder transformation to reduce the j-th
              column of the matrix to a multiple of the j-th unit vector */
 
-          gsl_vector_view c_full = gsl_matrix_row (A, i);
-          gsl_vector_view c = gsl_vector_subvector (&(c_full.vector), i, M-i);
-
+          gsl_vector_view c = gsl_matrix_subrow (A, i, i, M - i);
           double tau_i = gsl_linalg_householder_transform (&(c.vector));
 
           gsl_vector_set (tau, i, tau_i);
@@ -176,11 +174,11 @@ gsl_linalg_LQ_svx_T (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector *
     }
   else
     {
-      /* compute rhs = Q^T b */
+      /* compute rhs = b Q^T */
 
       gsl_linalg_LQ_vecQT (LQ, tau, x);
 
-      /* Solve R x = rhs, storing x in-place */
+      /* Solve L^T x = rhs, storing x in-place */
 
       gsl_blas_dtrsv (CblasLower, CblasTrans, CblasNonUnit, LQ, x);
 
@@ -326,9 +324,6 @@ gsl_linalg_L_solve_T (const gsl_matrix * L, const gsl_vector * b, gsl_vector * x
     }
 }
 
-
-
-
 int
 gsl_linalg_LQ_vecQT (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * v)
 {
@@ -358,6 +353,7 @@ gsl_linalg_LQ_vecQT (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector *
           double ti = gsl_vector_get (tau, i);
           gsl_linalg_householder_hv (ti, &(h.vector), &(w.vector));
         }
+
       return GSL_SUCCESS;
     }
 }
@@ -401,16 +397,16 @@ gsl_linalg_LQ_vecQ (const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * 
 int
 gsl_linalg_LQ_unpack (const gsl_matrix * LQ, const gsl_vector * tau, gsl_matrix * Q, gsl_matrix * L)
 {
-  const size_t N = LQ->size1;
-  const size_t M = LQ->size2;
+  const size_t M = LQ->size1;
+  const size_t N = LQ->size2;
 
-  if (Q->size1 != M || Q->size2 != M)
+  if (Q->size1 != N || Q->size2 != N)
     {
-      GSL_ERROR ("Q matrix must be M x M", GSL_ENOTSQR);
+      GSL_ERROR ("Q matrix must be N x N", GSL_ENOTSQR);
     }
-  else if (L->size1 != N || L->size2 != M)
+  else if (L->size1 != M || L->size2 != N)
     {
-      GSL_ERROR ("R matrix must be N x M", GSL_ENOTSQR);
+      GSL_ERROR ("L matrix must be N x M", GSL_EBADLEN);
     }
   else if (tau->size != GSL_MIN (M, N))
     {
@@ -426,24 +422,22 @@ gsl_linalg_LQ_unpack (const gsl_matrix * LQ, const gsl_vector * tau, gsl_matrix 
 
       for (i = GSL_MIN (M, N); i-- > 0;)
         {
-          gsl_vector_const_view c = gsl_matrix_const_row (LQ, i);
-          gsl_vector_const_view h = gsl_vector_const_subvector (&c.vector,
-                                                                i, M - i);
-          gsl_matrix_view m = gsl_matrix_submatrix (Q, i, i, M - i, M - i);
+          gsl_vector_const_view h = gsl_matrix_const_subrow (LQ, i, i, N - i);
+          gsl_matrix_view m = gsl_matrix_submatrix (Q, i, i, N - i, N - i);
           double ti = gsl_vector_get (tau, i);
           gsl_linalg_householder_mh (ti, &h.vector, &m.matrix);
         }
 
       /*  Form the lower triangular matrix L from a packed LQ matrix */
 
-      for (i = 0; i < N; i++)
+      for (i = 0; i < M; i++)
         {
-	    l_border=GSL_MIN(i,M-1);
-		for (j = 0; j <= l_border ; j++)
-		    gsl_matrix_set (L, i, j, gsl_matrix_get (LQ, i, j));
+          l_border = GSL_MIN(i, N - 1);
+          for (j = 0; j <= l_border ; j++)
+            gsl_matrix_set (L, i, j, gsl_matrix_get (LQ, i, j));
 
-	    for (j = l_border+1; j < M; j++)
-		gsl_matrix_set (L, i, j, 0.0);
+          for (j = l_border+1; j < N; j++)
+            gsl_matrix_set (L, i, j, 0.0);
         }
 
       return GSL_SUCCESS;
@@ -558,6 +552,108 @@ gsl_linalg_LQ_LQsolve (gsl_matrix * Q, gsl_matrix * L, const gsl_vector * b, gsl
       /* Solve x^T L = sol, storing x in-place */
 
       gsl_blas_dtrsv (CblasLower, CblasTrans, CblasNonUnit, L, x);
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_LQ_lssolve()
+  Find the minimum norm least squares solution to the underdetermined system
+
+  A x = b
+
+for M <= N using the LQ factorization A = L Q.
+*/
+
+int
+gsl_linalg_LQ_lssolve(const gsl_matrix * LQ, const gsl_vector * tau, const gsl_vector * b, gsl_vector * x, gsl_vector * residual)
+{
+  const size_t M = LQ->size1;
+  const size_t N = LQ->size2;
+
+  if (M > N)
+    {
+      GSL_ERROR ("LQ matrix must have M<=N", GSL_EBADLEN);
+    }
+  else if (M != b->size)
+    {
+      GSL_ERROR ("matrix size must match b size", GSL_EBADLEN);
+    }
+  else if (N != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else if (M != residual->size)
+    {
+      GSL_ERROR ("matrix size must match residual size", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_const_view L1 = gsl_matrix_const_submatrix (LQ, 0, 0, M, M); /* L_1 */
+      gsl_vector_view x1 = gsl_vector_subvector(x, 0, M);
+      size_t i;
+
+      gsl_vector_memcpy(&x1.vector, b);
+
+      /* zero x(M+1:N) */
+      for (i = M; i < N; ++i)
+        gsl_vector_set(x, i, 0.0);
+
+      /* compute z = L_1^{-1} b */
+      gsl_blas_dtrsv(CblasLower, CblasNoTrans, CblasNonUnit, &L1.matrix, &x1.vector);
+
+      /* residual = b - L_1 z */
+      gsl_vector_memcpy(residual, &x1.vector);
+      gsl_blas_dtrmv(CblasLower, CblasNoTrans, CblasNonUnit, &L1.matrix, residual);
+      gsl_vector_sub(residual, b);
+      gsl_vector_scale(residual, -1.0);
+
+      /* compute x = Q_1^T L_1^{-1} b = Q^T [ L_1^{-1} b ; 0 ] */
+      gsl_linalg_LQ_QTvec(LQ, tau, x);
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_LQ_QTvec()
+  Compute y = Q^T x
+
+Inputs: LQ  - LQ matrix in packed format
+        tau - tau vector
+        v   - on input, x; on output, y = Q^T x
+*/
+
+int
+gsl_linalg_LQ_QTvec(const gsl_matrix * LQ, const gsl_vector * tau, gsl_vector * v)
+{
+  const size_t M = LQ->size1;
+  const size_t N = LQ->size2;
+  const size_t v_size = v->size;
+
+  if (tau->size != GSL_MIN (M, N))
+    {
+      GSL_ERROR ("size of tau must be MIN(M,N)", GSL_EBADLEN);
+    }
+  else if (v_size < GSL_MIN(M, N))
+    {
+      GSL_ERROR ("vector size must be at least MIN(M,N)", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      /* compute Q^T v */
+
+      for (i = GSL_MIN (M, N); i-- > 0;) 
+        {
+          gsl_vector_const_view h = gsl_matrix_const_subrow (LQ, i, i, v_size - i);
+          gsl_vector_view w = gsl_vector_subvector (v, i, v_size - i);
+          double ti = gsl_vector_get (tau, i);
+
+          gsl_linalg_householder_hv (ti, &(h.vector), &(w.vector));
+        }
 
       return GSL_SUCCESS;
     }

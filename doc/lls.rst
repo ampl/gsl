@@ -1849,17 +1849,18 @@ and adds random noise to determine the observation value
 :math:`y_i`. The entries of the least squares matrix are
 :math:`X_{ij} = t_i^j`, representing a polynomial fit. The
 matrix is highly ill-conditioned, with a condition number
-of about :math:`1.4 \cdot 10^{11}`. The program accumulates the
+of about :math:`2.4 \cdot 10^{11}`. The program accumulates the
 matrix into the least squares system in 5 blocks, each with
 10000 rows. This way the full matrix :math:`X` is never
 stored in memory. We solve the system with both the
 normal equations and TSQR methods. The results are shown
-in :numref:`fig_multilarge`. In the top left plot, we see the unregularized
-normal equations solution has larger error than TSQR due to
-the ill-conditioning of the matrix. In the bottom left plot,
-we show the L-curve, which exhibits multiple corners.
+in :numref:`fig_multilarge`. In the top left plot, the TSQR
+solution provides a reasonable agreement to the exact solution,
+while the normal equations method fails completely since the
+Cholesky factorization fails due to the ill-conditioning of the matrix.
+In the bottom left plot, we show the L-curve calculated from TSQR, which exhibits multiple corners.
 In the top right panel, we plot a regularized solution using
-:math:`\lambda = 10^{-6}`. The TSQR and normal solutions now agree,
+:math:`\lambda = 10^{-5}`. The TSQR and normal solutions now agree,
 however they are unable to provide a good fit due to the damping.
 This indicates that for some ill-conditioned
 problems, regularizing the normal equations does not improve the

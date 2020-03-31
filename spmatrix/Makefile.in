@@ -95,8 +95,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgslspmatrix_la_LIBADD =
-am_libgslspmatrix_la_OBJECTS = spcompress.lo spcopy.lo spgetset.lo \
-	spio.lo spmatrix.lo spoper.lo spprop.lo spswap.lo
+am_libgslspmatrix_la_OBJECTS = compress.lo copy.lo file.lo getset.lo \
+	init.lo minmax.lo oper.lo prop.lo util.lo swap.lo
 libgslspmatrix_la_OBJECTS = $(am_libgslspmatrix_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -104,10 +104,10 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_test_OBJECTS = test.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
-test_DEPENDENCIES = libgslspmatrix.la ../spblas/libgslspblas.la \
-	../test/libgsltest.la ../blas/libgslblas.la \
-	../cblas/libgslcblas.la ../matrix/libgslmatrix.la \
-	../vector/libgslvector.la ../block/libgslblock.la \
+test_DEPENDENCIES = libgslspmatrix.la ../bst/libgslbst.la \
+	../test/libgsltest.la ../matrix/libgslmatrix.la \
+	../vector/libgslvector.la ../blas/libgslblas.la \
+	../cblas/libgslcblas.la ../block/libgslblock.la \
 	../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la \
 	../rng/libgslrng.la
 AM_V_P = $(am__v_P_@AM_V@)
@@ -522,13 +522,13 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslspmatrix.la 
-pkginclude_HEADERS = gsl_spmatrix.h
-libgslspmatrix_la_SOURCES = spcompress.c spcopy.c spgetset.c spio.c spmatrix.c spoper.c spprop.c spswap.c
+pkginclude_HEADERS = gsl_spmatrix.h gsl_spmatrix_char.h gsl_spmatrix_double.h gsl_spmatrix_float.h gsl_spmatrix_int.h gsl_spmatrix_long_double.h gsl_spmatrix_long.h gsl_spmatrix_short.h gsl_spmatrix_uchar.h gsl_spmatrix_uint.h gsl_spmatrix_ulong.h gsl_spmatrix_ushort.h gsl_spmatrix_complex_float.h gsl_spmatrix_complex_double.h gsl_spmatrix_complex_long_double.h
+libgslspmatrix_la_SOURCES = compress.c copy.c file.c getset.c init.c minmax.c oper.c prop.c util.c swap.c
 AM_CPPFLAGS = -I$(top_srcdir)
-noinst_HEADERS = avl.c
+noinst_HEADERS = compress_source.c copy_source.c file_source.c getset_source.c getset_complex_source.c init_source.c minmax_source.c oper_source.c oper_complex_source.c prop_source.c swap_source.c test_source.c test_complex_source.c
 TESTS = $(check_PROGRAMS)
-test_LDADD = libgslspmatrix.la ../spblas/libgslspblas.la ../test/libgsltest.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la  ../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la ../rng/libgslrng.la
 test_SOURCES = test.c
+test_LDADD = libgslspmatrix.la ../bst/libgslbst.la ../test/libgsltest.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../block/libgslblock.la  ../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la ../rng/libgslrng.la
 all: all-am
 
 .SUFFIXES:
@@ -597,15 +597,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spcompress.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spcopy.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spgetset.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spio.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spmatrix.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spoper.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spprop.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spswap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compress.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/copy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getset.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/minmax.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prop.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/swap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

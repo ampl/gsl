@@ -50,8 +50,8 @@ int gsl_spblas_dgemv(const CBLAS_TRANSPOSE_t TransA, const double alpha,
 int gsl_spblas_dgemm(const double alpha, const gsl_spmatrix *A,
                      const gsl_spmatrix *B, gsl_spmatrix *C);
 size_t gsl_spblas_scatter(const gsl_spmatrix *A, const size_t j,
-                          const double alpha, size_t *w, double *x,
-                          const size_t mark, gsl_spmatrix *C, size_t nz);
+                          const double alpha, int *w, double *x,
+                          const int mark, gsl_spmatrix *C, size_t nz);
 
 __END_DECLS
 

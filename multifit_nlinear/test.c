@@ -53,7 +53,7 @@ int
 main (void)
 {
   const gsl_multifit_nlinear_trs **nlinear_trs[6];
-  const gsl_multifit_nlinear_solver **nlinear_solvers[4];
+  const gsl_multifit_nlinear_solver **nlinear_solvers[5];
   const gsl_multifit_nlinear_scale **nlinear_scales[3];
   const gsl_multifit_nlinear_trs **trs;
   const gsl_multifit_nlinear_solver **solver;
@@ -72,9 +72,10 @@ main (void)
   nlinear_trs[5] = NULL;
 
   nlinear_solvers[0] = &gsl_multifit_nlinear_solver_cholesky;
-  nlinear_solvers[1] = &gsl_multifit_nlinear_solver_qr;
-  nlinear_solvers[2] = &gsl_multifit_nlinear_solver_svd;
-  nlinear_solvers[3] = NULL;
+  nlinear_solvers[1] = &gsl_multifit_nlinear_solver_mcholesky;
+  nlinear_solvers[2] = &gsl_multifit_nlinear_solver_qr;
+  nlinear_solvers[3] = &gsl_multifit_nlinear_solver_svd;
+  nlinear_solvers[4] = NULL;
 
   /* skip Marquardt scaling since it won't pass */
   nlinear_scales[0] = &gsl_multifit_nlinear_scale_levenberg;
@@ -92,6 +93,11 @@ main (void)
       for (solver = nlinear_solvers[j]; solver != NULL; solver = nlinear_solvers[++j])
         {
           size_t k = 0;
+
+          /* don't use Cholesky solver with dogleg methods */
+          if (i > 1 && *solver == gsl_multifit_nlinear_solver_cholesky)
+            continue;
+
           fprintf(stderr, "solver = %s\n", (*solver)->name);
           for (scale = nlinear_scales[k]; scale != NULL; scale = nlinear_scales[++k])
             {

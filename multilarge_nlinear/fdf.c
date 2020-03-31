@@ -85,7 +85,8 @@ gsl_multilarge_nlinear_alloc (const gsl_multilarge_nlinear_type * T,
       GSL_ERROR_VAL ("failed to allocate space for g", GSL_ENOMEM, 0);
     }
 
-  if (w->params.solver == gsl_multilarge_nlinear_solver_cholesky)
+  if (w->params.solver == gsl_multilarge_nlinear_solver_cholesky ||
+      w->params.solver == gsl_multilarge_nlinear_solver_mcholesky)
     {
       w->JTJ = gsl_matrix_alloc (p, p);
       if (w->JTJ == 0) 
@@ -485,7 +486,7 @@ gsl_multilarge_nlinear_eval_df(const CBLAS_TRANSPOSE_t TransJ,
     }
   else
     {
-      int status;
+      int status = GSL_SUCCESS;
 
       if (fdf->df)
         {
@@ -539,7 +540,7 @@ gsl_multilarge_nlinear_eval_fvv(const double h,
                                 gsl_vector *yvv,
                                 gsl_vector *work)
 {
-  int status;
+  int status = GSL_SUCCESS;
   
   if (fdf->fvv != NULL)
     {

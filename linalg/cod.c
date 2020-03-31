@@ -351,8 +351,9 @@ gsl_linalg_COD_unpack(const gsl_matrix * QRZT, const gsl_vector * tau_Q,
         {
           gsl_vector_const_view h = gsl_matrix_const_subcolumn (QRZT, i, i, M - i);
           gsl_matrix_view m = gsl_matrix_submatrix (Q, i, i, M - i, M - i);
+          gsl_vector_view work = gsl_matrix_subcolumn (R, 0, 0, M - i);
           double ti = gsl_vector_get (tau_Q, i);
-          gsl_linalg_householder_hm (ti, &h.vector, &m.matrix);
+          gsl_linalg_householder_left (ti, &h.vector, &m.matrix, &work.vector);
         }
 
       /* form Z matrix */
@@ -368,7 +369,7 @@ gsl_linalg_COD_unpack(const gsl_matrix * QRZT, const gsl_vector * tau_Q,
 
       /* copy rank-by-rank upper triangle of QRZT into R and zero the rest */
       gsl_matrix_set_zero(R);
-      gsl_matrix_tricpy('U', 1, &R11.matrix, &QRZT11.matrix);
+      gsl_matrix_tricpy(CblasUpper, CblasNonUnit, &R11.matrix, &QRZT11.matrix);
 
       return GSL_SUCCESS;
     }
@@ -628,7 +629,7 @@ Inputs: QRZT  - encoded COD matrix
         tau_Z - Householder scalars for Z
         rank  - matrix rank
         v     - on input, vector of length N
-                on output, Z^T * v
+                on output, Z * v
 */
 
 static int
@@ -707,7 +708,7 @@ cod_trireg_solve (const gsl_matrix * R, const double lambda, const gsl_vector * 
     }
 
   /* copy R and b to preserve input and initialise S; store diag(R) in work */
-  gsl_matrix_transpose_tricpy('U', 0, S, R);
+  gsl_matrix_transpose_tricpy(CblasUpper, CblasUnit, S, R);
   gsl_vector_memcpy(work, &diag.vector);
   gsl_vector_memcpy(x, b);
 

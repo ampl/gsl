@@ -1,6 +1,6 @@
-/* spprop.c
+/* spmatrix/prop_source.c
  * 
- * Copyright (C) 2014 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#include <stdlib.h>
-
-#include <gsl/gsl_spmatrix.h>
-#include <gsl/gsl_errno.h>
-
-/*
-gsl_spmatrix_equal()
-  Return 1 if a = b, 0 otherwise
-*/
-
 int
-gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
+FUNCTION (gsl_spmatrix, equal) (const TYPE (gsl_spmatrix) * a, const TYPE (gsl_spmatrix) * b)
 {
   const size_t M = a->size1;
   const size_t N = a->size2;
@@ -45,12 +34,13 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
   else
     {
       const size_t nz = a->nz;
-      size_t n;
+      size_t n, r;
 
+      /* check for different number of non-zero elements */
       if (nz != b->nz)
-        return 0; /* different number of non-zero elements */
+        return 0;
 
-      if (GSL_SPMATRIX_ISTRIPLET(a))
+      if (GSL_SPMATRIX_ISCOO(a))
         {
           /*
            * triplet formats could be out of order but identical, so use
@@ -58,24 +48,36 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
            */
           for (n = 0; n < nz; ++n)
             {
-              double bij = gsl_spmatrix_get(b, a->i[n], a->p[n]);
+              ATOMIC * bptr = (ATOMIC *) FUNCTION (gsl_spmatrix, ptr) (b, a->i[n], a->p[n]);
 
-              if (a->data[n] != bij)
+              if (bptr == NULL)
                 return 0;
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                {
+                  if (a->data[MULTIPLICITY * n + r] != *(bptr + r))
+                    return 0;
+                }
             }
         }
-      else if (GSL_SPMATRIX_ISCCS(a))
+      else if (GSL_SPMATRIX_ISCSC(a))
         {
           /*
-           * for CCS, both matrices should have everything
+           * for CSC, both matrices should have everything
            * in the same order
            */
 
           /* check row indices and data */
           for (n = 0; n < nz; ++n)
             {
-              if ((a->i[n] != b->i[n]) || (a->data[n] != b->data[n]))
+              if (a->i[n] != b->i[n])
                 return 0;
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                {
+                  if (a->data[MULTIPLICITY * n + r] != b->data[MULTIPLICITY * n + r])
+                    return 0;
+                }
             }
 
           /* check column pointers */
@@ -85,18 +87,24 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
                 return 0;
             }
         }
-      else if (GSL_SPMATRIX_ISCRS(a))
+      else if (GSL_SPMATRIX_ISCSR(a))
         {
           /*
-           * for CRS, both matrices should have everything
+           * for CSR, both matrices should have everything
            * in the same order
            */
 
           /* check column indices and data */
           for (n = 0; n < nz; ++n)
             {
-              if ((a->i[n] != b->i[n]) || (a->data[n] != b->data[n]))
+              if (a->i[n] != b->i[n])
                 return 0;
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                {
+                  if (a->data[MULTIPLICITY * n + r] != b->data[MULTIPLICITY * n + r])
+                    return 0;
+                }
             }
 
           /* check row pointers */
@@ -113,4 +121,4 @@ gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b)
 
       return 1;
     }
-} /* gsl_spmatrix_equal() */
+}

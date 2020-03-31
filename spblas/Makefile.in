@@ -103,11 +103,11 @@ am__v_lt_1 =
 am_test_OBJECTS = test.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_DEPENDENCIES = libgslspblas.la ../spmatrix/libgslspmatrix.la \
-	../test/libgsltest.la ../blas/libgslblas.la \
-	../cblas/libgslcblas.la ../matrix/libgslmatrix.la \
-	../vector/libgslvector.la ../block/libgslblock.la \
-	../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la \
-	../rng/libgslrng.la
+	../bst/libgslbst.la ../test/libgsltest.la \
+	../blas/libgslblas.la ../cblas/libgslcblas.la \
+	../matrix/libgslmatrix.la ../vector/libgslvector.la \
+	../block/libgslblock.la ../sys/libgslsys.la \
+	../err/libgslerr.la ../utils/libutils.la ../rng/libgslrng.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -524,7 +524,7 @@ pkginclude_HEADERS = gsl_spblas.h
 libgslspblas_la_SOURCES = spdgemm.c spdgemv.c
 AM_CPPFLAGS = -I$(top_srcdir)
 TESTS = $(check_PROGRAMS)
-test_LDADD = libgslspblas.la ../spmatrix/libgslspmatrix.la ../test/libgsltest.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la  ../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la ../rng/libgslrng.la
+test_LDADD = libgslspblas.la ../spmatrix/libgslspmatrix.la ../bst/libgslbst.la ../test/libgsltest.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la  ../sys/libgslsys.la ../err/libgslerr.la ../utils/libutils.la ../rng/libgslrng.la
 test_SOURCES = test.c
 all: all-am
 

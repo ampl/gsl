@@ -39,7 +39,7 @@ shaw_gcv_G(const double lambda, const gsl_matrix * X, const gsl_vector * y,
   /* invert (X^T X + lambda*I) */
   gsl_linalg_cholesky_decomp1(XTX);
   gsl_linalg_cholesky_invert(XTX);
-  gsl_matrix_transpose_tricpy('L', 0, XTX, XTX);
+  gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, XTX, XTX);
 
   /* XI = (X^T X + lambda*I)^{-1} X^T */
   gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, XTX, X, 0.0, XI);

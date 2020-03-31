@@ -1,4 +1,66 @@
-* What is new in gsl-2.5:
+* What is new in gsl-2.6:
+
+** add BLAS calls for the following functions:
+     - gsl_vector_memcpy
+     - gsl_vector_scale
+     - gsl_matrix_memcpy
+     - gsl_matrix_transpose_memcpy
+     - gsl_matrix_tricpy
+     - gsl_matrix_transpose_tricpy
+
+** deprecated functions gsl_linalg_complex_householder_hm and
+   gsl_linalg_complex_householder_mh
+
+** add unit tests for gsl_linalg_symmtd and gsl_linalg_hermtd
+
+** multilarge TSQR algorithm has been converted to use the new Level 3 QR decomposition
+
+** nonlinear least squares Cholesky solver now uses the new Level 3 BLAS
+   method; the old modified Cholesky solver is still available under
+   gsl_multifit_nlinear_solver_mcholesky and gsl_multilarge_nlinear_solver_mcholesky
+
+** implemented Level 3 BLAS versions of several linear algebra routines:
+     - Triangular matrix inversion
+     - Cholesky decomposition and inversion (real and complex)
+     - LU decomposition and inversion (real and complex)
+     - QR decomposition (courtesy of Julien Langou)
+     - Generalized symmetric/hermitian eigensystem reduction to standard form
+
+** removed deprecated function gsl_linalg_hessenberg()
+
+** renamed gsl_interp2d_eval_e_extrap() to gsl_interp2d_eval_extrap_e()
+   to match documentation (reported by D. Lebrun-Grandie)
+
+** renamed some of the gsl_sf_hermite functions to be more consistent
+   with rest of the library, and deprecated old function names
+
+** updated gsl_sf_hermite_func() to use a newer algorithm
+   due to B. Bunck which is more stable for large x; also added
+   gsl_sf_hermite_func_fast() which uses the faster Cauchy integral
+   algorithm in the same paper by Bunck
+
+** add gsl_vector_axpby()
+
+** add un-pivoted LDLT decomposition and its banded
+   variant (gsl_linalg_ldlt_* and gsl_linalg_ldlt_band_*)
+
+** add binary search tree module (gsl_bst); based on GNU libavl
+
+** remove -u flag to gsl-histogram
+
+** updated spmatrix module
+   - added routines and data structures for all types (float,uint,char,...)
+   - added gsl_spmatrix_scale_columns() and gsl_spmatrix_scale_rows()
+   - added gsl_spmatrix_add_to_dense()
+   - more efficient reallocation of COO/triplet matrices (no longer rebuilds binary tree)
+   - enhanced test suite
+   - added gsl_spmatrix_min_index()
+
+** add routines for banded Cholesky decomposition (gsl_linalg_cholesky_band_*)
+
+** documented gsl_linalg_LQ routines and added gsl_linalg_LQ_lssolve()
+
+* What was new in gsl-2.5:
 
 ** doc bug fix in binomial distribution figure (Damien Desfontaines)
 
@@ -27,7 +89,7 @@
 ** bug fix in deprecated functions gsl_multifit_wlinear_svd and
    gsl_multifit_wlinear_usvd (reported by Vlad Koli)
 
-** documention corrected to state that gsl_sf_legendre functions do
+** documentation corrected to state that gsl_sf_legendre functions do
    not include Condon-Shortley phase by default
 
 ** bug fix in exponential fitting example when using larger number

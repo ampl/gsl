@@ -1,6 +1,7 @@
 /* linalg/sytd.c
  * 
  * Copyright (C) 2001, 2007 Brian Gough
+ * Copyright (C) 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +71,7 @@ gsl_linalg_symmtd_decomp (gsl_matrix * A, gsl_vector * tau)
     }
   else if (tau->size + 1 != A->size1)
     {
-      GSL_ERROR ("size of tau must be (matrix size - 1)", GSL_EBADLEN);
+      GSL_ERROR ("size of tau must be N-1", GSL_EBADLEN);
     }
   else
     {
@@ -79,18 +80,17 @@ gsl_linalg_symmtd_decomp (gsl_matrix * A, gsl_vector * tau)
   
       for (i = 0 ; i < N - 2; i++)
         {
-          gsl_vector_view c = gsl_matrix_column (A, i);
-          gsl_vector_view v = gsl_vector_subvector (&c.vector, i + 1, N - (i + 1));
+          gsl_vector_view v = gsl_matrix_subcolumn (A, i, i + 1, N - i - 1);
           double tau_i = gsl_linalg_householder_transform (&v.vector);
           
           /* Apply the transformation H^T A H to the remaining columns */
 
           if (tau_i != 0.0) 
             {
-              gsl_matrix_view m = gsl_matrix_submatrix (A, i + 1, i + 1, 
-                                                        N - (i+1), N - (i+1));
+              gsl_matrix_view m = gsl_matrix_submatrix (A, i + 1, i + 1, N - i - 1, N - i - 1);
               double ei = gsl_vector_get(&v.vector, 0);
-              gsl_vector_view x = gsl_vector_subvector (tau, i, N-(i+1));
+              gsl_vector_view x = gsl_vector_subvector (tau, i, N - i - 1);
+
               gsl_vector_set (&v.vector, 0, 1.0);
               
               /* x = tau * A * v */
@@ -100,7 +100,7 @@ gsl_linalg_symmtd_decomp (gsl_matrix * A, gsl_vector * tau)
               {
                 double xv, alpha;
                 gsl_blas_ddot(&x.vector, &v.vector, &xv);
-                alpha = - (tau_i / 2.0) * xv;
+                alpha = -0.5 * tau_i * xv;
                 gsl_blas_daxpy(alpha, &v.vector, &x.vector);
               }
               
@@ -150,7 +150,8 @@ gsl_linalg_symmtd_unpack (const gsl_matrix * A,
   else
     {
       const size_t N = A->size1;
-
+      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);;
+      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);;
       size_t i;
 
       /* Initialize Q to the identity */
@@ -159,30 +160,19 @@ gsl_linalg_symmtd_unpack (const gsl_matrix * A,
 
       for (i = N - 2; i-- > 0;)
         {
-          gsl_vector_const_view c = gsl_matrix_const_column (A, i);
-          gsl_vector_const_view h = gsl_vector_const_subvector (&c.vector, i + 1, N - (i+1));
+          gsl_vector_const_view h = gsl_matrix_const_subcolumn (A, i, i + 1, N - i - 1);
           double ti = gsl_vector_get (tau, i);
+          gsl_matrix_view m = gsl_matrix_submatrix (Q, i + 1, i + 1, N - i - 1, N - i - 1);
+          gsl_vector_view work = gsl_vector_subvector(diag, 0, N - i - 1);
 
-          gsl_matrix_view m = gsl_matrix_submatrix (Q, i + 1, i + 1, N-(i+1), N-(i+1));
-
-          gsl_linalg_householder_hm (ti, &h.vector, &m.matrix);
+          gsl_linalg_householder_left (ti, &h.vector, &m.matrix, &work.vector);
         }
 
-      /* Copy diagonal into diag */
+      /* copy diagonal into diag */
+      gsl_vector_memcpy(diag, &d.vector);
 
-      for (i = 0; i < N; i++)
-        {
-          double Aii = gsl_matrix_get (A, i, i);
-          gsl_vector_set (diag, i, Aii);
-        }
-
-      /* Copy subdiagonal into sd */
-
-      for (i = 0; i < N - 1; i++)
-        {
-          double Aji = gsl_matrix_get (A, i+1, i);
-          gsl_vector_set (sdiag, i, Aji);
-        }
+      /* copy subdiagonal into sd */
+      gsl_vector_memcpy(sdiag, &sd.vector);
 
       return GSL_SUCCESS;
     }
@@ -208,24 +198,14 @@ gsl_linalg_symmtd_unpack_T (const gsl_matrix * A,
   else
     {
       const size_t N = A->size1;
+      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);;
+      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);;
 
-      size_t i;
+      /* copy diagonal into diag */
+      gsl_vector_memcpy(diag, &d.vector);
 
-      /* Copy diagonal into diag */
-
-      for (i = 0; i < N; i++)
-        {
-          double Aii = gsl_matrix_get (A, i, i);
-          gsl_vector_set (diag, i, Aii);
-        }
-
-      /* Copy subdiagonal into sdiag */
-
-      for (i = 0; i < N - 1; i++)
-        {
-          double Aij = gsl_matrix_get (A, i+1, i);
-          gsl_vector_set (sdiag, i, Aij);
-        }
+      /* copy subdiagonal into sd */
+      gsl_vector_memcpy(sdiag, &sd.vector);
 
       return GSL_SUCCESS;
     }

@@ -94,7 +94,21 @@ int gsl_interp2d_eval_e(const gsl_interp2d * interp, const double xarr[],
                         const double x, const double y, gsl_interp_accel* xa,
                         gsl_interp_accel* ya, double * z);
 
+#ifndef GSL_DISABLE_DEPRECATED
+
 int gsl_interp2d_eval_e_extrap(const gsl_interp2d * interp,
+                               const double xarr[],
+                               const double yarr[],
+                               const double zarr[],
+                               const double x,
+                               const double y,
+                               gsl_interp_accel * xa,
+                               gsl_interp_accel * ya,
+                               double * z);
+
+#endif /* !GSL_DISABLE_DEPRECATED */
+
+int gsl_interp2d_eval_extrap_e(const gsl_interp2d * interp,
                                const double xarr[],
                                const double yarr[],
                                const double zarr[],

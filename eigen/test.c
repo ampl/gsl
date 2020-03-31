@@ -108,44 +108,23 @@ create_random_posdef_matrix(gsl_matrix *m, gsl_rng *r)
     }
 } /* create_random_posdef_matrix() */
 
-void
-create_random_complex_posdef_matrix(gsl_matrix_complex *m, gsl_rng *r,
-                                    gsl_vector_complex *work)
+static int
+create_random_complex_posdef_matrix(gsl_matrix_complex *m, gsl_rng *r)
 {
   const size_t N = m->size1;
-  size_t i, j;
-  double x, y;
-  gsl_complex z;
-  gsl_complex tau;
+  const double alpha = 10.0 * N;
+  size_t i;
 
-  GSL_SET_IMAG(&z, 0.0);
+  create_random_herm_matrix(m, r, 0, 1);
 
-  /* make a positive diagonal matrix */
-  gsl_matrix_complex_set_zero(m);
   for (i = 0; i < N; ++i)
     {
-      x = gsl_rng_uniform(r);
-      GSL_SET_REAL(&z, x);
-      gsl_matrix_complex_set(m, i, i, z);
+      gsl_complex * mii = gsl_matrix_complex_ptr(m, i, i);
+      GSL_REAL(*mii) += alpha;
     }
 
-  /* now generate random householder reflections and form P D P^H */
-  for (i = 0; i < N; ++i)
-    {
-      /* form complex vector */
-      for (j = 0; j < N; ++j)
-        {
-          x = 2.0 * gsl_rng_uniform(r) - 1.0;
-          y = 2.0 * gsl_rng_uniform(r) - 1.0;
-          GSL_SET_COMPLEX(&z, x, y);
-          gsl_vector_complex_set(work, j, z);
-        }
-
-      tau = gsl_linalg_complex_householder_transform(work);
-      gsl_linalg_complex_householder_hm(tau, work, m);
-      gsl_linalg_complex_householder_mh(gsl_complex_conjugate(tau), work, m);
-    }
-} /* create_random_complex_posdef_matrix() */
+  return GSL_SUCCESS;
+}
 
 void
 create_random_nonsymm_matrix(gsl_matrix *m, gsl_rng *r, int lower,
@@ -866,7 +845,7 @@ test_eigen_gensymm_results (const gsl_matrix * A,
 void
 test_eigen_gensymm(void)
 {
-  size_t N_max = 20;
+  size_t N_max = 50;
   size_t n, i;
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
 
@@ -996,7 +975,7 @@ test_eigen_genherm_results (const gsl_matrix_complex * A,
 void
 test_eigen_genherm(void)
 {
-  size_t N_max = 20;
+  size_t N_max = 50;
   size_t n, i;
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
 
@@ -1010,7 +989,6 @@ test_eigen_genherm(void)
       gsl_vector * evalv = gsl_vector_alloc(n);
       gsl_vector * x = gsl_vector_alloc(n);
       gsl_vector * y = gsl_vector_alloc(n);
-      gsl_vector_complex * work = gsl_vector_complex_alloc(n);
       gsl_matrix_complex * evec = gsl_matrix_complex_alloc(n, n);
       gsl_eigen_genherm_workspace * w = gsl_eigen_genherm_alloc(n);
       gsl_eigen_genhermv_workspace * wv = gsl_eigen_genhermv_alloc(n);
@@ -1018,7 +996,7 @@ test_eigen_genherm(void)
       for (i = 0; i < 5; ++i)
         {
           create_random_herm_matrix(A, r, -10, 10);
-          create_random_complex_posdef_matrix(B, r, work);
+          create_random_complex_posdef_matrix(B, r);
 
           gsl_matrix_complex_memcpy(ma, A);
           gsl_matrix_complex_memcpy(mb, B);
@@ -1058,7 +1036,6 @@ test_eigen_genherm(void)
       gsl_vector_free(evalv);
       gsl_vector_free(x);
       gsl_vector_free(y);
-      gsl_vector_complex_free(work);
       gsl_matrix_complex_free(evec);
       gsl_eigen_genherm_free(w);
       gsl_eigen_genhermv_free(wv);

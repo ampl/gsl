@@ -295,6 +295,7 @@ GSL_VAR const gsl_multifit_nlinear_scale * gsl_multifit_nlinear_scale_more;
 
 /* linear solvers */
 GSL_VAR const gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_cholesky;
+GSL_VAR const gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_mcholesky;
 GSL_VAR const gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_qr;
 GSL_VAR const gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_svd;
 

@@ -23,7 +23,7 @@
  *
  * [ J^T J + mu D^T D ] p = -J^T f
  *
- * using the modified Cholesky decomposition.
+ * using the Cholesky decomposition.
  */
 
 #include <config.h>
@@ -34,7 +34,6 @@
 #include <gsl/gsl_multilarge_nlinear.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
-#include <gsl/gsl_permutation.h>
 
 #include "common.c"
 
@@ -43,7 +42,6 @@ typedef struct
   gsl_matrix *JTJ;           /* J^T J */
   gsl_matrix *work_JTJ;      /* copy of J^T J */
   gsl_vector *rhs;           /* -J^T f, size p */
-  gsl_permutation *perm;     /* permutation matrix for modified Cholesky */
   gsl_vector *work3p;        /* workspace, size 3*p */
   gsl_vector *workn;         /* workspace, size n */
   double mu;                 /* current regularization parameter */
@@ -90,12 +88,6 @@ cholesky_alloc (const size_t n, const size_t p)
       GSL_ERROR_NULL ("failed to allocate space for rhs", GSL_ENOMEM);
     }
 
-  state->perm = gsl_permutation_alloc(p);
-  if (state->perm == NULL)
-    {
-      GSL_ERROR_NULL ("failed to allocate space for perm", GSL_ENOMEM);
-    }
-
   state->work3p = gsl_vector_alloc(3 * p);
   if (state->work3p == NULL)
     {
@@ -127,9 +119,6 @@ cholesky_free(void *vstate)
   if (state->rhs)
     gsl_vector_free(state->rhs);
 
-  if (state->perm)
-    gsl_permutation_free(state->perm);
-
   if (state->work3p)
     gsl_vector_free(state->work3p);
 
@@ -147,7 +136,7 @@ cholesky_init(const void * vtrust_state, void * vstate)
   cholesky_state_t *state = (cholesky_state_t *) vstate;
 
   /* store J^T J normal equations matrix */
-  gsl_matrix_tricpy('L', 1, state->JTJ, trust_state->JTJ);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, state->JTJ, trust_state->JTJ);
 
   return GSL_SUCCESS;
 }
@@ -177,15 +166,15 @@ cholesky_presolve(const double mu, const void * vtrust_state, void * vstate)
   int status;
 
   /* copy lower triangle of A to workspace */
-  gsl_matrix_tricpy('L', 1, JTJ, state->JTJ);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, JTJ, state->JTJ);
 
   /* augment normal equations: A -> A + mu D^T D */
   status = cholesky_regularize(mu, diag, JTJ, state);
   if (status)
     return status;
 
-  /* compute modified Cholesky decomposition */
-  status = gsl_linalg_mcholesky_decomp(JTJ, state->perm, NULL);
+  /* compute Cholesky decomposition */
+  status = gsl_linalg_cholesky_decomp1(JTJ);
   if (status)
     return status;
 
@@ -229,20 +218,28 @@ cholesky_rcond(double * rcond, const gsl_matrix * JTJ, void * vstate)
 {
   int status;
   cholesky_state_t *state = (cholesky_state_t *) vstate;
+  gsl_error_handler_t * err_handler;
   double rcond_JTJ;
 
   /* its possible the current Cholesky decomposition is from the previous
    * iteration so do a new one to be sure we use the right Jacobian */
 
   /* copy lower triangle of JTJ to workspace */
-  gsl_matrix_tricpy('L', 1, state->work_JTJ, JTJ);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, state->work_JTJ, JTJ);
 
-  /* compute modified Cholesky decomposition */
-  status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
+  /* compute Cholesky decomposition, turning off error handler */
+  err_handler = gsl_set_error_handler_off();
+  status = gsl_linalg_cholesky_decomp1(state->work_JTJ);
+  gsl_set_error_handler(err_handler);
+
   if (status)
-    return status;
+    {
+      /* matrix is singular */
+      *rcond = 0.0;
+      return GSL_SUCCESS;
+    }
 
-  status = gsl_linalg_mcholesky_rcond(state->work_JTJ, state->perm, &rcond_JTJ, state->work3p);
+  status = gsl_linalg_cholesky_rcond(state->work_JTJ, &rcond_JTJ, state->work3p);
   if (status == GSL_SUCCESS)
     *rcond = sqrt(rcond_JTJ);
 
@@ -253,20 +250,25 @@ static int
 cholesky_covar(const gsl_matrix * JTJ, gsl_matrix * covar, void * vstate)
 {
   int status;
-  cholesky_state_t *state = (cholesky_state_t *) vstate;
+  gsl_error_handler_t * err_handler;
+
+  (void) vstate;
 
   /* its possible the current Cholesky decomposition is from the previous
    * iteration so do a new one to be sure we use the right Jacobian */
 
   /* copy lower triangle of JTJ to workspace */
-  gsl_matrix_tricpy('L', 1, state->work_JTJ, JTJ);
+  gsl_matrix_tricpy(CblasLower, CblasNonUnit, covar, JTJ);
 
-  /* compute modified Cholesky decomposition */
-  status = gsl_linalg_mcholesky_decomp(state->work_JTJ, state->perm, NULL);
+  /* compute Cholesky decomposition, turning off error handler */
+  err_handler = gsl_set_error_handler_off();
+  status = gsl_linalg_cholesky_decomp1(covar);
+  gsl_set_error_handler(err_handler);
+
   if (status)
     return status;
 
-  status = gsl_linalg_mcholesky_invert(state->work_JTJ, state->perm, covar);
+  status = gsl_linalg_cholesky_invert(covar);
   if (status)
     return status;
 
@@ -280,7 +282,7 @@ cholesky_solve_rhs(const gsl_vector * b, gsl_vector *x, cholesky_state_t *state)
   int status;
   gsl_matrix *JTJ = state->work_JTJ;
 
-  status = gsl_linalg_mcholesky_solve(JTJ, state->perm, b, x);
+  status = gsl_linalg_cholesky_solve(JTJ, b, x);
   if (status)
     return status;
 

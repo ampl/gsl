@@ -95,12 +95,14 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgsllinalg_la_LIBADD =
-am_libgsllinalg_la_OBJECTS = cod.lo condest.lo invtri.lo multiply.lo \
-	exponential.lo tridiag.lo lu.lo luc.lo hh.lo qr.lo qrpt.lo \
-	lq.lo ptlq.lo svd.lo householder.lo householdercomplex.lo \
-	hessenberg.lo hesstri.lo cholesky.lo choleskyc.lo mcholesky.lo \
-	pcholesky.lo symmtd.lo hermtd.lo bidiag.lo balance.lo \
-	balancemat.lo inline.lo
+am_libgsllinalg_la_OBJECTS = cod.lo condest.lo invtri.lo \
+	invtri_complex.lo multiply.lo exponential.lo tridiag.lo lu.lo \
+	luc.lo hh.lo qr.lo qrpt.lo qr_tr.lo rqr.lo lq.lo ptlq.lo \
+	svd.lo householder.lo householdercomplex.lo hessenberg.lo \
+	hesstri.lo cholesky.lo choleskyc.lo mcholesky.lo pcholesky.lo \
+	cholesky_band.lo ldlt.lo ldlt_band.lo symmtd.lo hermtd.lo \
+	bidiag.lo balance.lo balancemat.lo inline.lo trimult.lo \
+	trimult_complex.lo
 libgsllinalg_la_OBJECTS = $(am_libgsllinalg_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -529,8 +531,8 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgsllinalg.la 
 pkginclude_HEADERS = gsl_linalg.h
 AM_CPPFLAGS = -I$(top_srcdir)
-libgsllinalg_la_SOURCES = cod.c condest.c invtri.c multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c mcholesky.c pcholesky.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c inline.c
-noinst_HEADERS = apply_givens.c cholesky_common.c svdstep.c tridiag.h test_cholesky.c test_cod.c test_common.c
+libgsllinalg_la_SOURCES = cod.c condest.c invtri.c invtri_complex.c multiply.c exponential.c tridiag.c tridiag.h lu.c luc.c hh.c qr.c qrpt.c qr_tr.c rqr.c lq.c ptlq.c svd.c householder.c householdercomplex.c hessenberg.c hesstri.c cholesky.c choleskyc.c mcholesky.c pcholesky.c cholesky_band.c ldlt.c ldlt_band.c symmtd.c hermtd.c bidiag.c balance.c balancemat.c inline.c trimult.c trimult_complex.c
+noinst_HEADERS = apply_givens.c cholesky_common.c recurse.h svdstep.c tridiag.h test_cholesky.c test_choleskyc.c test_cod.c test_common.c test_ldlt.c test_lu.c test_luc.c test_lq.c test_qr.c test_tri.c
 TESTS = $(check_PROGRAMS)
 test_SOURCES = test.c
 test_LDADD = libgsllinalg.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../permutation/libgslpermutation.la ../matrix/libgslmatrix.la ../vector/libgslvector.la ../block/libgslblock.la ../complex/libgslcomplex.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la ../rng/libgslrng.la
@@ -606,6 +608,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/balancemat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bidiag.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cholesky.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cholesky_band.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/choleskyc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/condest.Plo@am__quote@
@@ -618,6 +621,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/householdercomplex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invtri.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/invtri_complex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldlt.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldlt_band.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/luc.Plo@am__quote@
@@ -626,11 +632,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ptlq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qr_tr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qrpt.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rqr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/svd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/symmtd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tridiag.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trimult.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trimult_complex.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

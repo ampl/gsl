@@ -216,7 +216,7 @@ The Gaussian Tail Distribution
    .. image:: /images/rand-gaussian-tail.png
 
 .. function:: double gsl_ran_ugaussian_tail (const gsl_rng * r, double a)
-              double gsl_ran_ugaussian_tail_pdf (double :data:`x`, double :data:`a`)
+              double gsl_ran_ugaussian_tail_pdf (double x, double a)
 
    These functions compute results for the tail of a unit Gaussian
    distribution.  They are equivalent to the functions above with a standard

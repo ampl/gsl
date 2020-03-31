@@ -141,6 +141,16 @@ FUNCTION(gsl_vector, div) (TYPE(gsl_vector) * a, const TYPE(gsl_vector) * b)
 int 
 FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const BASE x)
 {
+#if defined(BASE_GSL_COMPLEX)
+
+  gsl_blas_zscal(x, a);
+
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+
+  gsl_blas_cscal(x, a);
+
+#else
+
   const size_t N = a->size;
   const size_t stride = a->stride;
   
@@ -157,6 +167,8 @@ FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const BASE x)
       a->data[2 * i * stride] = ar * xr - ai * xi;
       a->data[2 * i * stride + 1] = ar * xi + ai * xr;
     }
+
+#endif
   
   return GSL_SUCCESS;
 }
@@ -179,4 +191,60 @@ FUNCTION(gsl_vector, add_constant) (TYPE(gsl_vector) * a, const BASE x)
     }
   
   return GSL_SUCCESS;
+}
+
+int
+FUNCTION (gsl_vector, axpby) (const BASE alpha,
+                              const TYPE (gsl_vector) * x,
+                              const BASE beta,
+                              TYPE (gsl_vector) * y)
+{
+  const size_t x_size = x->size;
+
+  if (x_size != y->size)
+    {
+      GSL_ERROR ("vector lengths are not equal", GSL_EBADLEN);
+    }
+  else if (GSL_REAL(beta) == (ATOMIC) 0 && GSL_IMAG(beta) == (ATOMIC) 0)
+    {
+      const size_t x_stride = x->stride;
+      const size_t y_stride = y->stride;
+      const ATOMIC ar = GSL_REAL(alpha);
+      const ATOMIC ai = GSL_IMAG(alpha);
+      size_t j;
+
+      for (j = 0; j < x_size; j++)
+        {
+          ATOMIC xr = x->data[2 * j * x_stride];
+          ATOMIC xi = x->data[2 * j * x_stride + 1];
+
+          y->data[2 * j * y_stride] = ar * xr - ai * xi;
+          y->data[2 * j * y_stride + 1] = ai * xr + ar * xi;
+        }
+
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      const size_t x_stride = x->stride;
+      const size_t y_stride = y->stride;
+      const ATOMIC ar = GSL_REAL(alpha);
+      const ATOMIC ai = GSL_IMAG(alpha);
+      const ATOMIC br = GSL_REAL(beta);
+      const ATOMIC bi = GSL_IMAG(beta);
+      size_t j;
+
+      for (j = 0; j < x_size; j++)
+        {
+          ATOMIC xr = x->data[2 * j * x_stride];
+          ATOMIC xi = x->data[2 * j * x_stride + 1];
+          ATOMIC yr = y->data[2 * j * y_stride];
+          ATOMIC yi = y->data[2 * j * y_stride + 1];
+
+          y->data[2 * j * y_stride] = ar * xr - ai * xi + br * yr - bi * yi;
+          y->data[2 * j * y_stride + 1] = ai * xr + ar * xi + bi * yr + br * yi;
+        }
+
+      return GSL_SUCCESS;
+    }
 }

@@ -1,6 +1,6 @@
-/* spio.c
+/* spmatrix/file_source.c
  * 
- * Copyright (C) 2016 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
  * Copyright (C) 2016 Alexis Tantet
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -18,14 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_spmatrix.h>
-
 /*
 gsl_spmatrix_fprintf()
   Print sparse matrix to file in MatrixMarket format:
@@ -38,13 +30,19 @@ Note that indices start at 1 and not 0
 */
 
 int
-gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
-                     const char *format)
+FUNCTION (gsl_spmatrix, fprintf) (FILE * stream, const TYPE (gsl_spmatrix) * m,
+                                   const char * format)
 {
   int status;
 
   /* print header */
+
+#if defined(BASE_GSL_COMPLEX_LONG) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+  status = fprintf(stream, "%%%%MatrixMarket matrix coordinate complex general\n");
+#else
   status = fprintf(stream, "%%%%MatrixMarket matrix coordinate real general\n");
+#endif
+
   if (status < 0)
     {
       GSL_ERROR("fprintf failed for header", GSL_EFAILED);
@@ -60,23 +58,39 @@ gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
       GSL_ERROR("fprintf failed for dimension header", GSL_EFAILED);
     }
 
-  if (GSL_SPMATRIX_ISTRIPLET(m))
+  if (GSL_SPMATRIX_ISCOO(m))
     {
       size_t n;
 
       for (n = 0; n < m->nz; ++n)
         {
-          status = fprintf(stream, "%u\t%u\t", (unsigned int) m->i[n] + 1, (unsigned int) m->p[n] + 1);
+          status = fprintf(stream, "%d\t%d\t", m->i[n] + 1, m->p[n] + 1);
           if (status < 0)
             {
               GSL_ERROR("fprintf failed", GSL_EFAILED);
             }
 
-          status = fprintf(stream, format, m->data[n]);
+          status = fprintf(stream, format, m->data[MULTIPLICITY * n]);
           if (status < 0)
             {
               GSL_ERROR("fprintf failed", GSL_EFAILED);
             }
+
+#if defined(BASE_GSL_COMPLEX_LONG) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
+          status = putc('\t', stream);
+          if (status == EOF)
+            {
+              GSL_ERROR("putc failed", GSL_EFAILED);
+            }
+
+          status = fprintf(stream, format, m->data[MULTIPLICITY * n + 1]);
+          if (status < 0)
+            {
+              GSL_ERROR("fprintf failed", GSL_EFAILED);
+            }
+
+#endif
 
           status = putc('\n', stream);
           if (status == EOF)
@@ -85,25 +99,42 @@ gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
             }
         }
     }
-  else if (GSL_SPMATRIX_ISCCS(m))
+  else if (GSL_SPMATRIX_ISCSC(m))
     {
-      size_t j, p;
+      size_t j;
+      int p;
 
       for (j = 0; j < m->size2; ++j)
         {
           for (p = m->p[j]; p < m->p[j + 1]; ++p)
             {
-              status = fprintf(stream, "%u\t%u\t", (unsigned int) m->i[p] + 1, (unsigned int) j + 1);
+              status = fprintf(stream, "%d\t%u\t", m->i[p] + 1, (unsigned int) (j + 1));
               if (status < 0)
                 {
                   GSL_ERROR("fprintf failed", GSL_EFAILED);
                 }
 
-              status = fprintf(stream, format, m->data[p]);
+              status = fprintf(stream, format, m->data[MULTIPLICITY * p]);
               if (status < 0)
                 {
                   GSL_ERROR("fprintf failed", GSL_EFAILED);
                 }
+
+#if defined(BASE_GSL_COMPLEX_LONG) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
+              status = putc('\t', stream);
+              if (status == EOF)
+                {
+                  GSL_ERROR("putc failed", GSL_EFAILED);
+                }
+
+              status = fprintf(stream, format, m->data[MULTIPLICITY * p + 1]);
+              if (status < 0)
+                {
+                  GSL_ERROR("fprintf failed", GSL_EFAILED);
+                }
+
+#endif
 
               status = putc('\n', stream);
               if (status == EOF)
@@ -113,25 +144,42 @@ gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
             }
         }
     }
-  else if (GSL_SPMATRIX_ISCRS(m))
+  else if (GSL_SPMATRIX_ISCSR(m))
     {
-      size_t i, p;
+      size_t i;
+      int p;
 
       for (i = 0; i < m->size1; ++i)
         {
           for (p = m->p[i]; p < m->p[i + 1]; ++p)
             {
-              status = fprintf(stream, "%u\t%u\t", (unsigned int) i + 1, (unsigned int) m->i[p] + 1);
+              status = fprintf(stream, "%u\t%d\t", (unsigned int) (i + 1), m->i[p] + 1);
               if (status < 0)
                 {
                   GSL_ERROR("fprintf failed", GSL_EFAILED);
                 }
 
-              status = fprintf(stream, format, m->data[p]);
+              status = fprintf(stream, format, m->data[MULTIPLICITY * p]);
               if (status < 0)
                 {
                   GSL_ERROR("fprintf failed", GSL_EFAILED);
                 }
+
+#if defined(BASE_GSL_COMPLEX_LONG) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
+              status = putc('\t', stream);
+              if (status == EOF)
+                {
+                  GSL_ERROR("putc failed", GSL_EFAILED);
+                }
+
+              status = fprintf(stream, format, m->data[MULTIPLICITY * p + 1]);
+              if (status < 0)
+                {
+                  GSL_ERROR("fprintf failed", GSL_EFAILED);
+                }
+
+#endif
 
               status = putc('\n', stream);
               if (status == EOF)
@@ -149,10 +197,10 @@ gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
   return GSL_SUCCESS;
 }
 
-gsl_spmatrix *
-gsl_spmatrix_fscanf(FILE *stream)
+TYPE (gsl_spmatrix) *
+FUNCTION (gsl_spmatrix, fscanf) (FILE * stream)
 {
-  gsl_spmatrix *m;
+  TYPE (gsl_spmatrix) * m;
   unsigned int size1, size2, nz;
   char buf[1024];
   int found_header = 0;
@@ -166,8 +214,7 @@ gsl_spmatrix_fscanf(FILE *stream)
       if (*buf == '%')
         continue;
 
-      c = sscanf(buf, "%u %u %u",
-                 &size1, &size2, &nz);
+      c = sscanf(buf, "%u %u %u", &size1, &size2, &nz);
       if (c == 3)
         {
           found_header = 1;
@@ -180,20 +227,23 @@ gsl_spmatrix_fscanf(FILE *stream)
       GSL_ERROR_NULL ("fscanf failed reading header", GSL_EFAILED);
     }
 
-  m = gsl_spmatrix_alloc_nzmax((size_t) size1, (size_t) size2, (size_t) nz, GSL_SPMATRIX_TRIPLET);
+  m = FUNCTION (gsl_spmatrix, alloc_nzmax) ((size_t) size1, (size_t) size2, (size_t) nz, GSL_SPMATRIX_COO);
   if (!m)
     {
       GSL_ERROR_NULL ("error allocating m", GSL_ENOMEM);
     }
 
+#if defined(BASE_GSL_COMPLEX_LONG) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
   {
     unsigned int i, j;
-    double val;
+    ATOMIC_IO xr, xi;
+    BASE x;
 
     while (fgets(buf, 1024, stream) != NULL)
       {
-        int c = sscanf(buf, "%u %u %lg", &i, &j, &val);
-        if (c < 3 || (i == 0) || (j == 0))
+        int c = sscanf(buf, "%u %u " IN_FORMAT " " IN_FORMAT, &i, &j, &xr, &xi);
+        if (c < 4 || i == 0 || j == 0)
           {
             GSL_ERROR_NULL ("error in input file format", GSL_EFAILED);
           }
@@ -204,16 +254,45 @@ gsl_spmatrix_fscanf(FILE *stream)
         else
           {
             /* subtract 1 from (i,j) since indexing starts at 1 */
-            gsl_spmatrix_set(m, i - 1, j - 1, val);
+            GSL_REAL(x) = xr;
+            GSL_IMAG(x) = xi;
+            FUNCTION (gsl_spmatrix, set) (m, i - 1, j - 1, x);
           }
       }
   }
+
+#else
+
+  {
+    unsigned int i, j;
+    ATOMIC_IO tmp;
+
+    while (fgets(buf, 1024, stream) != NULL)
+      {
+        int c = sscanf(buf, "%u %u " IN_FORMAT, &i, &j, &tmp);
+        if (c < 3 || i == 0 || j == 0)
+          {
+            GSL_ERROR_NULL ("error in input file format", GSL_EFAILED);
+          }
+        else if ((i > size1) || (j > size2))
+          {
+            GSL_ERROR_NULL ("element exceeds matrix dimensions", GSL_EBADLEN);
+          }
+        else
+          {
+            /* subtract 1 from (i,j) since indexing starts at 1 */
+            FUNCTION (gsl_spmatrix, set) (m, i - 1, j - 1, tmp);
+          }
+      }
+  }
+
+#endif
 
   return m;
 }
 
 int
-gsl_spmatrix_fwrite(FILE *stream, const gsl_spmatrix *m)
+FUNCTION (gsl_spmatrix, fwrite) (FILE * stream, const TYPE (gsl_spmatrix) * m)
 {
   size_t items;
 
@@ -239,37 +318,37 @@ gsl_spmatrix_fwrite(FILE *stream, const gsl_spmatrix *m)
 
   /* write m->i and m->data which are size nz in all storage formats */
 
-  items = fwrite(m->i, sizeof(size_t), m->nz, stream);
+  items = fwrite(m->i, sizeof(int), m->nz, stream);
   if (items != m->nz)
     {
       GSL_ERROR("fwrite failed on row indices", GSL_EFAILED);
     }
 
-  items = fwrite(m->data, sizeof(double), m->nz, stream);
+  items = fwrite(m->data, MULTIPLICITY * sizeof(ATOMIC), m->nz, stream);
   if (items != m->nz)
     {
       GSL_ERROR("fwrite failed on data", GSL_EFAILED);
     }
 
-  if (GSL_SPMATRIX_ISTRIPLET(m))
+  if (GSL_SPMATRIX_ISCOO(m))
     {
-      items = fwrite(m->p, sizeof(size_t), m->nz, stream);
+      items = fwrite(m->p, sizeof(int), m->nz, stream);
       if (items != m->nz)
         {
           GSL_ERROR("fwrite failed on column indices", GSL_EFAILED);
         }
     }
-  else if (GSL_SPMATRIX_ISCCS(m))
+  else if (GSL_SPMATRIX_ISCSC(m))
     {
-      items = fwrite(m->p, sizeof(size_t), m->size2 + 1, stream);
+      items = fwrite(m->p, sizeof(int), m->size2 + 1, stream);
       if (items != m->size2 + 1)
         {
           GSL_ERROR("fwrite failed on column indices", GSL_EFAILED);
         }
     }
-  else if (GSL_SPMATRIX_ISCRS(m))
+  else if (GSL_SPMATRIX_ISCSR(m))
     {
-      items = fwrite(m->p, sizeof(size_t), m->size1 + 1, stream);
+      items = fwrite(m->p, sizeof(int), m->size1 + 1, stream);
       if (items != m->size1 + 1)
         {
           GSL_ERROR("fwrite failed on column indices", GSL_EFAILED);
@@ -280,7 +359,7 @@ gsl_spmatrix_fwrite(FILE *stream, const gsl_spmatrix *m)
 }
 
 int
-gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m)
+FUNCTION (gsl_spmatrix, fread) (FILE * stream, TYPE (gsl_spmatrix) * m)
 {
   size_t size1, size2, nz;
   size_t items;
@@ -321,13 +400,13 @@ gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m)
     {
       /* read m->i and m->data arrays, which are size nz for all formats */
 
-      items = fread(m->i, sizeof(size_t), nz, stream);
+      items = fread(m->i, sizeof(int), nz, stream);
       if (items != nz)
         {
           GSL_ERROR("fread failed on row indices", GSL_EFAILED);
         }
 
-      items = fread(m->data, sizeof(double), nz, stream);
+      items = fread(m->data, MULTIPLICITY * sizeof(ATOMIC), nz, stream);
       if (items != nz)
         {
           GSL_ERROR("fread failed on data", GSL_EFAILED);
@@ -335,28 +414,28 @@ gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m)
 
       m->nz = nz;
 
-      if (GSL_SPMATRIX_ISTRIPLET(m))
+      if (GSL_SPMATRIX_ISCOO(m))
         {
-          items = fread(m->p, sizeof(size_t), nz, stream);
+          items = fread(m->p, sizeof(int), nz, stream);
           if (items != nz)
             {
               GSL_ERROR("fread failed on column indices", GSL_EFAILED);
             }
 
           /* build binary search tree for m */
-          gsl_spmatrix_tree_rebuild(m);
+          FUNCTION (gsl_spmatrix, tree_rebuild) (m);
         }
-      else if (GSL_SPMATRIX_ISCCS(m))
+      else if (GSL_SPMATRIX_ISCSC(m))
         {
-          items = fread(m->p, sizeof(size_t), size2 + 1, stream);
+          items = fread(m->p, sizeof(int), size2 + 1, stream);
           if (items != size2 + 1)
             {
               GSL_ERROR("fread failed on row pointers", GSL_EFAILED);
             }
         }
-      else if (GSL_SPMATRIX_ISCRS(m))
+      else if (GSL_SPMATRIX_ISCSR(m))
         {
-          items = fread(m->p, sizeof(size_t), size1 + 1, stream);
+          items = fread(m->p, sizeof(int), size1 + 1, stream);
           if (items != size1 + 1)
             {
               GSL_ERROR("fread failed on column pointers", GSL_EFAILED);

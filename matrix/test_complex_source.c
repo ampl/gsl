@@ -1,6 +1,7 @@
 /* matrix/test_complex_source.c
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Gerard Jungman, Brian Gough
+ * Copyright (C) 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -537,6 +538,7 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
 {
   TYPE (gsl_matrix) * a = FUNCTION (gsl_matrix, alloc) (P, Q);
   TYPE (gsl_matrix) * b = FUNCTION (gsl_matrix, alloc) (P, Q);
+  TYPE (gsl_matrix) * c = FUNCTION (gsl_matrix, alloc) (Q, P);
   TYPE (gsl_matrix) * m = FUNCTION (gsl_matrix, alloc) (P, Q);
   size_t i, j;
   size_t k = 0;
@@ -787,10 +789,224 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
     gsl_test (status, NAME (gsl_matrix) "_swap");
   }
 
+  {
+    FUNCTION (gsl_matrix, transpose_memcpy) (c, a);
 
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < Q; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_transpose_memcpy");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (m);
+    FUNCTION (gsl_matrix, tricpy) (CblasLower, CblasUnit, m, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < GSL_MIN(i, Q); j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (m, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (a, i, j);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_tricpy CblasLower CblasUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (m);
+    FUNCTION (gsl_matrix, tricpy) (CblasLower, CblasNonUnit, m, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < GSL_MIN(i + 1, Q); j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (m, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (a, i, j);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_tricpy CblasLower CblasNonUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (m);
+    FUNCTION (gsl_matrix, tricpy) (CblasUpper, CblasUnit, m, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = i + 1; j < Q; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (m, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (a, i, j);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_tricpy CblasUpper CblasUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (m);
+    FUNCTION (gsl_matrix, tricpy) (CblasUpper, CblasNonUnit, m, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = i; j < Q; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (m, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (a, i, j);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_tricpy CblasUpper CblasNonUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (c);
+    FUNCTION (gsl_matrix, transpose_tricpy) (CblasLower, CblasUnit, c, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < GSL_MIN(P, Q); i++)
+      {
+        for (j = 0; j < i; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_transpose_tricpy CblasLower CblasUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (c);
+    FUNCTION (gsl_matrix, transpose_tricpy) (CblasLower, CblasNonUnit, c, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < GSL_MIN(P, Q); i++)
+      {
+        for (j = 0; j <= i; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_transpose_tricpy CblasLower CblasNonUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (c);
+    FUNCTION (gsl_matrix, transpose_tricpy) (CblasUpper, CblasUnit, c, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < GSL_MIN(P, Q); i++)
+      {
+        for (j = i + 1; j < GSL_MIN(P, Q); j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_transpose_tricpy CblasUpper CblasUnit");
+  }
+
+  {
+    FUNCTION (gsl_matrix, set_zero) (c);
+    FUNCTION (gsl_matrix, transpose_tricpy) (CblasUpper, CblasNonUnit, c, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < GSL_MIN(P, Q); i++)
+      {
+        for (j = i; j < GSL_MIN(P, Q); j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_transpose_tricpy CblasUpper CblasNonUnit");
+  }
 
   FUNCTION (gsl_matrix, free) (a);
   FUNCTION (gsl_matrix, free) (b);
+  FUNCTION (gsl_matrix, free) (c);
   FUNCTION (gsl_matrix, free) (m);
 
 }

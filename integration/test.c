@@ -2129,7 +2129,7 @@ main (void)
 
   /* test Romberg integration */
   {
-    int status = 0, i;
+    int status = 0;
     double result;
     size_t neval;
     double exp_result;

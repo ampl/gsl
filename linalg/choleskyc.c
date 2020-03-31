@@ -1,7 +1,7 @@
 /* linalg/choleskyc.c
  * 
- * Copyright (C) 2007 Patrick Alken
- * Copyright (C) 2010 Huan Wu (gsl_linalg_complex_cholesky_invert)
+ * Copyright (C) 2007, 2019 Patrick Alken
+ * Copyright (C) 2010 Huan Wu
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,24 +28,28 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_errno.h>
 
+#include "recurse.h"
+
 /*
  * This module contains routines related to the Cholesky decomposition
  * of a complex Hermitian positive definite matrix.
  */
 
 static void cholesky_complex_conj_vector(gsl_vector_complex *v);
+static int complex_cholesky_decomp_L2(gsl_matrix_complex * A);
+static int complex_cholesky_decomp_L3(gsl_matrix_complex * A);
 
 /*
 gsl_linalg_complex_cholesky_decomp()
   Perform the Cholesky decomposition on a Hermitian positive definite
-matrix. See Golub & Van Loan, "Matrix Computations" (3rd ed),
-algorithm 4.2.2.
+matrix using Level 3 BLAS.
 
-Inputs: A - (input/output) complex postive definite matrix
+Inputs: A - (input/output) complex positive definite matrix
 
 Return: success or error
 
-The lower triangle of A is overwritten with the Cholesky decomposition
+Notes:
+1) The lower triangle of A is overwritten with the Cholesky decomposition
 */
 
 int
@@ -55,11 +59,165 @@ gsl_linalg_complex_cholesky_decomp(gsl_matrix_complex *A)
   
   if (N != A->size2)
     {
-      GSL_ERROR("cholesky decomposition requires square matrix", GSL_ENOTSQR);
+      GSL_ERROR("Cholesky decomposition requires square matrix", GSL_ENOTSQR);
     }
   else
     {
+      return complex_cholesky_decomp_L3(A);
+    }
+}
+
+/*
+gsl_linalg_complex_cholesky_solve()
+  Solve A x = b where A is in cholesky form
+*/
+
+int
+gsl_linalg_complex_cholesky_solve (const gsl_matrix_complex * cholesky,
+                                   const gsl_vector_complex * b,
+                                   gsl_vector_complex * x)
+{
+  if (cholesky->size1 != cholesky->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (cholesky->size1 != b->size)
+    {
+      GSL_ERROR ("matrix size must match b size", GSL_EBADLEN);
+    }
+  else if (cholesky->size2 != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_vector_complex_memcpy (x, b);
+      return gsl_linalg_complex_cholesky_svx(cholesky, x);
+    }
+}
+
+/*
+gsl_linalg_complex_cholesky_svx()
+  Solve A x = b in place where A is in cholesky form
+*/
+
+int
+gsl_linalg_complex_cholesky_svx (const gsl_matrix_complex * cholesky,
+                                 gsl_vector_complex * x)
+{
+  if (cholesky->size1 != cholesky->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (cholesky->size2 != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      /* solve for y using forward-substitution, L y = b */
+      gsl_blas_ztrsv (CblasLower, CblasNoTrans, CblasNonUnit, cholesky, x);
+
+      /* perform back-substitution, L^H x = y */
+      gsl_blas_ztrsv (CblasLower, CblasConjTrans, CblasNonUnit, cholesky, x);
+
+      return GSL_SUCCESS;
+    }
+}
+
+
+/******************************************************************************
+
+gsl_linalg_complex_cholesky_invert()
+  Compute the inverse of an Hermitian positive definite matrix in
+  Cholesky form.
+
+Inputs: LLT - matrix in cholesky form on input
+              A^{-1} = L^{-H} L^{-1} on output
+
+Return: success or error
+******************************************************************************/
+
+int
+gsl_linalg_complex_cholesky_invert(gsl_matrix_complex * LLT)
+{
+  if (LLT->size1 != LLT->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else
+    {
+      int status;
+      size_t N = LLT->size1;
       size_t i, j;
+
+      /* invert the lower triangle of LLT */
+      status = gsl_linalg_complex_tri_invert(CblasLower, CblasNonUnit, LLT);
+      if (status)
+        return status;
+
+      /* compute A^{-1} = L^{-H} L^{-1} */
+      status = gsl_linalg_complex_tri_LHL(LLT);
+      if (status)
+        return status;
+
+      /* copy the Hermitian lower triangle to the upper triangle */
+      for (i = 1; i < N; ++i)
+        {
+          for (j = 0; j < i; ++j)
+            {
+              gsl_complex z = gsl_matrix_complex_get(LLT, i, j);
+              gsl_matrix_complex_set(LLT, j, i, gsl_complex_conjugate(z));
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+
+/********************************************
+ *           INTERNAL ROUTINES              *
+ ********************************************/
+
+static void
+cholesky_complex_conj_vector(gsl_vector_complex *v)
+{
+  size_t i;
+
+  for (i = 0; i < v->size; ++i)
+    {
+      gsl_complex * vi = gsl_vector_complex_ptr(v, i);
+      GSL_IMAG(*vi) = -GSL_IMAG(*vi);
+    }
+}
+
+/*
+complex_cholesky_decomp_L2()
+  Perform the Cholesky decomposition on a Hermitian positive definite
+matrix using Level 2 BLAS. See Golub & Van Loan, "Matrix Computations" (3rd ed),
+algorithm 4.2.2.
+
+Inputs: A - (input/output) complex postive definite matrix
+
+Return: success or error
+
+Notes:
+1) The lower triangle of A is overwritten with the Cholesky decomposition
+*/
+
+static int
+complex_cholesky_decomp_L2(gsl_matrix_complex * A)
+{
+  const size_t N = A->size1;
+  
+  if (N != A->size2)
+    {
+      GSL_ERROR("Cholesky decomposition requires square matrix", GSL_ENOTSQR);
+    }
+  else
+    {
+      size_t j;
       gsl_complex z;
       double ajj;
 
@@ -114,209 +272,73 @@ gsl_linalg_complex_cholesky_decomp(gsl_matrix_complex *A)
             }
         }
 
-      /* Now store L^H in upper triangle */
-      for (i = 1; i < N; ++i)
-        {
-          for (j = 0; j < i; ++j)
-            {
-              z = gsl_matrix_complex_get(A, i, j);
-              gsl_matrix_complex_set(A, j, i, gsl_complex_conjugate(z));
-            }
-        }
-
       return GSL_SUCCESS;
     }
-} /* gsl_linalg_complex_cholesky_decomp() */
+}
 
 /*
-gsl_linalg_complex_cholesky_solve()
-  Solve A x = b where A is in cholesky form
-*/
+complex_cholesky_decomp_L3()
+  Perform the Cholesky decomposition on a Hermitian positive definite
+matrix using Level 3 BLAS.
 
-int
-gsl_linalg_complex_cholesky_solve (const gsl_matrix_complex * cholesky,
-                                   const gsl_vector_complex * b,
-                                   gsl_vector_complex * x)
-{
-  if (cholesky->size1 != cholesky->size2)
-    {
-      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
-    }
-  else if (cholesky->size1 != b->size)
-    {
-      GSL_ERROR ("matrix size must match b size", GSL_EBADLEN);
-    }
-  else if (cholesky->size2 != x->size)
-    {
-      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
-    }
-  else
-    {
-      gsl_vector_complex_memcpy (x, b);
-
-      /* solve for y using forward-substitution, L y = b */
-
-      gsl_blas_ztrsv (CblasLower, CblasNoTrans, CblasNonUnit, cholesky, x);
-
-      /* perform back-substitution, L^H x = y */
-
-      gsl_blas_ztrsv (CblasLower, CblasConjTrans, CblasNonUnit, cholesky, x);
-
-      return GSL_SUCCESS;
-    }
-} /* gsl_linalg_complex_cholesky_solve() */
-
-/*
-gsl_linalg_complex_cholesky_svx()
-  Solve A x = b in place where A is in cholesky form
-*/
-
-int
-gsl_linalg_complex_cholesky_svx (const gsl_matrix_complex * cholesky,
-                                 gsl_vector_complex * x)
-{
-  if (cholesky->size1 != cholesky->size2)
-    {
-      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
-    }
-  else if (cholesky->size2 != x->size)
-    {
-      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
-    }
-  else
-    {
-      /* solve for y using forward-substitution, L y = b */
-
-      gsl_blas_ztrsv (CblasLower, CblasNoTrans, CblasNonUnit, cholesky, x);
-
-      /* perform back-substitution, L^H x = y */
-
-      gsl_blas_ztrsv (CblasLower, CblasConjTrans, CblasNonUnit, cholesky, x);
-
-      return GSL_SUCCESS;
-    }
-} /* gsl_linalg_complex_cholesky_svx() */
-
-
-/******************************************************************************
-
-gsl_linalg_complex_cholesky_invert()
-  Compute the inverse of an Hermitian positive definite matrix in
-  Cholesky form.
-
-Inputs: LLT - matrix in cholesky form on input
-              A^{-1} = L^{-H} L^{-1} on output
+Inputs: A - (input/output) complex postive definite matrix
 
 Return: success or error
-******************************************************************************/
 
-int
-gsl_linalg_complex_cholesky_invert(gsl_matrix_complex * LLT)
+Notes:
+1) The lower triangle of A is overwritten with the Cholesky decomposition
+
+2) Based on ReLAPACK recursive variant with Level 3 BLAS
+*/
+
+static int
+complex_cholesky_decomp_L3(gsl_matrix_complex * A)
 {
-  if (LLT->size1 != LLT->size2)
+  const size_t N = A->size1;
+  
+  if (N != A->size2)
     {
-      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+      GSL_ERROR("Cholesky decomposition requires square matrix", GSL_ENOTSQR);
+    }
+  else if (N <= CROSSOVER_CHOLESKY)
+    {
+      /* use unblocked Level 2 algorithm */
+      return complex_cholesky_decomp_L2(A);
     }
   else
     {
-      size_t N = LLT->size1;
-      size_t i, j;
-      gsl_vector_complex_view v1;
-
-      /* invert the lower triangle of LLT */
-      for (i = 0; i < N; ++i)
-        {
-          double ajj;
-          gsl_complex z;
-
-          j = N - i - 1;
-
-          { 
-            gsl_complex z0 = gsl_matrix_complex_get(LLT, j, j);
-            ajj = 1.0 / GSL_REAL(z0); 
-          }
-
-          GSL_SET_COMPLEX(&z, ajj, 0.0);
-          gsl_matrix_complex_set(LLT, j, j, z);
-
-          {
-            gsl_complex z1 = gsl_matrix_complex_get(LLT, j, j);
-            ajj = -GSL_REAL(z1);
-          }
-
-          if (j < N - 1)
-            {
-              gsl_matrix_complex_view m;
-              
-              m = gsl_matrix_complex_submatrix(LLT, j + 1, j + 1,
-                                       N - j - 1, N - j - 1);
-              v1 = gsl_matrix_complex_subcolumn(LLT, j, j + 1, N - j - 1);
-
-              gsl_blas_ztrmv(CblasLower, CblasNoTrans, CblasNonUnit,
-                             &m.matrix, &v1.vector);
-
-              gsl_blas_zdscal(ajj, &v1.vector);
-            }
-        } /* for (i = 0; i < N; ++i) */
-
       /*
-       * The lower triangle of LLT now contains L^{-1}. Now compute
-       * A^{-1} = L^{-H} L^{-1}
+       * partition matrix:
        *
-       * The (ij) element of A^{-1} is column i of conj(L^{-1}) dotted into
-       * column j of L^{-1}
+       * A11 A12
+       * A21 A22
+       *
+       * where A11 is N1-by-N1
        */
+      int status;
+      const size_t N1 = GSL_LINALG_SPLIT_COMPLEX(N);
+      const size_t N2 = N - N1;
+      gsl_matrix_complex_view A11 = gsl_matrix_complex_submatrix(A, 0, 0, N1, N1);
+      gsl_matrix_complex_view A21 = gsl_matrix_complex_submatrix(A, N1, 0, N2, N1);
+      gsl_matrix_complex_view A22 = gsl_matrix_complex_submatrix(A, N1, N1, N2, N2);
 
-      for (i = 0; i < N; ++i)
-        {
-          gsl_complex sum;
-          for (j = i + 1; j < N; ++j)
-            {
-              gsl_vector_complex_view v2;
-              v1 = gsl_matrix_complex_subcolumn(LLT, i, j, N - j);
-              v2 = gsl_matrix_complex_subcolumn(LLT, j, j, N - j);
+      /* recursion on A11 */
+      status = complex_cholesky_decomp_L3(&A11.matrix);
+      if (status)
+        return status;
 
-              /* compute Ainv[i,j] = sum_k{conj(Linv[k,i]) * Linv[k,j]} */
-              gsl_blas_zdotc(&v1.vector, &v2.vector, &sum);
+      /* A21 = A21 * A11^{-1} */
+      gsl_blas_ztrsm(CblasRight, CblasLower, CblasConjTrans, CblasNonUnit, GSL_COMPLEX_ONE, &A11.matrix, &A21.matrix);
 
-              /* store in upper triangle */
-              gsl_matrix_complex_set(LLT, i, j, sum);
-            }
+      /* A22 -= A21 A21^H */
+      gsl_blas_zherk(CblasLower, CblasNoTrans, -1.0, &A21.matrix, 1.0, &A22.matrix);
 
-          /* now compute the diagonal element */
-          v1 = gsl_matrix_complex_subcolumn(LLT, i, i, N - i);
-          gsl_blas_zdotc(&v1.vector, &v1.vector, &sum);
-          gsl_matrix_complex_set(LLT, i, i, sum);
-        }
-
-      /* copy the Hermitian upper triangle to the lower triangle */
-
-      for (j = 1; j < N; j++)
-        {
-          for (i = 0; i < j; i++)
-            {
-              gsl_complex z = gsl_matrix_complex_get(LLT, i, j);
-              gsl_matrix_complex_set(LLT, j, i, gsl_complex_conjugate(z));
-            }
-        } 
+      /* recursion on A22 */
+      status = complex_cholesky_decomp_L3(&A22.matrix);
+      if (status)
+        return status;
 
       return GSL_SUCCESS;
     }
-} /* gsl_linalg_complex_cholesky_invert() */
+}
 
-
-/********************************************
- *           INTERNAL ROUTINES              *
- ********************************************/
-
-static void
-cholesky_complex_conj_vector(gsl_vector_complex *v)
-{
-  size_t i;
-
-  for (i = 0; i < v->size; ++i)
-    {
-      gsl_complex z = gsl_vector_complex_get(v, i);
-      gsl_vector_complex_set(v, i, gsl_complex_conjugate(z));
-    }
-} /* cholesky_complex_conj_vector() */

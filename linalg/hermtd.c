@@ -154,43 +154,38 @@ gsl_linalg_hermtd_unpack (const gsl_matrix_complex * A,
   else
     {
       const size_t N = A->size1;
-
+      gsl_vector_complex_const_view zd = gsl_matrix_complex_const_diagonal(A);
+      gsl_vector_complex_const_view zsd = gsl_matrix_complex_const_subdiagonal(A, 1);
+      gsl_vector_const_view d = gsl_vector_complex_const_real(&zd.vector);
+      gsl_vector_const_view sd = gsl_vector_complex_const_real(&zsd.vector);
+      gsl_vector_complex * work = gsl_vector_complex_alloc(N);
       size_t i;
 
-      /* Initialize U to the identity */
-
+      /* initialize U to the identity */
       gsl_matrix_complex_set_identity (U);
 
       for (i = N - 1; i-- > 0;)
         {
           gsl_complex ti = gsl_vector_complex_get (tau, i);
 
-          gsl_vector_complex_const_view c = gsl_matrix_complex_const_column (A, i);
-
           gsl_vector_complex_const_view h = 
-            gsl_vector_complex_const_subvector (&c.vector, i + 1, N - (i+1));
+            gsl_matrix_complex_const_subcolumn (A, i, i + 1, N - i - 1);
 
           gsl_matrix_complex_view m = 
-            gsl_matrix_complex_submatrix (U, i + 1, i + 1, N-(i+1), N-(i+1));
+            gsl_matrix_complex_submatrix (U, i + 1, i + 1, N - i - 1, N - i - 1);
 
-          gsl_linalg_complex_householder_hm (ti, &h.vector, &m.matrix);
+          gsl_vector_complex_view w = gsl_vector_complex_subvector(work, 0, N - i - 1);
+
+          gsl_linalg_complex_householder_left (ti, &h.vector, &m.matrix, &w.vector);
         }
 
-      /* Copy diagonal into diag */
+      /* copy diagonal into diag */
+      gsl_vector_memcpy(diag, &d.vector);
 
-      for (i = 0; i < N; i++)
-        {
-          gsl_complex Aii = gsl_matrix_complex_get (A, i, i);
-          gsl_vector_set (diag, i, GSL_REAL(Aii));
-        }
+      /* copy subdiagonal into sdiag */
+      gsl_vector_memcpy(sdiag, &sd.vector);
 
-      /* Copy subdiagonal into sdiag */
-
-      for (i = 0; i < N - 1; i++)
-        {
-          gsl_complex Aji = gsl_matrix_complex_get (A, i+1, i);
-          gsl_vector_set (sdiag, i, GSL_REAL(Aji));
-        }
+      gsl_vector_complex_free(work);
 
       return GSL_SUCCESS;
     }
@@ -216,24 +211,16 @@ gsl_linalg_hermtd_unpack_T (const gsl_matrix_complex * A,
   else
     {
       const size_t N = A->size1;
+      gsl_vector_complex_const_view zd = gsl_matrix_complex_const_diagonal(A);
+      gsl_vector_complex_const_view zsd = gsl_matrix_complex_const_subdiagonal(A, 1);
+      gsl_vector_const_view d = gsl_vector_complex_const_real(&zd.vector);
+      gsl_vector_const_view sd = gsl_vector_complex_const_real(&zsd.vector);
 
-      size_t i;
+      /* copy diagonal into diag */
+      gsl_vector_memcpy(diag, &d.vector);
 
-      /* Copy diagonal into diag */
-
-      for (i = 0; i < N; i++)
-        {
-          gsl_complex Aii = gsl_matrix_complex_get (A, i, i);
-          gsl_vector_set (diag, i, GSL_REAL(Aii));
-        }
-
-      /* Copy subdiagonal into sd */
-
-      for (i = 0; i < N - 1; i++)
-        {
-          gsl_complex Aji = gsl_matrix_complex_get (A, i+1, i);
-          gsl_vector_set (sdiag, i, GSL_REAL(Aji));
-        }
+      /* copy subdiagonal into sdiag */
+      gsl_vector_memcpy(sdiag, &sd.vector);
 
       return GSL_SUCCESS;
     }

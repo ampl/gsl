@@ -631,7 +631,7 @@ avoids divide by zero errors in the underlying bspline_pppack_* functions.
 */
 static inline int
 bspline_process_interval_for_eval (const double x, size_t * i, const int flag,
-				   gsl_bspline_workspace * w)
+                                   gsl_bspline_workspace * w)
 {
   if (flag == -1)
     {
@@ -640,23 +640,22 @@ bspline_process_interval_for_eval (const double x, size_t * i, const int flag,
   else if (flag == 1)
     {
       if (x <= gsl_vector_get (w->knots, *i) + GSL_DBL_EPSILON)
-	{
-	  *i -= 1;
-	}
+        {
+          *i -= 1;
+        }
       else
-	{
-	  GSL_ERROR ("x outside of knot interval", GSL_EINVAL);
-	}
+        {
+          GSL_ERROR ("x outside of knot interval", GSL_EINVAL);
+        }
     }
 
   if (gsl_vector_get (w->knots, *i) == gsl_vector_get (w->knots, *i + 1))
     {
-      GSL_ERROR ("knot(i) = knot(i+1) will result in division by zero",
-		 GSL_EINVAL);
+      GSL_ERROR ("knot(i) = knot(i+1) will result in division by zero", GSL_EINVAL);
     }
 
   return GSL_SUCCESS;
-}				/* bspline_process_interval_for_eval */
+}
 
 /********************************************************************
  * PPPACK ROUTINES
@@ -742,13 +741,13 @@ Notes:
 
 static void
 bspline_pppack_bsplvb (const gsl_vector * t,
-		       const size_t jhigh,
-		       const size_t index,
-		       const double x,
-		       const size_t left,
-		       size_t * j,
-		       gsl_vector * deltal,
-		       gsl_vector * deltar, gsl_vector * biatx)
+                       const size_t jhigh,
+                       const size_t index,
+                       const double x,
+                       const size_t left,
+                       size_t * j,
+                       gsl_vector * deltal,
+                       gsl_vector * deltar, gsl_vector * biatx)
 {
   size_t i;			/* looping */
   double saved;
@@ -768,22 +767,20 @@ bspline_pppack_bsplvb (const gsl_vector * t,
       saved = 0.0;
 
       for (i = 0; i <= *j; i++)
-	{
-	  term = gsl_vector_get (biatx, i) / (gsl_vector_get (deltar, i)
-					      + gsl_vector_get (deltal,
-								*j - i));
+        {
+          term = gsl_vector_get (biatx, i) / (gsl_vector_get (deltar, i)
+                 + gsl_vector_get (deltal, *j - i));
 
-	  gsl_vector_set (biatx, i,
-			  saved + gsl_vector_get (deltar, i) * term);
+          gsl_vector_set (biatx, i, saved + gsl_vector_get (deltar, i) * term);
 
-	  saved = gsl_vector_get (deltal, *j - i) * term;
-	}
+          saved = gsl_vector_get (deltal, *j - i) * term;
+        }
 
       gsl_vector_set (biatx, *j + 1, saved);
     }
 
   return;
-}				/* gsl_bspline_pppack_bsplvb */
+}
 
 /*
 bspline_pppack_bsplvd()
@@ -832,13 +829,13 @@ Notes:
 
 static void
 bspline_pppack_bsplvd (const gsl_vector * t,
-		       const size_t k,
-		       const double x,
-		       const size_t left,
-		       gsl_vector * deltal,
-		       gsl_vector * deltar,
-		       gsl_matrix * a,
-		       gsl_matrix * dbiatx, const size_t nderiv)
+                       const size_t k,
+                       const double x,
+                       const size_t left,
+                       gsl_vector * deltal,
+                       gsl_vector * deltar,
+                       gsl_matrix * a,
+                       gsl_matrix * dbiatx, const size_t nderiv)
 {
   int i, ideriv, il, j, jlow, jp1mid, kmm, ldummy, m, mhigh;
   double factor, fkmm, sum;
@@ -848,7 +845,8 @@ bspline_pppack_bsplvd (const gsl_vector * t,
 
   mhigh = GSL_MIN_INT (nderiv, k - 1);
   bspline_pppack_bsplvb (t, k - mhigh, 1, x, left, &bsplvb_j, deltal, deltar,
-			 &dbcol.vector);
+                         &dbcol.vector);
+
   if (mhigh > 0)
     {
       /* the first column of dbiatx always contains the b-spline
@@ -857,16 +855,16 @@ bspline_pppack_bsplvd (const gsl_vector * t,
          for the next higher order on top of it.  */
       ideriv = mhigh;
       for (m = 1; m <= mhigh; m++)
-	{
-	  for (j = ideriv, jp1mid = 0; j < (int) k; j++, jp1mid++)
-	    {
-	      gsl_matrix_set (dbiatx, j, ideriv,
-			      gsl_matrix_get (dbiatx, jp1mid, 0));
-	    }
-	  ideriv--;
-	  bspline_pppack_bsplvb (t, k - ideriv, 2, x, left, &bsplvb_j, deltal,
-				 deltar, &dbcol.vector);
-	}
+        {
+          for (j = ideriv, jp1mid = 0; j < (int) k; j++, jp1mid++)
+            {
+              gsl_matrix_set (dbiatx, j, ideriv, gsl_matrix_get (dbiatx, jp1mid, 0));
+            }
+
+          ideriv--;
+          bspline_pppack_bsplvb (t, k - ideriv, 2, x, left, &bsplvb_j, deltal,
+                                 deltar, &dbcol.vector);
+        }
 
       /* at this point,  b(left-k+i, k+1-j)(x) is in  dbiatx(i,j)
          for i=j,...,k-1 and j=0,...,mhigh. in particular, the
@@ -875,67 +873,65 @@ bspline_pppack_bsplvd (const gsl_vector * t,
          generate their b-repr. by differencing, then evaluate at x. */
       jlow = 0;
       for (i = 0; i < (int) k; i++)
-	{
-	  for (j = jlow; j < (int) k; j++)
-	    {
-	      gsl_matrix_set (a, j, i, 0.0);
-	    }
-	  jlow = i;
-	  gsl_matrix_set (a, i, i, 1.0);
-	}
+        {
+          for (j = jlow; j < (int) k; j++)
+            {
+              gsl_matrix_set (a, j, i, 0.0);
+            }
+          jlow = i;
+          gsl_matrix_set (a, i, i, 1.0);
+        }
 
       /* at this point, a(.,j) contains the b-coeffs for the j-th of the
          k b-splines of interest here. */
       for (m = 1; m <= mhigh; m++)
-	{
-	  kmm = k - m;
-	  fkmm = (float) kmm;
-	  il = left;
-	  i = k - 1;
+        {
+          kmm = k - m;
+          fkmm = (float) kmm;
+          il = left;
+          i = k - 1;
 
-	  /* for j=1,...,k, construct b-coeffs of (m)th  derivative
-	     of b-splines from those for preceding derivative by
-	     differencing and store again in  a(.,j) . the fact that
-	     a(i,j) = 0  for i .lt. j  is used. */
-	  for (ldummy = 0; ldummy < kmm; ldummy++)
-	    {
-	      factor =
-		fkmm / (gsl_vector_get (t, il + kmm) -
-			gsl_vector_get (t, il));
-	      /* the assumption that t(left).lt.t(left+1) makes
-	         denominator in factor nonzero. */
-	      for (j = 0; j <= i; j++)
-		{
-		  gsl_matrix_set (a, i, j, factor * (gsl_matrix_get (a, i, j)
-						     - gsl_matrix_get (a,
-								       i - 1,
-								       j)));
-		}
-	      il--;
-	      i--;
-	    }
+          /* for j=1,...,k, construct b-coeffs of (m)th  derivative
+             of b-splines from those for preceding derivative by
+             differencing and store again in  a(.,j) . the fact that
+             a(i,j) = 0  for i .lt. j  is used. */
+          for (ldummy = 0; ldummy < kmm; ldummy++)
+            {
+              factor = fkmm / (gsl_vector_get (t, il + kmm) -
+                       gsl_vector_get (t, il));
 
-	  /* for i=1,...,k, combine b-coeffs a(.,i) with b-spline values
-	     stored in dbiatx(.,m) to get value of (m)th  derivative
-	     of i-th b-spline (of interest here) at x, and store in
-	     dbiatx(i,m). storage of this value over the value of a
-	     b-spline of order m there is safe since the remaining
-	     b-spline derivatives of the same order do not use this
-	     value due to the fact that a(j,i) = 0 for j .lt. i . */
-	  for (i = 0; i < (int) k; i++)
-	    {
-	      sum = 0;
-	      jlow = GSL_MAX_INT (i, m);
-	      for (j = jlow; j < (int) k; j++)
-		{
-		  sum +=
-		    gsl_matrix_get (a, j, i) * gsl_matrix_get (dbiatx, j, m);
-		}
-	      gsl_matrix_set (dbiatx, i, m, sum);
-	    }
-	}
+              /* the assumption that t(left).lt.t(left+1) makes
+                 denominator in factor nonzero. */
+              for (j = 0; j <= i; j++)
+                {
+                  gsl_matrix_set (a, i, j,
+                                  factor * (gsl_matrix_get (a, i, j)
+                                  - gsl_matrix_get (a, i - 1, j)));
+                }
+              il--;
+              i--;
+            }
+
+          /* for i=1,...,k, combine b-coeffs a(.,i) with b-spline values
+             stored in dbiatx(.,m) to get value of (m)th  derivative
+             of i-th b-spline (of interest here) at x, and store in
+             dbiatx(i,m). storage of this value over the value of a
+             b-spline of order m there is safe since the remaining
+             b-spline derivatives of the same order do not use this
+             value due to the fact that a(j,i) = 0 for j .lt. i . */
+          for (i = 0; i < (int) k; i++)
+            {
+              sum = 0;
+              jlow = GSL_MAX_INT (i, m);
+              for (j = jlow; j < (int) k; j++)
+                {
+                  sum += gsl_matrix_get (a, j, i) * gsl_matrix_get (dbiatx, j, m);
+                }
+              gsl_matrix_set (dbiatx, i, m, sum);
+            }
+        }
     }
 
   return;
 
-}				/* bspline_pppack_bsplvd */
+}

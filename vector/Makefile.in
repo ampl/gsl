@@ -104,12 +104,14 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_test_OBJECTS = test.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
-test_DEPENDENCIES = libgslvector.la ../block/libgslblock.la \
+test_DEPENDENCIES = libgslvector.la ../blas/libgslblas.la \
+	../cblas/libgslcblas.la ../block/libgslblock.la \
 	../ieee-utils/libgslieeeutils.la ../err/libgslerr.la \
 	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
 am_test_static_OBJECTS = test_static.$(OBJEXT)
 test_static_OBJECTS = $(am_test_static_OBJECTS)
-test_static_DEPENDENCIES = libgslvector.la ../block/libgslblock.la \
+test_static_DEPENDENCIES = libgslvector.la ../blas/libgslblas.la \
+	../cblas/libgslcblas.la ../block/libgslblock.la \
 	../ieee-utils/libgslieeeutils.la ../err/libgslerr.la \
 	../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
 AM_V_P = $(am__v_P_@AM_V@)
@@ -529,8 +531,8 @@ noinst_LTLIBRARIES = libgslvector.la
 pkginclude_HEADERS = gsl_vector.h gsl_vector_char.h gsl_vector_complex.h gsl_vector_complex_double.h gsl_vector_complex_float.h gsl_vector_complex_long_double.h gsl_vector_double.h gsl_vector_float.h gsl_vector_int.h gsl_vector_long.h gsl_vector_long_double.h gsl_vector_short.h gsl_vector_uchar.h gsl_vector_uint.h gsl_vector_ulong.h gsl_vector_ushort.h
 AM_CPPFLAGS = -I$(top_srcdir)
 TESTS = $(check_PROGRAMS)
-test_LDADD = libgslvector.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
-test_static_LDADD = libgslvector.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+test_LDADD = libgslvector.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
+test_static_LDADD = libgslvector.la ../blas/libgslblas.la ../cblas/libgslcblas.la ../block/libgslblock.la ../ieee-utils/libgslieeeutils.la ../err/libgslerr.la ../test/libgsltest.la ../sys/libgslsys.la ../utils/libutils.la
 test_SOURCES = test.c
 test_static_SOURCES = test_static.c
 CLEANFILES = test.txt test.dat test_static.dat

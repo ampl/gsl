@@ -21,6 +21,24 @@ int
 FUNCTION (gsl_vector, memcpy) (TYPE (gsl_vector) * dest,
                                const TYPE (gsl_vector) * src)
 {
+#if defined(BASE_DOUBLE)
+
+  gsl_blas_dcopy(src, dest);
+
+#elif defined(BASE_FLOAT)
+
+  gsl_blas_scopy(src, dest);
+
+#elif defined(BASE_GSL_COMPLEX)
+
+  gsl_blas_zcopy(src, dest);
+
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+
+  gsl_blas_ccopy(src, dest);
+
+#else
+
   const size_t src_size = src->size;
   const size_t dest_size = dest->size;
 
@@ -46,6 +64,7 @@ FUNCTION (gsl_vector, memcpy) (TYPE (gsl_vector) * dest,
       }
   }
 
+#endif
+
   return GSL_SUCCESS;
 }
-

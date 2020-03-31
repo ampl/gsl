@@ -43,19 +43,19 @@ typedef enum
 } gsl_movstat_end_t;
 
 /* accumulator struct
- * size   - return number of bytes needed for accumulator with maximum of n elements
- * init   - initialize accumulator state
- * insert - insert a single sample into accumulator; if there are already n
- *          samples in accumulator, oldest sample is overwritten
- * delete - delete oldest sample from accumulator
- * get    - return accumulated value
+ * size          - return number of bytes needed for accumulator with maximum of n elements
+ * init          - initialize accumulator state
+ * insert        - insert a single sample into accumulator; if there are already n
+ *                 samples in accumulator, oldest sample is overwritten
+ * delete_oldest - delete oldest sample from accumulator
+ * get           - return accumulated value
  */
 typedef struct
 {
   size_t (*size) (const size_t n);
   int (*init) (const size_t n, void * vstate);
   int (*insert) (const double x, void * vstate);
-  int (*delete) (void * vstate);
+  int (*delete_oldest) (void * vstate);
   int (*get) (void * params, double * result, const void * vstate);
 } gsl_movstat_accum;
 

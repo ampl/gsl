@@ -134,29 +134,6 @@ test_random_matrix(gsl_matrix *m, const gsl_rng *r,
     }
 }
 
-/* generate Vandermonde matrix using equally spaced input points
- * on [0,1] */
-static void
-test_vander_matrix(gsl_matrix * m)
-{
-  const size_t M = m->size1;
-  const size_t N = m->size2;
-  const double dt = 1.0 / (M - 1.0);
-  size_t i, j;
-
-  for (i = 0; i < M; ++i)
-    {
-      double ti = i * dt;
-      double mij = 1.0;
-
-      for (j = 0; j < N; ++j)
-        {
-          gsl_matrix_set(m, i, j, mij);
-          mij *= ti;
-        }
-    }
-}
-
 static void
 test_random_vector_noise(const gsl_rng *r, gsl_vector *y)
 {
@@ -357,8 +334,8 @@ test_random(const gsl_multilarge_linear_type * T,
   size_t i;
 
   /* generate LS system */
-  test_random_matrix_ill(X, r);
-  /*test_random_matrix(X, r, -1.0, 1.0);*/
+  /*XXXtest_random_matrix_ill(X, r);*/
+  test_random_matrix(X, r, -1.0, 1.0);
   test_random_vector(c, r, -1.0, 1.0);
 
   /* compute y = X c + noise */
@@ -377,9 +354,9 @@ test_random(const gsl_multilarge_linear_type * T,
   /* random tall L */
   test_random_matrix(Ltall, r, -10.0, 10.0);
 
-  for (i = 0; i < 2; ++i)
+  for (i = 0; i < 5; ++i)
     {
-      double lambda = pow(10.0, -(double) i);
+      double lambda = i == 0 ? 0.0 : pow(10.0, -(double) i);
 
       /* unweighted with L = I */
       {
@@ -494,11 +471,11 @@ main (void)
   {
     const double tol1 = 1.0e-8;
     const double tol2 = 1.0e-11;
-    const size_t n_vals[] = { 40, 356, 501 };
-    const size_t p_vals[] = { 40, 213, 345 };
+    const size_t n_vals[] = { 200, 356, 501 };
+    const size_t p_vals[] = { 10, 21, 34 };
     size_t i;
 
-    for (i = 0; i < 2; ++i)
+    for (i = 0; i < 1; ++i)
       {
         size_t n = n_vals[i];
         size_t p = p_vals[i];

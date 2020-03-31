@@ -72,7 +72,7 @@ gsl_linalg_householder_transform (gsl_vector * v)
         }
       
       alpha = gsl_vector_get (v, 0) ;
-      beta = - (alpha >= 0.0 ? +1.0 : -1.0) * hypot(alpha, xnorm) ;
+      beta = - GSL_SIGN(alpha) * hypot(alpha, xnorm);
       tau = (beta - alpha) / beta ;
       
       {
@@ -264,6 +264,117 @@ gsl_linalg_householder_hv (double tau, const gsl_vector * v, gsl_vector * w)
   return GSL_SUCCESS;
 }
 
+/*
+gsl_linalg_householder_left()
+  Apply a Householder reflector
+
+H = I - tau v v^T
+
+to a M-by-N matrix A from the left
+
+Inputs: tau  - Householder coefficient
+        v    - Householder vector, length M
+        A    - (input/output) M-by-N matrix on input; on output, H*A
+        work - workspace, length N
+
+Notes:
+1) v(1) is modified but is restored on output
+
+2) This routine replaces gsl_linalg_householder_hm
+*/
+
+int
+gsl_linalg_householder_left(const double tau, const gsl_vector * v, gsl_matrix * A, gsl_vector * work)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (v->size != M)
+    {
+      GSL_ERROR ("matrix must match Householder vector dimensions", GSL_EBADLEN);
+    }
+  else if (work->size != N)
+    {
+      GSL_ERROR ("workspace must match matrix", GSL_EBADLEN);
+    }
+  else
+    {
+      double v0;
+
+      /* quick return */
+      if (tau == 0.0)
+        return GSL_SUCCESS;
+
+      v0 = gsl_vector_get(v, 0);
+      v->data[0] = 1.0;
+
+      /* work := A^T v */
+      gsl_blas_dgemv(CblasTrans, 1.0, A, v, 0.0, work);
+
+      /* A := A - tau v work^T */
+      gsl_blas_dger(-tau, v, work, A);
+
+      v->data[0] = v0;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_householder_right()
+  Apply a Householder reflector
+
+H = I - tau v v^T
+
+to a M-by-N matrix A from the right
+
+Inputs: tau  - Householder coefficient
+        v    - Householder vector, length N
+        A    - (input/output) M-by-N matrix on input; on output, A*H
+        work - workspace, length M
+
+Notes:
+1) v(1) is modified but is restored on output
+
+2) This routine replaces gsl_linalg_householder_mh
+*/
+
+int
+gsl_linalg_householder_right(const double tau, const gsl_vector * v, gsl_matrix * A, gsl_vector * work)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (v->size != N)
+    {
+      GSL_ERROR ("matrix must match Householder vector dimensions", GSL_EBADLEN);
+    }
+  else if (work->size != M)
+    {
+      GSL_ERROR ("workspace must match matrix", GSL_EBADLEN);
+    }
+  else
+    {
+      double v0;
+
+      /* quick return */
+      if (tau == 0.0)
+        return GSL_SUCCESS;
+
+      v0 = gsl_vector_get(v, 0);
+      v->data[0] = 1.0;
+
+      /* work := A v */
+      gsl_blas_dgemv(CblasNoTrans, 1.0, A, v, 0.0, work);
+
+      /* A := A - tau work v^T */
+      gsl_blas_dger(-tau, work, v, A);
+
+      v->data[0] = v0;
+
+      return GSL_SUCCESS;
+    }
+}
 
 int
 gsl_linalg_householder_hm1 (double tau, gsl_matrix * A)

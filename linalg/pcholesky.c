@@ -14,7 +14,7 @@
  */
 
 /*
- * L D L^T decomposition of a symmetrix positive definite matrix.
+ * L D L^T decomposition of a symmetric positive definite matrix.
  *
  * This algorithm does:
  *   P A P' = L D L'
@@ -89,7 +89,7 @@ pcholesky_decomp (const int copy_uplo, gsl_matrix * A, gsl_permutation * p)
       if (copy_uplo)
         {
           /* save a copy of A in upper triangle (for later rcond calculation) */
-          gsl_matrix_transpose_tricpy('L', 0, A, A);
+          gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, A, A);
         }
 
       gsl_permutation_init(p);
@@ -251,7 +251,7 @@ gsl_linalg_pcholesky_decomp2(gsl_matrix * A, gsl_permutation * p,
       int status;
 
       /* save a copy of A in upper triangle (for later rcond calculation) */
-      gsl_matrix_transpose_tricpy('L', 0, A, A);
+      gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, A, A);
 
       /* compute scaling factors to reduce cond(A) */
       status = gsl_linalg_cholesky_scale(A, S);
@@ -389,79 +389,47 @@ gsl_linalg_pcholesky_invert(const gsl_matrix * LDLT, const gsl_permutation * p,
     }
   else
     {
-      size_t i, j;
-      gsl_vector_view v1, v2;
+      size_t i;
 
       /* invert the lower triangle of LDLT */
       gsl_matrix_memcpy(Ainv, LDLT);
-      gsl_linalg_tri_lower_unit_invert(Ainv);
+      gsl_linalg_tri_invert(CblasLower, CblasUnit, Ainv);
 
       /* compute sqrt(D^{-1}) L^{-1} in the lower triangle of Ainv */
       for (i = 0; i < N; ++i)
         {
           double di = gsl_matrix_get(LDLT, i, i);
-          double sqrt_di = sqrt(di);
+          double invsqrt_di = 1.0 / sqrt(di);
 
-          for (j = 0; j < i; ++j)
+          if (i > 0)
             {
-              double *Lij = gsl_matrix_ptr(Ainv, i, j);
-              *Lij /= sqrt_di;
+              gsl_vector_view v = gsl_matrix_subrow(Ainv, i, 0, i);
+              gsl_blas_dscal(invsqrt_di, &v.vector);
             }
 
-          gsl_matrix_set(Ainv, i, i, 1.0 / sqrt_di);
+          gsl_matrix_set(Ainv, i, i, invsqrt_di);
         }
 
-      /*
-       * The lower triangle of Ainv now contains D^{-1/2} L^{-1}. Now compute
-       * A^{-1} = L^{-T} D^{-1} L^{-1}
-       */
-
-      for (i = 0; i < N; ++i)
-        {
-          double aii = gsl_matrix_get(Ainv, i, i);
-
-          if (i < N - 1)
-            {
-              double tmp;
-
-              v1 = gsl_matrix_subcolumn(Ainv, i, i, N - i);
-              gsl_blas_ddot(&v1.vector, &v1.vector, &tmp);
-              gsl_matrix_set(Ainv, i, i, tmp);
-
-              if (i > 0)
-                {
-                  gsl_matrix_view m = gsl_matrix_submatrix(Ainv, i + 1, 0, N - i - 1, i);
-
-                  v1 = gsl_matrix_subcolumn(Ainv, i, i + 1, N - i - 1);
-                  v2 = gsl_matrix_subrow(Ainv, i, 0, i);
-
-                  gsl_blas_dgemv(CblasTrans, 1.0, &m.matrix, &v1.vector, aii, &v2.vector);
-                }
-            }
-          else
-            {
-              v1 = gsl_matrix_row(Ainv, N - 1);
-              gsl_blas_dscal(aii, &v1.vector);
-            }
-        }
+      /* compute A^{-1} = L^{-T} D^{-1} L^{-1} */
+      gsl_linalg_tri_LTL(Ainv);
 
       /* copy lower triangle to upper */
-      gsl_matrix_transpose_tricpy('L', 0, Ainv, Ainv);
+      gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, Ainv, Ainv);
 
       /* now apply permutation p to the matrix */
 
       /* compute L^{-T} D^{-1} L^{-1} P^T */
       for (i = 0; i < N; ++i)
         {
-          v1 = gsl_matrix_row(Ainv, i);
-          gsl_permute_vector_inverse(p, &v1.vector);
+          gsl_vector_view v = gsl_matrix_row(Ainv, i);
+          gsl_permute_vector_inverse(p, &v.vector);
         }
 
       /* compute P L^{-T} D^{-1} L^{-1} P^T */
       for (i = 0; i < N; ++i)
         {
-          v1 = gsl_matrix_column(Ainv, i);
-          gsl_permute_vector_inverse(p, &v1.vector);
+          gsl_vector_view v = gsl_matrix_column(Ainv, i);
+          gsl_permute_vector_inverse(p, &v.vector);
         }
 
       return GSL_SUCCESS;

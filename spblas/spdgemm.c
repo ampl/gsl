@@ -60,14 +60,15 @@ gsl_spblas_dgemm(const double alpha, const gsl_spmatrix *A,
       int status = GSL_SUCCESS;
       const size_t M = A->size1;
       const size_t N = B->size2;
-      size_t *Bi = B->i;
-      size_t *Bp = B->p;
+      int *Bi = B->i;
+      int *Bp = B->p;
       double *Bd = B->data;
-      size_t *w = (size_t *) A->work; /* workspace of length M */
-      double *x = (double *) C->work; /* workspace of length M */
-      size_t *Cp, *Ci;
+      int *w = A->work.work_int;      /* workspace of length M */
+      double *x = C->work.work_atomic; /* workspace of length M */
+      int *Cp, *Ci;
       double *Cd;
-      size_t j, p;
+      size_t j;
+      int p;
       size_t nz = 0;
 
       if (C->nzmax < A->nz + B->nz)
@@ -106,10 +107,10 @@ gsl_spblas_dgemm(const double alpha, const gsl_spmatrix *A,
 
           for (p = Bp[j]; p < Bp[j + 1]; ++p)
             {
-              nz = gsl_spblas_scatter(A, Bi[p], Bd[p], w, x, j + 1, C, nz);
+              nz = gsl_spblas_scatter(A, Bi[p], Bd[p], w, x, (int) (j + 1), C, nz);
             }
 
-          for (p = Cp[j]; p < nz; ++p)
+          for (p = Cp[j]; p < (int) nz; ++p)
             Cd[p] = x[Ci[p]];
         }
 
@@ -153,14 +154,14 @@ necessarily in order - ie: the row indices C->i may not be in ascending order.
 
 size_t
 gsl_spblas_scatter(const gsl_spmatrix *A, const size_t j, const double alpha,
-                   size_t *w, double *x, const size_t mark, gsl_spmatrix *C,
+                   int *w, double *x, const int mark, gsl_spmatrix *C,
                    size_t nz)
 {
-  size_t p;
-  size_t *Ai = A->i;
-  size_t *Ap = A->p;
+  int p;
+  int *Ai = A->i;
+  int *Ap = A->p;
   double *Ad = A->data;
-  size_t *Ci = C->i;
+  int *Ci = C->i;
 
   for (p = Ap[j]; p < Ap[j + 1]; ++p)
     {

@@ -91,7 +91,7 @@ gsl_movstat_apply_accum(const gsl_movstat_end_t endtype,
           for (i = 0; i < H; ++i)
             (accum->insert)(x1, w->state);
         }
-      else if (accum->delete == NULL) /* FIXME XXX */
+      else if (accum->delete_oldest == NULL) /* FIXME XXX */
         {
           /* save last K - 1 samples of x for later (needed for in-place input/output) */
           int idx1 = GSL_MAX(n - J - H, 0);
@@ -125,7 +125,7 @@ gsl_movstat_apply_accum(const gsl_movstat_end_t endtype,
           int idx1 = GSL_MAX(n - J, 0);
           int idx2 = n - 1;
 
-          if (accum->delete == NULL)
+          if (accum->delete_oldest == NULL)
             {
               int wsize = n - GSL_MAX(n - J - H, 0); /* size of work array */
 
@@ -154,7 +154,7 @@ gsl_movstat_apply_accum(const gsl_movstat_end_t endtype,
                   if (i - H > 0)
                     {
                       /* delete oldest window sample as we move closer to edge */
-                      (accum->delete)(w->state);
+                      (accum->delete_oldest)(w->state);
                     }
 
                   /* yi = acc_get [ work(i:K-2) ] */

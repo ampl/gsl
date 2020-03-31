@@ -1,6 +1,6 @@
-/* spcopy.c
+/* spmatrix/copy_source.c
  * 
- * Copyright (C) 2014 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#include <stdlib.h>
-#include <math.h>
-#include <gsl/gsl_spmatrix.h>
-#include <gsl/gsl_errno.h>
-
-#include "avl.c"
-
 int
-gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
+FUNCTION (gsl_spmatrix, memcpy) (TYPE (gsl_spmatrix) * dest, const TYPE (gsl_spmatrix) * src)
 {
   const size_t M = src->size1;
   const size_t N = src->size2;
@@ -42,18 +34,18 @@ gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
     }
   else
     {
-      int s = GSL_SUCCESS;
-      size_t n;
+      int status = GSL_SUCCESS;
+      size_t n, r;
 
       if (dest->nzmax < src->nz)
         {
-          s = gsl_spmatrix_realloc(src->nz, dest);
-          if (s)
-            return s;
+          status = FUNCTION (gsl_spmatrix, realloc) (src->nz, dest);
+          if (status)
+            return status;
         }
 
-      /* copy indices and data to dest */
-      if (GSL_SPMATRIX_ISTRIPLET(src))
+      /* copy src arrays to dest */
+      if (GSL_SPMATRIX_ISCOO(src))
         {
           void *ptr;
 
@@ -61,22 +53,26 @@ gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
             {
               dest->i[n] = src->i[n];
               dest->p[n] = src->p[n];
-              dest->data[n] = src->data[n];
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                dest->data[MULTIPLICITY * n + r] = src->data[MULTIPLICITY * n + r];
 
               /* copy binary tree data */
-              ptr = avl_insert(dest->tree_data->tree, &dest->data[n]);
+              ptr = gsl_bst_insert(&dest->data[MULTIPLICITY * n], dest->tree);
               if (ptr != NULL)
                 {
                   GSL_ERROR("detected duplicate entry", GSL_EINVAL);
                 }
             }
         }
-      else if (GSL_SPMATRIX_ISCCS(src))
+      else if (GSL_SPMATRIX_ISCSC(src))
         {
           for (n = 0; n < src->nz; ++n)
             {
               dest->i[n] = src->i[n];
-              dest->data[n] = src->data[n];
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                dest->data[MULTIPLICITY * n + r] = src->data[MULTIPLICITY * n + r];
             }
 
           for (n = 0; n < src->size2 + 1; ++n)
@@ -84,12 +80,14 @@ gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
               dest->p[n] = src->p[n];
             }
         }
-      else if (GSL_SPMATRIX_ISCRS(src))
+      else if (GSL_SPMATRIX_ISCSR(src))
         {
           for (n = 0; n < src->nz; ++n)
             {
               dest->i[n] = src->i[n];
-              dest->data[n] = src->data[n];
+
+              for (r = 0; r < MULTIPLICITY; ++r)
+                dest->data[MULTIPLICITY * n + r] = src->data[MULTIPLICITY * n + r];
             }
 
           for (n = 0; n < src->size1 + 1; ++n)
@@ -104,6 +102,6 @@ gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src)
 
       dest->nz = src->nz;
 
-      return s;
+      return status;
     }
-} /* gsl_spmatrix_memcpy() */
+}

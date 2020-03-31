@@ -137,9 +137,7 @@ gsl_linalg_PTLQ_decomp (gsl_matrix * A, gsl_vector * tau, gsl_permutation * p, i
              column of the matrix to a multiple of the j-th unit vector */
 
           {
-            gsl_vector_view c_full = gsl_matrix_row (A, i);
-            gsl_vector_view c = gsl_vector_subvector (&c_full.vector, 
-                                                      i, M - i);
+            gsl_vector_view c = gsl_matrix_subrow (A, i, i, M - i);
             double tau_i = gsl_linalg_householder_transform (&c.vector);
 
             gsl_vector_set (tau, i, tau_i);
@@ -149,7 +147,6 @@ gsl_linalg_PTLQ_decomp (gsl_matrix * A, gsl_vector * tau, gsl_permutation * p, i
             if (i + 1 < N)
               {
                 gsl_matrix_view m = gsl_matrix_submatrix (A, i +1, i, N - (i+1), M - i);
-
                 gsl_linalg_householder_mh (tau_i, &c.vector, &m.matrix);
               }
           }
@@ -176,10 +173,7 @@ gsl_linalg_PTLQ_decomp (gsl_matrix * A, gsl_vector * tau, gsl_permutation * p, i
 
                       if (fabs (y / x) < sqrt (20.0) * GSL_SQRT_DBL_EPSILON)
                         {
-                          gsl_vector_view c_full = gsl_matrix_row (A, j);
-                          gsl_vector_view c = 
-                            gsl_vector_subvector(&c_full.vector,
-                                                 i+1, M - (i+1));
+                          gsl_vector_view c = gsl_matrix_subrow (A, j, i + 1, M - (i + 1));
                           y = gsl_blas_dnrm2 (&c.vector);
                         }
                   

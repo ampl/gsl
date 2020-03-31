@@ -26,6 +26,7 @@
 #include <gsl/gsl_inline.h>
 #include <gsl/gsl_check_range.h>
 #include <gsl/gsl_vector_ushort.h>
+#include <gsl/gsl_blas_types.h>
 
 #undef __BEGIN_DECLS
 #undef __END_DECLS
@@ -216,14 +217,14 @@ int gsl_matrix_ushort_fprintf (FILE * stream, const gsl_matrix_ushort * m, const
  
 int gsl_matrix_ushort_memcpy(gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
 int gsl_matrix_ushort_swap(gsl_matrix_ushort * m1, gsl_matrix_ushort * m2);
-int gsl_matrix_ushort_tricpy(const char uplo_src, const int copy_diag, gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
+int gsl_matrix_ushort_tricpy(CBLAS_UPLO_t Uplo, CBLAS_DIAG_t Diag, gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
 
 int gsl_matrix_ushort_swap_rows(gsl_matrix_ushort * m, const size_t i, const size_t j);
 int gsl_matrix_ushort_swap_columns(gsl_matrix_ushort * m, const size_t i, const size_t j);
 int gsl_matrix_ushort_swap_rowcol(gsl_matrix_ushort * m, const size_t i, const size_t j);
 int gsl_matrix_ushort_transpose (gsl_matrix_ushort * m);
 int gsl_matrix_ushort_transpose_memcpy (gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
-int gsl_matrix_ushort_transpose_tricpy (const char uplo_src, const int copy_diag, gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
+int gsl_matrix_ushort_transpose_tricpy (CBLAS_UPLO_t Uplo_src, CBLAS_DIAG_t Diag, gsl_matrix_ushort * dest, const gsl_matrix_ushort * src);
 
 unsigned short gsl_matrix_ushort_max (const gsl_matrix_ushort * m);
 unsigned short gsl_matrix_ushort_min (const gsl_matrix_ushort * m);

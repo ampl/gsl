@@ -132,11 +132,11 @@ interp2d_eval(int (*evaluator)(const void *, const double xa[], const double ya[
                                const double za[], size_t xsize, size_t ysize,
                                double x, double y, gsl_interp_accel *,
                                gsl_interp_accel *, double * z),
-              const gsl_interp2d * interp, const double xarr[],
-              const double yarr[], const double zarr[],
-              const double x, const double y,
-              gsl_interp_accel * xa, gsl_interp_accel * ya,
-              double * result)
+                               const gsl_interp2d * interp, const double xarr[],
+                               const double yarr[], const double zarr[],
+                               const double x, const double y,
+                               gsl_interp_accel * xa, gsl_interp_accel * ya,
+                               double * result)
 {
   if (x < interp->xmin || x > interp->xmax)
     {
@@ -164,11 +164,11 @@ interp2d_eval_extrap(int (*evaluator)(const void *, const double xa[],
                                       double x, double y,
                                       gsl_interp_accel *,
                                       gsl_interp_accel *, double * z),
-                     const gsl_interp2d * interp, const double xarr[],
-                     const double yarr[], const double zarr[],
-                     const double x, const double y,
-                     gsl_interp_accel * xa, gsl_interp_accel * ya,
-                     double * result)
+                                      const gsl_interp2d * interp, const double xarr[],
+                                      const double yarr[], const double zarr[],
+                                      const double x, const double y,
+                                      gsl_interp_accel * xa, gsl_interp_accel * ya,
+                                      double * result)
 {
   return evaluator(interp->state, xarr, yarr, zarr,
                    interp->xsize, interp->ysize, x, y, xa, ya, result);
@@ -214,8 +214,23 @@ gsl_interp2d_eval_e (const gsl_interp2d * interp, const double xarr[],
                        xarr, yarr, zarr, x, y, xa, ya, z);
 } /* gsl_interp2d_eval_e() */
 
+#ifndef GSL_DISABLE_DEPRECATED
+
 int
 gsl_interp2d_eval_e_extrap (const gsl_interp2d * interp,
+                            const double xarr[], const double yarr[],
+                            const double zarr[], const double x,
+                            const double y, gsl_interp_accel * xa,
+                            gsl_interp_accel * ya, double * z)
+{
+  return interp2d_eval_extrap(interp->type->eval, interp,
+                              xarr, yarr, zarr, x, y, xa, ya, z);
+}
+
+#endif /* !GSL_DISABLE_DEPRECATED */
+
+int
+gsl_interp2d_eval_extrap_e (const gsl_interp2d * interp,
                             const double xarr[], const double yarr[],
                             const double zarr[], const double x,
                             const double y, gsl_interp_accel * xa,

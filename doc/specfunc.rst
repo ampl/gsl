@@ -286,6 +286,9 @@ to compute the special functions,
   special functions.  ACM Trans. Math. Soft., vol.: 22,
   1996, 288--301
 
+* Bunck, B. F., A fast algorithm for evaluation of normalized Hermite
+  functions, BIT Numer. Math, 49: 281-295, 2009.
+
 * G.N. Watson, A Treatise on the Theory of Bessel Functions,
   2nd Edition (Cambridge University Press, 1944).
 

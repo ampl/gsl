@@ -1,184 +1,62 @@
-/* gsl_spmatrix.h
- * 
- * Copyright (C) 2012-2014 Patrick Alken
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or (at
- * your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- */
-
 #ifndef __GSL_SPMATRIX_H__
 #define __GSL_SPMATRIX_H__
 
-#include <stdlib.h>
-
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-
-#undef __BEGIN_DECLS
-#undef __END_DECLS
-#ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
-#endif
-
-__BEGIN_DECLS
-
-/*
- * Binary tree data structure for storing sparse matrix elements
- * in triplet format. This is used for efficiently detecting
- * duplicates and element retrieval via gsl_spmatrix_get
- */
-typedef struct
+enum
 {
-  void *tree;       /* tree structure */
-  void *node_array; /* preallocated array of tree nodes */
-  size_t n;         /* number of tree nodes in use (<= nzmax) */
-} gsl_spmatrix_tree;
+  GSL_SPMATRIX_COO = 0, /* coordinate/triplet representation */
+  GSL_SPMATRIX_CSC = 1, /* compressed sparse column */
+  GSL_SPMATRIX_CSR = 2, /* compressed sparse row */
+  GSL_SPMATRIX_TRIPLET = GSL_SPMATRIX_COO,
+  GSL_SPMATRIX_CCS = GSL_SPMATRIX_CSC,
+  GSL_SPMATRIX_CRS = GSL_SPMATRIX_CSR
+};
 
-/*
- * Triplet format:
- *
- * If data[n] = A_{ij}, then:
- *   i = A->i[n]
- *   j = A->p[n]
- *
- * Compressed column format (CCS):
- *
- * If data[n] = A_{ij}, then:
- *   i = A->i[n]
- *   A->p[j] <= n < A->p[j+1]
- * so that column j is stored in
- * [ data[p[j]], data[p[j] + 1], ..., data[p[j+1] - 1] ]
- *
- * Compressed row format (CRS):
- *
- * If data[n] = A_{ij}, then:
- *   j = A->i[n]
- *   A->p[i] <= n < A->p[i+1]
- * so that row i is stored in
- * [ data[p[i]], data[p[i] + 1], ..., data[p[i+1] - 1] ]
- */
-
-typedef struct
+/* memory pool for binary tree node allocation */
+struct gsl_spmatrix_pool_node
 {
-  size_t size1;  /* number of rows */
-  size_t size2;  /* number of columns */
+  struct gsl_spmatrix_pool_node * next;
+  void * block_ptr;          /* pointer to memory block, of size n*tree_node_size */
+  unsigned char * free_slot; /* pointer to next available slot */
+};
 
-  /* i (size nzmax) contains:
-   *
-   * Triplet/CCS: row indices
-   * CRS: column indices
-   */
-  size_t *i;
+typedef struct gsl_spmatrix_pool_node gsl_spmatrix_pool;
 
-  double *data;  /* matrix elements of size nzmax */
+#define GSL_SPMATRIX_ISCOO(m)         ((m)->sptype == GSL_SPMATRIX_COO)
+#define GSL_SPMATRIX_ISCSC(m)         ((m)->sptype == GSL_SPMATRIX_CSC)
+#define GSL_SPMATRIX_ISCSR(m)         ((m)->sptype == GSL_SPMATRIX_CSR)
 
-  /*
-   * p contains the column indices (triplet) or column pointers (compcol)
-   *
-   * triplet: p[n] = column number of element data[n]
-   * CCS:     p[j] = index in data of first non-zero element in column j
-   * CRS:     p[i] = index in data of first non-zero element in row i
-   */
-  size_t *p;
+#define GSL_SPMATRIX_ISTRIPLET(m)     GSL_SPMATRIX_ISCOO(m)
+#define GSL_SPMATRIX_ISCCS(m)         GSL_SPMATRIX_ISCSC(m)
+#define GSL_SPMATRIX_ISCRS(m)         GSL_SPMATRIX_ISCSR(m)
 
-  size_t nzmax;  /* maximum number of matrix elements */
-  size_t nz;     /* number of non-zero values in matrix */
+#define GSL_SPMATRIX_FLG_GROW         (1 << 0) /* allow size of matrix to grow as elements are added */
+#define GSL_SPMATRIX_FLG_FIXED        (1 << 1) /* sparsity pattern is fixed */
 
-  gsl_spmatrix_tree *tree_data; /* binary tree for sorting triplet data */
+/* compare matrix entries (ia,ja) and (ib,jb) - sort by rows first, then by columns */
+#define GSL_SPMATRIX_COMPARE_ROWCOL(m,ia,ja,ib,jb)   ((ia) < (ib) ? -1 : ((ia) > (ib) ? 1 : ((ja) < (jb) ? -1 : ((ja) > (jb)))))
 
-  /*
-   * workspace of size MAX(size1,size2)*MAX(sizeof(double),sizeof(size_t))
-   * used in various routines
-   */
-  union
-    {
-      void *work;
-      size_t *work_sze;
-      double *work_dbl;
-    };
+/* common/utility functions */
 
-  size_t sptype; /* sparse storage type */
-} gsl_spmatrix;
+void gsl_spmatrix_cumsum(const size_t n, int * c);
 
-#define GSL_SPMATRIX_TRIPLET      (0)
-#define GSL_SPMATRIX_CCS          (1)
-#define GSL_SPMATRIX_CRS          (2)
+#include <gsl/gsl_spmatrix_complex_long_double.h>
+#include <gsl/gsl_spmatrix_complex_double.h>
+#include <gsl/gsl_spmatrix_complex_float.h>
 
-#define GSL_SPMATRIX_ISTRIPLET(m) ((m)->sptype == GSL_SPMATRIX_TRIPLET)
-#define GSL_SPMATRIX_ISCCS(m)     ((m)->sptype == GSL_SPMATRIX_CCS)
-#define GSL_SPMATRIX_ISCRS(m)     ((m)->sptype == GSL_SPMATRIX_CRS)
+#include <gsl/gsl_spmatrix_long_double.h>
+#include <gsl/gsl_spmatrix_double.h>
+#include <gsl/gsl_spmatrix_float.h>
 
-/*
- * Prototypes
- */
+#include <gsl/gsl_spmatrix_ulong.h>
+#include <gsl/gsl_spmatrix_long.h>
 
-gsl_spmatrix *gsl_spmatrix_alloc(const size_t n1, const size_t n2);
-gsl_spmatrix *gsl_spmatrix_alloc_nzmax(const size_t n1, const size_t n2,
-                                       const size_t nzmax, const size_t flags);
-void gsl_spmatrix_free(gsl_spmatrix *m);
-int gsl_spmatrix_realloc(const size_t nzmax, gsl_spmatrix *m);
-int gsl_spmatrix_set_zero(gsl_spmatrix *m);
-size_t gsl_spmatrix_nnz(const gsl_spmatrix *m);
-int gsl_spmatrix_compare_idx(const size_t ia, const size_t ja,
-                             const size_t ib, const size_t jb);
-int gsl_spmatrix_tree_rebuild(gsl_spmatrix * m);
+#include <gsl/gsl_spmatrix_uint.h>
+#include <gsl/gsl_spmatrix_int.h>
 
-/* spcopy.c */
-int gsl_spmatrix_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src);
+#include <gsl/gsl_spmatrix_ushort.h>
+#include <gsl/gsl_spmatrix_short.h>
 
-/* spgetset.c */
-double gsl_spmatrix_get(const gsl_spmatrix *m, const size_t i,
-                        const size_t j);
-int gsl_spmatrix_set(gsl_spmatrix *m, const size_t i, const size_t j,
-                     const double x);
-double *gsl_spmatrix_ptr(gsl_spmatrix *m, const size_t i, const size_t j);
-
-/* spcompress.c */
-gsl_spmatrix *gsl_spmatrix_compcol(const gsl_spmatrix *T);
-gsl_spmatrix *gsl_spmatrix_ccs(const gsl_spmatrix *T);
-gsl_spmatrix *gsl_spmatrix_crs(const gsl_spmatrix *T);
-void gsl_spmatrix_cumsum(const size_t n, size_t *c);
-
-/* spio.c */
-int gsl_spmatrix_fprintf(FILE *stream, const gsl_spmatrix *m,
-                         const char *format);
-gsl_spmatrix * gsl_spmatrix_fscanf(FILE *stream);
-int gsl_spmatrix_fwrite(FILE *stream, const gsl_spmatrix *m);
-int gsl_spmatrix_fread(FILE *stream, gsl_spmatrix *m);
-
-/* spoper.c */
-int gsl_spmatrix_scale(gsl_spmatrix *m, const double x);
-int gsl_spmatrix_minmax(const gsl_spmatrix *m, double *min_out,
-                        double *max_out);
-int gsl_spmatrix_add(gsl_spmatrix *c, const gsl_spmatrix *a,
-                     const gsl_spmatrix *b);
-int gsl_spmatrix_d2sp(gsl_spmatrix *S, const gsl_matrix *A);
-int gsl_spmatrix_sp2d(gsl_matrix *A, const gsl_spmatrix *S);
-
-/* spprop.c */
-int gsl_spmatrix_equal(const gsl_spmatrix *a, const gsl_spmatrix *b);
-
-/* spswap.c */
-int gsl_spmatrix_transpose(gsl_spmatrix * m);
-int gsl_spmatrix_transpose2(gsl_spmatrix * m);
-int gsl_spmatrix_transpose_memcpy(gsl_spmatrix *dest, const gsl_spmatrix *src);
-
-__END_DECLS
+#include <gsl/gsl_spmatrix_uchar.h>
+#include <gsl/gsl_spmatrix_char.h>
 
 #endif /* __GSL_SPMATRIX_H__ */

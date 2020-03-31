@@ -678,6 +678,11 @@ Vector operations
    vector :data:`a`.  The result :math:`a_i \leftarrow a_i + x` is stored in
    :data:`a`.
 
+.. function:: int gsl_vector_axpby (const double alpha, const gsl_vector * x, const double beta, gsl_vector * y)
+
+   This function performs the operation :math:`y \leftarrow \alpha x + \beta y`. The
+   vectors :data:`x` and :data:`y` must have the same length.
+
 Finding maximum and minimum elements of vectors
 -----------------------------------------------
 

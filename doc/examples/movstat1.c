@@ -22,7 +22,7 @@ main(void)
 
   for (i = 0; i < N; ++i)
     {
-      double xi = cos(2.0 * M_PI * i / (double) N);
+      double xi = cos(4.0 * M_PI * i / (double) N);
       double ei = gsl_ran_gaussian(r, 0.1);
 
       gsl_vector_set(x, i, xi + ei);

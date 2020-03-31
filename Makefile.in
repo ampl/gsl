@@ -598,14 +598,14 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = gsl utils sys test err const complex cheb block vector matrix permutation combination multiset sort ieee-utils cblas blas linalg eigen specfunc dht qrng rng randist fft poly fit multifit multifit_nlinear multilarge multilarge_nlinear filter movstat rstat statistics siman sum integration interpolation histogram ode-initval ode-initval2 roots multiroots min multimin monte ntuple diff deriv cdf wavelet bspline spblas spmatrix splinalg doc
+SUBDIRS = gsl utils sys test err bst const complex cheb block vector matrix permutation combination multiset sort ieee-utils cblas blas linalg eigen specfunc dht qrng rng randist fft poly fit multifit multifit_nlinear multilarge multilarge_nlinear filter movstat rstat statistics siman sum integration interpolation histogram ode-initval ode-initval2 roots multiroots min multimin monte ntuple diff deriv cdf wavelet bspline spblas spmatrix splinalg doc
 SUBLIBS = block/libgslblock.la blas/libgslblas.la \
-	bspline/libgslbspline.la complex/libgslcomplex.la \
-	cheb/libgslcheb.la dht/libgsldht.la diff/libgsldiff.la \
-	deriv/libgslderiv.la eigen/libgsleigen.la err/libgslerr.la \
-	fft/libgslfft.la filter/libgslfilter.la fit/libgslfit.la \
-	histogram/libgslhistogram.la ieee-utils/libgslieeeutils.la \
-	integration/libgslintegration.la \
+	bspline/libgslbspline.la bst/libgslbst.la \
+	complex/libgslcomplex.la cheb/libgslcheb.la dht/libgsldht.la \
+	diff/libgsldiff.la deriv/libgslderiv.la eigen/libgsleigen.la \
+	err/libgslerr.la fft/libgslfft.la filter/libgslfilter.la \
+	fit/libgslfit.la histogram/libgslhistogram.la \
+	ieee-utils/libgslieeeutils.la integration/libgslintegration.la \
 	interpolation/libgslinterpolation.la linalg/libgsllinalg.la \
 	matrix/libgslmatrix.la min/libgslmin.la monte/libgslmonte.la \
 	multifit/libgslmultifit.la \

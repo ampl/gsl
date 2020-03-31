@@ -942,7 +942,7 @@ gsl_sf_coulomb_wave_FG_e(const double eta, const double x,
     const int span = GSL_MAX(k_lam_G, N);
     const double lam_min = lam_F - N;    /* -1/2 <= lam_min < 1/2 */
     double F_lam_F, Fp_lam_F;
-    double G_lam_G, Gp_lam_G;
+    double G_lam_G = 0.0, Gp_lam_G = 0.0;
     double F_lam_F_err, Fp_lam_F_err;
     double Fp_over_F_lam_F;
     double F_sign_lam_F;

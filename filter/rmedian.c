@@ -188,7 +188,7 @@ static int
 rmedian_delete(void * vstate)
 {
   rmedian_state_t * state = (rmedian_state_t *) vstate;
-  return (state->minmax_acc->delete)(state->minmax_state);
+  return (state->minmax_acc->delete_oldest)(state->minmax_state);
 }
 
 static int

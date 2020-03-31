@@ -235,8 +235,8 @@ gsl_sf_laguerre_3_e(const double a, const double x, gsl_sf_result * result)
 }
 
 
-int gsl_sf_laguerre_n_e(const int n, const double a, const double x,
-                           gsl_sf_result * result)
+int
+gsl_sf_laguerre_n_e(const int n, const double a, const double x, gsl_sf_result * result)
 {
   /* CHECK_POINTER(result) */
 

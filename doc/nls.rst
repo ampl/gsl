@@ -645,6 +645,29 @@ Each of these parameters is discussed in further detail below.
       known that the Jacobian matrix is well conditioned, this method
       is accurate and will perform faster than the QR approach.
 
+   .. var:: gsl_multifit_nlinear_solver_mcholesky
+            gsl_multilarge_nlinear_solver_mcholesky
+
+      This method solves the alternate normal equations problem
+
+      .. only:: not texinfo
+
+         .. math:: \left( J^T J + \mu D^T D \right) \delta = -J^T f
+
+      .. only:: texinfo
+
+         ::
+
+            ( J^T J + \mu D^T D ) \delta = -J^T f
+
+      by using a modified Cholesky decomposition of the matrix
+      :math:`J^T J + \mu D^T D`. This is more suitable for the dogleg
+      methods where the parameter :math:`\mu = 0`, and the matrix
+      :math:`J^T J` may be ill-conditioned or indefinite causing the standard Cholesky
+      decomposition to fail. This method is based on Level 2 BLAS
+      and is thus slower than the standard Cholesky decomposition, which
+      is based on Level 3 BLAS.
+
    .. var:: gsl_multifit_nlinear_solver_svd
 
       This method solves the system using a singular value

@@ -594,7 +594,7 @@ static double olver_B1(double z, double abs_zeta)
 }
 
 
-static double olver_B2(double z, double abs_zeta)
+static double olver_B2(double z)
 {
   if(z < 0.8) {
     const double x = 5.0*z/2.0 - 1.0;
@@ -626,7 +626,7 @@ static double olver_B2(double z, double abs_zeta)
 }
 
 
-static double olver_B3(double z, double abs_zeta)
+static double olver_B3(double z)
 {
   if(z < 0.8) {
     const double x = 5.0*z/2.0 - 1.0;
@@ -749,7 +749,7 @@ static double olver_A2(double z, double abs_zeta)
 }
 
 
-static double olver_A3(double z, double abs_zeta)
+static double olver_A3(double z)
 {
   if(z < 0.9) {
     const double x = 20.0*z/9.0 - 1.0;
@@ -778,7 +778,7 @@ static double olver_A3(double z, double abs_zeta)
 }
 
 
-static double olver_A4(double z, double abs_zeta)
+static double olver_A4(double z)
 {
   if(z < 0.8) {
     const double x = 5.0*z/2.0 - 1.0;
@@ -812,8 +812,8 @@ static double olver_Asum(double nu, double z, double abs_zeta, double * err)
   double A1_err;
   double A1 = olver_A1(z, abs_zeta, &A1_err);
   double A2 = olver_A2(z, abs_zeta);
-  double A3 = olver_A3(z, abs_zeta);
-  double A4 = olver_A4(z, abs_zeta);
+  double A3 = olver_A3(z);
+  double A4 = olver_A4(z);
   *err = A1_err/nu2 + GSL_DBL_EPSILON;
   return 1.0 + A1/nu2 + A2/(nu2*nu2) + A3/(nu2*nu2*nu2) + A4/(nu2*nu2*nu2*nu2);
 }
@@ -824,8 +824,8 @@ static double olver_Bsum(double nu, double z, double abs_zeta)
   double nu2 = nu*nu;
   double B0 = olver_B0(z, abs_zeta);
   double B1 = olver_B1(z, abs_zeta);
-  double B2 = olver_B2(z, abs_zeta);
-  double B3 = olver_B3(z, abs_zeta);
+  double B2 = olver_B2(z);
+  double B3 = olver_B3(z);
   return B0 + B1/nu2 + B2/(nu2*nu2) + B3/(nu2*nu2*nu2*nu2);
 }
 

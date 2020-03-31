@@ -145,7 +145,7 @@ constants
 
 * John Ketchum <johnk@qualcomm.com> for bug reports for the blas library
 
-* Nicolas Darnis <ndarnis@cvf.fr> additional permutation functions
+* Nicolas Darnis <ndarnis@free.fr> additional permutation functions
 
 * Jeff Spirko <spirko@lehigh.edu> patch for 1d minimization
 

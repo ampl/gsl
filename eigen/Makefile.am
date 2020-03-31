@@ -7,7 +7,7 @@ libgsleigen_la_SOURCES =  jacobi.c symm.c symmv.c nonsymm.c nonsymmv.c herm.c he
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-noinst_HEADERS =  qrstep.c
+noinst_HEADERS = recurse.h qrstep.c
 
 TESTS = $(check_PROGRAMS)
 

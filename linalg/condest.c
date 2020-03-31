@@ -42,40 +42,10 @@ static int condest_same_sign(const gsl_vector * x, const gsl_vector * y);
 static int condest_invtriu(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 static int condest_invtril(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params);
 
-/*
-gsl_linalg_tri_upper_rcond()
-  Estimate reciprocal condition number of upper triangular matrix
-
-Inputs: A     - upper triangular matrix, N-by-N
-        rcond - (output) reciprocal condition number estimate
-        work  - workspace, length 3*N
-
-Return: success/error
-*/
-
 int
-gsl_linalg_tri_upper_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
+gsl_linalg_tri_rcond(CBLAS_UPLO_t Uplo, const gsl_matrix * A, double * rcond, gsl_vector * work)
 {
-  int status = condest_tri_rcond(CblasUpper, A, rcond, work);
-  return status;
-}
-
-/*
-gsl_linalg_tri_lower_rcond()
-  Estimate reciprocal condition number of lower triangular matrix
-
-Inputs: A     - lower triangular matrix, N-by-N
-        rcond - (output) reciprocal condition number estimate
-        work  - workspace, length 3*N
-
-Return: success/error
-*/
-
-int
-gsl_linalg_tri_lower_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
-{
-  int status = condest_tri_rcond(CblasLower, A, rcond, work);
-  return status;
+  return condest_tri_rcond(Uplo, A, rcond, work);
 }
 
 /*
@@ -297,3 +267,21 @@ condest_invtril(CBLAS_TRANSPOSE_t TransA, gsl_vector * x, void * params)
   gsl_matrix * A = (gsl_matrix *) params;
   return gsl_blas_dtrsv(CblasLower, TransA, CblasNonUnit, A, x);
 }
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int
+gsl_linalg_tri_upper_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
+{
+  int status = condest_tri_rcond(CblasUpper, A, rcond, work);
+  return status;
+}
+
+int
+gsl_linalg_tri_lower_rcond(const gsl_matrix * A, double * rcond, gsl_vector * work)
+{
+  int status = condest_tri_rcond(CblasLower, A, rcond, work);
+  return status;
+}
+
+#endif

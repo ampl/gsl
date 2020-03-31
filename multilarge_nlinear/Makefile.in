@@ -96,8 +96,8 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgslmultilarge_nlinear_la_LIBADD =
 am_libgslmultilarge_nlinear_la_OBJECTS = cgst.lo cholesky.lo \
-	convergence.lo dogleg.lo dummy.lo fdf.lo lm.lo scaling.lo \
-	subspace2D.lo trust.lo
+	convergence.lo dogleg.lo dummy.lo fdf.lo lm.lo mcholesky.lo \
+	scaling.lo subspace2D.lo trust.lo
 libgslmultilarge_nlinear_la_OBJECTS =  \
 	$(am_libgslmultilarge_nlinear_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -529,7 +529,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libgslmultilarge_nlinear.la 
 pkginclude_HEADERS = gsl_multilarge_nlinear.h
-libgslmultilarge_nlinear_la_SOURCES = cgst.c cholesky.c convergence.c dogleg.c dummy.c fdf.c lm.c scaling.c subspace2D.c trust.c
+libgslmultilarge_nlinear_la_SOURCES = cgst.c cholesky.c convergence.c dogleg.c dummy.c fdf.c lm.c mcholesky.c scaling.c subspace2D.c trust.c
 AM_CPPFLAGS = -I$(top_srcdir)
 noinst_HEADERS = \
 common.c             \
@@ -652,6 +652,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcholesky.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scaling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/subspace2D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test.Po@am__quote@

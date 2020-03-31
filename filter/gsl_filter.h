@@ -91,7 +91,6 @@ typedef struct
 gsl_filter_rmedian_workspace *gsl_filter_rmedian_alloc(const size_t K);
 void gsl_filter_rmedian_free(gsl_filter_rmedian_workspace * w);
 int gsl_filter_rmedian(const gsl_filter_end_t, const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
-int gsl_filter_rmedian2(const gsl_vector * x, gsl_vector * y, gsl_filter_rmedian_workspace * w);
 
 typedef struct
 {

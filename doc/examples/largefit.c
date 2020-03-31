@@ -6,6 +6,7 @@
 #include <gsl/gsl_multifit.h>
 #include <gsl/gsl_multilarge.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_errno.h>
 
 /* function to be fitted */
 double
@@ -46,8 +47,8 @@ solve_system(const int print_data, const gsl_multilarge_linear_type * T,
   gsl_rng *r = gsl_rng_alloc(gsl_rng_default);
   const size_t nlcurve = 200;
   gsl_vector *reg_param = gsl_vector_alloc(nlcurve);
-  gsl_vector *rho = gsl_vector_alloc(nlcurve);
-  gsl_vector *eta = gsl_vector_alloc(nlcurve);
+  gsl_vector *rho = gsl_vector_calloc(nlcurve);
+  gsl_vector *eta = gsl_vector_calloc(nlcurve);
   size_t rowidx = 0;
   double rnorm, snorm, rcond;
   double t = 0.0;
@@ -134,11 +135,14 @@ main(int argc, char *argv[])
   const size_t n = 50000;   /* number of observations */
   const size_t p = 16;      /* polynomial order + 1 */
   double lambda = 0.0;      /* regularization parameter */
-  gsl_vector *c_tsqr = gsl_vector_alloc(p);
-  gsl_vector *c_normal = gsl_vector_alloc(p);
+  gsl_vector *c_tsqr = gsl_vector_calloc(p);
+  gsl_vector *c_normal = gsl_vector_calloc(p);
 
   if (argc > 1)
     lambda = atof(argv[1]);
+
+  /* turn off error handler so normal equations method won't abort */
+  gsl_set_error_handler_off();
 
   /* solve system with TSQR method */
   solve_system(1, gsl_multilarge_linear_tsqr, lambda, n, p, c_tsqr);

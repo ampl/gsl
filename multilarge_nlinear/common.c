@@ -93,7 +93,8 @@ quadratic_preduction(const gsl_multilarge_nlinear_trust_state * trust_state,
   /* first term: -2 g^T dx / ||f||^2 */
   pred_reduction = -2.0 * gTdx / (normf * normf);
 
-  if (params->solver == gsl_multilarge_nlinear_solver_cholesky)
+  if (params->solver == gsl_multilarge_nlinear_solver_cholesky ||
+      params->solver == gsl_multilarge_nlinear_solver_mcholesky)
     {
       const size_t p = fdf->p;
       gsl_vector_view workp = gsl_vector_subvector(work, 0, p);

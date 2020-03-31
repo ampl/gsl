@@ -180,11 +180,9 @@ FUNCTION (gsl_matrix, transpose_memcpy) (TYPE (gsl_matrix) * dest,
 {
   const size_t src_size1 = src->size1;
   const size_t src_size2 = src->size2;
-
   const size_t dest_size1 = dest->size1;
   const size_t dest_size2 = dest->size2;
-
-  size_t i, j, k;
+  size_t i;
 
   if (dest_size2 != src_size1 || dest_size1 != src_size2)
     {
@@ -192,8 +190,30 @@ FUNCTION (gsl_matrix, transpose_memcpy) (TYPE (gsl_matrix) * dest,
                  GSL_EBADLEN);
     }
 
+#if defined(BASE_DOUBLE) || defined(BASE_FLOAT) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
+  for (i = 0; i < src_size1; ++i)
+    {
+      VIEW (gsl_vector, const_view) a = FUNCTION (gsl_matrix, const_row) (src, i);
+      VIEW (gsl_vector, view) b = FUNCTION (gsl_matrix, column) (dest, i);
+
+#if defined(BASE_DOUBLE)
+      gsl_blas_dcopy(&a.vector, &b.vector);
+#elif defined(BASE_FLOAT)
+      gsl_blas_scopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX)
+      gsl_blas_zcopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+      gsl_blas_ccopy(&a.vector, &b.vector);
+#endif
+    }
+
+#else
+
   for (i = 0; i < dest_size1; i++)
     {
+      size_t j, k;
+
       for (j = 0 ; j < dest_size2; j++) 
         {
           for (k = 0; k < MULTIPLICITY; k++)
@@ -206,33 +226,93 @@ FUNCTION (gsl_matrix, transpose_memcpy) (TYPE (gsl_matrix) * dest,
         }
     }
 
+#endif
+
   return GSL_SUCCESS;
 }
 
 int
-FUNCTION (gsl_matrix, transpose_tricpy) (const char uplo_src,
-                                         const int copy_diag, TYPE (gsl_matrix) * dest,
+FUNCTION (gsl_matrix, transpose_tricpy) (CBLAS_UPLO_t Uplo_src,
+                                         CBLAS_DIAG_t Diag,
+                                         TYPE (gsl_matrix) * dest,
                                          const TYPE (gsl_matrix) * src)
 {
-  const size_t src_size1 = src->size1;
-  const size_t src_size2 = src->size2;
-  const size_t dest_size1 = dest->size1;
-  const size_t dest_size2 = dest->size2;
+  const size_t M = src->size1;
+  const size_t N = src->size2;
+  const size_t K = GSL_MIN(M, N);
+  size_t i;
 
-  if (src_size1 != dest_size1 || src_size2 != dest_size2)
+  if (M != dest->size2 || N != dest->size1)
     {
       GSL_ERROR ("matrix sizes are different", GSL_EBADLEN);
     }
 
+#if defined(BASE_DOUBLE) || defined(BASE_FLOAT) || defined(BASE_GSL_COMPLEX) || defined(BASE_GSL_COMPLEX_FLOAT)
+
+  if (Uplo_src == CblasLower)
+    {
+      for (i = 1; i < K; i++)
+        {
+          VIEW (gsl_vector, const_view) a = FUNCTION (gsl_matrix, const_subrow) (src, i, 0, i);
+          VIEW (gsl_vector, view) b = FUNCTION (gsl_matrix, subcolumn) (dest, i, 0, i);
+
+#if defined(BASE_DOUBLE)
+          gsl_blas_dcopy(&a.vector, &b.vector);
+#elif defined(BASE_FLOAT)
+          gsl_blas_scopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX)
+          gsl_blas_zcopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+          gsl_blas_ccopy(&a.vector, &b.vector);
+#endif
+        }
+    }
+  else if (Uplo_src == CblasUpper)
+    {
+      for (i = 0; i < K - 1; i++)
+        {
+          VIEW (gsl_vector, const_view) a = FUNCTION (gsl_matrix, const_subrow) (src, i, i + 1, K - i - 1);
+          VIEW (gsl_vector, view) b = FUNCTION (gsl_matrix, subcolumn) (dest, i, i + 1, K - i - 1);
+
+#if defined(BASE_DOUBLE)
+          gsl_blas_dcopy(&a.vector, &b.vector);
+#elif defined(BASE_FLOAT)
+          gsl_blas_scopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX)
+          gsl_blas_zcopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+          gsl_blas_ccopy(&a.vector, &b.vector);
+#endif
+        }
+    }
+
+  if (Diag == CblasNonUnit)
+    {
+      VIEW (gsl_vector, const_view) a = FUNCTION (gsl_matrix, const_diagonal) (src);
+      VIEW (gsl_vector, view) b = FUNCTION (gsl_matrix, diagonal) (dest);
+
+#if defined(BASE_DOUBLE)
+      gsl_blas_dcopy(&a.vector, &b.vector);
+#elif defined(BASE_FLOAT)
+      gsl_blas_scopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX)
+      gsl_blas_zcopy(&a.vector, &b.vector);
+#elif defined(BASE_GSL_COMPLEX_FLOAT)
+      gsl_blas_ccopy(&a.vector, &b.vector);
+#endif
+    }
+
+#else
+
   {
     const size_t src_tda = src->tda ;
     const size_t dest_tda = dest->tda ;
-    size_t i, j, k;
+    size_t j, k;
 
-    if (uplo_src == 'L')
+    if (Uplo_src == CblasLower)
       {
         /* copy lower triangle of src to upper triangle of dest */
-        for (i = 0; i < src_size1 ; i++)
+        for (i = 0; i < K; i++)
           {
             for (j = 0; j < i; j++)
               {
@@ -245,12 +325,12 @@ FUNCTION (gsl_matrix, transpose_tricpy) (const char uplo_src,
               }
           }
       }
-    else if (uplo_src == 'U')
+    else if (Uplo_src == CblasUpper)
       {
         /* copy upper triangle of src to lower triangle of dest */
-        for (i = 0; i < src_size1 ; i++)
+        for (i = 0; i < K; i++)
           {
-            for (j = i + 1; j < src_size2; j++)
+            for (j = i + 1; j < K; j++)
               {
                 for (k = 0; k < MULTIPLICITY; k++)
                   {
@@ -263,12 +343,12 @@ FUNCTION (gsl_matrix, transpose_tricpy) (const char uplo_src,
       }
     else
       {
-        GSL_ERROR ("invalid uplo_src parameter", GSL_EINVAL);
+        GSL_ERROR ("invalid Uplo_src parameter", GSL_EINVAL);
       }
 
-    if (copy_diag)
+    if (Diag == CblasNonUnit)
       {
-        for (i = 0; i < src_size1 ; i++)
+        for (i = 0; i < K; i++)
           {
             for (k = 0; k < MULTIPLICITY; k++)
               {
@@ -279,6 +359,8 @@ FUNCTION (gsl_matrix, transpose_tricpy) (const char uplo_src,
           }
       }
   }
+
+#endif
 
   return GSL_SUCCESS;
 }

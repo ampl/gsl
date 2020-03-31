@@ -1207,7 +1207,7 @@ gsl_multifit_linear_Lsobolev(const size_t p, const size_t kmax,
         return s;
 
       /* copy Cholesky factor to upper triangle and zero out bottom */
-      gsl_matrix_transpose_tricpy('L', 1, L, L);
+      gsl_matrix_transpose_tricpy(CblasLower, CblasUnit, L, L);
 
       for (j = 0; j < p; ++j)
         {

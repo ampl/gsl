@@ -283,7 +283,9 @@ gsl_multifit_robust_weights(const gsl_vector *r, gsl_vector *wts,
 
       /* scale residuals by sigma and tuning factor */
       gsl_vector_memcpy(wts, r);
-      gsl_vector_scale(wts, 1.0 / (sigma * w->tune));
+
+      if (sigma > 0.0)
+        gsl_vector_scale(wts, 1.0 / (sigma * w->tune));
 
       /* compute weights in-place */
       s = w->type->wfun(wts, wts);

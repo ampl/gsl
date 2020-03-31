@@ -39,7 +39,7 @@
    work on architectures where integers are 64-bit.
 
    The generator is initialized with 
-   zi = (69069 * z{i+1}) MOD 2^32 where z0 is the seed provided
+   z{i+1} = (69069 * zi) MOD 2^32 where z0 is the seed provided
    During initialization a check is done to make sure that the initial seeds 
    have a required number of their most significant bits set.
    After this, the state is passed through the RNG 10 times to ensure the

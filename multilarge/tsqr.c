@@ -1,6 +1,6 @@
 /* tsqr.c
  * 
- * Copyright (C) 2015 Patrick Alken
+ * Copyright (C) 2015, 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,21 +55,23 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_blas.h>
-#include <gsl/gsl_multilarge.h>
 #include <gsl/gsl_multifit.h>
+#include <gsl/gsl_multilarge.h>
 
 typedef struct
 {
   size_t p;             /* number of columns of LS matrix */
-  int init;             /* QR system has been initialized */
-  int svd;              /* SVD of R has been computed */
-  double normb;         /* || b || for computing residual norm */
+  int nblocks;          /* number of blocks processed */
+  double rnorm;         /* || b - A x || residual norm */
+  int svd;              /* SVD of R factor has been computed */
 
-  gsl_vector *tau;      /* Householder scalars, p-by-1 */
-  gsl_matrix *R;        /* [ R ; A_i ], size p-by-p */
+  gsl_matrix *T;        /* block reflector matrix, p-by-p */
+  gsl_matrix *R;        /* R factor, p-by-p */
   gsl_vector *QTb;      /* [ Q^T b ; b_i ], size p-by-1 */
+  gsl_vector *work;     /* workspace, size p */
+  gsl_vector *work3;    /* workspace, size 3*p */
 
-  gsl_multifit_linear_workspace *multifit_workspace_p;
+  gsl_multifit_linear_workspace * multifit_workspace_p;
 } tsqr_state_t;
 
 static void *tsqr_alloc(const size_t p);
@@ -84,19 +86,13 @@ static int tsqr_rcond(double * rcond, void * vstate);
 static int tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
                        gsl_vector * eta, void * vstate);
 static int tsqr_svd(tsqr_state_t * state);
-static double tsqr_householder_transform (double *v0, gsl_vector * v);
-static int tsqr_householder_hv (const double tau, const gsl_vector * v, double *w0,
-                                gsl_vector * w);
-static int tsqr_householder_hm (const double tau, const gsl_vector * v, gsl_matrix * R,
-                                gsl_matrix * A);
-static int tsqr_QR_decomp (gsl_matrix * R, gsl_matrix * A, gsl_vector * tau);
 
 /*
 tsqr_alloc()
   Allocate workspace for solving large linear least squares
 problems using the TSQR approach
 
-Inputs: p    - number of columns of LS matrix
+Inputs: p - number of columns of LS matrix
 
 Return: pointer to workspace
 */
@@ -119,9 +115,8 @@ tsqr_alloc(const size_t p)
     }
 
   state->p = p;
-  state->init = 0;
-  state->svd = 0;
-  state->normb = 0.0;
+  state->nblocks = 0;
+  state->rnorm = 0.0;
 
   state->R = gsl_matrix_alloc(p, p);
   if (state->R == NULL)
@@ -137,11 +132,25 @@ tsqr_alloc(const size_t p)
       GSL_ERROR_NULL("failed to allocate QTb vector", GSL_ENOMEM);
     }
 
-  state->tau = gsl_vector_alloc(p);
-  if (state->tau == NULL)
+  state->T = gsl_matrix_alloc(p, p);
+  if (state->T == NULL)
     {
       tsqr_free(state);
-      GSL_ERROR_NULL("failed to allocate tau vector", GSL_ENOMEM);
+      GSL_ERROR_NULL("failed to allocate T matrix", GSL_ENOMEM);
+    }
+
+  state->work = gsl_vector_alloc(p);
+  if (state->work == NULL)
+    {
+      tsqr_free(state);
+      GSL_ERROR_NULL("failed to allocate workspace vector", GSL_ENOMEM);
+    }
+
+  state->work3 = gsl_vector_alloc(3 * p);
+  if (state->work3 == NULL)
+    {
+      tsqr_free(state);
+      GSL_ERROR_NULL("failed to allocate work3 vector", GSL_ENOMEM);
     }
 
   state->multifit_workspace_p = gsl_multifit_linear_alloc(p, p);
@@ -165,8 +174,14 @@ tsqr_free(void *vstate)
   if (state->QTb)
     gsl_vector_free(state->QTb);
 
-  if (state->tau)
-    gsl_vector_free(state->tau);
+  if (state->T)
+    gsl_matrix_free(state->T);
+
+  if (state->work)
+    gsl_vector_free(state->work);
+
+  if (state->work3)
+    gsl_vector_free(state->work3);
 
   if (state->multifit_workspace_p)
     gsl_multifit_linear_free(state->multifit_workspace_p);
@@ -181,9 +196,9 @@ tsqr_reset(void *vstate)
 
   gsl_matrix_set_zero(state->R);
   gsl_vector_set_zero(state->QTb);
-  state->init = 0;
+  state->nblocks = 0;
+  state->rnorm = 0.0;
   state->svd = 0;
-  state->normb = 0.0;
 
   return GSL_SUCCESS;
 }
@@ -222,34 +237,40 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
     {
       GSL_ERROR("A and b have different numbers of rows", GSL_EBADLEN);
     }
-  else if (state->init == 0)
+  else if (state->nblocks == 0 && n < p)
+    {
+      GSL_ERROR ("n must be >= p", GSL_EBADLEN);
+    }
+  else if (state->nblocks == 0)
     {
       int status;
-      const size_t npmin = GSL_MIN(n, p);
-      gsl_vector_view tau = gsl_vector_subvector(state->tau, 0, npmin);
-      gsl_matrix_view R = gsl_matrix_submatrix(state->R, 0, 0, npmin, p);
-      gsl_matrix_view Av = gsl_matrix_submatrix(A, 0, 0, npmin, p);
-      gsl_vector_view QTb = gsl_vector_subvector(state->QTb, 0, npmin);
-      gsl_vector_view bv = gsl_vector_subvector(b, 0, npmin);
+      gsl_matrix_view R = gsl_matrix_submatrix(A, 0, 0, p, p);
+      gsl_vector_view QTb = gsl_vector_subvector(state->QTb, 0, p);
+      gsl_vector_view b1 = gsl_vector_subvector(b, 0, p);
 
       /* this is the first matrix block A_1, compute its (dense) QR decomposition */
 
       /* compute QR decomposition of A */
-      status = gsl_linalg_QR_decomp(A, &tau.vector);
+      status = gsl_linalg_QR_decomp_r(A, state->T);
       if (status)
         return status;
 
       /* store upper triangular R factor in state->R */
-      gsl_matrix_tricpy('U', 1, &R.matrix, &Av.matrix);
-
-      /* compute ||b|| */
-      state->normb = gsl_blas_dnrm2(b);
+      gsl_matrix_tricpy(CblasUpper, CblasNonUnit, state->R, &R.matrix);
 
       /* compute Q^T b and keep the first p elements */
-      gsl_linalg_QR_QTvec(A, &tau.vector, b);
-      gsl_vector_memcpy(&QTb.vector, &bv.vector);
+      gsl_linalg_QR_QTvec_r(A, state->T, b, state->work);
+      gsl_vector_memcpy(&QTb.vector, &b1.vector);
 
-      state->init = 1;
+      if (n > p)
+        {
+          gsl_vector_view b2 = gsl_vector_subvector(b, p, n - p);
+          state->rnorm = gsl_blas_dnrm2(&b2.vector);
+        }
+      else
+        state->rnorm = 0.0;
+
+      state->nblocks = 1;
 
       return GSL_SUCCESS;
     }
@@ -259,28 +280,32 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
 
       /* compute QR decomposition of [ R_{i-1} ; A_i ], accounting for
        * sparse structure */
-      status = tsqr_QR_decomp(state->R, A, state->tau);
+      status = gsl_linalg_QR_TR_decomp(state->R, A, state->T);
       if (status)
         return status;
 
-      /* update ||b|| */
-      state->normb = gsl_hypot(state->normb, gsl_blas_dnrm2(b));
-
       /*
-       * compute Q^T [ QTb_{i - 1}; b_i ], accounting for the sparse
-       * structure of the Householder reflectors
+       * Compute:
+       *
+       * Q^T [ QTb_{i-1} ] = [ QTb_{i-1} - w ]
+       *     [    b_i    ]   [  b_i - V~ w   ]
+       *
+       * where:
+       * 
+       * w = T^T (QTb_{i-1} + V~^T b_i)
+       *
+       *       p
+       * V = [ I  ] p
+       *     [ V~ ] n
        */
-      {
-        size_t i;
+      gsl_vector_memcpy(state->work, state->QTb);
+      gsl_blas_dgemv(CblasTrans, 1.0, A, b, 1.0, state->work);                     /* w := w + V~^T b */
+      gsl_blas_dtrmv(CblasUpper, CblasTrans, CblasNonUnit, state->T, state->work); /* w := T^T w */
+      gsl_vector_sub(state->QTb, state->work);                                     /* QTb := QTb - w */
 
-        for (i = 0; i < p; i++)
-          {
-            const double ti = gsl_vector_get (state->tau, i);
-            gsl_vector_const_view h = gsl_matrix_const_column (A, i);
-            double *wi = gsl_vector_ptr(state->QTb, i);
-            tsqr_householder_hv (ti, &(h.vector), wi, b);
-          }
-      }
+      /* update residual norm */
+      gsl_blas_dgemv(CblasNoTrans, -1.0, A, state->work, 1.0, b);                  /* b := b - V~ w */
+      state->rnorm = gsl_hypot(state->rnorm, gsl_blas_dnrm2(b));
 
       return GSL_SUCCESS;
     }
@@ -309,53 +334,44 @@ tsqr_solve(const double lambda, gsl_vector * x,
            void * vstate)
 {
   tsqr_state_t *state = (tsqr_state_t *) vstate;
-  const size_t p = x->size;
 
-  if (p != state->p)
+  if (x->size != state->p)
     {
-      GSL_ERROR("solution vector does not match workspace", GSL_EBADLEN);
+      GSL_ERROR ("solution vector does not match workspace", GSL_EBADLEN);
+    }
+  else if (lambda < 0.0)
+    {
+      GSL_ERROR ("regularization parameter should be non-negative", GSL_EINVAL);
     }
   else
     {
-      int status;
-
-      /* compute SVD of R if not already computed */
-      if (state->svd == 0)
+      if (lambda == 0.0)
         {
-          status = tsqr_svd(state);
+          /* solve: R x = Q^T b */
+          gsl_vector_memcpy(x, state->QTb);
+          gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, state->R, x);
+          *rnorm = state->rnorm;
+          *snorm = gsl_blas_dnrm2(x);
+        }
+      else
+        {
+          int status;
+
+          /* compute SVD of R if not already computed */
+          if (state->svd == 0)
+            {
+              status = tsqr_svd(state);
+              if (status)
+                return status;
+            }
+
+          status = gsl_multifit_linear_solve(lambda, state->R, state->QTb, x, rnorm, snorm,
+                                             state->multifit_workspace_p);
           if (status)
             return status;
+
+          *rnorm = gsl_hypot(*rnorm, state->rnorm);
         }
-
-      status = gsl_multifit_linear_solve(lambda, state->R, state->QTb, x, rnorm, snorm,
-                                         state->multifit_workspace_p);
-      if (status)
-        return status;
-
-      /*
-       * Since we're solving a reduced square system above, we need
-       * to account for the full residual vector:
-       *
-       * rnorm = || [ Q1^T b - R x ; Q2^T b ] ||
-       *
-       * where Q1 is the thin Q factor of X, and Q2
-       * are the remaining columns of Q. But:
-       *
-       * || Q2^T b ||^2 = ||b||^2 - ||Q1^T b||^2
-       * 
-       * so add this into the rnorm calculation
-       */
-      {
-        double norm_Q1Tb = gsl_blas_dnrm2(state->QTb);
-        double ratio = norm_Q1Tb / state->normb;
-        double diff = 1.0 - ratio*ratio;
-
-        if (diff > GSL_DBL_EPSILON)
-          {
-            double norm_Q2Tb = state->normb * sqrt(diff);
-            *rnorm = gsl_hypot(*rnorm, norm_Q2Tb);
-          }
-      }
 
       return GSL_SUCCESS;
     }
@@ -379,6 +395,7 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
 {
   tsqr_state_t *state = (tsqr_state_t *) vstate;
   int status;
+  size_t i;
 
   /* compute SVD of R if not already computed */
   if (state->svd == 0)
@@ -392,23 +409,11 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
                                       state->multifit_workspace_p);
 
   /* now add contribution to rnorm from Q2 factor */
-  {
-    double norm_Q1Tb = gsl_blas_dnrm2(state->QTb);
-    double ratio = norm_Q1Tb / state->normb;
-    double diff = 1.0 - ratio*ratio;
-    size_t i;
-
-    if (diff > GSL_DBL_EPSILON)
-      {
-        double norm_Q2Tb = state->normb * sqrt(diff);
-
-        for (i = 0; i < rho->size; ++i)
-          {
-            double *rhoi = gsl_vector_ptr(rho, i);
-            *rhoi = gsl_hypot(*rhoi, norm_Q2Tb);
-          }
-      }
-  }
+  for (i = 0; i < rho->size; ++i)
+    {
+      double *rhoi = gsl_vector_ptr(rho, i);
+      *rhoi = gsl_hypot(*rhoi, state->rnorm);
+    }
 
   return status;
 }
@@ -417,18 +422,7 @@ static int
 tsqr_rcond(double * rcond, void * vstate)
 {
   tsqr_state_t *state = (tsqr_state_t *) vstate;
-
-  /* compute SVD of R if not already computed */
-  if (state->svd == 0)
-    {
-      int status = tsqr_svd(state);
-      if (status)
-        return status;
-    }
-
-  *rcond = gsl_multifit_linear_rcond(state->multifit_workspace_p);
-
-  return GSL_SUCCESS;
+  return gsl_linalg_tri_rcond(CblasUpper, state->R, rcond, state->work3);
 }
 
 /*
@@ -459,236 +453,6 @@ tsqr_svd(tsqr_state_t * state)
   return GSL_SUCCESS;
 }
 
-/*
-tsqr_householder_transform()
-  This routine is an optimized version of
-gsl_linalg_householder_transform(), designed for the QR
-decomposition of M-by-N matrices of the form:
-
-T = [ R ]
-    [ A ]
-
-where R is N-by-N upper triangular, and A is (M-N)-by-N dense.
-This routine computes a householder transformation (tau,v) of a 
-x so that P x = [ I - tau*v*v' ] x annihilates x(1:n-1). x will
-be a subcolumn of the matrix T, and so its structure will be:
-
-x = [ x0 ] <- 1 nonzero value for the diagonal element of R
-    [ 0  ] <- N - j - 1 zeros, where j is column of matrix in [0,N-1]
-    [ x  ] <- M-N nonzero values for the dense part A
-
-Inputs: v0 - pointer to diagonal element of R
-             on input, v0 = x0;
-        v  - on input, x vector
-             on output, householder vector v
-*/
-
-static double
-tsqr_householder_transform (double *v0, gsl_vector * v)
-{
-  /* replace v[0:M-1] with a householder vector (v[0:M-1]) and
-     coefficient tau that annihilate v[1:M-1] */
-
-  double alpha, beta, tau ;
-  
-  /* compute xnorm = || [ 0 ; v ] ||, ignoring zero part of vector */
-  double xnorm = gsl_blas_dnrm2(v);
-
-  if (xnorm == 0) 
-    {
-      return 0.0; /* tau = 0 */
-    }
-
-  alpha = *v0;
-  beta = - (alpha >= 0.0 ? +1.0 : -1.0) * hypot(alpha, xnorm) ;
-  tau = (beta - alpha) / beta ;
-  
-  {
-    double s = (alpha - beta);
-    
-    if (fabs(s) > GSL_DBL_MIN) 
-      {
-        gsl_blas_dscal (1.0 / s, v);
-        *v0 = beta;
-      }
-    else
-      {
-        gsl_blas_dscal (GSL_DBL_EPSILON / s, v);
-        gsl_blas_dscal (1.0 / GSL_DBL_EPSILON, v);
-        *v0 = beta;
-      }
-  }
-  
-  return tau;
-}
-
-/*
-tsqr_householder_hv()
-  Apply Householder reflector to a vector. The Householder
-reflectors are for the QR decomposition of the matrix
-
-  [ R ]
-  [ A ]
-
-where R is p-by-p upper triangular and A is n-by-p dense.
-Therefore all relevant components of the Householder
-vector are stored in the columns of A, while the components
-in R are 0, except for diag(R) which are 1.
-
-The vector w to be transformed is partitioned as
-
-  [ w1 ]
-  [ w2 ]
-
-where w1 is p-by-1 and w2 is n-by-1. The w2 portion
-of w is transformed by v, but most of w1 remains unchanged
-except for the first element, w0
-
-Inputs: tau - Householder scalar
-        v   - Householder vector, n-by-1
-        w0  - (input/output)
-              on input, w1(0);
-              on output, transformed w1(0)
-        w   - (input/output) n-by-1
-              on input, vector w2;
-              on output, P*w2
-*/
-
-static int
-tsqr_householder_hv (const double tau, const gsl_vector * v, double *w0, gsl_vector * w)
-{
-  /* applies a householder transformation v to vector w */
- 
-  if (tau == 0)
-    return GSL_SUCCESS ;
-
-  {
-    double d1, d;
-
-    /* compute d1 = v(2:n)' w(2:n) */
-    gsl_blas_ddot (v, w, &d1);
-
-    /* compute d = v'w = w(1) + d1 since v(1) = 1 */
-    d = *w0 + d1;
-
-    /* compute w = w - tau (v) (v'w) */
-    *w0 -= tau * d;
-    gsl_blas_daxpy (-tau * d, v, w);
-  }
-  
-  return GSL_SUCCESS;
-}
-
-/*
-tsqr_householder_hm()
-  Apply Householder reflector to a submatrix of
-
-  [ R ]
-  [ A ]
-
-where R is p-by-p upper triangular and A is n-by-p dense.
-The diagonal terms of R are already transformed by
-tsqr_householder_transform(), so we just need to operate
-on the submatrix A(:,i:p) as well as the superdiagonal
-elements of R
-
-Inputs: tau - Householder scalar
-        v   - Householder vector
-        R   - upper triangular submatrix of R, (p-i)-by-(p-i-1)
-        A   - dense submatrix of A, n-by-(p-i)
-*/
-
-static int
-tsqr_householder_hm (const double tau, const gsl_vector * v, gsl_matrix * R,
-                     gsl_matrix * A)
-{
-  /* applies a householder transformation v,tau to matrix [ R ; A ] */
-
-  if (tau == 0.0)
-    {
-      return GSL_SUCCESS;
-    }
-  else
-    {
-      size_t j;
-
-      for (j = 0; j < A->size2; j++)
-        {
-          double R0j = gsl_matrix_get (R, 0, j);
-          double wj;
-          gsl_vector_view A1j = gsl_matrix_column(A, j);
-
-          gsl_blas_ddot (&A1j.vector, v, &wj);
-          wj += R0j;
-
-          gsl_matrix_set (R, 0, j, R0j - tau *  wj);
-
-          gsl_blas_daxpy (-tau * wj, v, &A1j.vector);
-        }
-
-      return GSL_SUCCESS;
-    }
-}
-
-/*
-tsqr_QR_decomp()
-  Compute the QR decomposition of the matrix
-
-  [ R ]
-  [ A ]
-
-where R is p-by-p upper triangular and A is n-by-p dense.
-
-Inputs: R   - upper triangular p-by-p matrix
-        A   - dense n-by-p matrix
-        tau - Householder scalars
-*/
-
-static int
-tsqr_QR_decomp (gsl_matrix * R, gsl_matrix * A, gsl_vector * tau)
-{
-  const size_t n = A->size1;
-  const size_t p = R->size2;
-
-  if (R->size2 != A->size2)
-    {
-      GSL_ERROR ("R and A have different number of columns", GSL_EBADLEN);
-    }
-  else if (tau->size != p)
-    {
-      GSL_ERROR ("size of tau must be p", GSL_EBADLEN);
-    }
-  else
-    {
-      size_t i;
-
-      for (i = 0; i < p; i++)
-        {
-          /* Compute the Householder transformation to reduce the j-th
-             column of the matrix [ R ; A ] to a multiple of the j-th unit vector,
-             taking into account the sparse structure of R */
-
-          gsl_vector_view c = gsl_matrix_column(A, i);
-          double *Rii = gsl_matrix_ptr(R, i, i);
-          double tau_i = tsqr_householder_transform(Rii, &c.vector);
-
-          gsl_vector_set (tau, i, tau_i);
-
-          /* Apply the transformation to the remaining columns and
-             update the norms */
-
-          if (i + 1 < p)
-            {
-              gsl_matrix_view Rv = gsl_matrix_submatrix(R, i, i + 1, p - i, p - (i + 1));
-              gsl_matrix_view Av = gsl_matrix_submatrix(A, 0, i + 1, n, p - (i + 1));
-              tsqr_householder_hm (tau_i, &(c.vector), &(Rv.matrix), &(Av.matrix));
-            }
-        }
-
-      return GSL_SUCCESS;
-    }
-}
-
 static const gsl_multilarge_linear_type tsqr_type =
 {
   "tsqr",
@@ -701,5 +465,4 @@ static const gsl_multilarge_linear_type tsqr_type =
   tsqr_free
 };
 
-const gsl_multilarge_linear_type * gsl_multilarge_linear_tsqr =
-  &tsqr_type;
+const gsl_multilarge_linear_type * gsl_multilarge_linear_tsqr = &tsqr_type;

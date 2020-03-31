@@ -29,8 +29,7 @@ and,
 
 where the basis functions :math:`\psi_{s,\tau}`
 are obtained by scaling
-and translation from a single function, referred to as the {mother
-wavelet*.
+and translation from a single function, referred to as the *mother wavelet*.
 
 The discrete version of the wavelet transform acts on equally-spaced
 samples, with fixed scaling and translation steps (:math:`s`,

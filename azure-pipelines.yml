@@ -1,0 +1,30 @@
+#trigger:
+#- azure
+
+jobs:
+- template: support/azure/template-build.yml  
+  parameters:
+    name: Linux_32
+    vmImage: 'ubuntu-latest'
+    cmakeDefs: '-DARCH=32'
+    installGCC32: true
+- template: support/azure/template-build.yml  
+  parameters:
+    name: Linux_64
+    vmImage: 'ubuntu-latest'
+    cmakeDefs: '-DARCH=64'
+- template: support/azure/template-build.yml  
+  parameters:
+    name: windows_32
+    vmImage: 'windows-2019'
+    cmakeDefs: '-A Win32'
+- template: support/azure/template-build.yml  
+  parameters:
+    name: windows_64
+    vmImage: 'windows-2019'
+    cmakeDefs: '-A x64'
+- template: support/azure/template-build.yml  
+  parameters:
+    name: macOS
+    vmImage: 'macOS-10.15'
+    cmakeDefs: '-DARCH=64'

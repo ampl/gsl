@@ -1,0 +1,37 @@
+parameters:
+- name: name  
+  default: ''
+- name: vmImage
+  default: ''
+- name: cmakeDefs
+  displayName: 'Define architecture of the build'
+  type: string
+- name: installGCC32
+  type: boolean
+  default: false
+
+jobs:
+- job: ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  steps:
+  - ${{ if eq(parameters.installGCC32, true)}}:
+    - bash: |
+        sudo apt update
+        sudo apt install -y g++-multilib gcc-multilib
+  - checkout: self
+    submodules: true
+  - task: CMake@1
+    inputs:
+        workingDirectory: 'build' 
+        cmakeArgs: .. ${{ parameters.cmakeDefs }}
+    displayName: 'Run cmake'
+  - task: CMake@1
+    inputs:
+        workingDirectory: 'build' 
+        cmakeArgs: --build . --config Release
+    displayName: 'Build with cmake'
+  - script: 'ctest -C Release'
+    workingDirectory: 'build' 
+    displayName: 'Running tests'
+    

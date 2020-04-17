@@ -777,7 +777,7 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
     DESTINATION lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION}
     NAMESPACE GSL:: )
   configure_package_config_file(
-    ${CMAKE_SOURCE_DIR}/cmake/${PACKAGE_NAME}-config.cmake.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PACKAGE_NAME}-config.cmake.in
     ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config.cmake
     INSTALL_DESTINATION cmake/${PACKAGE_NAME} )
   write_basic_package_version_file(

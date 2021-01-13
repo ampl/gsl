@@ -18,6 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#include <config.h>
+#if HAVE_UNISTD_H
+  #include <unistd.h>
+#endif
+
 void FUNCTION (test, func) (const size_t M, const size_t N);
 void FUNCTION (test, ops) (const size_t P, const size_t Q);
 void FUNCTION (test, trap) (const size_t M, const size_t N);

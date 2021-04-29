@@ -14,6 +14,86 @@ This library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+About this repository
+=====================
+
+This repository contains a copy of the latest stable version of GSL, 
+with two main additions:
+
+- a ```cmake ``` build system
+- optional inclusion of the AMPL GSL bindings, to access GSL functions from [AMPL](https://ampl.com/)
+
+CMake build instructions
+========================
+
+Build with AMPL bindings
+------------------------
+
+To build the AMPL bindings: 
+1) Make sure that the ASL submodule is initialized (in ```/ampl/thirdparty/asl```).
+2) Create a build directory and move there:
+   ```
+   mkdir build
+   cd build
+   ```
+3) Initialize the build files with your desired [generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html), for example:
+   ```
+   cmake .. -G"Unix Makefiles"
+   ```
+
+4) Build the resulting build files accordingly, for example:
+   ```
+   make .
+   ```
+
+Build without AMPL bindings 
+---------------------------
+
+If building GSL without the AMPL bindings:
+
+1) Create a build directory and move there:
+   ```
+   mkdir build
+   cd build
+   ```
+2) Initialize the build files with your desired [generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html), 
+   defining the variable ```NO_AMPL_BINDINGS````
+   ```
+   cmake .. -G"Unix Makefiles" -DNO_AMPL_BINDINGS=1
+   ```
+
+3) Build the resulting build files accordingly, for example:
+   ```
+   make .
+   ```
+
+
+Other build parameters
+----------------------
+
+1) Defining GSL_DISABLE_TESTS skips the test generation, for example:
+   ```
+   cmake .. -DGSL_DISABLE_TESTS=1
+   ```
+
+2) There is experimental support to build only a subset of the GSL library;
+   note that this is only supported when *not* building the AMPL bindings.
+   To generate only some libraries of the GSL, define BUILDLIBS when calling cmake
+   as a *comma separated* list of GSL directories. An example follows:
+
+   ```
+   cmake .. -DBUILDLIBS=ode-initval2,linalg -DNO_AMPL_BINDINGS=1
+   ```
+
+   All the dependencies are handled automatically; please note that the tests
+   often have additional dependencies therefore, to fully benefit from this facility,
+   disable them. For example:
+
+    ```
+   cmake .. -DBUILDLIBS=ode-initval2,linalg -DNO_AMPL_BINDINGS=1 -DGSL_DISABLE_TESTS=1
+   ```
+
+
 Availability
 ============
 

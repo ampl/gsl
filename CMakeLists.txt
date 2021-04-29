@@ -629,6 +629,7 @@ function(add_gsl_test exename)
   endif ()
   add_executable(${exename} ${ARGN})
   target_link_libraries(${exename} gsl)
+  target_include_directories(${exename} PRIVATE .)
   add_test(${exename} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${exename})
 endfunction()
 
@@ -673,8 +674,127 @@ foreach (line ${lines})
   string(REGEX MATCHALL "[^ ]+" dirs ${dirs})
 endforeach ()
 
+
+## Experimental: define dependencies
+## Only activated if BUILDLIB is defined
+if(DEFINED BUILDLIBS)
+  if(NOT DEFINED NO_AMPL_BINDINGS)
+     message(FATAL_ERROR "Disable building of the AMPL bindings (with -DNO_AMPL_BINDINGS=1) to enable selective build")
+   endif()
+set(err_DEP .)
+
+set(bst_DEP err)
+set(block_DEP err)
+set(cheb_DEP err)
+set(combination_DEP err)
+set(ieee-utils_DEP err)
+set(poly_DEP err)
+set(sort_DEP err)
+set(histogram_DEP block)
+
+set(fft_DEP cblas err)
+set(blas_DEP cblas err)
+set(vector_DEP block blas)
+
+set(statistics_DEP vector sort)
+set(rstat_DEP statistics)
+set(movstat_DEP rstat)
+
+set(ntuple_DEP histogram)
+
+set(matrix_DEP vector)
+
+set(filter_DEP vector movstat)
+set(permutation_DEP matrix)
+set(wavelet_DEP matrix)
+set(specfunc_DEP matrix complex eigen)
+
+set(dht_DEP specfunc)
+set(integration_DEP specfunc)
+set(multimin_DEP matrix poly)
+set(spmatrix_DEP bst matrix)
+set(linalg_DEP permutation complex sys)
+
+set(interpolation_DEP linalg poly)
+set(eigen_DEP linalg)
+set(bspline_DEP linalg statistics)
+set(multifit_nlinear_DEP linalg poly)
+set(multifit_DEP linalg min statistics)
+set(multiroots_DEP linalg)
+set(ode-initval_DEP linalg)
+set(ode-initval2_DEP linalg)
+
+set(multilarge_nlinear_DEP multifit poly)
+set(multilarge_DEP multifit eigen)
+
+set(spblas_DEP spmatrix)
+set(splinalg_DEP spblas eigen)
+
+set(randist_DEP linalg specfunc statistics integration)
+
+set(cdf_DEP specfunc randist)
+
+set(bst_test_DEP sort)
+set(sort_test_DEP permutation)
+set(eigen_test_DEP sort)
+set(multifit_test_DEP specfunc)
+set(poly_test_DEP sort)
+set(randist_test_DEP cdf)
+set(rstat_test_DEP randist cdf)
+
+
+set_property(GLOBAL PROPERTY HAVETOBUILD_GLOBAL "")
+set_property(GLOBAL PROPERTY ADDEDLIBS_GLOBAL "")
+
+set(HAVETOBUILD "")
+set(ALREADYADDED "")
+function(addDependencies lib)
+    get_property(ALREADYADDED GLOBAL PROPERTY ADDEDLIBS_GLOBAL)
+    get_property(HAVETOBUILD GLOBAL PROPERTY HAVETOBUILD_GLOBAL)
+    if(NOT ${lib} IN_LIST ALREADYADDED)
+      set(ALREADYADDED ${ALREADYADDED} ${lib})
+      set_property(GLOBAL PROPERTY ADDEDLIBS_GLOBAL ${ALREADYADDED})
+    else()
+      return()
+    endif()
+
+   if(NOT ${lib} IN_LIST HAVETOBUILD)
+      set(HAVETOBUILD ${HAVETOBUILD} ${lib})
+      set_property(GLOBAL PROPERTY HAVETOBUILD_GLOBAL ${HAVETOBUILD})
+    endif()
+     foreach(dep ${${lib}_DEP})
+       addDependencies(${dep})
+     endforeach()
+   if(NOT GSL_DISABLE_TESTS)
+     foreach(dep ${${lib}_test_DEP})
+       addDependencies(${dep})
+     endforeach()
+   endif()
+endfunction()
+
+message(STATUS "Building only a subset of GSL")
+message(STATUS "Specified libraries: ${BUILDLIBS}")
+
+# Add test dependencies to the list if needed
+if(NOT GSL_DISABLE_TESTS)
+  set(BUILDLIBS ${BUILDLIBS} ieee-utils rng test sys)
+endif()
+
+# Resolve transitive dependencies
+foreach(lib ${BUILDLIBS})
+  addDependencies(${lib})
+endforeach()
+# Set them as local variable
+get_property(HAVETOBUILD GLOBAL PROPERTY HAVETOBUILD_GLOBAL)
+
+
+message(STATUS "Resolved dependencies: ${HAVETOBUILD}")
+else()
+  set(HAVETOBUILD ${dirs})
+endif()
+
 # Extract sources from automake files and add tests.
-foreach (dir "." ${dirs})
+foreach (dir ${HAVETOBUILD})
   file(STRINGS ${dir}/Makefile.am lines)
   foreach (line ${lines})
     if (line MATCHES "_la_SOURCES[ \t]*=")
@@ -713,11 +833,15 @@ set_target_properties(gsl
   PROPERTIES
     COMPILE_DEFINITIONS DLL_EXPORT
     WINDOWS_EXPORT_ALL_SYMBOLS ON )
-target_link_libraries(gsl gslcblas)
-target_include_directories(gslcblas
-  PUBLIC 
-    $<BUILD_INTERFACE:${GSL_BINARY_DIR}>
-    $<BUILD_INTERFACE:${GSL_SOURCE_DIR}> )
+    target_include_directories(gsl PRIVATE .)
+    target_link_libraries(gsl ${CMAKE_REQUIRED_LIBRARIES})
+if(TARGET gslcblas)
+  target_link_libraries(gsl gslcblas)
+  target_include_directories(gslcblas
+    PUBLIC 
+      $<BUILD_INTERFACE:${GSL_BINARY_DIR}>
+      $<BUILD_INTERFACE:${GSL_SOURCE_DIR}> )
+endif()
 target_include_directories(gsl 
   PUBLIC $<BUILD_INTERFACE:${GSL_BINARY_DIR}>  )
 add_dependencies(gsl copy-headers)
@@ -737,7 +861,11 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       CONFIGURATIONS Debug 
       DESTINATION bin/$<CONFIG>)
   else ()
-    install(TARGETS gsl gslcblas
+    set(TOINSTALL gsl)
+    if(TARGET gslcblas)
+       set(TOINSTALL ${TOINSTALL} gslcblas)
+    endif()
+    install(TARGETS ${TOINSTALL}
       EXPORT "gsl-targets"
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin
@@ -793,7 +921,9 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
 endif ()
 if(NOT MSVC)
     target_compile_options(gsl PRIVATE -fPIC)
-    target_compile_options(gslcblas PRIVATE -fPIC)
+    if(TARGET gslcblas)
+      target_compile_options(gslcblas PRIVATE -fPIC)
+    endif()
 endif()
 
 if(NOT DEFINED NO_AMPL_BINDINGS)

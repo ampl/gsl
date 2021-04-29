@@ -790,7 +790,7 @@ get_property(HAVETOBUILD GLOBAL PROPERTY HAVETOBUILD_GLOBAL)
 
 message(STATUS "Resolved dependencies: ${HAVETOBUILD}")
 else()
-  set(HAVETOBUILD ${dirs})
+  set(HAVETOBUILD ${dirs} .)
 endif()
 
 # Extract sources from automake files and add tests.

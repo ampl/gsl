@@ -20,7 +20,7 @@ About this repository
 This repository contains a copy of the latest stable version of GSL, 
 with two main additions:
 
-- a ```cmake ``` build system
+- a cmake build system
 - optional inclusion of the AMPL GSL bindings, to access GSL functions from [AMPL](https://ampl.com/)
 
 CMake build instructions

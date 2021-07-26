@@ -1,6 +1,7 @@
 /* vector/copy_source.c
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Gerard Jungman, Brian Gough
+ * Copyright (C) 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,14 @@ int
 FUNCTION (gsl_vector, memcpy) (TYPE (gsl_vector) * dest,
                                const TYPE (gsl_vector) * src)
 {
+  const size_t src_size = src->size;
+  const size_t dest_size = dest->size;
+
+  if (src_size != dest_size)
+    {
+      GSL_ERROR ("vector lengths are not equal", GSL_EBADLEN);
+    }
+
 #if defined(BASE_DOUBLE)
 
   gsl_blas_dcopy(src, dest);
@@ -38,14 +47,6 @@ FUNCTION (gsl_vector, memcpy) (TYPE (gsl_vector) * dest,
   gsl_blas_ccopy(src, dest);
 
 #else
-
-  const size_t src_size = src->size;
-  const size_t dest_size = dest->size;
-
-  if (src_size != dest_size)
-    {
-      GSL_ERROR ("vector lengths are not equal", GSL_EBADLEN);
-    }
 
   {
     const size_t src_stride = src->stride ;

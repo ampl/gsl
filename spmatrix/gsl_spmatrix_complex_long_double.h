@@ -1,6 +1,6 @@
 /* spmatrix/gsl_spmatrix_long_double.h
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,9 +153,16 @@ int gsl_spmatrix_complex_long_double_scale (gsl_spmatrix_complex_long_double * m
 int gsl_spmatrix_complex_long_double_scale_columns (gsl_spmatrix_complex_long_double * m, const gsl_vector_complex_long_double * x);
 int gsl_spmatrix_complex_long_double_scale_rows (gsl_spmatrix_complex_long_double * m, const gsl_vector_complex_long_double * x);
 int gsl_spmatrix_complex_long_double_add (gsl_spmatrix_complex_long_double * c, const gsl_spmatrix_complex_long_double * a, const gsl_spmatrix_complex_long_double * b);
-int gsl_spmatrix_complex_long_double_add_to_dense (gsl_matrix_complex_long_double * a, const gsl_spmatrix_complex_long_double * b);
+int gsl_spmatrix_complex_long_double_dense_add (gsl_matrix_complex_long_double * a, const gsl_spmatrix_complex_long_double * b);
+int gsl_spmatrix_complex_long_double_dense_sub (gsl_matrix_complex_long_double * a, const gsl_spmatrix_complex_long_double * b);
 int gsl_spmatrix_complex_long_double_d2sp (gsl_spmatrix_complex_long_double * T, const gsl_matrix_complex_long_double * A);
 int gsl_spmatrix_complex_long_double_sp2d (gsl_matrix_complex_long_double * A, const gsl_spmatrix_complex_long_double * S);
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int gsl_spmatrix_complex_long_double_add_to_dense (gsl_matrix_complex_long_double * a, const gsl_spmatrix_complex_long_double * b);
+
+#endif
 
 /* properties */
 

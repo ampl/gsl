@@ -95,6 +95,69 @@ gsl_linalg_householder_transform (gsl_vector * v)
     }
 }
 
+/*
+gsl_linalg_householder_transform2()
+  Compute a householder transformation P so that
+
+P [   alpha  ] = [ beta ]
+  [ x(1:n-1) ]   [   0  ]
+
+where
+
+P = I - tau [ 1 ] [ 1 v' ]
+            [ v ]
+
+Inputs: alpha - on input, alpha scalar
+                on output, beta scalar
+        v     - length n vector
+                on input, v(1:n-1) contains x vector
+                on output, v(1:n-1) householder vector v
+                v(n) is not modified
+*/
+
+double
+gsl_linalg_householder_transform2 (double * alpha, gsl_vector * v)
+{
+  const size_t n = v->size;
+
+  if (n == 1)
+    {
+      return 0.0; /* tau = 0 */
+    }
+  else
+    { 
+      double beta, tau;
+      gsl_vector_view x = gsl_vector_subvector (v, 0, n - 1); 
+      double xnorm = gsl_blas_dnrm2 (&x.vector);
+      
+      if (xnorm == 0) 
+        {
+          return 0.0; /* tau = 0 */
+        }
+      
+      beta = - GSL_SIGN(*alpha) * hypot(*alpha, xnorm);
+      tau = (beta - *alpha) / beta;
+      
+      {
+        double s = (*alpha - beta);
+        
+        if (fabs(s) > GSL_DBL_MIN) 
+          {
+            gsl_blas_dscal (1.0 / s, &x.vector);
+            *alpha = beta;
+          }
+        else
+          {
+            gsl_blas_dscal (GSL_DBL_EPSILON / s, &x.vector);
+            gsl_blas_dscal (1.0 / GSL_DBL_EPSILON, &x.vector);
+            *alpha = beta;
+          }
+      }
+      
+      return tau;
+    }
+}
+
 int
 gsl_linalg_householder_hm (double tau, const gsl_vector * v, gsl_matrix * A)
 {
@@ -278,9 +341,7 @@ Inputs: tau  - Householder coefficient
         work - workspace, length N
 
 Notes:
-1) v(1) is modified but is restored on output
-
-2) This routine replaces gsl_linalg_householder_hm
+1) This routine replaces gsl_linalg_householder_hm
 */
 
 int
@@ -299,22 +360,15 @@ gsl_linalg_householder_left(const double tau, const gsl_vector * v, gsl_matrix *
     }
   else
     {
-      double v0;
-
       /* quick return */
       if (tau == 0.0)
         return GSL_SUCCESS;
-
-      v0 = gsl_vector_get(v, 0);
-      v->data[0] = 1.0;
 
       /* work := A^T v */
       gsl_blas_dgemv(CblasTrans, 1.0, A, v, 0.0, work);
 
       /* A := A - tau v work^T */
       gsl_blas_dger(-tau, v, work, A);
-
-      v->data[0] = v0;
 
       return GSL_SUCCESS;
     }

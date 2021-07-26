@@ -410,7 +410,7 @@ test_COD_lssolve2(gsl_rng * r)
   b = gsl_vector_alloc(M);
   create_rank_matrix(26, m, r);
   create_random_vector(b, r);
-  test_COD_lssolve2_eps(lambda, m, b, 1.0e3 * M * GSL_DBL_EPSILON, "COD_lssolve2 rank 26");
+  test_COD_lssolve2_eps(lambda, m, b, 1.0e4 * M * GSL_DBL_EPSILON, "COD_lssolve2 rank 26");
   gsl_matrix_free(m);
   gsl_vector_free(b);
 
@@ -420,7 +420,7 @@ test_COD_lssolve2(gsl_rng * r)
   b = gsl_vector_alloc(M);
   create_rank_matrix(278, m, r);
   create_random_vector(b, r);
-  test_COD_lssolve2_eps(lambda, m, b, 1.0e5 * M * GSL_DBL_EPSILON, "COD_lssolve2 rank 278");
+  test_COD_lssolve2_eps(lambda, m, b, 1.0e6 * M * GSL_DBL_EPSILON, "COD_lssolve2 rank 278");
   gsl_matrix_free(m);
   gsl_vector_free(b);
 

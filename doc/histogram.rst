@@ -322,7 +322,7 @@ Histogram Statistics
 .. function:: size_t gsl_histogram_min_bin (const gsl_histogram * h)
 
    This function returns the index of the bin containing the minimum
-   value. In the case where several bins contain the same maximum value the
+   value. In the case where several bins contain the same minimum value the
    smallest index is returned.
 
 .. index::

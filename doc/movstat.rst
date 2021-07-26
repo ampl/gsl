@@ -488,36 +488,36 @@ following structure:
 The following accumulators of type :type:`gsl_movstat_accum` are defined by GSL to perform moving window statistics
 calculations.
 
-.. var:: gsl_movstat_accum_min
-         gsl_movstat_accum_max
-         gsl_movstat_accum_minmax
+.. var:: gsl_movstat_accum * gsl_movstat_accum_min
+         gsl_movstat_accum * gsl_movstat_accum_max
+         gsl_movstat_accum * gsl_movstat_accum_minmax
 
    These accumulators calculate moving window minimum/maximums efficiently, using
    the algorithm of D. Lemire.
 
-.. var:: gsl_movstat_accum_mean
-         gsl_movstat_accum_sd
-         gsl_movstat_accum_variance
+.. var:: gsl_movstat_accum * gsl_movstat_accum_mean
+         gsl_movstat_accum * gsl_movstat_accum_sd
+         gsl_movstat_accum * gsl_movstat_accum_variance
 
    These accumulators calculate the moving window mean, standard deviation, and variance,
    using the algorithm of B. P. Welford.
 
-.. var:: gsl_movstat_median
+.. var:: gsl_movstat_accum * gsl_movstat_accum_median
 
    This accumulator calculates the moving window median using the min/max heap algorithm
    of Härdle and Steiger.
 
-.. var:: gsl_movstat_accum_Sn
-         gsl_movstat_accum_Qn
+.. var:: gsl_movstat_accum * gsl_movstat_accum_Sn
+         gsl_movstat_accum * gsl_movstat_accum_Qn
 
    These accumulators calculate the moving window :math:`S_n` and :math:`Q_n` statistics
    developed by Croux and Rousseeuw.
 
-.. var:: gsl_movstat_accum_sum
+.. var:: gsl_movstat_accum * gsl_movstat_accum_sum
 
    This accumulator calculates the moving window sum.
 
-.. var:: gsl_movstat_accum_qqr
+.. var:: gsl_movstat_accum * gsl_movstat_accum_qqr
 
    This accumulator calculates the moving window q-quantile range.
 

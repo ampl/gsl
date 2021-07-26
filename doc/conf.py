@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'GSL'
-copyright = u'1996-2019 The GSL Team'
+copyright = u'1996-2021 The GSL Team'
 author = u'The GSL Team'
 title = u'GNU Scientific Library'
 
@@ -56,9 +56,9 @@ title = u'GNU Scientific Library'
 # built documents.
 #
 # The short X.Y version.
-version = u'2.6'
+version = u'2.7'
 # The full version, including alpha/beta/rc tags.
-release = u'2.6'
+release = u'2.7'
 
 primary_domain = 'c'
 numfig = True
@@ -130,7 +130,8 @@ my_latex_preamble = '\\DeclareMathOperator\\arccosh{arccosh} \
                      \\DeclareMathOperator\\sgn{sgn} \
                      \\DeclareMathOperator\\sinc{sinc} \
                      \\DeclareMathOperator\\Var{Var} \
-                     \\DeclareMathOperator\\diag{diag}'
+                     \\DeclareMathOperator\\diag{diag} \
+                     \\newcommand\\undermat[2]{\\makebox[0pt][l]{$\\smash{\\underbrace{\\phantom{\\begin{matrix}#2\\end{matrix}}}_{\\text{$#1$}}}$}#2}'
 
 my_latex_authors = 'Mark Galassi \\\\ \
                     Jim Davies \\\\ \

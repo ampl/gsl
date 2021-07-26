@@ -983,7 +983,7 @@ msadams_apply (void *vstate, size_t dim, double t, double h,
   if (deltaord > 1 || deltaord < -1)
     {
       printf ("-- order change %d\n", deltaord);
-      GSL_ERROR_NULL ("msadams_apply too large order change", GSL_ESANITY);
+      GSL_ERROR ("msadams_apply too large order change", GSL_ESANITY);
     }
 
   /* Modify Nordsieck matrix if order or step length has been changed */

@@ -1,6 +1,6 @@
 /* spmatrix/gsl_spmatrix_double.h
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,9 +153,16 @@ int gsl_spmatrix_complex_scale (gsl_spmatrix_complex * m, const gsl_complex x);
 int gsl_spmatrix_complex_scale_columns (gsl_spmatrix_complex * m, const gsl_vector_complex * x);
 int gsl_spmatrix_complex_scale_rows (gsl_spmatrix_complex * m, const gsl_vector_complex * x);
 int gsl_spmatrix_complex_add (gsl_spmatrix_complex * c, const gsl_spmatrix_complex * a, const gsl_spmatrix_complex * b);
-int gsl_spmatrix_complex_add_to_dense (gsl_matrix_complex * a, const gsl_spmatrix_complex * b);
+int gsl_spmatrix_complex_dense_add (gsl_matrix_complex * a, const gsl_spmatrix_complex * b);
+int gsl_spmatrix_complex_dense_sub (gsl_matrix_complex * a, const gsl_spmatrix_complex * b);
 int gsl_spmatrix_complex_d2sp (gsl_spmatrix_complex * T, const gsl_matrix_complex * A);
 int gsl_spmatrix_complex_sp2d (gsl_matrix_complex * A, const gsl_spmatrix_complex * S);
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int gsl_spmatrix_complex_add_to_dense (gsl_matrix_complex * a, const gsl_spmatrix_complex * b);
+
+#endif
 
 /* properties */
 

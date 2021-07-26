@@ -170,7 +170,8 @@ FUNCTION (gsl_matrix, div_elements) (TYPE (gsl_matrix) * a,
     }
 }
 
-int FUNCTION (gsl_matrix, scale) (TYPE (gsl_matrix) * a, const BASE x)
+int
+FUNCTION (gsl_matrix, scale) (TYPE (gsl_matrix) * a, const BASE x)
 {
   const size_t M = a->size1;
   const size_t N = a->size2;
@@ -196,6 +197,54 @@ int FUNCTION (gsl_matrix, scale) (TYPE (gsl_matrix) * a, const BASE x)
     }
 
   return GSL_SUCCESS;
+}
+
+int
+FUNCTION(gsl_matrix, scale_rows) (TYPE(gsl_matrix) * a, const TYPE(gsl_vector) * x)
+{
+  const size_t M = a->size1;
+
+  if (x->size != M)
+    {
+      GSL_ERROR ("x must match number of rows of A", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      for (i = 0; i < M; ++i)
+        {
+          const BASE xi = FUNCTION (gsl_vector, get) (x, i);
+          VIEW (gsl_vector, view) v = FUNCTION (gsl_matrix, row) (a, i);
+          FUNCTION (gsl_vector, scale) (&v.vector, xi);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
+FUNCTION(gsl_matrix, scale_columns) (TYPE(gsl_matrix) * a, const TYPE(gsl_vector) * x)
+{
+  const size_t N = a->size2;
+
+  if (x->size != N)
+    {
+      GSL_ERROR ("x must match number of columns of A", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      for (i = 0; i < N; ++i)
+        {
+          const BASE xi = FUNCTION (gsl_vector, get) (x, i);
+          VIEW (gsl_vector, view) v = FUNCTION (gsl_matrix, column) (a, i);
+          FUNCTION (gsl_vector, scale) (&v.vector, xi);
+        }
+
+      return GSL_SUCCESS;
+    }
 }
 
 int FUNCTION (gsl_matrix, add_constant) (TYPE (gsl_matrix) * a, const BASE x)

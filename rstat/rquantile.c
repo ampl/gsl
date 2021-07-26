@@ -1,6 +1,6 @@
 /* rstat/rquantile.c
  * 
- * Copyright (C) 2015 Patrick Alken
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ gsl_rstat_quantile_add(const double x, gsl_rstat_quantile_workspace *w)
 double
 gsl_rstat_quantile_get(gsl_rstat_quantile_workspace *w)
 {
-  if (w->n >= 5)
+  if (w->n > 5)
     {
       return w->q[2];
     }

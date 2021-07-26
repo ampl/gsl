@@ -468,7 +468,7 @@ these do not cross the :math:`x`-axis.
       single: bisection algorithm for finding roots
       single: root finding, bisection algorithm
 
-   .. var:: gsl_root_fsolver_bisection
+   .. var:: gsl_root_fsolver_type * gsl_root_fsolver_bisection
 
       The *bisection algorithm* is the simplest method of bracketing the
       roots of a function.   It is the slowest algorithm provided by
@@ -500,7 +500,7 @@ these do not cross the :math:`x`-axis.
       single: false position algorithm for finding roots
       single: root finding, false position algorithm
 
-   .. var:: gsl_root_fsolver_falsepos
+   .. var:: gsl_root_fsolver_type * gsl_root_fsolver_falsepos
 
       The *false position algorithm* is a method of finding roots based on
       linear interpolation.  Its convergence is linear, but it is usually
@@ -531,7 +531,7 @@ these do not cross the :math:`x`-axis.
       single: Brent's method for finding roots
       single: root finding, Brent's method
 
-   .. var:: gsl_root_fsolver_brent
+   .. var:: gsl_root_fsolver_type * gsl_root_fsolver_brent
 
       The *Brent-Dekker method* (referred to here as *Brent's method*)
       combines an interpolation strategy with the bisection algorithm.  This
@@ -569,7 +569,7 @@ These algorithms make use of both the function and its derivative.
       single: Newton's method for finding roots
       single: root finding, Newton's method
 
-   .. var:: gsl_root_fdfsolver_newton
+   .. var:: gsl_root_fdfsolver_type * gsl_root_fdfsolver_newton
 
       Newton's Method is the standard root-polishing algorithm.  The algorithm
       begins with an initial guess for the location of the root.  On each
@@ -605,7 +605,7 @@ These algorithms make use of both the function and its derivative.
       single: secant method for finding roots
       single: root finding, secant method
 
-   .. var:: gsl_root_fdfsolver_secant
+   .. var:: gsl_root_fdfsolver_type * gsl_root_fdfsolver_secant
 
       The *secant method* is a simplified version of Newton's method which does
       not require the computation of the derivative on every step.
@@ -671,7 +671,7 @@ These algorithms make use of both the function and its derivative.
       single: Steffenson's method for finding roots
       single: root finding, Steffenson's method
 
-   .. var:: gsl_root_fdfsolver_steffenson
+   .. var:: gsl_root_fdfsolver_type * gsl_root_fdfsolver_steffenson
 
       The *Steffenson Method* [#f1]_
       provides the fastest

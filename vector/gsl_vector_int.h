@@ -153,8 +153,9 @@ int gsl_vector_int_sub (gsl_vector_int * a, const gsl_vector_int * b);
 int gsl_vector_int_mul (gsl_vector_int * a, const gsl_vector_int * b);
 int gsl_vector_int_div (gsl_vector_int * a, const gsl_vector_int * b);
 int gsl_vector_int_scale (gsl_vector_int * a, const int x);
-int gsl_vector_int_add_constant (gsl_vector_int * a, const double x);
+int gsl_vector_int_add_constant (gsl_vector_int * a, const int x);
 int gsl_vector_int_axpby (const int alpha, const gsl_vector_int * x, const int beta, gsl_vector_int * y);
+int gsl_vector_int_sum (const gsl_vector_int * a);
 
 int gsl_vector_int_equal (const gsl_vector_int * u, 
                             const gsl_vector_int * v);

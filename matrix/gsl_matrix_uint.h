@@ -241,13 +241,17 @@ int gsl_matrix_uint_ispos (const gsl_matrix_uint * m);
 int gsl_matrix_uint_isneg (const gsl_matrix_uint * m);
 int gsl_matrix_uint_isnonneg (const gsl_matrix_uint * m);
 
+unsigned int gsl_matrix_uint_norm1 (const gsl_matrix_uint * m);
+
 int gsl_matrix_uint_add (gsl_matrix_uint * a, const gsl_matrix_uint * b);
 int gsl_matrix_uint_sub (gsl_matrix_uint * a, const gsl_matrix_uint * b);
 int gsl_matrix_uint_mul_elements (gsl_matrix_uint * a, const gsl_matrix_uint * b);
 int gsl_matrix_uint_div_elements (gsl_matrix_uint * a, const gsl_matrix_uint * b);
-int gsl_matrix_uint_scale (gsl_matrix_uint * a, const double x);
-int gsl_matrix_uint_add_constant (gsl_matrix_uint * a, const double x);
-int gsl_matrix_uint_add_diagonal (gsl_matrix_uint * a, const double x);
+int gsl_matrix_uint_scale (gsl_matrix_uint * a, const unsigned int x);
+int gsl_matrix_uint_scale_rows (gsl_matrix_uint * a, const gsl_vector_uint * x);
+int gsl_matrix_uint_scale_columns (gsl_matrix_uint * a, const gsl_vector_uint * x);
+int gsl_matrix_uint_add_constant (gsl_matrix_uint * a, const unsigned int x);
+int gsl_matrix_uint_add_diagonal (gsl_matrix_uint * a, const unsigned int x);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

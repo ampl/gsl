@@ -227,6 +227,8 @@ int gsl_matrix_complex_float_transpose (gsl_matrix_complex_float * m);
 int gsl_matrix_complex_float_transpose_memcpy (gsl_matrix_complex_float * dest, const gsl_matrix_complex_float * src);
 int gsl_matrix_complex_float_transpose_tricpy(CBLAS_UPLO_t Uplo_src, CBLAS_DIAG_t Diag, gsl_matrix_complex_float * dest, const gsl_matrix_complex_float * src);
 
+int gsl_matrix_complex_float_conjtrans_memcpy (gsl_matrix_complex_float * dest, const gsl_matrix_complex_float * src);
+
 int gsl_matrix_complex_float_equal (const gsl_matrix_complex_float * a, const gsl_matrix_complex_float * b);
 
 int gsl_matrix_complex_float_isnull (const gsl_matrix_complex_float * m);
@@ -239,6 +241,8 @@ int gsl_matrix_complex_float_sub (gsl_matrix_complex_float * a, const gsl_matrix
 int gsl_matrix_complex_float_mul_elements (gsl_matrix_complex_float * a, const gsl_matrix_complex_float * b);
 int gsl_matrix_complex_float_div_elements (gsl_matrix_complex_float * a, const gsl_matrix_complex_float * b);
 int gsl_matrix_complex_float_scale (gsl_matrix_complex_float * a, const gsl_complex_float x);
+int gsl_matrix_complex_float_scale_rows (gsl_matrix_complex_float * a, const gsl_vector_complex_float * x);
+int gsl_matrix_complex_float_scale_columns (gsl_matrix_complex_float * a, const gsl_vector_complex_float * x);
 int gsl_matrix_complex_float_add_constant (gsl_matrix_complex_float * a, const gsl_complex_float x);
 int gsl_matrix_complex_float_add_diagonal (gsl_matrix_complex_float * a, const gsl_complex_float x);
 

@@ -107,8 +107,8 @@ The following wavelet types are implemented:
       single: Daubechies wavelets
       single: maximal phase, Daubechies wavelets
 
-   .. var:: gsl_wavelet_daubechies
-            gsl_wavelet_daubechies_centered
+   .. var:: gsl_wavelet_type * gsl_wavelet_daubechies
+            gsl_wavelet_type * gsl_wavelet_daubechies_centered
 
       This is the Daubechies wavelet family of maximum phase with :math:`k/2`
       vanishing moments.  The implemented wavelets are 
@@ -116,8 +116,8 @@ The following wavelet types are implemented:
 
    .. index:: Haar wavelets
 
-   .. var:: gsl_wavelet_haar
-            gsl_wavelet_haar_centered
+   .. var:: gsl_wavelet_type * gsl_wavelet_haar
+            gsl_wavelet_type * gsl_wavelet_haar_centered
 
       This is the Haar wavelet.  The only valid choice of :math:`k` for the
       Haar wavelet is :math:`k=2`.
@@ -126,8 +126,8 @@ The following wavelet types are implemented:
       single: biorthogonal wavelets
       single: B-spline wavelets
 
-   .. var:: gsl_wavelet_bspline
-            gsl_wavelet_bspline_centered
+   .. var:: gsl_wavelet_type * gsl_wavelet_bspline
+            gsl_wavelet_type * gsl_wavelet_bspline_centered
 
       This is the biorthogonal B-spline wavelet family of order :math:`(i,j)`.  
       The implemented values of :math:`k = 100*i + j` are 103, 105, 202, 204,

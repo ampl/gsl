@@ -630,11 +630,16 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
   TYPE (gsl_vector) * a = FUNCTION (create, vector) (stride1, N);
   TYPE (gsl_vector) * b = FUNCTION (create, vector) (stride2, N);
   TYPE (gsl_vector) * v = FUNCTION (create, vector) (stride1, N);
+  BASE exact_sum_a = (BASE) 0, exact_sum_b = (BASE) 0;
   
   for (i = 0; i < N; i++)
     {
-      FUNCTION (gsl_vector, set) (a, i, (BASE)(3 + i));
-      FUNCTION (gsl_vector, set) (b, i, (BASE)(3 + 2 * i));
+      BASE ai = (BASE)(3 + i);
+      BASE bi = (BASE)(3 + 2 * i);
+      FUNCTION (gsl_vector, set) (a, i, ai);
+      FUNCTION (gsl_vector, set) (b, i, bi);
+      exact_sum_a += ai;
+      exact_sum_b += bi;
     }
   
   {
@@ -742,6 +747,22 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
           status = 1;
       }
     TEST2 (status, "_div division");
+  }
+
+  {
+    int status;
+    BASE sum_a = FUNCTION(gsl_vector, sum) (a);
+    BASE sum_b = FUNCTION(gsl_vector, sum) (b);
+
+    status = 0;
+    if (fabs(sum_a - exact_sum_a) > GSL_FLT_EPSILON)
+      status = 1;
+    gsl_test (status, NAME (gsl_vector) "_sum a");
+
+    status = 0;
+    if (fabs(sum_b - exact_sum_b) > GSL_FLT_EPSILON)
+      status = 1;
+    gsl_test (status, NAME (gsl_vector) "_sum b");
   }
 
   FUNCTION(gsl_vector, free) (a);

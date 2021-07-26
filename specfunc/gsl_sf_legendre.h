@@ -1,6 +1,7 @@
 /* specfunc/gsl_sf_legendre.h
  * 
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004 Gerard Jungman
+ * Copyright (C) 2019 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,8 @@
 #ifndef __GSL_SF_LEGENDRE_H__
 #define __GSL_SF_LEGENDRE_H__
 
+#include <stdlib.h>
+#include <gsl/gsl_inline.h>
 #include <gsl/gsl_sf_result.h>
 
 #undef __BEGIN_DECLS
@@ -367,8 +370,25 @@ int gsl_sf_legendre_deriv2_alt_array_e(const gsl_sf_legendre_t norm,
                                        double result_deriv_array[],
                                        double result_deriv2_array[]);
 size_t gsl_sf_legendre_array_n(const size_t lmax);
-size_t gsl_sf_legendre_array_index(const size_t l, const size_t m);
 size_t gsl_sf_legendre_nlm(const size_t lmax);
+
+INLINE_DECL size_t gsl_sf_legendre_array_index(const size_t l, const size_t m);
+
+#ifdef HAVE_INLINE
+
+/*
+gsl_sf_legendre_array_index()
+This routine computes the index into a result_array[] corresponding
+to a given (l,m)
+*/
+INLINE_FUN
+size_t
+gsl_sf_legendre_array_index(const size_t l, const size_t m)
+{
+  return (((l * (l + 1)) >> 1) + m);
+}
+
+#endif /* HAVE_INLINE */
 
 __END_DECLS
 

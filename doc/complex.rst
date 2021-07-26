@@ -32,12 +32,7 @@ Representation of complex numbers
 =================================
 
 Complex numbers are represented using the type :code:`gsl_complex`. The
-internal representation of this type may vary across platforms and
-should not be accessed directly. The functions and macros described
-below allow complex numbers to be manipulated in a portable way.
-
-For reference, the default form of the :code:`gsl_complex` type is
-given by the following struct::
+default interface defines :code:`gsl_complex` as::
 
     typedef struct
     {
@@ -48,6 +43,78 @@ The real and imaginary part are stored in contiguous elements of a two
 element array. This eliminates any padding between the real and
 imaginary parts, :code:`dat[0]` and :code:`dat[1]`, allowing the struct to
 be mapped correctly onto packed complex arrays.
+
+If a C compiler is available which supports the C11 standard,
+and the :file:`<complex.h>` header file is included *prior* to :file:`gsl_complex.h`,
+then :code:`gsl_complex` will be defined to be the native C complex type::
+
+    typedef double complex gsl_complex
+
+This allows users to use :code:`gsl_complex` in ordinary operations such as::
+
+    gsl_complex x = 2 + 5 * I;
+    gsl_complex y = x + (3 - 4*I);
+
+.. important::
+
+   Native C support for complex numbers was introduced in the C99 standard,
+   and additional functionality was added in C11. When :file:`<complex.h>`
+   is included in a user's program prior to :file:`gsl_complex.h`,
+   GSL uses the new C11 functionality to define the :macro:`GSL_REAL` and
+   :macro:`GSL_IMAG` macros. It does not appear possible to properly define
+   these macros using the C99 standard, and so using a C99 compiler will not define
+   :code:`gsl_complex` to the native complex type.
+
+   Some compilers, such as the gcc 4.8 series implement only a portion of the C11
+   standard and so they may fail to correctly compile GSL code when a user tries
+   to turn on native complex functionality. A workaround for this issue is to
+   either remove :file:`<complex.h>` from the include list, or add
+   :code:`-DGSL_COMPLEX_LEGACY` to the compiler flags, which will use the older
+   struct-based definition of :code:`gsl_complex`.
+
+Complex number macros
+=====================
+
+The following C macros offer convenient ways to manipulate complex numbers.
+
+.. macro::
+   GSL_REAL (z)
+   GSL_IMAG (z)
+
+   These macros return a memory location (lvalue) corresponding to the real and imaginary
+   parts respectively of the complex number :data:`z`. This allows users to perform
+   operations like::
+
+       gsl_complex x, y;
+
+       GSL_REAL(x) = 4;
+       GSL_IMAG(x) = 2;
+
+       GSL_REAL(y) = GSL_REAL(x);
+       GSL_IMAG(y) = GSL_REAL(x);
+
+   In other words, these macros can both read and write to the real and imaginary
+   parts of a complex variable.
+
+.. macro:: GSL_SET_COMPLEX (zp, x, y)
+
+   This macro uses the Cartesian components (:data:`x`, :data:`y`) to set the
+   real and imaginary parts of the complex number pointed to by :data:`zp`.
+   For example::
+
+     GSL_SET_COMPLEX(&z, 3, 4)
+
+   sets :math:`z` to be :math:`3 + 4i`.
+
+.. .. macro::
+..    GSL_SET_REAL (zp,x)
+..    GSL_SET_IMAG (zp,y)
+
+..    These macros allow the real and imaginary parts of the complex number
+..    pointed to by :data:`zp` to be set independently.
+
+Assigning complex numbers
+=========================
 
 .. function:: gsl_complex gsl_complex_rect (double x, double y)
 
@@ -61,30 +128,6 @@ be mapped correctly onto packed complex arrays.
    This function returns the complex number :math:`z = r \exp(i \theta) = r
    (\cos(\theta) + i \sin(\theta))` from the polar representation
    (:data:`r`, :data:`theta`).
-
-.. macro::
-   GSL_REAL (z)
-   GSL_IMAG (z)
-
-   These macros return the real and imaginary parts of the complex number
-   :data:`z`.
-
-.. macro:: GSL_SET_COMPLEX (zp, x, y)
-
-   This macro uses the Cartesian components (:data:`x`, :data:`y`) to set the
-   real and imaginary parts of the complex number pointed to by :data:`zp`.
-   For example::
-
-     GSL_SET_COMPLEX(&z, 3, 4)
-
-   sets :math:`z` to be :math:`3 + 4i`.
-
-.. macro::
-   GSL_SET_REAL (zp,x)
-   GSL_SET_IMAG (zp,y)
-
-   These macros allow the real and imaginary parts of the complex number
-   pointed to by :data:`zp` to be set independently.
 
 Properties of complex numbers
 =============================

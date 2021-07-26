@@ -20,6 +20,8 @@
 #ifndef __GSL_BST_TYPES_H__
 #define __GSL_BST_TYPES_H__
 
+#include <stdlib.h>
+
 #undef __BEGIN_DECLS
 #undef __END_DECLS
 #ifdef __cplusplus

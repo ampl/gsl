@@ -265,7 +265,7 @@ different generators and seeds without having to recompile your program.
    This environment variable specifies the default seed for the random
    number generator
 
-.. var:: gsl_rng_default
+.. var:: gsl_rng_type * gsl_rng_default
 
    This global library variable specifies the default random number generator,
    and can be initialized from :macro:`GSL_RNG_TYPE` using :func:`gsl_rng_env_setup`.
@@ -273,7 +273,7 @@ different generators and seeds without having to recompile your program.
 
       extern const gsl_rng_type *gsl_rng_default
 
-.. var:: gsl_rng_default_seed
+.. var:: unsigned long int gsl_rng_default_seed
 
    This global library variable specifies the seed for the default random number generator,
    and can be initialized from :macro:`GSL_RNG_SEED` using :func:`gsl_rng_env_setup`.
@@ -380,7 +380,7 @@ randomness.
 
 .. index:: MT19937 random number generator
 
-.. var:: gsl_rng_mt19937
+.. var:: gsl_rng_type * gsl_rng_mt19937
 
    The MT19937 generator of Makoto Matsumoto and Takuji Nishimura is a
    variant of the twisted generalized feedback shift-register algorithm,
@@ -410,9 +410,9 @@ randomness.
 
 .. index:: RANLXS random number generator
 
-.. var:: gsl_rng_ranlxs0
-         gsl_rng_ranlxs1
-         gsl_rng_ranlxs2
+.. var:: gsl_rng_type * gsl_rng_ranlxs0
+         gsl_rng_type * gsl_rng_ranlxs1
+         gsl_rng_type * gsl_rng_ranlxs2
 
    The generator :code:`ranlxs0` is a second-generation version of the
    RANLUX algorithm of Luscher, which produces "luxury random
@@ -433,8 +433,8 @@ randomness.
 
 .. index:: RANLXD random number generator
 
-.. var:: gsl_rng_ranlxd1
-         gsl_rng_ranlxd2
+.. var:: gsl_rng_type * gsl_rng_ranlxd1
+         gsl_rng_type * gsl_rng_ranlxd2
 
    These generators produce double precision output (48 bits) from the
    RANLXS generator.  The library provides two luxury levels
@@ -442,8 +442,8 @@ randomness.
 
 .. index:: RANLUX random number generator
 
-.. var:: gsl_rng_ranlux
-         gsl_rng_ranlux389
+.. var:: gsl_rng_type * gsl_rng_ranlux
+         gsl_rng_type * gsl_rng_ranlux389
 
    The :code:`ranlux` generator is an implementation of the original
    algorithm developed by Luscher.  It uses a
@@ -474,7 +474,7 @@ randomness.
 .. index::
    single: CMRG, combined multiple recursive random number generator
 
-.. var:: gsl_rng_cmrg
+.. var:: gsl_rng_type * gsl_rng_cmrg
 
    This is a combined multiple recursive generator by L'Ecuyer. 
    Its sequence is,
@@ -522,7 +522,7 @@ randomness.
 .. index::
    single: MRG, multiple recursive random number generator
 
-.. var:: gsl_rng_mrg
+.. var:: gsl_rng_type * gsl_rng_mrg
 
    This is a fifth-order multiple recursive generator by L'Ecuyer, Blouin
    and Coutre.  Its sequence is,
@@ -548,8 +548,8 @@ randomness.
 
 .. index:: Tausworthe random number generator
 
-.. var:: gsl_rng_taus
-         gsl_rng_taus2
+.. var:: gsl_rng_type * gsl_rng_taus
+         gsl_rng_type * gsl_rng_taus2
 
    This is a maximally equidistributed combined Tausworthe generator by
    L'Ecuyer.  The sequence is,
@@ -610,7 +610,7 @@ randomness.
 
 .. index:: Four-tap Generalized Feedback Shift Register
 
-.. var:: gsl_rng_gfsr4
+.. var:: gsl_rng_type * gsl_rng_gfsr4
 
    The :code:`gfsr4` generator is like a lagged-fibonacci generator, and 
    produces each number as an :code:`xor`'d sum of four previous values.
@@ -679,7 +679,7 @@ your program then these generators are quite acceptable.
 
 .. index:: BSD random number generator
 
-.. var:: gsl_rng_rand
+.. var:: gsl_rng_type * gsl_rng_rand
 
    This is the BSD :code:`rand` generator.  Its sequence is
 
@@ -695,9 +695,9 @@ your program then these generators are quite acceptable.
    :math:`2^{31}`,
    and it uses 1 word of storage per generator.
 
-.. var:: gsl_rng_random_bsd
-         gsl_rng_random_libc5
-         gsl_rng_random_glibc2
+.. var:: gsl_rng_type * gsl_rng_random_bsd
+         gsl_rng_type * gsl_rng_random_libc5
+         gsl_rng_type * gsl_rng_random_glibc2
 
    These generators implement the :code:`random` family of functions, a
    set of linear feedback shift register generators originally used in BSD
@@ -729,7 +729,7 @@ your program then these generators are quite acceptable.
 
 .. index:: rand48 random number generator
 
-.. var:: gsl_rng_rand48
+.. var:: gsl_rng_type * gsl_rng_rand48
 
    This is the Unix :code:`rand48` generator.  Its sequence is
 
@@ -777,7 +777,7 @@ significant bits.
    single: RANF random number generator
    single: CRAY random number generator, RANF
 
-.. var:: gsl_rng_ranf
+.. var:: gsl_rng_type * gsl_rng_ranf
 
    This is the CRAY random number generator :code:`RANF`.  Its sequence is
 
@@ -816,7 +816,7 @@ significant bits.
 
 .. index:: RANMAR random number generator
 
-.. var:: gsl_rng_ranmar
+.. var:: gsl_rng_type * gsl_rng_ranmar
 
    This is the RANMAR lagged-fibonacci generator of Marsaglia, Zaman and
    Tsang.  It is a 24-bit generator, originally designed for
@@ -827,7 +827,7 @@ significant bits.
    single: shift-register random number generator
    single: R250 shift-register random number generator
 
-.. var:: gsl_rng_r250
+.. var:: gsl_rng_type * gsl_rng_r250
 
    This is the shift-register generator of Kirkpatrick and Stoll.  The
    sequence is based on the recurrence
@@ -856,7 +856,7 @@ significant bits.
 
 .. index:: TT800 random number generator
 
-.. var:: gsl_rng_tt800
+.. var:: gsl_rng_type * gsl_rng_tt800
 
    This is an earlier version of the twisted generalized feedback
    shift-register generator, and has been superseded by the development of
@@ -878,7 +878,7 @@ significant bits.
 
 .. index:: VAX random number generator
 
-.. var:: gsl_rng_vax
+.. var:: gsl_rng_type * gsl_rng_vax
 
    This is the VAX generator :code:`MTH$RANDOM`.  Its sequence is,
 
@@ -894,7 +894,7 @@ significant bits.
    and it uses 1 word of storage per
    generator.
 
-.. var:: gsl_rng_transputer
+.. var:: gsl_rng_type * gsl_rng_transputer
 
    This is the random number generator from the INMOS Transputer
    Development system.  Its sequence is,
@@ -908,7 +908,7 @@ significant bits.
 
 .. index:: RANDU random number generator
 
-.. var:: gsl_rng_randu
+.. var:: gsl_rng_type * gsl_rng_randu
 
    This is the IBM :code:`RANDU` generator.  Its sequence is
 
@@ -924,7 +924,7 @@ significant bits.
 
 .. index:: RANMAR random number generator
 
-.. var:: gsl_rng_minstd
+.. var:: gsl_rng_type * gsl_rng_minstd
 
    This is Park and Miller's "minimal standard" MINSTD generator, a
    simple linear congruence which takes care to avoid the major pitfalls of
@@ -949,19 +949,19 @@ significant bits.
      Communications of the ACM, October 1988, Volume 31, No 10, pages
      1192--1201.
 
-.. var:: gsl_rng_uni
-         gsl_rng_uni32
+.. var:: gsl_rng_type * gsl_rng_uni
+         gsl_rng_type * gsl_rng_uni32
 
    This is a reimplementation of the 16-bit SLATEC random number generator
    RUNIF. A generalization of the generator to 32 bits is provided by
    :data:`gsl_rng_uni32`.  The original source code is available from NETLIB.
 
-.. var:: gsl_rng_slatec
+.. var:: gsl_rng_type * gsl_rng_slatec
 
    This is the SLATEC random number generator RAND. It is ancient.  The
    original source code is available from NETLIB.
 
-.. var:: gsl_rng_zuf
+.. var:: gsl_rng_type * gsl_rng_zuf
 
    This is the ZUFALL lagged Fibonacci series generator of Peterson.  Its
    sequence is,
@@ -986,7 +986,7 @@ significant bits.
    * W. Petersen, "Lagged Fibonacci Random Number Generators for the NEC
      SX-3", International Journal of High Speed Computing (1994).
 
-.. var:: gsl_rng_knuthran2
+.. var:: gsl_rng_type * gsl_rng_knuthran2
 
    This is a second-order multiple recursive generator described by Knuth
    in Seminumerical Algorithms, 3rd Ed., page 108.  Its sequence is,
@@ -999,8 +999,8 @@ significant bits.
    and 
    :math:`m = 2^{31}-1`.
 
-.. var:: gsl_rng_knuthran2002
-         gsl_rng_knuthran
+.. var:: gsl_rng_type * gsl_rng_knuthran2002
+         gsl_rng_type * gsl_rng_knuthran
 
    This is a second-order multiple recursive generator described by Knuth
    in Seminumerical Algorithms, 3rd Ed., Section 3.6.  Knuth
@@ -1008,11 +1008,11 @@ significant bits.
    is from the revised 9th printing and corrects some weaknesses in the
    earlier version, which is implemented as :data:`gsl_rng_knuthran`.
 
-.. var:: gsl_rng_borosh13
-         gsl_rng_fishman18
-         gsl_rng_fishman20
-         gsl_rng_lecuyer21
-         gsl_rng_waterman14
+.. var:: gsl_rng_type * gsl_rng_borosh13
+         gsl_rng_type * gsl_rng_fishman18
+         gsl_rng_type * gsl_rng_fishman20
+         gsl_rng_type * gsl_rng_lecuyer21
+         gsl_rng_type * gsl_rng_waterman14
 
    These multiplicative generators are taken from Knuth's
    Seminumerical Algorithms, 3rd Ed., pages 106--108. Their sequence
@@ -1038,7 +1038,7 @@ significant bits.
    :math:`a = 1566083941`,
    :math:`m = 2^{32}`.
 
-.. var:: gsl_rng_fishman2x
+.. var:: gsl_rng_type * gsl_rng_fishman2x
 
    This is the L'Ecuyer--Fishman random number generator. It is taken from
    Knuth's Seminumerical Algorithms, 3rd Ed., page 108. Its sequence
@@ -1052,7 +1052,7 @@ significant bits.
    The seed specifies the initial value, 
    :math:`x_1`.
 
-.. var:: gsl_rng_coveyou
+.. var:: gsl_rng_type * gsl_rng_coveyou
 
    This is the Coveyou random number generator. It is taken from Knuth's
    Seminumerical Algorithms, 3rd Ed., Section 3.2.2. Its sequence

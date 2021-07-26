@@ -59,6 +59,50 @@
 int
 gsl_linalg_QR_decomp (gsl_matrix * A, gsl_vector * tau)
 {
+  const size_t N = A->size2;
+
+  if (tau->size != N)
+    {
+      return gsl_linalg_QR_decomp_old (A, tau);
+    }
+  else
+    {
+      const size_t M = A->size1;
+      size_t i;
+
+      for (i = 0; i < GSL_MIN (M, N); i++)
+        {
+          /* Compute the Householder transformation to reduce the j-th
+             column of the matrix to a multiple of the j-th unit vector */
+
+          gsl_vector_view c = gsl_matrix_subcolumn (A, i, i, M - i);
+          double tau_i = gsl_linalg_householder_transform (&(c.vector));
+          double * ptr = gsl_vector_ptr(&(c.vector), 0);
+
+          gsl_vector_set (tau, i, tau_i);
+
+          /* Apply the transformation to the remaining columns and
+             update the norms */
+
+          if (i + 1 < N)
+            {
+              gsl_matrix_view m = gsl_matrix_submatrix (A, i, i + 1, M - i, N - i - 1);
+              gsl_vector_view work = gsl_vector_subvector(tau, i + 1, N - i - 1);
+              double tmp = *ptr;
+
+              *ptr = 1.0;
+              gsl_linalg_householder_left(tau_i, &(c.vector), &(m.matrix), &(work.vector));
+              *ptr = tmp;
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
+gsl_linalg_QR_decomp_old (gsl_matrix * A, gsl_vector * tau)
+{
   const size_t M = A->size1;
   const size_t N = A->size2;
 
@@ -335,8 +379,7 @@ gsl_linalg_QR_QTvec (const gsl_matrix * QR, const gsl_vector * tau, gsl_vector *
       /* compute Q^T v */
       for (i = 0; i < GSL_MIN (M, N); i++)
         {
-          gsl_vector_const_view c = gsl_matrix_const_column (QR, i);
-          gsl_vector_const_view h = gsl_vector_const_subvector (&(c.vector), i, M - i);
+          gsl_vector_const_view h = gsl_matrix_const_subcolumn (QR, i, i, M - i);
           gsl_vector_view w = gsl_vector_subvector (v, i, M - i);
           double ti = gsl_vector_get (tau, i);
           gsl_linalg_householder_hv (ti, &(h.vector), &(w.vector));
@@ -463,9 +506,9 @@ gsl_linalg_QR_unpack (const gsl_matrix * QR, const gsl_vector * tau, gsl_matrix 
     {
       GSL_ERROR ("R matrix must be M x N", GSL_ENOTSQR);
     }
-  else if (tau->size != GSL_MIN (M, N))
+  else if (tau->size < GSL_MIN (M, N))
     {
-      GSL_ERROR ("size of tau must be MIN(M,N)", GSL_EBADLEN);
+      GSL_ERROR ("size of tau must be at least MIN(M,N)", GSL_EBADLEN);
     }
   else
     {

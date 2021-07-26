@@ -81,19 +81,7 @@ gsl_sf_legendre_array_n(const size_t lmax)
   size_t nsqrt = 2 * lmax + 2; /* extra room to precompute sqrt factors */
 
   return (nlm + nsqrt);
-} /* gsl_sf_legendre_array_n() */
-
-/*
-gsl_sf_legendre_array_index()
-This routine computes the index into a result_array[] corresponding
-to a given (l,m)
-*/
-
-size_t
-gsl_sf_legendre_array_index(const size_t l, const size_t m)
-{
-  return (l * (l + 1) / 2 + m);
-} /* gsl_sf_legendre_array_index() */
+}
 
 /*********************************************************
  *                 INTERNAL ROUTINES                     *

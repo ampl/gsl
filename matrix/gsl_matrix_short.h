@@ -241,13 +241,17 @@ int gsl_matrix_short_ispos (const gsl_matrix_short * m);
 int gsl_matrix_short_isneg (const gsl_matrix_short * m);
 int gsl_matrix_short_isnonneg (const gsl_matrix_short * m);
 
+short gsl_matrix_short_norm1 (const gsl_matrix_short * m);
+
 int gsl_matrix_short_add (gsl_matrix_short * a, const gsl_matrix_short * b);
 int gsl_matrix_short_sub (gsl_matrix_short * a, const gsl_matrix_short * b);
 int gsl_matrix_short_mul_elements (gsl_matrix_short * a, const gsl_matrix_short * b);
 int gsl_matrix_short_div_elements (gsl_matrix_short * a, const gsl_matrix_short * b);
-int gsl_matrix_short_scale (gsl_matrix_short * a, const double x);
-int gsl_matrix_short_add_constant (gsl_matrix_short * a, const double x);
-int gsl_matrix_short_add_diagonal (gsl_matrix_short * a, const double x);
+int gsl_matrix_short_scale (gsl_matrix_short * a, const short x);
+int gsl_matrix_short_scale_rows (gsl_matrix_short * a, const gsl_vector_short * x);
+int gsl_matrix_short_scale_columns (gsl_matrix_short * a, const gsl_vector_short * x);
+int gsl_matrix_short_add_constant (gsl_matrix_short * a, const short x);
+int gsl_matrix_short_add_diagonal (gsl_matrix_short * a, const short x);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

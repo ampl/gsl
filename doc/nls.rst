@@ -503,33 +503,33 @@ Each of these parameters is discussed in further detail below.
    The parameter :data:`trs` determines the method used to solve the trust region
    subproblem, and may be selected from the following choices,
 
-   .. var:: gsl_multifit_nlinear_trs_lm
-            gsl_multilarge_nlinear_trs_lm
+   .. var:: gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_lm
+            gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_lm
 
       This selects the Levenberg-Marquardt algorithm.
 
-   .. var:: gsl_multifit_nlinear_trs_lmaccel
-            gsl_multilarge_nlinear_trs_lmaccel
+   .. var:: gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_lmaccel
+            gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_lmaccel
 
       This selects the Levenberg-Marquardt algorithm with geodesic
       acceleration.
 
-   .. var:: gsl_multifit_nlinear_trs_dogleg
-            gsl_multilarge_nlinear_trs_dogleg
+   .. var:: gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_dogleg
+            gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_dogleg
 
       This selects the dogleg algorithm.
 
-   .. var:: gsl_multifit_nlinear_trs_ddogleg
-            gsl_multilarge_nlinear_trs_ddogleg
+   .. var:: gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_ddogleg
+            gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_ddogleg
 
       This selects the double dogleg algorithm.
 
-   .. var:: gsl_multifit_nlinear_trs_subspace2D
-            gsl_multilarge_nlinear_trs_subspace2D
+   .. var:: gsl_multifit_nlinear_trs * gsl_multifit_nlinear_trs_subspace2D
+            gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_subspace2D
 
       This selects the 2D subspace algorithm.
 
-   .. var:: gsl_multilarge_nlinear_trs_cgst
+   .. var:: gsl_multilarge_nlinear_trs * gsl_multilarge_nlinear_trs_cgst
 
       This selects the Steihaug-Toint conjugate gradient algorithm. This
       method is available only for large systems.
@@ -540,8 +540,8 @@ Each of these parameters is discussed in further detail below.
    The parameter :data:`scale` determines the diagonal scaling matrix :math:`D` and
    may be selected from the following choices,
 
-   .. var:: gsl_multifit_nlinear_scale_more
-            gsl_multilarge_nlinear_scale_more
+   .. var:: gsl_multifit_nlinear_scale * gsl_multifit_nlinear_scale_more
+            gsl_multilarge_nlinear_scale * gsl_multilarge_nlinear_scale_more
 
       This damping strategy was suggested by |More|, and
       corresponds to :math:`D^T D = \max(\diag(J^T J))`,
@@ -558,8 +558,8 @@ Each of these parameters is discussed in further detail below.
       effective on a large class of problems and so it is the library
       default, but it may not be the best choice for all problems.
 
-   .. var:: gsl_multifit_nlinear_scale_levenberg
-            gsl_multilarge_nlinear_scale_levenberg
+   .. var:: gsl_multifit_nlinear_scale * gsl_multifit_nlinear_scale_levenberg
+            gsl_multilarge_nlinear_scale * gsl_multilarge_nlinear_scale_levenberg
 
       This damping strategy was originally suggested by Levenberg, and
       corresponds to :math:`D^T D = I`. This method has also proven
@@ -568,8 +568,8 @@ Each of these parameters is discussed in further detail below.
       that this choice is better for problems which are susceptible
       to parameter evaporation (ie: parameters go to infinity)
 
-   .. var:: gsl_multifit_nlinear_scale_marquardt
-            gsl_multilarge_nlinear_scale_marquardt
+   .. var:: gsl_multifit_nlinear_scale * gsl_multifit_nlinear_scale_marquardt
+            gsl_multilarge_nlinear_scale * gsl_multilarge_nlinear_scale_marquardt
 
       This damping strategy was suggested by Marquardt, and
       corresponds to :math:`D^T D = \diag(J^T J)`. This
@@ -611,7 +611,7 @@ Each of these parameters is discussed in further detail below.
    The :data:`solver` parameter determines how the system is
    solved and can be selected from the following choices:
 
-   .. var:: gsl_multifit_nlinear_solver_qr
+   .. var:: gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_qr
 
       This method solves the system using a rank revealing QR
       decomposition of the Jacobian :math:`J`. This method will
@@ -620,8 +620,8 @@ Each of these parameters is discussed in further detail below.
       twice as many operations as the Cholesky method discussed
       below.
 
-   .. var:: gsl_multifit_nlinear_solver_cholesky
-            gsl_multilarge_nlinear_solver_cholesky
+   .. var:: gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_cholesky
+            gsl_multilarge_nlinear_solver * gsl_multilarge_nlinear_solver_cholesky
 
       This method solves the alternate normal equations problem
 
@@ -645,8 +645,8 @@ Each of these parameters is discussed in further detail below.
       known that the Jacobian matrix is well conditioned, this method
       is accurate and will perform faster than the QR approach.
 
-   .. var:: gsl_multifit_nlinear_solver_mcholesky
-            gsl_multilarge_nlinear_solver_mcholesky
+   .. var:: gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_mcholesky
+            gsl_multilarge_nlinear_solver * gsl_multilarge_nlinear_solver_mcholesky
 
       This method solves the alternate normal equations problem
 
@@ -668,7 +668,7 @@ Each of these parameters is discussed in further detail below.
       and is thus slower than the standard Cholesky decomposition, which
       is based on Level 3 BLAS.
 
-   .. var:: gsl_multifit_nlinear_solver_svd
+   .. var:: gsl_multifit_nlinear_solver * gsl_multifit_nlinear_solver_svd
 
       This method solves the system using a singular value
       decomposition of the Jacobian :math:`J`. This method will
@@ -792,7 +792,7 @@ Initializing the Solver
    to solve a nonlinear least squares problem. It may be selected from the
    following choices,
 
-   .. var:: gsl_multifit_nlinear_trust
+   .. var:: gsl_multifit_nlinear_type * gsl_multifit_nlinear_trust
 
       This specifies a trust region method. It is currently the only implemented
       nonlinear least squares method.
@@ -1385,44 +1385,37 @@ The :math:`i`-th row of the Jacobian is therefore
 
 The main part of the program sets up a Levenberg-Marquardt solver and
 some simulated random data. The data uses the known parameters
-(5.0,0.1,1.0) combined with Gaussian noise (standard deviation = 0.1)
-with a maximum time :math:`T = 40` and :math:`N = 100` timesteps.
+(5.0,1.5,1.0) combined with Gaussian noise (standard deviation = 0.1)
+with a maximum time :math:`T = 3` and :math:`N = 100` timesteps.
 The initial guess for the parameters is
 chosen as (1.0, 1.0, 0.0). The iteration terminates when the relative
 change in x is smaller than :math:`10^{-8}`, or when the magnitude of
 the gradient falls below :math:`10^{-8}`. Here are the results of running
 the program::
 
-  iter  0: A = 1.0000, lambda = 1.0000, b = 0.0000, cond(J) =      inf, |f(x)| = 100.8779
-  iter  1: A = 1.2692, lambda = 0.3924, b = 0.0443, cond(J) =  69.5973, |f(x)| = 97.1734
-  iter  2: A = 1.6749, lambda = 0.1685, b = 0.1072, cond(J) =  29.5220, |f(x)| = 88.6636
-  iter  3: A = 2.5579, lambda = 0.0544, b = 0.2552, cond(J) =  22.9334, |f(x)| = 42.7765
-  iter  4: A = 3.0167, lambda = 0.0472, b = 0.3704, cond(J) = 120.2912, |f(x)| = 23.0102
-  iter  5: A = 3.3590, lambda = 0.0455, b = 0.4321, cond(J) = 266.5620, |f(x)| = 16.0680
-  iter  6: A = 3.6552, lambda = 0.0479, b = 0.4426, cond(J) = 343.8946, |f(x)| = 14.6421
-  iter  7: A = 3.9546, lambda = 0.0532, b = 0.4897, cond(J) = 301.4985, |f(x)| = 13.5266
-  iter  8: A = 4.1421, lambda = 0.0633, b = 0.6783, cond(J) = 203.9164, |f(x)| = 12.3149
-  iter  9: A = 4.3752, lambda = 0.0800, b = 0.9228, cond(J) = 158.2267, |f(x)| = 11.2475
-  iter 10: A = 4.6371, lambda = 0.0891, b = 0.9588, cond(J) = 136.6189, |f(x)| = 10.5457
-  iter 11: A = 4.7684, lambda = 0.0937, b = 0.9860, cond(J) = 125.4740, |f(x)| = 10.4753
-  iter 12: A = 4.7977, lambda = 0.0948, b = 0.9917, cond(J) = 120.1098, |f(x)| = 10.4723
-  iter 13: A = 4.8006, lambda = 0.0949, b = 0.9924, cond(J) = 118.9113, |f(x)| = 10.4723
-  iter 14: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7661, |f(x)| = 10.4723
-  iter 15: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7550, |f(x)| = 10.4723
-  iter 16: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
-  iter 17: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
-  iter 18: A = 4.8008, lambda = 0.0949, b = 0.9925, cond(J) = 118.7543, |f(x)| = 10.4723
+  iter  0: A = 1.0000, lambda = 1.0000, b = 0.0000, cond(J) =      inf, |f(x)| = 88.4448
+  iter  1: A = 4.5109, lambda = 2.5258, b = 1.0704, cond(J) =  26.2686, |f(x)| = 24.0646
+  iter  2: A = 4.8565, lambda = 1.7442, b = 1.1669, cond(J) =  23.7470, |f(x)| = 11.9797
+  iter  3: A = 4.9356, lambda = 1.5713, b = 1.0767, cond(J) =  17.5849, |f(x)| = 10.7355
+  iter  4: A = 4.8678, lambda = 1.4838, b = 1.0252, cond(J) =  16.3428, |f(x)| = 10.5000
+  iter  5: A = 4.8118, lambda = 1.4481, b = 1.0076, cond(J) =  15.7925, |f(x)| = 10.4786
+  iter  6: A = 4.7983, lambda = 1.4404, b = 1.0041, cond(J) =  15.5840, |f(x)| = 10.4778
+  iter  7: A = 4.7967, lambda = 1.4395, b = 1.0037, cond(J) =  15.5396, |f(x)| = 10.4778
+  iter  8: A = 4.7965, lambda = 1.4394, b = 1.0037, cond(J) =  15.5344, |f(x)| = 10.4778
+  iter  9: A = 4.7965, lambda = 1.4394, b = 1.0037, cond(J) =  15.5339, |f(x)| = 10.4778
+  iter 10: A = 4.7965, lambda = 1.4394, b = 1.0037, cond(J) =  15.5339, |f(x)| = 10.4778
+  iter 11: A = 4.7965, lambda = 1.4394, b = 1.0037, cond(J) =  15.5339, |f(x)| = 10.4778
   summary from method 'trust-region/levenberg-marquardt'
-  number of iterations: 18
-  function evaluations: 25
-  Jacobian evaluations: 19
-  reason for stopping: small step size
-  initial |f(x)| = 100.877904
-  final   |f(x)| = 10.472268
-  chisq/dof = 1.1306
-  A      = 4.80085 +/- 0.17652
-  lambda = 0.09488 +/- 0.00527
-  b      = 0.99249 +/- 0.04419
+  number of iterations: 11
+  function evaluations: 16
+  Jacobian evaluations: 12
+  reason for stopping: small gradient
+  initial |f(x)| = 88.444756
+  final   |f(x)| = 10.477801
+  chisq/dof = 1.1318
+  A      = 4.79653 +/- 0.18704
+  lambda = 1.43937 +/- 0.07390
+  b      = 1.00368 +/- 0.03473
   status = success
 
 The approximate values of the parameters are found correctly, and the

@@ -134,6 +134,8 @@ const double xarr[], const double yarr[], const double zarr[], /* data */
                                 xarr, yarr, zarr, x, y, xa, ya, zarr, zi);
           test_single_high_level(&gsl_spline2d_eval, &gsl_spline2d_eval_e,
                                  interp_s, x, y, xa, ya, zarr, zi);
+          test_single_high_level(&gsl_spline2d_eval_extrap, &gsl_spline2d_eval_extrap_e,
+                                 interp_s, x, y, xa, ya, zarr, zi);
         }
     }
 
@@ -151,6 +153,7 @@ const double xarr[], const double yarr[], const double zarr[], /* data */
       test_single_low_level(&gsl_interp2d_eval_deriv_xy,&gsl_interp2d_eval_deriv_xy_e, interp, xarr, yarr, zarr, x, y, xa, ya, zxyval, i);
 
       test_single_high_level(&gsl_spline2d_eval,         &gsl_spline2d_eval_e,          interp_s, x, y, xa, ya, zval, i);
+      test_single_high_level(&gsl_spline2d_eval_extrap,  &gsl_spline2d_eval_extrap_e,          interp_s, x, y, xa, ya, zval, i);
       test_single_high_level(&gsl_spline2d_eval_deriv_x, &gsl_spline2d_eval_deriv_x_e,  interp_s, x, y, xa, ya, zxval, i);
       test_single_high_level(&gsl_spline2d_eval_deriv_y, &gsl_spline2d_eval_deriv_y_e,  interp_s, x, y, xa, ya, zyval, i);
       test_single_high_level(&gsl_spline2d_eval_deriv_xx,&gsl_spline2d_eval_deriv_xx_e, interp_s, x, y, xa, ya, zxxval, i);

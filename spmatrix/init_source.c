@@ -84,6 +84,14 @@ FUNCTION (gsl_spmatrix, alloc_nzmax) (const size_t n1, const size_t n2,
                      GSL_ENOMEM);
     }
 
+  m->work.work_void = malloc(GSL_MAX(n1, n2) * MULTIPLICITY *
+                             GSL_MAX(sizeof(int), sizeof(ATOMIC)));
+  if (!m->work.work_void)
+    {
+      FUNCTION(gsl_spmatrix, free) (m);
+      GSL_ERROR_NULL("failed to allocate space for work", GSL_ENOMEM);
+    }
+
   if (sptype == GSL_SPMATRIX_COO)
     {
       m->tree = gsl_bst_alloc(gsl_bst_avl, &FUNCTION(spmatrix, allocator), FUNCTION (compare, func), (void *) m);
@@ -110,9 +118,7 @@ FUNCTION (gsl_spmatrix, alloc_nzmax) (const size_t n1, const size_t n2,
   else if (sptype == GSL_SPMATRIX_CSC)
     {
       m->p = malloc((n2 + 1) * sizeof(int));
-      m->work.work_void = malloc(GSL_MAX(n1, n2) * MULTIPLICITY *
-                                 GSL_MAX(sizeof(int), sizeof(BASE)));
-      if (!m->p || !m->work.work_void)
+      if (!m->p)
         {
           FUNCTION(gsl_spmatrix, free) (m);
           GSL_ERROR_NULL("failed to allocate space for column pointers",
@@ -122,9 +128,7 @@ FUNCTION (gsl_spmatrix, alloc_nzmax) (const size_t n1, const size_t n2,
   else if (sptype == GSL_SPMATRIX_CSR)
     {
       m->p = malloc((n1 + 1) * sizeof(int));
-      m->work.work_void = malloc(GSL_MAX(n1, n2) * MULTIPLICITY *
-                                 GSL_MAX(sizeof(int), sizeof(BASE)));
-      if (!m->p || !m->work.work_void)
+      if (!m->p)
         {
           FUNCTION(gsl_spmatrix, free) (m);
           GSL_ERROR_NULL("failed to allocate space for row pointers",

@@ -186,6 +186,14 @@ gsl_multifit_linear_lcurve (const gsl_vector * y,
                             gsl_multifit_linear_workspace * work);
 
 int
+gsl_multifit_linear_lcurvature (const gsl_vector * y,
+                                const gsl_vector * reg_param,
+                                const gsl_vector * rho,
+                                const gsl_vector * eta,
+                                gsl_vector * kappa,
+                                gsl_multifit_linear_workspace * work);
+
+int
 gsl_multifit_linear_lcorner(const gsl_vector *rho,
                             const gsl_vector *eta,
                             size_t *idx);

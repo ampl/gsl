@@ -104,7 +104,12 @@ gsl_linalg_bidiag_decomp (gsl_matrix * A, gsl_vector * tau_U, gsl_vector * tau_V
             {
               gsl_matrix_view m = gsl_matrix_submatrix (A, j, j + 1, M - j, N - j - 1);
               gsl_vector_view work = gsl_vector_subvector(tau_U, j, N - j - 1);
+              double * ptr = gsl_vector_ptr(&v.vector, 0);
+              double tmp = *ptr;
+
+              *ptr = 1.0;
               gsl_linalg_householder_left (tau_j, &v.vector, &m.matrix, &work.vector);
+              *ptr = tmp;
             }
 
           gsl_vector_set (tau_U, j, tau_j);            
@@ -209,8 +214,12 @@ gsl_linalg_bidiag_unpack (const gsl_matrix * A,
           double ti = gsl_vector_get (tau_V, i);
           gsl_matrix_view m = gsl_matrix_submatrix (V, i + 1, i + 1, N- i - 1, N - i - 1);
           gsl_vector_view work = gsl_matrix_subrow(U, 0, 0, N - i - 1);
-          
+          double * ptr = gsl_vector_ptr((gsl_vector *) &h.vector, 0);
+          double tmp = *ptr;
+
+          *ptr = 1.0;
           gsl_linalg_householder_left (ti, &h.vector, &m.matrix, &work.vector);
+          *ptr = tmp;
         }
 
       /* Initialize U to the identity */

@@ -22,6 +22,8 @@ control_set_driver_null (void *vstate, const gsl_odeiv2_driver * d)
 {
   /* Dummy set function for those control objects that do not
      need pointer to driver object. */
+  (void) vstate;
+  (void) d;
 
   return GSL_SUCCESS;
 }

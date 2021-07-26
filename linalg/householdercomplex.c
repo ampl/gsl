@@ -51,7 +51,7 @@ gsl_linalg_complex_householder_transform (gsl_vector_complex * v)
   /* replace v[0:n-1] with a householder vector (v[0:n-1]) and
      coefficient tau that annihilate v[1:n-1] */
 
-  const size_t n = v->size ;
+  const size_t n = v->size;
   
   if (n == 1)
     {
@@ -121,35 +121,45 @@ gsl_linalg_complex_householder_hv (gsl_complex tau, const gsl_vector_complex * v
   const size_t N = v->size;
 
   if (GSL_REAL(tau) == 0.0 && GSL_IMAG(tau) == 0.0)
-      return GSL_SUCCESS;
+    return GSL_SUCCESS;
 
-  {
-    /* compute z = v'w */
-
-    gsl_complex z0 = gsl_vector_complex_get(w,0);
-    gsl_complex z1, z;
-    gsl_complex tz, ntz;
-    
-    gsl_vector_complex_const_view v1 = gsl_vector_complex_const_subvector(v, 1, N-1);
-    gsl_vector_complex_view w1 = gsl_vector_complex_subvector(w, 1, N-1);
-
-    gsl_blas_zdotc(&v1.vector, &w1.vector, &z1);
-    
-    z = gsl_complex_add (z0, z1);
-
-    tz = gsl_complex_mul(tau, z);
-    ntz = gsl_complex_negative (tz);
-
-    /* compute w = w - tau * (v'w) * v   */
-
+  if (N == 1)
     {
       gsl_complex w0 = gsl_vector_complex_get(w, 0);
-      gsl_complex w0ntz = gsl_complex_add (w0, ntz);
-      gsl_vector_complex_set (w, 0, w0ntz);
-    }
+      gsl_complex a, b;
 
-    gsl_blas_zaxpy(ntz, &v1.vector, &w1.vector);
-  }
+      GSL_SET_COMPLEX(&a, 1.0 - GSL_REAL(tau), -GSL_IMAG(tau)); /* a = 1 - tau */
+      b = gsl_complex_mul(a, w0);                               /* b = (1 - tau) w0 */
+      gsl_vector_complex_set(w, 0, b);
+    }
+  else
+    {
+      /* compute z = v'w */
+
+      gsl_complex z0 = gsl_vector_complex_get(w,0);
+      gsl_complex z1, z;
+      gsl_complex tz, ntz;
+    
+      gsl_vector_complex_const_view v1 = gsl_vector_complex_const_subvector(v, 1, N-1);
+      gsl_vector_complex_view w1 = gsl_vector_complex_subvector(w, 1, N-1);
+
+      gsl_blas_zdotc(&v1.vector, &w1.vector, &z1);
+    
+      z = gsl_complex_add (z0, z1);
+
+      tz = gsl_complex_mul(tau, z);
+      ntz = gsl_complex_negative (tz);
+
+      /* compute w = w - tau * (v'w) * v   */
+
+      {
+        gsl_complex w0 = gsl_vector_complex_get(w, 0);
+        gsl_complex w0ntz = gsl_complex_add (w0, ntz);
+        gsl_vector_complex_set (w, 0, w0ntz);
+      }
+
+      gsl_blas_zaxpy(ntz, &v1.vector, &w1.vector);
+    }
 
   return GSL_SUCCESS;
 }
@@ -174,7 +184,8 @@ Notes:
 */
 
 int
-gsl_linalg_complex_householder_left(const gsl_complex tau, const gsl_vector_complex * v, gsl_matrix_complex * A, gsl_vector_complex * work)
+gsl_linalg_complex_householder_left(const gsl_complex tau, const gsl_vector_complex * v,
+                                    gsl_matrix_complex * A, gsl_vector_complex * work)
 {
   const size_t M = A->size1;
   const size_t N = A->size2;

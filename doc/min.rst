@@ -287,7 +287,7 @@ function is well-behaved.
       single: golden section algorithm for finding minima
       single: minimum finding, golden section algorithm
 
-   .. var:: gsl_min_fminimizer_goldensection
+   .. var:: gsl_min_fminimizer_type * gsl_min_fminimizer_goldensection
 
       The *golden section algorithm* is the simplest method of bracketing
       the minimum of a function.  It is the slowest algorithm provided by the
@@ -308,7 +308,7 @@ function is well-behaved.
       single: Brent's method for finding minima
       single: minimum finding, Brent's method
 
-   .. var:: gsl_min_fminimizer_brent
+   .. var:: gsl_min_fminimizer_type * gsl_min_fminimizer_brent
 
       The *Brent minimization algorithm* combines a parabolic
       interpolation with the golden section algorithm.  This produces a fast
@@ -326,7 +326,7 @@ function is well-behaved.
 
    .. index:: safeguarded step-length algorithm
 
-   .. var:: gsl_min_fminimizer_quad_golden
+   .. var:: gsl_min_fminimizer_type * gsl_min_fminimizer_quad_golden
 
       This is a variant of Brent's algorithm which uses the safeguarded
       step-length algorithm of Gill and Murray.

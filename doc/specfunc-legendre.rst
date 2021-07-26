@@ -250,11 +250,18 @@ specifies the type of normalization to use. The possible values are
    :data:`csphase` to either :math:`-1` or :math:`1` respectively in the
    :code:`_e` function. This factor is excluded by default.
 
+.. function:: size_t gsl_sf_legendre_nlm(const size_t lmax)
+
+   This function returns the total number of associated Legendre
+   functions :math:`P_l^m(x)` for a given :data:`lmax`. The number is
+   :code:`(lmax+1) * (lmax+2) / 2`.
+
 .. function:: size_t gsl_sf_legendre_array_n (const size_t lmax)
 
    This function returns the minimum array size for maximum degree :data:`lmax`
    needed for the array versions of the associated Legendre functions.
-   Size is calculated as the total number of :math:`P_l^m(x)` functions,
+   Size is calculated as the total number of :math:`P_l^m(x)` functions
+   (see :func:`gsl_sf_legendre_nlm`),
    plus extra space for precomputing multiplicative factors used in the
    recurrence relations.
 
@@ -264,6 +271,9 @@ specifies the type of normalization to use. The possible values are
    :data:`result_deriv_array`, or :data:`result_deriv2_array` corresponding
    to :math:`P_l^m(x)`, :math:`P_l^{'m}(x)`, or :math:`P_l^{''m}(x)`. The
    index is given by :math:`l(l+1)/2 + m`.
+
+   An inline version of this function is used if :macro:`HAVE_INLINE` is
+   defined.
 
 .. function:: double gsl_sf_legendre_Plm (int l, int m, double x)
               int gsl_sf_legendre_Plm_e (int l, int m, double x, gsl_sf_result * result)

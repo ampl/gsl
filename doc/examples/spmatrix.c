@@ -36,12 +36,12 @@ main()
   printf("matrix in compressed column format:\n");
   printf("i = [ ");
   for (i = 0; i < B->nz; ++i)
-    printf("%zu, ", B->i[i]);
+    printf("%d, ", B->i[i]);
   printf("]\n");
 
   printf("p = [ ");
   for (i = 0; i < B->size2 + 1; ++i)
-    printf("%zu, ", B->p[i]);
+    printf("%d, ", B->p[i]);
   printf("]\n");
 
   printf("d = [ ");
@@ -55,12 +55,12 @@ main()
   printf("matrix in compressed row format:\n");
   printf("i = [ ");
   for (i = 0; i < C->nz; ++i)
-    printf("%zu, ", C->i[i]);
+    printf("%d, ", C->i[i]);
   printf("]\n");
 
   printf("p = [ ");
   for (i = 0; i < C->size1 + 1; ++i)
-    printf("%zu, ", C->p[i]);
+    printf("%d, ", C->p[i]);
   printf("]\n");
 
   printf("d = [ ");

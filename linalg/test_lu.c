@@ -135,14 +135,14 @@ test_LU_decomp(gsl_rng * r)
   {
     gsl_matrix * m = gsl_matrix_alloc(50, 100);
     create_random_matrix(m, r);
-    test_LU_decomp_eps(m, 256.0 * n * GSL_DBL_EPSILON, "LU_decomp rect2");
+    test_LU_decomp_eps(m, 1.0e3 * n * GSL_DBL_EPSILON, "LU_decomp rect2");
     gsl_matrix_free(m);
   }
 
   {
     gsl_matrix * m = gsl_matrix_alloc(80, 100);
     create_random_matrix(m, r);
-    test_LU_decomp_eps(m, 256.0 * n * GSL_DBL_EPSILON, "LU_decomp rect3");
+    test_LU_decomp_eps(m, 1.0e4 * n * GSL_DBL_EPSILON, "LU_decomp rect3");
     gsl_matrix_free(m);
   }
 

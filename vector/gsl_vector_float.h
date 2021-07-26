@@ -153,8 +153,9 @@ int gsl_vector_float_sub (gsl_vector_float * a, const gsl_vector_float * b);
 int gsl_vector_float_mul (gsl_vector_float * a, const gsl_vector_float * b);
 int gsl_vector_float_div (gsl_vector_float * a, const gsl_vector_float * b);
 int gsl_vector_float_scale (gsl_vector_float * a, const float x);
-int gsl_vector_float_add_constant (gsl_vector_float * a, const double x);
+int gsl_vector_float_add_constant (gsl_vector_float * a, const float x);
 int gsl_vector_float_axpby (const float alpha, const gsl_vector_float * x, const float beta, gsl_vector_float * y);
+float gsl_vector_float_sum (const gsl_vector_float * a);
 
 int gsl_vector_float_equal (const gsl_vector_float * u, 
                             const gsl_vector_float * v);

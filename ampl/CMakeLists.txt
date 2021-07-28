@@ -19,6 +19,7 @@ macro(add_ampl_library name)
   # DESTINATION or ARCHIVE_DESTINATION because we don't want to import
   # libraries installed.
    install(TARGETS ${name} 
+    ARCHIVE DESTINATION ${AMPL_LIBRARY_DIR} 
     RUNTIME DESTINATION ${AMPL_LIBRARY_DIR} 
     LIBRARY DESTINATION ${AMPL_LIBRARY_DIR})
 endmacro()

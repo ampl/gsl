@@ -633,25 +633,27 @@ function(add_gsl_test exename)
   add_test(${exename} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${exename})
 endfunction()
 
-file(GLOB GSL_HEADER_PATHS "${GSL_SOURCE_DIR}/gsl*.h")
+file(GLOB GSL_HEADER_PATHS_NE "${GSL_SOURCE_DIR}/gsl*.h")
 file(GLOB dirs "${GSL_SOURCE_DIR}/*")
 foreach (dir ${dirs})
   if (NOT (dir MATCHES "gsl$"))
     file(GLOB headers "${dir}/gsl*.h")
-    set(GSL_HEADER_PATHS ${GSL_HEADER_PATHS} ${headers})
+    set(GSL_HEADER_PATHS_NE ${GSL_HEADER_PATHS_NE} ${headers})
   endif ()
 endforeach()
-
-foreach (path ${GSL_HEADER_PATHS})
+set(GSL_HEADER_PATHS "")
+foreach (path ${GSL_HEADER_PATHS_NE})
   get_filename_component(name ${path} NAME)
   set(GSL_HEADERS ${GSL_HEADERS} gsl/${name})
+  string(REPLACE "\ " "\\ " escaped ${path})
+  set(GSL_HEADER_PATHS ${GSL_HEADER_PATHS} ${escaped}) 
 endforeach ()
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/copy-headers.cmake "
   file(MAKE_DIRECTORY gsl)
   foreach (path ${GSL_HEADER_PATHS})
     get_filename_component(filename \${path} NAME)
-    configure_file(\${path} ${GSL_BINARY_DIR}/gsl/\${filename} COPYONLY)
+    configure_file(\${path} \"${GSL_BINARY_DIR}/gsl/\${filename}\" COPYONLY)
   endforeach ()")
 
 add_custom_command(OUTPUT ${GSL_HEADERS}

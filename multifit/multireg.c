@@ -857,6 +857,119 @@ gsl_multifit_linear_lcurve (const gsl_vector * y,
 } /* gsl_multifit_linear_lcurve() */
 
 /*
+gsl_multifit_linear_lcurvature()
+  Calculate curvature of previously computed L-curve as a function of
+regularization parameter
+
+Inputs: y         - right hand side vector
+        reg_param - vector of regularization parameters, length N
+        rho       - vector of residual norms ||y - X c||, length N
+        eta       - vector of solution norms ||c||, length N
+        kappa     - (output) vector of curvature values, length N
+        work      - workspace
+
+Return: success/error
+
+Notes:
+1) SVD of X must be computed first by calling multifit_linear_svd();
+   work->n and work->p are initialized by this function
+
+2) Vectors reg_param, rho, eta must be computed by calling gsl_multifit_linear_lcurve()
+*/
+
+int
+gsl_multifit_linear_lcurvature (const gsl_vector * y,
+                                const gsl_vector * reg_param,
+                                const gsl_vector * rho,
+                                const gsl_vector * eta,
+                                gsl_vector * kappa,
+                                gsl_multifit_linear_workspace * work)
+{
+  const size_t n = y->size;
+  const size_t N = rho->size; /* number of points on L-curve */
+
+  if (n != work->n)
+    {
+      GSL_ERROR("y vector does not match workspace", GSL_EBADLEN);
+    }
+  else if (N != eta->size)
+    {
+      GSL_ERROR ("size of rho and eta vectors do not match",
+                 GSL_EBADLEN);
+    }
+  else if (reg_param->size != N)
+    {
+      GSL_ERROR ("size of reg_param and rho vectors do not match",
+                 GSL_EBADLEN);
+    }
+  else if (kappa->size != N)
+    {
+      GSL_ERROR ("size of reg_param and rho vectors do not match",
+                 GSL_EBADLEN);
+    }
+  else
+    {
+      int status = GSL_SUCCESS;
+      const size_t p = work->p;
+      gsl_matrix_view U = gsl_matrix_submatrix(work->A, 0, 0, n, p);
+      gsl_vector_view S = gsl_vector_subvector(work->S, 0, p);
+      gsl_vector_view beta = gsl_vector_subvector(work->xt, 0, p);
+      size_t i;
+
+      /* compute projection beta = U^T y */
+      gsl_blas_dgemv (CblasTrans, 1.0, &U.matrix, y, 0.0, &beta.vector);
+
+      for (i = 0; i < N; ++i)
+        {
+          double lambda = gsl_vector_get(reg_param, i);
+          double lambda_sq = lambda * lambda;
+          double eta_i = gsl_vector_get(eta, i);
+          double rho_i = gsl_vector_get(rho, i);
+          double phi_i = 0.0, dphi_i = 0.0;
+          double psi_i = 0.0, dpsi_i = 0.0;
+          double deta_i, ddeta_i, drho_i, ddrho_i;
+          double dlogeta_i, ddlogeta_i, dlogrho_i, ddlogrho_i;
+          double kappa_i;
+          size_t j;
+
+          for (j = 0; j < p; ++j)
+            {
+              double beta_j = gsl_vector_get(&beta.vector, j);
+              double s_j = gsl_vector_get(&S.vector, j);
+              double sj_sq = s_j * s_j;
+              double f_j = sj_sq / (sj_sq + lambda_sq); /* filter factor */
+              double onemf_j = 1.0 - f_j;
+              double f1_j = -2.0 * f_j * onemf_j / lambda;
+              double f2_j = -f1_j * (3.0 - 4.0 * f_j) / lambda;
+              double xi_j = beta_j / s_j;
+
+              phi_i += f_j * f1_j * xi_j * xi_j;
+              psi_i += onemf_j * f1_j * beta_j * beta_j;
+
+              dphi_i += (f1_j * f1_j + f_j * f2_j) * xi_j * xi_j;
+              dpsi_i += (-f1_j * f1_j + onemf_j * f2_j) * beta_j * beta_j;
+            }
+
+          deta_i = phi_i / eta_i;
+          drho_i = -psi_i / rho_i;
+          ddeta_i = dphi_i / eta_i - deta_i * (deta_i / eta_i);
+          ddrho_i = -dpsi_i / rho_i - drho_i * (drho_i / rho_i);
+
+          dlogeta_i = deta_i / eta_i;
+          dlogrho_i = drho_i / rho_i;
+          ddlogeta_i = ddeta_i / eta_i - dlogeta_i * dlogeta_i;
+          ddlogrho_i = ddrho_i / rho_i - dlogrho_i * dlogrho_i;
+
+          kappa_i = (dlogrho_i * ddlogeta_i - ddlogrho_i * dlogeta_i) /
+                    pow(dlogrho_i * dlogrho_i + dlogeta_i * dlogeta_i, 1.5);
+          gsl_vector_set(kappa, i, kappa_i);
+        }
+
+      return status;
+    }
+}
+
+/*
 gsl_multifit_linear_lcorner()
   Determine point on L-curve of maximum curvature. For each
 set of 3 points on the L-curve, the circle which passes through

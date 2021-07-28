@@ -26,7 +26,7 @@ Ivo Alxneit (ivo.alxneit@psi.ch) - multidimensional minimization, wavelet
   transforms
 Jason H. Stover (jason@sakla.net) - cumulative distribution functions
 Patrick Alken <patrick.alken@colorado.edu> - nonsymmetric and generalized
-  eigensystems, B-splines, sparse matrices, linear and nonlinear least squares
+  eigensystems, B-splines, linear algebra, sparse matrices, linear and nonlinear least squares
 Rhys Ulerich (rhys.ulerich@gmail.com) - multisets
 Pavel Holoborodko <pavel@holoborodko.com> - fixed order Gauss-Legendre quadrature
 Pedro Gonnet <gonnet@maths.ox.ac.uk> - CQUAD integration routines.

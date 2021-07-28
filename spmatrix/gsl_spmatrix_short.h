@@ -1,6 +1,6 @@
 /* spmatrix/gsl_spmatrix_short.h
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,13 +158,21 @@ int gsl_spmatrix_short_scale (gsl_spmatrix_short * m, const short x);
 int gsl_spmatrix_short_scale_columns (gsl_spmatrix_short * m, const gsl_vector_short * x);
 int gsl_spmatrix_short_scale_rows (gsl_spmatrix_short * m, const gsl_vector_short * x);
 int gsl_spmatrix_short_add (gsl_spmatrix_short * c, const gsl_spmatrix_short * a, const gsl_spmatrix_short * b);
-int gsl_spmatrix_short_add_to_dense (gsl_matrix_short * a, const gsl_spmatrix_short * b);
+int gsl_spmatrix_short_dense_add (gsl_matrix_short * a, const gsl_spmatrix_short * b);
+int gsl_spmatrix_short_dense_sub (gsl_matrix_short * a, const gsl_spmatrix_short * b);
 int gsl_spmatrix_short_d2sp (gsl_spmatrix_short * T, const gsl_matrix_short * A);
 int gsl_spmatrix_short_sp2d (gsl_matrix_short * A, const gsl_spmatrix_short * S);
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int gsl_spmatrix_short_add_to_dense (gsl_matrix_short * a, const gsl_spmatrix_short * b);
+
+#endif
 
 /* properties */
 
 int gsl_spmatrix_short_equal (const gsl_spmatrix_short * a, const gsl_spmatrix_short * b);
+short gsl_spmatrix_short_norm1 (const gsl_spmatrix_short * a);
 
 /* swap */
 

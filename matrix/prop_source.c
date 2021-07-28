@@ -159,3 +159,47 @@ FUNCTION (gsl_matrix, isnonneg) (const TYPE (gsl_matrix) * m)
       
   return 1;
 }
+
+#if !defined(UNSIGNED) && !defined(BASE_GSL_COMPLEX) && !defined(BASE_GSL_COMPLEX_FLOAT) && !defined(BASE_GSL_COMPLEX_LONG)
+
+ATOMIC
+FUNCTION (gsl_matrix, norm1) (const TYPE (gsl_matrix) * m)
+{
+  ATOMIC value = (ATOMIC) 0;
+  size_t j;
+
+  for (j = 0; j < m->size2; ++j)
+    {
+      VIEW (gsl_vector, const_view) mj = FUNCTION (gsl_matrix, const_column) (m, j);
+      ATOMIC sum;
+      
+#if defined(BASE_DOUBLE)
+      sum = gsl_blas_dasum(&mj.vector);
+#elif defined(BASE_FLOAT)
+      sum = gsl_blas_sasum(&mj.vector);
+#else
+      {
+        size_t i;
+
+        sum = (ATOMIC) 0;
+
+        for (i = 0; i < m->size1; ++i)
+          {
+            ATOMIC mij = FUNCTION (gsl_vector, get) (&mj.vector, i);
+
+            if (mij >= (ATOMIC) 0)
+              sum += mij;
+            else
+              sum += -mij;
+          }
+      }
+#endif
+
+      if (sum > value)
+        value = sum;
+    }
+
+  return value;
+}
+
+#endif

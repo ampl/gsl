@@ -1446,7 +1446,7 @@ The Multinomial Distribution
 
    This function computes a random sample :data:`n` from the multinomial
    distribution formed by :data:`N` trials from an underlying distribution
-   :data:`p[K]`. The distribution function for :data:`n` is,
+   :code:`p[K]`. The distribution function for :data:`n` is,
 
    .. only:: not texinfo
 

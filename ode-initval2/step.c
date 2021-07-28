@@ -97,7 +97,7 @@ gsl_odeiv2_step_set_driver (gsl_odeiv2_step * s, const gsl_odeiv2_driver * d)
     }
   else
     {
-      GSL_ERROR_NULL ("driver pointer is null", GSL_EFAULT);
+      GSL_ERROR ("driver pointer is null", GSL_EFAULT);
     }
 
   return GSL_SUCCESS;

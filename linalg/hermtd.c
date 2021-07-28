@@ -167,13 +167,10 @@ gsl_linalg_hermtd_unpack (const gsl_matrix_complex * A,
       for (i = N - 1; i-- > 0;)
         {
           gsl_complex ti = gsl_vector_complex_get (tau, i);
-
           gsl_vector_complex_const_view h = 
             gsl_matrix_complex_const_subcolumn (A, i, i + 1, N - i - 1);
-
           gsl_matrix_complex_view m = 
             gsl_matrix_complex_submatrix (U, i + 1, i + 1, N - i - 1, N - i - 1);
-
           gsl_vector_complex_view w = gsl_vector_complex_subvector(work, 0, N - i - 1);
 
           gsl_linalg_complex_householder_left (ti, &h.vector, &m.matrix, &w.vector);
@@ -210,7 +207,6 @@ gsl_linalg_hermtd_unpack_T (const gsl_matrix_complex * A,
     }
   else
     {
-      const size_t N = A->size1;
       gsl_vector_complex_const_view zd = gsl_matrix_complex_const_diagonal(A);
       gsl_vector_complex_const_view zsd = gsl_matrix_complex_const_subdiagonal(A, 1);
       gsl_vector_const_view d = gsl_vector_complex_const_real(&zd.vector);

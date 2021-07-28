@@ -97,20 +97,20 @@ The following quasi-random sequence algorithms are available,
 
 .. type:: gsl_qrng_type
 
-   .. var:: gsl_qrng_niederreiter_2
+   .. var:: gsl_qrng_type * gsl_qrng_niederreiter_2
 
       This generator uses the algorithm described in Bratley, Fox,
       Niederreiter, ACM Trans. Model. Comp. Sim. 2, 195 (1992). It is
       valid up to 12 dimensions.
 
-   .. var:: gsl_qrng_sobol
+   .. var:: gsl_qrng_type * gsl_qrng_sobol
 
       This generator uses the Sobol sequence described in Antonov, Saleev,
       USSR Comput. Maths. Math. Phys. 19, 252 (1980). It is valid up to
       40 dimensions.
 
-   .. var:: gsl_qrng_halton
-            gsl_qrng_reversehalton
+   .. var:: gsl_qrng_type * gsl_qrng_halton
+            gsl_qrng_type * gsl_qrng_reversehalton
 
       These generators use the Halton and reverse Halton sequences described
       in J.H. Halton, Numerische Mathematik, 2, 84-90 (1960) and

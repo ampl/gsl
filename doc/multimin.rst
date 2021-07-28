@@ -340,7 +340,7 @@ evaluation point.
       single: Conjugate gradient algorithm, minimization
       single: minimization, conjugate gradient algorithm
 
-   .. var:: gsl_multimin_fdfminimizer_conjugate_fr
+   .. var:: gsl_multimin_fdfminimizer_type * gsl_multimin_fdfminimizer_conjugate_fr
 
       This is the Fletcher-Reeves conjugate gradient algorithm. The conjugate
       gradient algorithm proceeds as a succession of line minimizations. The
@@ -354,7 +354,7 @@ evaluation point.
       :data:`p` are orthogonal.  The line minimization terminates when
       :math:`p\cdot g < tol |p| |g|`. The
       search direction is updated  using the Fletcher-Reeves formula
-      :math:`p' = g' - \beta g` where :math:`\beta=-|g'|^2/|g|^2`, and
+      :math:`p' = g' - \beta p` where :math:`\beta=-|g'|^2/|g|^2`, and
       the line minimization is then repeated for the new search
       direction.
 
@@ -362,7 +362,7 @@ evaluation point.
       single: Polak-Ribiere algorithm, minimization
       single: minimization, Polak-Ribiere algorithm
 
-   .. var:: gsl_multimin_fdfminimizer_conjugate_pr
+   .. var:: gsl_multimin_fdfminimizer_type * gsl_multimin_fdfminimizer_conjugate_pr
 
       This is the Polak-Ribiere conjugate gradient algorithm.  It is similar
       to the Fletcher-Reeves method, differing only in the choice of the
@@ -374,8 +374,8 @@ evaluation point.
       single: BFGS algorithm, minimization
       single: minimization, BFGS algorithm
 
-   .. var:: gsl_multimin_fdfminimizer_vector_bfgs2
-            gsl_multimin_fdfminimizer_vector_bfgs
+   .. var:: gsl_multimin_fdfminimizer_type * gsl_multimin_fdfminimizer_vector_bfgs2
+            gsl_multimin_fdfminimizer_type * gsl_multimin_fdfminimizer_vector_bfgs
 
       These methods use the vector Broyden-Fletcher-Goldfarb-Shanno (BFGS)
       algorithm.  This is a quasi-Newton method which builds up an approximation
@@ -398,7 +398,7 @@ evaluation point.
       single: steepest descent algorithm, minimization
       single: minimization, steepest descent algorithm
 
-   .. var:: gsl_multimin_fdfminimizer_steepest_descent
+   .. var:: gsl_multimin_fdfminimizer_type * gsl_multimin_fdfminimizer_steepest_descent
 
       The steepest descent algorithm follows the downhill gradient of the
       function at each step. When a downhill step is successful the step-size
@@ -423,8 +423,8 @@ at each evaluation point.
       single: simplex algorithm, minimization
       single: minimization, simplex algorithm
 
-   .. var:: gsl_multimin_fminimizer_nmsimplex2
-            gsl_multimin_fminimizer_nmsimplex
+   .. var:: gsl_multimin_fminimizer_type * gsl_multimin_fminimizer_nmsimplex2
+            gsl_multimin_fminimizer_type * gsl_multimin_fminimizer_nmsimplex
 
       These methods use the Simplex algorithm of Nelder and Mead. 
       Starting from the initial vector :math:`x = p_0`, the algorithm
@@ -481,7 +481,7 @@ at each evaluation point.
       allowing a linear update of this quantity on each step.  The memory usage is
       :math:`O(N^2)` for both algorithms.
 
-   .. var:: gsl_multimin_fminimizer_nmsimplex2rand
+   .. var:: gsl_multimin_fminimizer_type * gsl_multimin_fminimizer_nmsimplex2rand
 
       This method is a variant of :type:`gsl_multimin_fminimizer_nmsimplex2` which initialises the
       simplex around the starting point :data:`x` using a randomly-oriented

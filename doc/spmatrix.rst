@@ -195,8 +195,7 @@ The basic structure is called :type:`gsl_spmatrix`.
         int *p;
         size_t nzmax;
         size_t nz;
-        gsl_spmatrix_tree *tree_data;
-        void *work;
+        [ ... variables for binary tree and memory management ... ]
         size_t sptype;
       } gsl_spmatrix;
 
@@ -218,12 +217,13 @@ The basic structure is called :type:`gsl_spmatrix`.
    to the index in :data:`data` of the start of row :data:`i`. Thus, if
    :math:`data[k] = A(i,j)`, then :math:`j = i[k]` and :math:`p[i] <= k < p[i+1]`.
 
-   The parameter :data:`tree_data` is a binary tree structure used in the triplet
-   representation, specifically a balanced AVL tree. This speeds up element
-   searches and duplicate detection during the matrix assembly process.
-   The parameter :data:`work` is additional workspace needed for various operations like
-   converting from triplet to compressed storage. :data:`sptype` indicates
-   the type of storage format being used (COO, CSC or CSR).
+   There are additional variables in the :type:`gsl_spmatrix` structure related
+   to binary tree storage and memory management. The GSL implementation of sparse
+   matrices uses balanced AVL trees to sort matrix elements in the triplet representation.
+   This speeds up element searches and duplicate detection during the matrix assembly process.
+   The :type:`gsl_spmatrix` structure also contains additional workspace variables needed
+   for various operations like converting from triplet to compressed storage.
+   :data:`sptype` indicates the type of storage format being used (COO, CSC or CSR).
 
    The compressed storage format defined above makes it very simple
    to interface with sophisticated external linear solver libraries
@@ -482,10 +482,19 @@ Matrix Operations
 
    Input matrix formats supported: :ref:`CSC <sec_spmatrix-csc>`, :ref:`CSR <sec_spmatrix-csr>`
 
-.. function:: int gsl_spmatrix_add_to_dense (gsl_matrix * a, const gsl_spmatrix * b)
+.. function:: int gsl_spmatrix_dense_add (gsl_matrix * a, const gsl_spmatrix * b)
 
    This function adds the elements of the sparse matrix :data:`b` to the elements of
    the dense matrix :data:`a`. The result :math:`a(i,j) \leftarrow a(i,j) + b(i,j)` is
+   stored in :data:`a` and :data:`b` remains unchanged. The two matrices must have
+   the same dimensions.
+
+   Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`, :ref:`CSC <sec_spmatrix-csc>`, :ref:`CSR <sec_spmatrix-csr>`
+
+.. function:: int gsl_spmatrix_dense_sub (gsl_matrix * a, const gsl_spmatrix * b)
+
+   This function subtracts the elements of the sparse matrix :data:`b` from the elements of
+   the dense matrix :data:`a`. The result :math:`a(i,j) \leftarrow a(i,j) - b(i,j)` is
    stored in :data:`a` and :data:`b` remains unchanged. The two matrices must have
    the same dimensions.
 
@@ -521,6 +530,15 @@ Matrix Properties
    This function returns 1 if the matrices :data:`a` and :data:`b` are equal (by comparison of
    element values) and 0 otherwise. The matrices :data:`a` and :data:`b` must be in the same
    sparse storage format for comparison.
+
+   Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`, :ref:`CSC <sec_spmatrix-csc>`, :ref:`CSR <sec_spmatrix-csr>`
+
+.. function:: double gsl_spmatrix_norm1 (const gsl_spmatrix * A)
+
+   This function returns the 1-norm of the :math:`m`-by-:math:`n` matrix :data:`A`, defined as
+   the maximum column sum,
+
+   .. math:: ||A||_1 = \textrm{max}_{1 \le j \le n} \sum_{i=1}^m |A_{ij}|
 
    Input matrix formats supported: :ref:`COO <sec_spmatrix-coo>`, :ref:`CSC <sec_spmatrix-csc>`, :ref:`CSR <sec_spmatrix-csr>`
 

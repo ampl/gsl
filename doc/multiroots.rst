@@ -457,7 +457,7 @@ When the conditions are satisfied then convergence is quadratic.
       single: HYBRIDSJ algorithm
       single: MINPACK, minimization algorithms
 
-   .. var:: gsl_multiroot_fdfsolver_hybridsj
+   .. var:: gsl_multiroot_fdfsolver_type * gsl_multiroot_fdfsolver_hybridsj
 
       This is a modified version of Powell's Hybrid method as implemented in
       the HYBRJ algorithm in |minpack|.  Minpack was written by Jorge
@@ -511,7 +511,7 @@ When the conditions are satisfied then convergence is quadratic.
 
    .. index:: HYBRIDJ algorithm
 
-   .. var:: gsl_multiroot_fdfsolver_hybridj
+   .. var:: gsl_multiroot_fdfsolver_type * gsl_multiroot_fdfsolver_hybridj
 
       This algorithm is an unscaled version of HYBRIDSJ.  The steps are
       controlled by a spherical trust region :math:`|x' - x| < \delta`, instead
@@ -520,7 +520,7 @@ When the conditions are satisfied then convergence is quadratic.
 
    .. index:: Newton's method for systems of nonlinear equations
 
-   .. var:: gsl_multiroot_fdfsolver_newton
+   .. var:: gsl_multiroot_fdfsolver_type * gsl_multiroot_fdfsolver_newton
 
       Newton's Method is the standard root-polishing algorithm.  The algorithm
       begins with an initial guess for the location of the solution.  On each
@@ -551,7 +551,7 @@ When the conditions are satisfied then convergence is quadratic.
       single: Modified Newton's method for nonlinear systems
       single: Newton algorithm, globally convergent
 
-   .. var:: gsl_multiroot_fdfsolver_gnewton
+   .. var:: gsl_multiroot_fdfsolver_type * gsl_multiroot_fdfsolver_gnewton
 
       This is a modified version of Newton's method which attempts to improve
       global convergence by requiring every step to reduce the Euclidean norm
@@ -582,7 +582,7 @@ the algorithms described in the previous section.
    .. index::
       single: HYBRIDS algorithm, scaled without derivatives
 
-   .. var:: gsl_multiroot_fsolver_hybrids
+   .. var:: gsl_multiroot_fsolver_type * gsl_multiroot_fsolver_hybrids
 
       This is a version of the Hybrid algorithm which replaces calls to the
       Jacobian function by its finite difference approximation.  The finite
@@ -593,7 +593,7 @@ the algorithms described in the previous section.
    .. index::
       single: HYBRID algorithm, unscaled without derivatives
 
-   .. var:: gsl_multiroot_fsolver_hybrid
+   .. var:: gsl_multiroot_fsolver_type * gsl_multiroot_fsolver_hybrid
 
       This is a finite difference version of the Hybrid algorithm without
       internal scaling.
@@ -602,7 +602,7 @@ the algorithms described in the previous section.
       single: Discrete Newton algorithm for multidimensional roots
       single: Newton algorithm, discrete
 
-   .. var:: gsl_multiroot_fsolver_dnewton
+   .. var:: gsl_multiroot_fsolver_type * gsl_multiroot_fsolver_dnewton
 
       The *discrete Newton algorithm* is the simplest method of solving a
       multidimensional system.  It uses the Newton iteration
@@ -635,7 +635,7 @@ the algorithms described in the previous section.
       single: Broyden algorithm for multidimensional roots
       single: multidimensional root finding, Broyden algorithm
 
-   .. var:: gsl_multiroot_fsolver_broyden
+   .. var:: gsl_multiroot_fsolver_type * gsl_multiroot_fsolver_broyden
 
       The *Broyden algorithm* is a version of the discrete Newton
       algorithm which attempts to avoids the expensive update of the Jacobian

@@ -121,7 +121,7 @@ test_LUc_decomp(gsl_rng * r)
       gsl_matrix_complex * m = gsl_matrix_complex_alloc(n, n);
 
       create_random_complex_matrix(m, r);
-      test_LUc_decomp_eps(m, 4096.0 * n * GSL_DBL_EPSILON, "complex_LU_decomp random");
+      test_LUc_decomp_eps(m, 1.0e4 * n * GSL_DBL_EPSILON, "complex_LU_decomp random");
 
       gsl_matrix_complex_free(m);
     }
@@ -136,14 +136,14 @@ test_LUc_decomp(gsl_rng * r)
   {
     gsl_matrix_complex * m = gsl_matrix_complex_alloc(50, 100);
     create_random_complex_matrix(m, r);
-    test_LUc_decomp_eps(m, 256.0 * n * GSL_DBL_EPSILON, "complex_LU_decomp rect2");
+    test_LUc_decomp_eps(m, 1.0e3 * n * GSL_DBL_EPSILON, "complex_LU_decomp rect2");
     gsl_matrix_complex_free(m);
   }
 
   {
     gsl_matrix_complex * m = gsl_matrix_complex_alloc(80, 100);
     create_random_complex_matrix(m, r);
-    test_LUc_decomp_eps(m, 256.0 * n * GSL_DBL_EPSILON, "complex_LU_decomp rect3");
+    test_LUc_decomp_eps(m, 1.0e3 * n * GSL_DBL_EPSILON, "complex_LU_decomp rect3");
     gsl_matrix_complex_free(m);
   }
 

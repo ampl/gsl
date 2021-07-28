@@ -85,6 +85,8 @@ static int tsqr_solve(const double lambda, gsl_vector * x,
 static int tsqr_rcond(double * rcond, void * vstate);
 static int tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
                        gsl_vector * eta, void * vstate);
+static const gsl_matrix * tsqr_R(const void * vstate);
+static const gsl_vector * tsqr_QTb(const void * vstate);
 static int tsqr_svd(tsqr_state_t * state);
 
 /*
@@ -280,7 +282,7 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
 
       /* compute QR decomposition of [ R_{i-1} ; A_i ], accounting for
        * sparse structure */
-      status = gsl_linalg_QR_TR_decomp(state->R, A, state->T);
+      status = gsl_linalg_QR_UR_decomp(state->R, A, state->T);
       if (status)
         return status;
 
@@ -418,6 +420,20 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
   return status;
 }
 
+static const gsl_matrix *
+tsqr_R(const void * vstate)
+{
+  const tsqr_state_t *state = (const tsqr_state_t *) vstate;
+  return state->R;
+}
+
+static const gsl_vector *
+tsqr_QTb(const void * vstate)
+{
+  const tsqr_state_t *state = (const tsqr_state_t *) vstate;
+  return state->QTb;
+}
+
 static int
 tsqr_rcond(double * rcond, void * vstate)
 {
@@ -462,6 +478,8 @@ static const gsl_multilarge_linear_type tsqr_type =
   tsqr_solve,
   tsqr_rcond,
   tsqr_lcurve,
+  tsqr_R,
+  tsqr_QTb,
   tsqr_free
 };
 

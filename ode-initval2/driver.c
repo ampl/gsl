@@ -110,7 +110,7 @@ gsl_odeiv2_driver_set_hmin (gsl_odeiv2_driver * d, const double hmin)
 
   if ((fabs (hmin) > fabs (d->h)) || (fabs (hmin) > d->hmax))
     {
-      GSL_ERROR_NULL ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
+      GSL_ERROR ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
     }
 
   d->hmin = fabs (hmin);
@@ -126,7 +126,7 @@ gsl_odeiv2_driver_set_hmax (gsl_odeiv2_driver * d, const double hmax)
 
   if ((fabs (hmax) < fabs (d->h)) || (fabs (hmax) < d->hmin))
     {
-      GSL_ERROR_NULL ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
+      GSL_ERROR ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
     }
 
   if (hmax > 0.0 || hmax < 0.0)
@@ -135,7 +135,7 @@ gsl_odeiv2_driver_set_hmax (gsl_odeiv2_driver * d, const double hmax)
     }
   else
     {
-      GSL_ERROR_NULL ("invalid hmax", GSL_EINVAL);
+      GSL_ERROR ("invalid hmax", GSL_EINVAL);
     }
 
   return GSL_SUCCESS;
@@ -351,7 +351,7 @@ gsl_odeiv2_driver_apply (gsl_odeiv2_driver * d, double *t,
 
   if (sign * (t1 - *t) < 0.0)
     {
-      GSL_ERROR_NULL
+      GSL_ERROR
         ("integration limits and/or step direction not consistent",
          GSL_EINVAL);
     }
@@ -463,7 +463,7 @@ gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * d, const double hstart)
 
   if ((d->hmin > fabs (hstart)) || (fabs (hstart) > d->hmax))
     {
-      GSL_ERROR_NULL ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
+      GSL_ERROR ("hmin <= fabs(h) <= hmax required", GSL_EINVAL);
     }
 
   if (hstart > 0.0 || hstart < 0.0)
@@ -472,7 +472,7 @@ gsl_odeiv2_driver_reset_hstart (gsl_odeiv2_driver * d, const double hstart)
     }
   else
     {
-      GSL_ERROR_NULL ("invalid hstart", GSL_EINVAL);
+      GSL_ERROR ("invalid hstart", GSL_EINVAL);
     }
 
   return GSL_SUCCESS;

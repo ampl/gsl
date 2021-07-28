@@ -693,7 +693,7 @@ denoted :math:`x_{(k)}`. The median of the set :math:`x` is equal to :math:`x_{\
 if :math:`n` is even. The :math:`k`-th smallest element of a length :math:`n` vector can be found
 in average :math:`O(n)` time using the quickselect algorithm.
 
-.. function:: gsl_stats_select(double data[], const size_t stride, const size_t n, const size_t k)
+.. function:: double gsl_stats_select(double data[], const size_t stride, const size_t n, const size_t k)
 
    This function finds the :data:`k`-th smallest element of the input array :data:`data`
    of length :data:`n` and stride :data:`stride` using the quickselect method. The

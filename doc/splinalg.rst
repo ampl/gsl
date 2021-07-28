@@ -69,7 +69,7 @@ of iterative solvers:
 
    .. index:: gmres
 
-   .. var:: gsl_splinalg_itersolve_gmres
+   .. var:: gsl_splinalg_itersolve_type * gsl_splinalg_itersolve_gmres
 
       This specifies the Generalized Minimum Residual Method (GMRES).
       This is a projection method using :math:`{\cal K} = {\cal K}_m`

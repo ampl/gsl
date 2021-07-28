@@ -242,17 +242,17 @@ FUNCTION (gsl_spmatrix, add) (TYPE (gsl_spmatrix) * c, const TYPE (gsl_spmatrix)
 }
 
 /*
-gsl_spmatrix_add_to_dense()
-  Add two sparse matrices
+gsl_spmatrix_dense_add()
+  a := a + b
 
-Inputs: a - (output) a + b (dense matrix)
+Inputs: a - (input/output) on input, dense matrix a; on output, a + b
         b - (input) sparse matrix
 
 Return: success or error
 */
 
 int
-FUNCTION (gsl_spmatrix, add_to_dense) (TYPE (gsl_matrix) * a, const TYPE (gsl_spmatrix) * b)
+FUNCTION (gsl_spmatrix, dense_add) (TYPE (gsl_matrix) * a, const TYPE (gsl_spmatrix) * b)
 {
   const size_t M = a->size1;
   const size_t N = a->size2;
@@ -308,6 +308,91 @@ FUNCTION (gsl_spmatrix, add_to_dense) (TYPE (gsl_matrix) * a, const TYPE (gsl_sp
               for (p = bp[i]; p < bp[i + 1]; ++p)
                 {
                   a->data[i * tda_a + bj[p]] += bd[p];
+                }
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int
+FUNCTION (gsl_spmatrix, add_to_dense) (TYPE (gsl_matrix) * a, const TYPE (gsl_spmatrix) * b)
+{
+  return FUNCTION (gsl_spmatrix, dense_add) (a, b);
+}
+
+#endif
+
+/*
+gsl_spmatrix_dense_sub()
+  a := a - b
+
+Inputs: a - (input/output) on input, dense matrix a; on output, a - b
+        b - (input) sparse matrix
+
+Return: success or error
+*/
+
+int
+FUNCTION (gsl_spmatrix, dense_sub) (TYPE (gsl_matrix) * a, const TYPE (gsl_spmatrix) * b)
+{
+  const size_t M = a->size1;
+  const size_t N = a->size2;
+
+  if (b->size1 != M || b->size2 != N)
+    {
+      GSL_ERROR("matrices must have same dimensions", GSL_EBADLEN);
+    }
+  else
+    {
+      const size_t tda_a = a->tda;
+      const ATOMIC * bd = b->data;
+
+      /* check for quick return */
+      if (b->nz == 0)
+        return GSL_SUCCESS;
+
+      if (GSL_SPMATRIX_ISCOO(b))
+        {
+          const int * bi = b->i;
+          const int * bj = b->p;
+          size_t n;
+
+          for (n = 0; n < b->nz; ++n)
+            {
+              a->data[bi[n] * tda_a + bj[n]] -= bd[n];
+            }
+        }
+      else if (GSL_SPMATRIX_ISCSC(b))
+        {
+          const int * bi = b->i;
+          const int * bp = b->p;
+          size_t j;
+          int p;
+
+          for (j = 0; j < N; ++j)
+            {
+              for (p = bp[j]; p < bp[j + 1]; ++p)
+                {
+                  a->data[bi[p] * tda_a + j] -= bd[p];
+                }
+            }
+        }
+      else if (GSL_SPMATRIX_ISCSR(b))
+        {
+          const int * bj = b->i;
+          const int * bp = b->p;
+          size_t i;
+          int p;
+
+          for (i = 0; i < M; ++i)
+            {
+              for (p = bp[i]; p < bp[i + 1]; ++p)
+                {
+                  a->data[i * tda_a + bj[p]] -= bd[p];
                 }
             }
         }

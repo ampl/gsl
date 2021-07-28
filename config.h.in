@@ -6,6 +6,9 @@
 /* Define if you have inline with C99 behavior */
 #undef HAVE_C99_INLINE
 
+/* Define to 1 if you have the <complex.h> header file. */
+#undef HAVE_COMPLEX_H
+
 /* Define to 1 if you have the declaration of `acosh', and to 0 if you don't.
    */
 #undef HAVE_DECL_ACOSH
@@ -105,14 +108,14 @@
 /* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
 /* Define this if printf can handle %Lf for long double */
 #undef HAVE_PRINTF_LONGDOUBLE
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -147,8 +150,7 @@
 /* Define if you need to hide the static definitions of inline functions */
 #undef HIDE_INLINE_STATIC
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Name of package */
@@ -175,13 +177,16 @@
 /* Defined if this is an official release */
 #undef RELEASED
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Version number of package */
 #undef VERSION
 
-/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+/* Define to 1 if type `char' is unsigned and your compiler does not
+   predefine this macro.  */
 #ifndef __CHAR_UNSIGNED__
 # undef __CHAR_UNSIGNED__
 #endif

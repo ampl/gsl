@@ -207,7 +207,10 @@ step-size :math:`h` and estimate the resulting local error.
    case the user must call :func:`gsl_odeiv2_step_reset` before calling
    this function again.
 
-The following algorithms are available,
+The following algorithms are available. Please note that algorithms
+which use step doubling for error estimation apply the more accurate
+values from two half steps instead of values from a single step for
+the new state :data:`y`.
 
 .. type:: gsl_odeiv2_step_type
 
@@ -215,14 +218,14 @@ The following algorithms are available,
       single: RK2, Runge-Kutta method
       single: Runge-Kutta methods, ordinary differential equations
 
-   .. var:: gsl_odeiv2_step_rk2
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk2
 
       Explicit embedded Runge-Kutta (2, 3) method.
 
    .. index::
       single: RK4, Runge-Kutta method
 
-   .. var:: gsl_odeiv2_step_rk4
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk4
 
       Explicit 4th order (classical) Runge-Kutta. Error estimation is
       carried out by the step doubling method. For more efficient estimate
@@ -232,7 +235,7 @@ The following algorithms are available,
       single: Fehlberg method, differential equations
       single: RKF45, Runge-Kutta-Fehlberg method
 
-   .. var:: gsl_odeiv2_step_rkf45
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rkf45
 
       Explicit embedded Runge-Kutta-Fehlberg (4, 5) method.  This method is
       a good general-purpose integrator.
@@ -241,7 +244,7 @@ The following algorithms are available,
       single: Runge-Kutta Cash-Karp method
       single: Cash-Karp, Runge-Kutta method
 
-   .. var:: gsl_odeiv2_step_rkck 
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rkck 
 
       Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.
 
@@ -249,13 +252,13 @@ The following algorithms are available,
       single: Runge-Kutta Prince-Dormand method
       single: Prince-Dormand, Runge-Kutta method
 
-   .. var:: gsl_odeiv2_step_rk8pd  
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk8pd  
 
       Explicit embedded Runge-Kutta Prince-Dormand (8, 9) method.
 
    .. index:: Implicit Euler method
 
-   .. var:: gsl_odeiv2_step_rk1imp 
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk1imp 
 
       Implicit Gaussian first order Runge-Kutta. Also known as implicit
       Euler or backward Euler method. Error estimation is carried out by the
@@ -264,14 +267,14 @@ The following algorithms are available,
 
    .. index:: Implicit Runge-Kutta method
 
-   .. var:: gsl_odeiv2_step_rk2imp  
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk2imp  
 
       Implicit Gaussian second order Runge-Kutta. Also known as implicit
       mid-point rule. Error estimation is carried out by the step doubling
       method. This stepper requires the Jacobian and access to the driver
       object via :func:`gsl_odeiv2_step_set_driver`.
 
-   .. var:: gsl_odeiv2_step_rk4imp  
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_rk4imp  
 
       Implicit Gaussian 4th order Runge-Kutta. Error estimation is carried
       out by the step doubling method. This algorithm requires the Jacobian
@@ -282,7 +285,7 @@ The following algorithms are available,
       single: Bader and Deuflhard, Bulirsch-Stoer method.
       single: Deuflhard and Bader, Bulirsch-Stoer method.
 
-   .. var:: gsl_odeiv2_step_bsimp   
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_bsimp   
 
       Implicit Bulirsch-Stoer method of Bader and Deuflhard. The method is
       generally suitable for stiff problems. This stepper requires the
@@ -294,7 +297,7 @@ The following algorithms are available,
       single: predictor-corrector method, ODEs
       single: Nordsieck form
 
-   .. var:: gsl_odeiv2_step_msadams  
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_msadams  
 
       A variable-coefficient linear multistep Adams method in Nordsieck
       form. This stepper uses explicit Adams-Bashforth (predictor) and
@@ -305,7 +308,7 @@ The following algorithms are available,
 
    .. index:: BDF method
 
-   .. var:: gsl_odeiv2_step_msbdf
+   .. var:: gsl_odeiv2_step_type * gsl_odeiv2_step_msbdf
 
       A variable-coefficient linear multistep backward differentiation
       formula (BDF) method in Nordsieck form. This stepper uses the explicit

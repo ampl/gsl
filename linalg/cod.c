@@ -353,7 +353,12 @@ gsl_linalg_COD_unpack(const gsl_matrix * QRZT, const gsl_vector * tau_Q,
           gsl_matrix_view m = gsl_matrix_submatrix (Q, i, i, M - i, M - i);
           gsl_vector_view work = gsl_matrix_subcolumn (R, 0, 0, M - i);
           double ti = gsl_vector_get (tau_Q, i);
+          double * ptr = gsl_vector_ptr((gsl_vector *) &h.vector, 0);
+          double tmp = *ptr;
+
+          *ptr = 1.0;
           gsl_linalg_householder_left (ti, &h.vector, &m.matrix, &work.vector);
+          *ptr = tmp;
         }
 
       /* form Z matrix */

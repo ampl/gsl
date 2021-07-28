@@ -56,6 +56,8 @@ static int normal_solve(const double lambda, gsl_vector * x,
 static int normal_rcond(double * rcond, void * vstate);
 static int normal_lcurve(gsl_vector * reg_param, gsl_vector * rho,
                          gsl_vector * eta, void * vstate);
+static const gsl_matrix * normal_ATA(const void * vstate);
+static const gsl_vector * normal_ATb(const void * vstate);
 static int normal_solve_system(const double lambda, gsl_vector * x,
                                normal_state_t *state);
 static int normal_solve_cholesky(gsl_matrix * ATA, const gsl_vector * ATb,
@@ -370,6 +372,20 @@ normal_lcurve(gsl_vector * reg_param, gsl_vector * rho,
   return GSL_SUCCESS;
 }
 
+static const gsl_matrix *
+normal_ATA(const void * vstate)
+{
+  const normal_state_t *state = (const normal_state_t *) vstate;
+  return state->ATA;
+}
+
+static const gsl_vector *
+normal_ATb(const void * vstate)
+{
+  const normal_state_t *state = (const normal_state_t *) vstate;
+  return state->ATb;
+}
+
 /*
 normal_solve_system()
   Compute solution to normal equations:
@@ -494,6 +510,8 @@ static const gsl_multilarge_linear_type normal_type =
   normal_solve,
   normal_rcond,
   normal_lcurve,
+  normal_ATA,
+  normal_ATb,
   normal_free
 };
 

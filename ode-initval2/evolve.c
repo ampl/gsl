@@ -391,7 +391,7 @@ gsl_odeiv2_evolve_set_driver (gsl_odeiv2_evolve * e,
     }
   else
     {
-      GSL_ERROR_NULL ("driver pointer is null", GSL_EFAULT);
+      GSL_ERROR ("driver pointer is null", GSL_EFAULT);
     }
 
   return GSL_SUCCESS;

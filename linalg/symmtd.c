@@ -164,8 +164,12 @@ gsl_linalg_symmtd_unpack (const gsl_matrix * A,
           double ti = gsl_vector_get (tau, i);
           gsl_matrix_view m = gsl_matrix_submatrix (Q, i + 1, i + 1, N - i - 1, N - i - 1);
           gsl_vector_view work = gsl_vector_subvector(diag, 0, N - i - 1);
+          double * ptr = gsl_vector_ptr((gsl_vector *) &h.vector, 0);
+          double tmp = *ptr;
 
+          *ptr = 1.0;
           gsl_linalg_householder_left (ti, &h.vector, &m.matrix, &work.vector);
+          *ptr = tmp;
         }
 
       /* copy diagonal into diag */
@@ -197,7 +201,6 @@ gsl_linalg_symmtd_unpack_T (const gsl_matrix * A,
     }
   else
     {
-      const size_t N = A->size1;
       gsl_vector_const_view d = gsl_matrix_const_diagonal(A);;
       gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);;
 

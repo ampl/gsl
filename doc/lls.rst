@@ -666,6 +666,21 @@ squares problem are as follows:
    of :data:`X`, and chosen to represent the most relevant portion of
    the L-curve.
 
+.. function:: int gsl_multifit_linear_lcurvature (const gsl_vector * y, const gsl_vector * reg_param, const gsl_vector * rho, const gsl_vector * eta, gsl_vector * kappa, gsl_multifit_linear_workspace * work)
+
+   This function computes the curvature of the L-curve as a function of the
+   regularization parameter :math:`\lambda`, using the right hand side
+   vector :data:`y`, the vector of regularization parameters, :data:`reg_param`,
+   vector of residual norms, :data:`rho`, and vector of solution norms, :data:`eta`.
+   The arrays :data:`reg_param`, :data:`rho`, and :data:`eta` can be computed by
+   :func:`gsl_multifit_linear_lcurve`.  The curvature is defined as
+
+   .. math:: \kappa(\lambda) = \frac{\hat{\rho}' \hat{\eta}'' - \hat{\rho}'' \hat{\eta}'}{\left( (\hat{\rho}')^2 + (\hat{\eta}')^2 \right)^{\frac{3}{2}}}
+
+   where :math:`\hat{\rho}(\lambda) = \log{||y - X c_{\lambda}||}` and
+   :math:`\hat{\eta}(\lambda) = \log{|| L c_{\lambda} ||}`. The curvature
+   values are stored in :data:`kappa` on output.
+
 .. function:: int gsl_multifit_linear_lcorner (const gsl_vector * rho, const gsl_vector * eta, size_t * idx)
 
    This function attempts to locate the corner of the L-curve
@@ -860,12 +875,12 @@ having very little or no effect on the fitted model.
 
    .. type:: gsl_multifit_robust_type
 
-      .. var:: gsl_multifit_robust_default
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_default
 
          This specifies the :data:`gsl_multifit_robust_bisquare` type (see below) and is a good
          general purpose choice for robust regression.
 
-      .. var:: gsl_multifit_robust_bisquare
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_bisquare
 
          This is Tukey's biweight (bisquare) function and is a good general purpose choice for
          robust regression. The weight function is given by
@@ -891,7 +906,7 @@ having very little or no effect on the fitted model.
 
          and the default tuning constant is :math:`t = 4.685`.
 
-      .. var:: gsl_multifit_robust_cauchy
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_cauchy
 
          This is Cauchy's function, also known as the Lorentzian function.
          This function does not guarantee a unique solution,
@@ -911,7 +926,7 @@ having very little or no effect on the fitted model.
 
          and the default tuning constant is :math:`t = 2.385`.
 
-      .. var:: gsl_multifit_robust_fair
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_fair
 
          This is the fair :math:`\rho` function, which guarantees a unique solution and
          has continuous derivatives to three orders. The weight function is given by
@@ -928,7 +943,7 @@ having very little or no effect on the fitted model.
 
          and the default tuning constant is :math:`t = 1.400`.
 
-      .. var:: gsl_multifit_robust_huber
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_huber
 
          This specifies Huber's :math:`\rho` function, which is a parabola in the vicinity of zero and
          increases linearly for a given threshold :math:`|e| > t`. This function is also considered
@@ -956,7 +971,7 @@ having very little or no effect on the fitted model.
 
          and the default tuning constant is :math:`t = 1.345`.
 
-      .. var:: gsl_multifit_robust_ols
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_ols
 
          This specifies the ordinary least squares solution, which can be useful for quickly
          checking the difference between the various robust and OLS solutions. The
@@ -966,7 +981,7 @@ having very little or no effect on the fitted model.
 
          and the default tuning constant is :math:`t = 1`.
 
-      .. var:: gsl_multifit_robust_welsch
+      .. var:: gsl_multifit_robust_type * gsl_multifit_robust_welsch
 
          This specifies the Welsch function which can perform well in cases where the
          residuals have an exponential distribution. The weight function is given by
@@ -1402,7 +1417,7 @@ Large Dense Linear Least Squares Routines
       the method to be used for solving the large least squares system
       and may be selected from the following choices
 
-      .. var:: gsl_multilarge_linear_normal
+      .. var:: gsl_multilarge_linear_type * gsl_multilarge_linear_normal
 
          This specifies the normal equations approach for
          solving the least squares system. This method is suitable
@@ -1410,7 +1425,7 @@ Large Dense Linear Least Squares Routines
          least squares matrix :math:`X` is well conditioned. The size
          of this workspace is :math:`O(p^2)`.
 
-      .. var:: gsl_multilarge_linear_tsqr
+      .. var:: gsl_multilarge_linear_type * gsl_multilarge_linear_tsqr
 
          This specifies the sequential Tall Skinny QR (TSQR) approach for
          solving the least squares system. This method is a good
@@ -1524,6 +1539,16 @@ Large Dense Linear Least Squares Routines
    singular values of the triangular :math:`R` factor. For the normal
    equations method, they are estimated from the eigenvalues of the
    :math:`X^T X` matrix.
+
+.. function:: const gsl_matrix * gsl_multilarge_linear_matrix_ptr (const gsl_multilarge_linear_workspace * work)
+
+   For the normal equations method, this function returns a pointer to the :math:`X^T X` matrix. For
+   the TSQR method, this function returns a pointer to the upper triangular :math:`R` matrix.
+
+.. function:: const gsl_vector * gsl_multilarge_linear_rhs_ptr (const gsl_multilarge_linear_workspace * work)
+
+   For the normal equations method, this function returns a pointer to the :math:`X^T y` right hand side
+   vector. For the TSQR method, this function returns a pointer to the :math:`Q^T y` right hand side vector.
 
 .. function:: int gsl_multilarge_linear_rcond (double * rcond, gsl_multilarge_linear_workspace * work)
 
@@ -1874,6 +1899,9 @@ inaccuracies in the left portion of the curve.
 .. _fig_multilarge:
 
 .. figure:: /images/multilarge.png
+
+   Top left: unregularized solutions; top right: regularized solutions;
+   bottom left: L-curve for TSQR method; bottom right: L-curve from normal equations method.
 
 .. include:: examples/largefit.c
    :code:

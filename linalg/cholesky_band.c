@@ -1,6 +1,6 @@
 /* linalg/cholesky_band.c
  *
- * Copyright (C) 2018 Patrick Alken
+ * Copyright (C) 2018, 2019, 2020 Patrick Alken
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,6 +177,62 @@ gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x)
 }
 
 int
+gsl_linalg_cholesky_band_solvem (const gsl_matrix * LLT,
+                                 const gsl_matrix * B,
+                                 gsl_matrix * X)
+{
+  if (LLT->size1 != B->size1)
+    {
+      GSL_ERROR ("LLT size1 must match B size1", GSL_EBADLEN);
+    }
+  else if (LLT->size1 != X->size1)
+    {
+      GSL_ERROR ("LLT size1 must match solution size1", GSL_EBADLEN);
+    }
+  else if (B->size2 != X->size2)
+    {
+      GSL_ERROR ("B size2 must match X size2", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+
+      /* copy X <- B */
+      gsl_matrix_memcpy (X, B);
+
+      status = gsl_linalg_cholesky_band_svxm(LLT, X);
+
+      return status;
+    }
+}
+
+int
+gsl_linalg_cholesky_band_svxm (const gsl_matrix * LLT, gsl_matrix * X)
+{
+  if (LLT->size1 != X->size1)
+    {
+      GSL_ERROR ("LLT size1 must match solution size1", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+      const size_t nrhs = X->size2;
+      size_t j;
+
+      for (j = 0; j < nrhs; ++j)
+        {
+          gsl_vector_view xj = gsl_matrix_column(X, j);
+
+          status = gsl_linalg_cholesky_band_svx (LLT, &xj.vector);
+          if (status)
+            return status;
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
 gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv)
 {
   if (Ainv->size1 != Ainv->size2)
@@ -283,6 +339,102 @@ gsl_linalg_cholesky_band_rcond (const gsl_matrix * LLT, double * rcond, gsl_vect
 
       if (Ainvnorm != 0.0)
         *rcond = (1.0 / Anorm) / Ainvnorm;
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_cholesky_band_scale()
+  This function computes scale factors diag(S), such that
+
+diag(S) A diag(S)
+
+has a condition number within a factor N of the matrix
+with the smallest condition number over all possible
+diagonal scalings. See Corollary 7.6 of:
+
+N. J. Higham, Accuracy and Stability of Numerical Algorithms (2nd Edition),
+SIAM, 2002.
+
+Inputs: A - symmetric positive definite matrix
+        S - (output) scale factors, S_i = 1 / sqrt(A_ii)
+*/
+
+int
+gsl_linalg_cholesky_band_scale(const gsl_matrix * A, gsl_vector * S)
+{
+  const size_t N = A->size1;     /* size of matrix */
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
+
+  if (ndiag > N)
+    {
+      GSL_ERROR ("invalid matrix dimensions", GSL_EBADLEN);
+    }
+  else if (N != S->size)
+    {
+      GSL_ERROR("S must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      /* compute S_i = 1/sqrt(A_{ii}) */
+      for (i = 0; i < N; ++i)
+        {
+          double Aii = gsl_matrix_get(A, i, 0);
+
+          if (Aii <= 0.0)
+            gsl_vector_set(S, i, 1.0); /* matrix not positive definite */
+          else
+            gsl_vector_set(S, i, 1.0 / sqrt(Aii));
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_cholesky_band_scale_apply()
+  This function applies scale transformation to A:
+
+A <- diag(S) A diag(S)
+
+Inputs: A - (input/output)
+            on input, symmetric positive definite matrix in banded format
+            on output, diag(S) * A * diag(S) in banded format
+        S - (input) scale factors
+*/
+
+int
+gsl_linalg_cholesky_band_scale_apply(gsl_matrix * A, const gsl_vector * S)
+{
+  const size_t N = A->size1;     /* size of matrix */
+  const size_t ndiag = A->size2; /* number of diagonals in band, including main diagonal */
+
+  if (ndiag > N)
+    {
+      GSL_ERROR ("invalid matrix dimensions", GSL_EBADLEN);
+    }
+  else if (N != S->size)
+    {
+      GSL_ERROR("S must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i, j;
+
+      for (j = 0; j < N; ++j)
+        {
+          double sj = gsl_vector_get(S, j);
+
+          for (i = j; i < GSL_MIN(N, j + ndiag); ++i)
+            {
+              double si = gsl_vector_get(S, i);
+              double * ptr = gsl_matrix_ptr(A, j, i - j);
+              *ptr *= sj * si;
+            }
+        }
 
       return GSL_SUCCESS;
     }

@@ -562,8 +562,8 @@ implies that this is purely real too.
 The storage scheme is best shown by some examples.  The table below
 shows the output for an odd-length sequence, :math:`n=5`.  The two columns
 give the correspondence between the 5 values in the half-complex
-sequence returned by :func:`gsl_fft_real_transform`, :data:`halfcomplex[]` and the
-values :data:`complex[]` that would be returned if the same real input
+sequence returned by :func:`gsl_fft_real_transform`, :code:`halfcomplex[]` and the
+values :code:`complex[]` that would be returned if the same real input
 sequence were passed to :func:`gsl_fft_complex_backward` as a complex
 sequence (with imaginary parts set to :code:`0`)::
 
@@ -578,7 +578,7 @@ sequence (with imaginary parts set to :code:`0`)::
   complex[4].real  =  halfcomplex[1]
   complex[4].imag  = -halfcomplex[2]
 
-The upper elements of the :data:`complex` array, :code:`complex[3]` and
+The upper elements of the :code:`complex` array, :code:`complex[3]` and
 :code:`complex[4]` are filled in using the symmetry condition.  The
 imaginary part of the zero-frequency term :code:`complex[0].imag` is
 known to be zero by the symmetry.
@@ -599,7 +599,7 @@ In the even case there are two values which are purely real::
   complex[5].real  =  halfcomplex[1] 
   complex[5].imag  = -halfcomplex[2] 
 
-The upper elements of the :data:`complex` array, :code:`complex[4]` and
+The upper elements of the :code:`complex` array, :code:`complex[4]` and
 :code:`complex[5]` are filled in using the symmetry condition.  Both
 :code:`complex[0].imag` and :code:`complex[3].imag` are known to be zero.
 

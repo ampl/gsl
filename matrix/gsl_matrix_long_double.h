@@ -241,13 +241,17 @@ int gsl_matrix_long_double_ispos (const gsl_matrix_long_double * m);
 int gsl_matrix_long_double_isneg (const gsl_matrix_long_double * m);
 int gsl_matrix_long_double_isnonneg (const gsl_matrix_long_double * m);
 
+long double gsl_matrix_long_double_norm1 (const gsl_matrix_long_double * m);
+
 int gsl_matrix_long_double_add (gsl_matrix_long_double * a, const gsl_matrix_long_double * b);
 int gsl_matrix_long_double_sub (gsl_matrix_long_double * a, const gsl_matrix_long_double * b);
 int gsl_matrix_long_double_mul_elements (gsl_matrix_long_double * a, const gsl_matrix_long_double * b);
 int gsl_matrix_long_double_div_elements (gsl_matrix_long_double * a, const gsl_matrix_long_double * b);
-int gsl_matrix_long_double_scale (gsl_matrix_long_double * a, const double x);
-int gsl_matrix_long_double_add_constant (gsl_matrix_long_double * a, const double x);
-int gsl_matrix_long_double_add_diagonal (gsl_matrix_long_double * a, const double x);
+int gsl_matrix_long_double_scale (gsl_matrix_long_double * a, const long double x);
+int gsl_matrix_long_double_scale_rows (gsl_matrix_long_double * a, const gsl_vector_long_double * x);
+int gsl_matrix_long_double_scale_columns (gsl_matrix_long_double * a, const gsl_vector_long_double * x);
+int gsl_matrix_long_double_add_constant (gsl_matrix_long_double * a, const long double x);
+int gsl_matrix_long_double_add_diagonal (gsl_matrix_long_double * a, const long double x);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

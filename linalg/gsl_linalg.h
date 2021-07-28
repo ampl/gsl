@@ -91,6 +91,7 @@ int gsl_linalg_exponential_ss(
 /* Householder Transformations */
 
 double gsl_linalg_householder_transform (gsl_vector * v);
+double gsl_linalg_householder_transform2 (double * alpha, gsl_vector * v);
 gsl_complex gsl_linalg_complex_householder_transform (gsl_vector_complex * v);
 
 int gsl_linalg_householder_hm (double tau, 
@@ -214,6 +215,19 @@ double gsl_linalg_LU_det (gsl_matrix * LU, int signum);
 double gsl_linalg_LU_lndet (gsl_matrix * LU);
 int gsl_linalg_LU_sgndet (gsl_matrix * lu, int signum);
 
+/* Banded LU decomposition */
+
+int gsl_linalg_LU_band_decomp (const size_t M, const size_t lb, const size_t ub, gsl_matrix * AB, gsl_vector_uint * piv);
+
+int gsl_linalg_LU_band_solve (const size_t lb, const size_t ub, const gsl_matrix * LUB,
+                              const gsl_vector_uint * piv, const gsl_vector * b, gsl_vector * x);
+
+int gsl_linalg_LU_band_svx (const size_t lb, const size_t ub, const gsl_matrix * LUB,
+                            const gsl_vector_uint * piv, gsl_vector * x);
+
+int gsl_linalg_LU_band_unpack (const size_t M, const size_t lb, const size_t ub, const gsl_matrix * LUB,
+                               const gsl_vector_uint * piv, gsl_matrix * L, gsl_matrix * U);
+
 /* Complex LU Decomposition */
 
 int gsl_linalg_complex_LU_decomp (gsl_matrix_complex * A, 
@@ -252,6 +266,8 @@ gsl_complex gsl_linalg_complex_LU_sgndet (gsl_matrix_complex * LU,
 /* QR decomposition */
 
 int gsl_linalg_QR_decomp (gsl_matrix * A, gsl_vector * tau);
+
+int gsl_linalg_QR_decomp_old (gsl_matrix * A, gsl_vector * tau);
 
 int gsl_linalg_QR_decomp_r (gsl_matrix * A, gsl_matrix * T);
 
@@ -296,6 +312,48 @@ int gsl_linalg_R_solve (const gsl_matrix * R, const gsl_vector * b, gsl_vector *
 int gsl_linalg_R_svx (const gsl_matrix * R, gsl_vector * x);
 
 int gsl_linalg_QR_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work);
+
+/* complex QR decomposition */
+
+int gsl_linalg_complex_QR_decomp (gsl_matrix_complex * A, gsl_vector_complex * tau);
+
+int gsl_linalg_complex_QR_decomp_r (gsl_matrix_complex * A, gsl_matrix_complex * T);
+
+int gsl_linalg_complex_QR_solve (const gsl_matrix_complex * QR, const gsl_vector_complex * tau,
+                                 const gsl_vector_complex * b, gsl_vector_complex * x);
+
+int gsl_linalg_complex_QR_solve_r (const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                                   const gsl_vector_complex * b, gsl_vector_complex * x);
+
+int gsl_linalg_complex_QR_svx (const gsl_matrix_complex * QR, const gsl_vector_complex * tau, gsl_vector_complex * x);
+
+int gsl_linalg_complex_QR_lssolve (const gsl_matrix_complex * QR, const gsl_vector_complex * tau,
+                                   const gsl_vector_complex * b, gsl_vector_complex * x,
+                                   gsl_vector_complex * residual);
+
+int gsl_linalg_complex_QR_lssolve_r (const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                                     const gsl_vector_complex * b, gsl_vector_complex * x, gsl_vector_complex * work);
+
+int gsl_linalg_complex_QR_QHvec (const gsl_matrix_complex * QR, const gsl_vector_complex * tau, gsl_vector_complex * v);
+
+int gsl_linalg_complex_QR_QHvec_r(const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                                  gsl_vector_complex * b, gsl_vector_complex * work);
+
+int gsl_linalg_complex_QR_Qvec (const gsl_matrix_complex * QR, const gsl_vector_complex * tau, gsl_vector_complex * v);
+
+int gsl_linalg_complex_QR_unpack (const gsl_matrix_complex * QR, const gsl_vector_complex * tau,
+                                  gsl_matrix_complex * Q, gsl_matrix_complex * R);
+
+int gsl_linalg_complex_QR_unpack_r(const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                                   gsl_matrix_complex * Q, gsl_matrix_complex * R);
+
+/* banded QR decomposition */
+
+int gsl_linalg_QR_band_decomp_L2 (const size_t M, const size_t p, const size_t q,
+                                  gsl_matrix * AB, gsl_vector * tau);
+
+int gsl_linalg_QR_band_unpack_L2 (const size_t p, const size_t q, const gsl_matrix * QRB,
+                                  const gsl_vector * tau, gsl_matrix * Q, gsl_matrix * R);
 
 /* Q R P^T decomposition */
 
@@ -363,9 +421,35 @@ size_t gsl_linalg_QRPT_rank (const gsl_matrix * QR, const double tol);
 
 int gsl_linalg_QRPT_rcond(const gsl_matrix * QR, double * rcond, gsl_vector * work);
 
+/* triangle on top of diagonal QR decomposition */
+
+int gsl_linalg_QR_UD_decomp (gsl_matrix * U, const gsl_vector * D, gsl_matrix * Y, gsl_matrix * T);
+
+int gsl_linalg_QR_UD_lssolve (const gsl_matrix * R, const gsl_matrix * Y, const gsl_matrix * T,
+                              const gsl_vector * b, gsl_vector * x, gsl_vector * work);
+
 /* triangle on top of rectangle QR decomposition */
 
-int gsl_linalg_QR_TR_decomp (gsl_matrix * S, gsl_matrix * A, gsl_matrix * T);
+int gsl_linalg_QR_UR_decomp (gsl_matrix * S, gsl_matrix * A, gsl_matrix * T);
+
+/* triangle on top of triangle QR decomposition */
+
+int gsl_linalg_QR_UU_decomp (gsl_matrix * U, gsl_matrix * S, gsl_matrix * T);
+
+int gsl_linalg_QR_UU_lssolve (const gsl_matrix * R, const gsl_matrix * Y, const gsl_matrix * T,
+                              const gsl_vector * b, gsl_vector * x, gsl_vector * work);
+
+int gsl_linalg_QR_UU_QTvec(const gsl_matrix * Y, const gsl_matrix * T, gsl_vector * b, gsl_vector * work);
+
+/* triangle on top of trapezoidal QR decomposition */
+
+int gsl_linalg_QR_UZ_decomp (gsl_matrix * S, gsl_matrix * A, gsl_matrix * T);
+
+/* QL decomposition */
+
+int gsl_linalg_QL_decomp (gsl_matrix * A, gsl_vector * tau);
+
+int gsl_linalg_QL_unpack (const gsl_matrix * QL, const gsl_vector * tau, gsl_matrix * Q, gsl_matrix * L);
 
 /* COD decomposition */
 
@@ -592,9 +676,18 @@ int gsl_linalg_cholesky_band_solve (const gsl_matrix * LLT, const gsl_vector * b
 
 int gsl_linalg_cholesky_band_svx (const gsl_matrix * LLT, gsl_vector * x);
 
+int gsl_linalg_cholesky_band_solvem (const gsl_matrix * LLT, const gsl_matrix * B,
+                                     gsl_matrix * X);
+
+int gsl_linalg_cholesky_band_svxm (const gsl_matrix * LLT, gsl_matrix * X);
+
 int gsl_linalg_cholesky_band_invert (const gsl_matrix * LLT, gsl_matrix * Ainv);
 
 int gsl_linalg_cholesky_band_unpack (const gsl_matrix * LLT, gsl_matrix * L);
+
+int gsl_linalg_cholesky_band_scale(const gsl_matrix * A, gsl_vector * S);
+
+int gsl_linalg_cholesky_band_scale_apply(gsl_matrix * A, const gsl_vector * S);
 
 int gsl_linalg_cholesky_band_rcond (const gsl_matrix * LLT, double * rcond, gsl_vector * work);
 

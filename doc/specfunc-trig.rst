@@ -131,7 +131,7 @@ Restriction Functions
    :math:`(-\pi,\pi]`.  
 
    Note that the mathematical value of :math:`\pi` is slightly greater
-   than :macro:`M_PI`, so the machine numbers :macro:`M_PI` and :macro:`-M_PI`
+   than :macro:`M_PI`, so the machine numbers :macro:`M_PI` and :code:`-M_PI`
    are included in the range.
 .. Exceptional Return Values: GSL_ELOSS
 

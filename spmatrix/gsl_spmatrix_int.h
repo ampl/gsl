@@ -1,6 +1,6 @@
 /* spmatrix/gsl_spmatrix_int.h
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,13 +158,21 @@ int gsl_spmatrix_int_scale (gsl_spmatrix_int * m, const int x);
 int gsl_spmatrix_int_scale_columns (gsl_spmatrix_int * m, const gsl_vector_int * x);
 int gsl_spmatrix_int_scale_rows (gsl_spmatrix_int * m, const gsl_vector_int * x);
 int gsl_spmatrix_int_add (gsl_spmatrix_int * c, const gsl_spmatrix_int * a, const gsl_spmatrix_int * b);
-int gsl_spmatrix_int_add_to_dense (gsl_matrix_int * a, const gsl_spmatrix_int * b);
+int gsl_spmatrix_int_dense_add (gsl_matrix_int * a, const gsl_spmatrix_int * b);
+int gsl_spmatrix_int_dense_sub (gsl_matrix_int * a, const gsl_spmatrix_int * b);
 int gsl_spmatrix_int_d2sp (gsl_spmatrix_int * T, const gsl_matrix_int * A);
 int gsl_spmatrix_int_sp2d (gsl_matrix_int * A, const gsl_spmatrix_int * S);
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int gsl_spmatrix_int_add_to_dense (gsl_matrix_int * a, const gsl_spmatrix_int * b);
+
+#endif
 
 /* properties */
 
 int gsl_spmatrix_int_equal (const gsl_spmatrix_int * a, const gsl_spmatrix_int * b);
+int gsl_spmatrix_int_norm1 (const gsl_spmatrix_int * a);
 
 /* swap */
 

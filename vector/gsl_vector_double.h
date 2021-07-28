@@ -155,6 +155,7 @@ int gsl_vector_div (gsl_vector * a, const gsl_vector * b);
 int gsl_vector_scale (gsl_vector * a, const double x);
 int gsl_vector_add_constant (gsl_vector * a, const double x);
 int gsl_vector_axpby (const double alpha, const gsl_vector * x, const double beta, gsl_vector * y);
+double gsl_vector_sum (const gsl_vector * a);
 
 int gsl_vector_equal (const gsl_vector * u, 
                             const gsl_vector * v);

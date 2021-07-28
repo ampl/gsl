@@ -876,7 +876,7 @@ test_pcholesky_invert(gsl_rng * r)
       gsl_matrix * m = gsl_matrix_alloc(N, N);
 
       create_posdef_matrix(m, r);
-      test_pcholesky_invert_eps(m, N * GSL_DBL_EPSILON, "pcholesky_invert unscaled random");
+      test_pcholesky_invert_eps(m, 1.0e2 * N * GSL_DBL_EPSILON, "pcholesky_invert unscaled random");
 
       if (N <= 4)
         {
@@ -981,19 +981,38 @@ test_cholesky_band_decomp(gsl_rng * r)
 }
 
 int
-test_cholesky_band_solve_eps(const size_t p, const gsl_matrix * m, const gsl_vector * rhs,
-                             const gsl_vector * sol, const double eps, const char * desc)
+test_cholesky_band_solve_eps(const int scale, const size_t p, const gsl_matrix * m,
+                             const gsl_vector * rhs, const gsl_vector * sol,
+                             const double eps, const char * desc)
 {
-  int s = 0;
+  int status = 0;
   size_t i, N = m->size1;
   gsl_matrix * u  = gsl_matrix_alloc(N, p + 1);
   gsl_vector * x = gsl_vector_calloc(N);
+  gsl_vector * s = gsl_vector_alloc(N);
 
   /* convert m to packed banded format */
   symm2band_matrix(p, m, u);
 
-  s += gsl_linalg_cholesky_band_decomp(u);
-  s += gsl_linalg_cholesky_band_solve(u, rhs, x);
+  if (scale)
+    {
+      gsl_linalg_cholesky_band_scale(u, s);
+      gsl_linalg_cholesky_band_scale_apply(u, s);
+    }
+
+  status += gsl_linalg_cholesky_band_decomp(u);
+
+  if (scale)
+    {
+      gsl_vector_memcpy(x, rhs);
+      gsl_vector_mul(x, s);
+      status += gsl_linalg_cholesky_band_svx(u, x);
+      gsl_vector_mul(x, s);
+    }
+  else
+    {
+      status += gsl_linalg_cholesky_band_solve(u, rhs, x);
+    }
 
   for (i = 0; i < N; i++)
     {
@@ -1006,9 +1025,10 @@ test_cholesky_band_solve_eps(const size_t p, const gsl_matrix * m, const gsl_vec
     }
 
   gsl_vector_free(x);
+  gsl_vector_free(s);
   gsl_matrix_free(u);
 
-  return s;
+  return status;
 }
 
 static int
@@ -1030,7 +1050,11 @@ test_cholesky_band_solve(gsl_rng * r)
           create_random_vector(sol, r);
           gsl_blas_dsymv(CblasLower, 1.0, m, sol, 0.0, rhs);
 
-          test_cholesky_band_solve_eps(p, m, rhs, sol, 1.0e3 * N * GSL_DBL_EPSILON, "cholesky_band_solve random");
+          test_cholesky_band_solve_eps(0, p, m, rhs, sol, 1.0e3 * N * GSL_DBL_EPSILON,
+                                       "cholesky_band_solve random unscaled");
+
+          test_cholesky_band_solve_eps(1, p, m, rhs, sol, 1.0e3 * N * GSL_DBL_EPSILON,
+                                       "cholesky_band_solve random scaled");
         }
 
       gsl_matrix_free(m);
@@ -1095,7 +1119,7 @@ test_cholesky_band_invert(gsl_rng * r)
       for (p = 0; p < GSL_MIN(N, 10); ++p)
         {
           create_posdef_band_matrix(p, m, r);
-          test_cholesky_band_invert_eps(p, m, N * GSL_DBL_EPSILON, "cholesky_band_invert random");
+          test_cholesky_band_invert_eps(p, m, N * 1.0e1 * GSL_DBL_EPSILON, "cholesky_band_invert random");
         }
 
       gsl_matrix_free(m);

@@ -1,4 +1,54 @@
-* What is new in gsl-2.6:
+* What is new in gsl-2.7:
+
+** fixed doc bug for gsl_histogram_min_bin (lhcsky at 163.com)
+
+** fixed bug #60335 (spmatrix test failure, J. Lamb)
+
+** fixed bug #36577
+
+** clarified documentation on interpolation accelerators (V. Krishnan)
+
+** fixed bug #45521 (erroneous GSL_ERROR_NULL in ode-initval2, thanks to M. Sitte)
+
+** fixed doc bug #59758
+
+** fixed bug #58202 (rstat median for n=5)
+
+** added support for native C complex number types in gsl_complex
+   when using a C11 compiler
+
+** upgraded to autoconf 2.71, automake 1.16.3, libtool 2.4.6
+
+** updated exponential fitting example for nonlinear least squares
+
+** added banded LU decomposition and solver (gsl_linalg_LU_band)
+
+** New functions added to the library:
+      - gsl_matrix_norm1
+      - gsl_spmatrix_norm1
+      - gsl_matrix_complex_conjtrans_memcpy
+      - gsl_linalg_QL: decomp, unpack
+      - gsl_linalg_complex_QR_* (thanks to Christian Krueger)
+      - gsl_vector_sum
+      - gsl_matrix_scale_rows
+      - gsl_matrix_scale_columns
+      - gsl_multilarge_linear_matrix_ptr
+      - gsl_multilarge_linear_rhs_ptr
+      - gsl_spmatrix_dense_add (renamed from gsl_spmatrix_add_to_dense)
+      - gsl_spmatrix_dense_sub
+      - gsl_linalg_cholesky_band: solvem, svxm, scale, scale_apply
+      - gsl_linalg_QR_UD: decomp, lssolve
+      - gsl_linalg_QR_UU: decomp, lssolve, QTvec
+      - gsl_linalg_QR_UZ: decomp
+      - gsl_multifit_linear_lcurvature
+      - gsl_spline2d_eval_extrap
+
+** bug fix in checking vector lengths in gsl_vector_memcpy (dieggsy@pm.me)
+
+** made gsl_sf_legendre_array_index() inline and documented
+   gsl_sf_legendre_nlm()
+
+* What was new in gsl-2.6:
 
 ** add BLAS calls for the following functions:
      - gsl_vector_memcpy

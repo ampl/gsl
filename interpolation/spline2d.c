@@ -130,6 +130,23 @@ gsl_spline2d_eval_e(const gsl_spline2d * interp, const double x,
 }
 
 double
+gsl_spline2d_eval_extrap(const gsl_spline2d * interp, const double x,
+                         const double y, gsl_interp_accel * xa, gsl_interp_accel * ya)
+{
+  return gsl_interp2d_eval_extrap(&(interp->interp_object), interp->xarr, interp->yarr,
+                                  interp->zarr, x, y, xa, ya);
+}
+
+int
+gsl_spline2d_eval_extrap_e(const gsl_spline2d * interp, const double x,
+                           const double y, gsl_interp_accel * xa, gsl_interp_accel * ya,
+                           double * z)
+{
+  return gsl_interp2d_eval_extrap_e(&(interp->interp_object), interp->xarr, interp->yarr,
+                                    interp->zarr, x, y, xa, ya, z);
+}
+
+double
 gsl_spline2d_eval_deriv_x(const gsl_spline2d * interp, const double x,
                           const double y, gsl_interp_accel * xa, gsl_interp_accel * ya)
 {

@@ -1,6 +1,6 @@
 /* spmatrix/prop_source.c
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -122,3 +122,70 @@ FUNCTION (gsl_spmatrix, equal) (const TYPE (gsl_spmatrix) * a, const TYPE (gsl_s
       return 1;
     }
 }
+
+#if !defined(UNSIGNED) && !defined(BASE_GSL_COMPLEX) && !defined(BASE_GSL_COMPLEX_FLOAT) && !defined(BASE_GSL_COMPLEX_LONG)
+
+ATOMIC
+FUNCTION (gsl_spmatrix, norm1) (const TYPE (gsl_spmatrix) * A)
+{
+  const size_t N = A->size2;
+  ATOMIC value = (ATOMIC) 0;
+
+  if (A->nz == 0)
+    {
+      return (ATOMIC) 0;
+    }
+  else if (GSL_SPMATRIX_ISCSC(A))
+    {
+      int * Ap = A->p;
+      ATOMIC * Ad = A->data;
+      size_t j;
+
+      for (j = 0; j < N; ++j)
+        {
+          ATOMIC sum = (ATOMIC) 0;
+          int p;
+
+          for (p = Ap[j]; p < Ap[j + 1]; ++p)
+            sum += (Ad[p] >= (ATOMIC) 0) ? Ad[p] : -Ad[p];
+
+          if (sum > value)
+            value = sum;
+        }
+    }
+  else
+    {
+      ATOMIC * colsum = A->work.work_atomic;
+      ATOMIC * Ad = A->data;
+      size_t j;
+
+      /* initialize column sums to zero */
+      for (j = 0; j < N; ++j)
+        colsum[j] = (ATOMIC) 0;
+
+      if (GSL_SPMATRIX_ISCOO(A))
+        {
+          int * Ap = A->p;
+
+          for (j = 0; j < A->nz; ++j)
+            colsum[Ap[j]] += (Ad[j] >= (ATOMIC) 0) ? Ad[j] : -Ad[j];
+        }
+      else if (GSL_SPMATRIX_ISCSR(A))
+        {
+          int * Aj = A->i;
+
+          for (j = 0; j < A->nz; ++j)
+            colsum[Aj[j]] += (Ad[j] >= (ATOMIC) 0) ? Ad[j] : -Ad[j];
+        }
+
+      for (j = 0; j < N; ++j)
+        {
+          if (colsum[j] > value)
+            value = colsum[j];
+        }
+    }
+
+  return value;
+}
+
+#endif

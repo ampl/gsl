@@ -8,7 +8,7 @@
 #include <gsl/gsl_multifit_nlinear.h>
 
 #define N      100    /* number of data points to fit */
-#define TMAX   (40.0) /* time variable in [0,TMAX] */
+#define TMAX   (3.0)  /* time variable in [0,TMAX] */
 
 struct data {
   size_t n;
@@ -130,7 +130,7 @@ main (void)
   for (i = 0; i < n; i++)
     {
       double ti = i * TMAX / (n - 1.0);
-      double yi = 1.0 + 5 * exp (-0.1 * ti);
+      double yi = 1.0 + 5 * exp (-1.5 * ti);
       double si = 0.1 * yi;
       double dy = gsl_ran_gaussian(r, si);
 

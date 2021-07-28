@@ -1,6 +1,6 @@
 /* linalg/test_common.c
  *
- * Copyright (C) 2017 Patrick Alken
+ * Copyright (C) 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,6 +172,29 @@ create_symm_band_matrix(const size_t p, gsl_matrix * m, gsl_rng * r)
   return GSL_SUCCESS;
 }
 
+/* create (p,q) banded matrix */
+static int
+create_band_matrix(const size_t p, const size_t q, gsl_matrix * m, gsl_rng * r)
+{
+  size_t i;
+
+  gsl_matrix_set_zero(m);
+
+  for (i = 0; i <= p; ++i)
+    {
+      gsl_vector_view v = gsl_matrix_subdiagonal(m, i);
+      create_random_vector(&v.vector, r);
+    }
+
+  for (i = 1; i <= q; ++i)
+    {
+      gsl_vector_view v = gsl_matrix_superdiagonal(m, i);
+      create_random_vector(&v.vector, r);
+    }
+
+  return GSL_SUCCESS;
+}
+
 static int
 create_posdef_matrix(gsl_matrix * m, gsl_rng * r)
 {
@@ -277,6 +300,46 @@ symm2band_matrix(const size_t p, const gsl_matrix * m, gsl_matrix * bm)
           gsl_vector_view v = gsl_matrix_subcolumn(bm, i, 0, N - i);
 
           gsl_vector_memcpy(&v.vector, &diag.vector);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/* transform general dense (p,q) banded matrix to compact banded form */
+static int
+gen2band_matrix(const size_t p, const size_t q, const gsl_matrix * A, gsl_matrix * AB)
+{
+  const size_t N = A->size2;
+
+  if (AB->size1 != N)
+    {
+      GSL_ERROR("banded matrix requires N rows", GSL_EBADLEN);
+    }
+  else if (AB->size2 != 2*p + q + 1)
+    {
+      GSL_ERROR("banded matrix requires 2*p + q + 1 columns", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      gsl_matrix_set_zero(AB);
+
+      /* copy diagonal and subdiagonals */
+      for (i = 0; i <= p; ++i)
+        {
+          gsl_vector_const_view v = gsl_matrix_const_subdiagonal(A, i);
+          gsl_vector_view w = gsl_matrix_subcolumn(AB, p + q + i, 0, v.vector.size);
+          gsl_vector_memcpy(&w.vector, &v.vector);
+        }
+
+      /* copy superdiagonals */
+      for (i = 1; i <= q; ++i)
+        {
+          gsl_vector_const_view v = gsl_matrix_const_superdiagonal(A, i);
+          gsl_vector_view w = gsl_matrix_subcolumn(AB, p + q - i, i, v.vector.size);
+          gsl_vector_memcpy(&w.vector, &v.vector);
         }
 
       return GSL_SUCCESS;

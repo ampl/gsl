@@ -50,6 +50,8 @@ typedef struct
   int (*rcond) (double * rcond, void *);
   int (*lcurve) (gsl_vector * reg_param, gsl_vector * rho,
                  gsl_vector * eta, void *);
+  const gsl_matrix * (*matrix_ptr) (const void *);
+  const gsl_vector * (*rhs_ptr) (const void *);
   void (*free) (void *);
 } gsl_multilarge_linear_type;
 
@@ -135,6 +137,10 @@ int gsl_multilarge_linear_genform2 (const gsl_matrix * LQR,
                                     const gsl_vector * cs,
                                     gsl_vector * c,
                                     gsl_multilarge_linear_workspace * work);
+
+const gsl_matrix * gsl_multilarge_linear_matrix_ptr (const gsl_multilarge_linear_workspace * work);
+
+const gsl_vector * gsl_multilarge_linear_rhs_ptr (const gsl_multilarge_linear_workspace * work);
 
 __END_DECLS
 

@@ -393,9 +393,13 @@ gsl_matrix * moler10;
 #include "test_ldlt.c"
 #include "test_lu.c"
 #include "test_luc.c"
+#include "test_lu_band.c"
 #include "test_lq.c"
 #include "test_tri.c"
+#include "test_ql.c"
 #include "test_qr.c"
+#include "test_qrc.c"
+#include "test_qr_band.c"
 
 int
 test_QR_solve_dim(const gsl_matrix * m, const double * actual, double eps)
@@ -1168,7 +1172,7 @@ test_QR_update_dim(const gsl_matrix * m, double eps)
   gsl_matrix * r1  = gsl_matrix_alloc(M,N);
   gsl_matrix * q2  = gsl_matrix_alloc(M,M);
   gsl_matrix * r2  = gsl_matrix_alloc(M,N);
-  gsl_vector * d = gsl_vector_alloc(GSL_MIN(M,N));
+  gsl_vector * d = gsl_vector_alloc(N);
   gsl_vector * solution1 = gsl_vector_alloc(N);
   gsl_vector * solution2 = gsl_vector_alloc(N);
   gsl_vector * u = gsl_vector_alloc(M);
@@ -3256,6 +3260,9 @@ main(void)
   gsl_test(test_LUc_invert(r),           "Complex LU Inverse");
   gsl_test(test_QR_decomp(),             "QR Decomposition");
   gsl_test(test_QR_solve(),              "QR Solve");
+  gsl_test(test_QRc_decomp(r),           "Complex QR Decomposition");
+  gsl_test(test_QRc_solve(r),            "Complex QR Solve");
+  gsl_test(test_QRc_lssolve(),           "Complex QR LS Solve");
   gsl_test(test_LQ_solve(),              "LQ Solve");
   gsl_test(test_PTLQ_solve(),            "PTLQ Solve");
 
@@ -3264,7 +3271,24 @@ main(void)
   gsl_test(test_QR_solve_r(r),           "QR Solve (recursive)");
   gsl_test(test_QR_lssolve_r(r),         "QR LS Solve (recursive)");
 
-  gsl_test(test_QR_TR_decomp(r),         "QR_TR Decomposition");
+  gsl_test(test_QRc_decomp_r(r),         "Complex QR Decomposition (recursive)");
+  gsl_test(test_QRc_solve_r(r),          "Complex QR Solve (recursive)");
+  gsl_test(test_QRc_lssolve_r(),         "Complex QR LS Solve (recursive)");
+
+  gsl_test(test_LU_band_decomp(r),       "Banded LU Decomposition");
+  gsl_test(test_LU_band_solve(r),        "Banded LU Solve");
+
+  gsl_test(test_QR_band_decomp(r),       "Banded QR Decomposition");
+
+  gsl_test(test_QR_UR_decomp(r),         "QR_UR Decomposition");
+  gsl_test(test_QR_UZ_decomp(r),         "QR_UZ Decomposition");
+  gsl_test(test_QR_UU_decomp(r),         "QR_UU Decomposition");
+  gsl_test(test_QR_UD_decomp(r),         "QR_UD Decomposition");
+
+  gsl_test(test_QR_UU_lssolve(r),        "QR_UU LS Solve");
+  gsl_test(test_QR_UD_lssolve(r),        "QR_UD LS Solve");
+
+  gsl_test(test_QL_decomp(r),            "QL Decomposition");
 
   gsl_test(test_LQ_decomp(),             "LQ Decomposition");
   gsl_test(test_LQ_LQsolve(),            "LQ LQ Solve");

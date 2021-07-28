@@ -153,8 +153,9 @@ int gsl_vector_ulong_sub (gsl_vector_ulong * a, const gsl_vector_ulong * b);
 int gsl_vector_ulong_mul (gsl_vector_ulong * a, const gsl_vector_ulong * b);
 int gsl_vector_ulong_div (gsl_vector_ulong * a, const gsl_vector_ulong * b);
 int gsl_vector_ulong_scale (gsl_vector_ulong * a, const unsigned long x);
-int gsl_vector_ulong_add_constant (gsl_vector_ulong * a, const double x);
+int gsl_vector_ulong_add_constant (gsl_vector_ulong * a, const unsigned long x);
 int gsl_vector_ulong_axpby (const unsigned long alpha, const gsl_vector_ulong * x, const unsigned long beta, gsl_vector_ulong * y);
+unsigned long gsl_vector_ulong_sum (const gsl_vector_ulong * a);
 
 int gsl_vector_ulong_equal (const gsl_vector_ulong * u, 
                             const gsl_vector_ulong * v);

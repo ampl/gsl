@@ -81,6 +81,15 @@ FUNCTION (test, func) (const size_t M, const size_t N)
     gsl_test (status, NAME (gsl_matrix) "_get reads from array");
   }
 
+#if !defined(UNSIGNED) && !defined(BASE_CHAR)
+  {
+    ATOMIC norm1 = FUNCTION (gsl_matrix, norm1) (m);
+    ATOMIC norm1_expected = N*M*(M+1)/2;
+    status = (norm1 != norm1_expected);
+    gsl_test (status, NAME (gsl_matrix) "_norm1");
+  }
+#endif
+
 
   FUNCTION (gsl_matrix, free) (m);      /* free whatever is in m */
 
@@ -532,7 +541,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
 
 
   FUNCTION(gsl_matrix, memcpy) (m, a);
-  FUNCTION(gsl_matrix, scale) (m, 2.0);
+  FUNCTION(gsl_matrix, scale) (m, (ATOMIC) 2);
 
   {
     int status = 0;
@@ -551,7 +560,61 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
   }
 
   FUNCTION(gsl_matrix, memcpy) (m, a);
-  FUNCTION(gsl_matrix, add_constant) (m, 3.0);
+
+  {
+    int status = 0;
+    TYPE (gsl_vector) * v = FUNCTION (gsl_vector, alloc) (M);
+
+    for (i = 0; i < M; i++)
+      FUNCTION (gsl_vector, set) (v, i, (ATOMIC) (i + 1));
+
+    FUNCTION (gsl_matrix, scale_rows) (m, v);
+
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
+            BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
+            if (r !=  (ATOMIC)((i+1)*x))
+              status = 1;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_scale_rows[%zu,%zu]", M, N);
+
+    FUNCTION (gsl_vector, free) (v);
+  }
+
+  FUNCTION(gsl_matrix, memcpy) (m, a);
+
+  {
+    int status = 0;
+    TYPE (gsl_vector) * v = FUNCTION (gsl_vector, alloc) (N);
+
+    for (i = 0; i < N; i++)
+      FUNCTION (gsl_vector, set) (v, i, (ATOMIC) (i + 1));
+
+    FUNCTION (gsl_matrix, scale_columns) (m, v);
+
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
+            BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
+            if (r !=  (ATOMIC)((j+1)*x))
+              status = 1;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_scale_columns[%zu,%zu]", M, N);
+
+    FUNCTION (gsl_vector, free) (v);
+  }
+
+  FUNCTION(gsl_matrix, memcpy) (m, a);
+  FUNCTION(gsl_matrix, add_constant) (m, (ATOMIC) 3);
 
   {
     int status = 0;
@@ -562,7 +625,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
           {
             BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
             BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
-            BASE y = x + 3.0;
+            BASE y = x + (ATOMIC) 3;
             if (fabs(r - y) > 2 * GSL_FLT_EPSILON * fabs(y))
               status = 1;
           }
@@ -571,7 +634,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
   }
 
   FUNCTION(gsl_matrix, memcpy) (m, a);
-  FUNCTION(gsl_matrix, add_diagonal) (m, 5.0);
+  FUNCTION(gsl_matrix, add_diagonal) (m, (ATOMIC) 5);
 
   {
     int status = 0;
@@ -582,7 +645,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
           {
             BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
             BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
-            BASE y = (i == j) ? (x + (ATOMIC) 5.0) : x;
+            BASE y = (i == j) ? (x + (ATOMIC) 5) : x;
             if (fabs(r - y) > 2 * GSL_FLT_EPSILON * fabs(y))
               status = 1;
           }

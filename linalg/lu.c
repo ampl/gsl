@@ -553,8 +553,9 @@ singular (const gsl_matrix * LU)
 static int
 apply_pivots(gsl_matrix * A, const gsl_vector_uint * ipiv)
 {
-  if (0)
+  if (A->size1 < ipiv->size)
     {
+      GSL_ERROR("matrix does not match pivot vector", GSL_EBADLEN);
     }
   else
     {

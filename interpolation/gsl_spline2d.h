@@ -63,6 +63,13 @@ int gsl_spline2d_eval_e(const gsl_spline2d * interp, const double x,
                         const double y, gsl_interp_accel* xa, gsl_interp_accel* ya,
                         double * z);
 
+double gsl_spline2d_eval_extrap(const gsl_spline2d * interp, const double x,
+                                const double y, gsl_interp_accel* xa, gsl_interp_accel* ya);
+
+int gsl_spline2d_eval_extrap_e(const gsl_spline2d * interp, const double x,
+                               const double y, gsl_interp_accel* xa, gsl_interp_accel* ya,
+                               double * z);
+
 double gsl_spline2d_eval_deriv_x(const gsl_spline2d * interp, const double x,
                                  const double y, gsl_interp_accel* xa, gsl_interp_accel* ya);
 

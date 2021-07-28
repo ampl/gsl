@@ -157,8 +157,10 @@ std_control_errlevel (void *vstate, const double y, const double dydt,
 
   if (*errlev <= 0.0)
     {
-      GSL_ERROR_NULL ("errlev <= zero", GSL_ESANITY);
+      GSL_ERROR ("errlev <= zero", GSL_ESANITY);
     }
+
+  (void) ind;
 
   return GSL_SUCCESS;
 }

@@ -1,6 +1,6 @@
 /* spmatrix/gsl_spmatrix_ulong.h
  * 
- * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018 Patrick Alken
+ * Copyright (C) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,13 +158,21 @@ int gsl_spmatrix_ulong_scale (gsl_spmatrix_ulong * m, const unsigned long x);
 int gsl_spmatrix_ulong_scale_columns (gsl_spmatrix_ulong * m, const gsl_vector_ulong * x);
 int gsl_spmatrix_ulong_scale_rows (gsl_spmatrix_ulong * m, const gsl_vector_ulong * x);
 int gsl_spmatrix_ulong_add (gsl_spmatrix_ulong * c, const gsl_spmatrix_ulong * a, const gsl_spmatrix_ulong * b);
-int gsl_spmatrix_ulong_add_to_dense (gsl_matrix_ulong * a, const gsl_spmatrix_ulong * b);
+int gsl_spmatrix_ulong_dense_add (gsl_matrix_ulong * a, const gsl_spmatrix_ulong * b);
+int gsl_spmatrix_ulong_dense_sub (gsl_matrix_ulong * a, const gsl_spmatrix_ulong * b);
 int gsl_spmatrix_ulong_d2sp (gsl_spmatrix_ulong * T, const gsl_matrix_ulong * A);
 int gsl_spmatrix_ulong_sp2d (gsl_matrix_ulong * A, const gsl_spmatrix_ulong * S);
+
+#ifndef GSL_DISABLE_DEPRECATED
+
+int gsl_spmatrix_ulong_add_to_dense (gsl_matrix_ulong * a, const gsl_spmatrix_ulong * b);
+
+#endif
 
 /* properties */
 
 int gsl_spmatrix_ulong_equal (const gsl_spmatrix_ulong * a, const gsl_spmatrix_ulong * b);
+unsigned long gsl_spmatrix_ulong_norm1 (const gsl_spmatrix_ulong * a);
 
 /* swap */
 

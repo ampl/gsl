@@ -283,7 +283,7 @@ functions.
    With GCC this is selected automatically when compiling in C99 mode
    (:code:`-std=c99`).
 
-.. var:: gsl_check_range
+.. var:: int gsl_check_range
 
    If inline functions are not used, calls to the functions
    :func:`gsl_vector_get` and :func:`gsl_vector_set` will link to the
@@ -411,7 +411,7 @@ vector.
    :data:`v`.  The start of the new vector is offset by :data:`offset` elements
    from the start of the original vector.  The new vector has :data:`n`
    elements.  Mathematically, the :data:`i`-th element of the new vector
-   :data:`v'` is given by::
+   :code:`v'` is given by::
 
       v'(i) = v->data[(offset + i)*v->stride]
 
@@ -441,7 +441,7 @@ vector.
    the same way as for :func:`gsl_vector_subvector` but the new vector has
    :data:`n` elements with a step-size of :data:`stride` from one element to
    the next in the original vector.  Mathematically, the :data:`i`-th element
-   of the new vector :data:`v'` is given by::
+   of the new vector :code:`v'` is given by::
 
       v'(i) = v->data[(offset + i*stride)*v->stride]
 
@@ -493,7 +493,7 @@ vector.
 
    These functions return a vector view of an array.  The start of the new
    vector is given by :data:`base` and has :data:`n` elements.  Mathematically,
-   the :data:`i`-th element of the new vector :data:`v'` is given by::
+   the :data:`i`-th element of the new vector :code:`v'` is given by::
 
       v'(i) = base[i]
 
@@ -517,7 +517,7 @@ vector.
    for :func:`gsl_vector_view_array` but the new vector has :data:`n` elements
    with a step-size of :data:`stride` from one element to the next in the
    original array.  Mathematically, the :data:`i`-th element of the new
-   vector :data:`v'` is given by::
+   vector :code:`v'` is given by::
 
       v'(i) = base[i*stride]
 
@@ -677,6 +677,10 @@ Vector operations
    This function adds the constant value :data:`x` to the elements of the
    vector :data:`a`.  The result :math:`a_i \leftarrow a_i + x` is stored in
    :data:`a`.
+
+.. function:: double gsl_vector_sum (const gsl_vector * a)
+
+   This function returns the sum of the elements of :data:`a`, defined as :math:`\sum_{i=1}^n a_i`
 
 .. function:: int gsl_vector_axpby (const double alpha, const gsl_vector * x, const double beta, gsl_vector * y)
 
@@ -1411,6 +1415,13 @@ a matrix.
    the elements of the matrix in-place.  The matrix must be square for this
    operation to be possible.
 
+.. function:: int gsl_matrix_complex_conjtrans_memcpy (gsl_matrix * dest, const gsl_matrix * src)
+
+   This function makes the matrix :data:`dest` the conjugate transpose of the matrix
+   :data:`src` by copying the complex conjugate elements of :data:`src` into :data:`dest`.  This
+   function works for all complex matrices provided that the dimensions of the matrix
+   :data:`dest` match the transposed dimensions of the matrix :data:`src`.
+
 Matrix operations
 -----------------
 
@@ -1449,6 +1460,28 @@ The following operations are defined for real and complex matrices.
    This function multiplies the elements of matrix :data:`a` by the
    constant factor :data:`x`.  The result :math:`a(i,j) \leftarrow x a(i,j)`
    is stored in :data:`a`.
+
+.. function:: int gsl_matrix_scale_columns (gsl_matrix * A, const gsl_vector * x)
+
+   This function scales the columns of the :math:`M`-by-:math:`N` matrix
+   :data:`A` by the elements of the vector :data:`x`, of length :math:`N`. The
+   :math:`j`-th column of :data:`A` is multiplied by :math:`x_j`. This is equivalent to
+   forming
+
+   .. math:: A \rightarrow A X
+
+   where :math:`X = \textrm{diag}(x)`.
+
+.. function:: int gsl_matrix_scale_rows (gsl_matrix * A, const gsl_vector * x)
+
+   This function scales the rows of the :math:`M`-by-:math:`N` matrix
+   :data:`A` by the elements of the vector :data:`x`, of length :math:`M`. The
+   :math:`i`-th row of :data:`A` is multiplied by :math:`x_i`. This is equivalent to
+   forming
+
+   .. math:: A \rightarrow X A
+
+   where :math:`X = \textrm{diag}(x)`.
 
 .. function:: int gsl_matrix_add_constant (gsl_matrix * a, const double x)
 
@@ -1517,6 +1550,13 @@ the conditions.
 
    This function returns 1 if the matrices :data:`a` and :data:`b` are equal
    (by comparison of element values) and 0 otherwise.
+
+.. function:: double gsl_matrix_norm1 (const gsl_matrix * A)
+
+   This function returns the 1-norm of the :math:`m`-by-:math:`n` matrix :data:`A`, defined as
+   the maximum column sum,
+
+   .. math:: ||A||_1 = \textrm{max}_{1 \le j \le n} \sum_{i=1}^m |A_{ij}|
 
 Example programs for matrices
 -----------------------------

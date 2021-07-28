@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([gsl],[2.6])
+AC_INIT([gsl],[2.7])
 AC_CONFIG_SRCDIR(gsl_math.h)
 
 AM_INIT_AUTOMAKE([gnu])
@@ -36,6 +36,7 @@ dnl gsl-2.3    libgsl 22:0:3   libgslcblas 0:0:0
 dnl gsl-2.4    libgsl 23:0:0   libgslcblas 0:0:0 
 dnl gsl-2.5    libgsl 24:0:1   libgslcblas 0:0:0 
 dnl gsl-2.6    libgsl 25:0:0   libgslcblas 0:0:0 
+dnl gsl-2.7    libgsl 26:0:1   libgslcblas 0:0:0 
 dnl 
 dnl (*) There was an error on this release.  Firstly, the versioning
 dnl numbers were not updated.  Secondly, 2 functions were removed, but
@@ -62,9 +63,9 @@ dnl See https://www.gnu.org/software/libtool/manual/html_node/Updating-version-i
 dnl for more detailed info
 
 dnl
-GSL_CURRENT=25
+GSL_CURRENT=26
 GSL_REVISION=0
-GSL_AGE=0
+GSL_AGE=1
 dnl
 CBLAS_CURRENT=0
 CBLAS_REVISION=0
@@ -161,6 +162,7 @@ fi
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(ieeefp.h)
+AC_CHECK_HEADERS(complex.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 

@@ -206,17 +206,16 @@ subintervals are managed by the following struct,
    integration rule is determined by the value of :data:`key`, which should
    be chosen from the following symbolic names,
 
-   * .. macro:: GSL_INTEG_GAUSS15  (key = 1)
-
-   * .. macro:: GSL_INTEG_GAUSS21  (key = 2)
-
-   * .. macro:: GSL_INTEG_GAUSS31  (key = 3)
-
-   * .. macro:: GSL_INTEG_GAUSS41  (key = 4)
-
-   * .. macro:: GSL_INTEG_GAUSS51  (key = 5)
-
-   * .. macro:: GSL_INTEG_GAUSS61  (key = 6)
+   ========================== ===
+   Symbolic Name              Key
+   ========================== ===
+   :macro:`GSL_INTEG_GAUSS15` 1
+   :macro:`GSL_INTEG_GAUSS21` 2
+   :macro:`GSL_INTEG_GAUSS31` 3
+   :macro:`GSL_INTEG_GAUSS41` 4
+   :macro:`GSL_INTEG_GAUSS51` 5
+   :macro:`GSL_INTEG_GAUSS61` 6
+   ========================== ===
 
    corresponding to the 15, 21, 31, 41, 51 and 61 point Gauss-Kronrod
    rules.  The higher-order rules give better accuracy for smooth functions,
@@ -837,41 +836,41 @@ as well as additional variables for intermediate calculations:
 
       The type of quadrature used is specified by :data:`T` which can be set to the following choices:
 
-      .. var:: gsl_integration_fixed_legendre
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_legendre
 
          This specifies Legendre quadrature integration. The parameters :data:`alpha` and
          :data:`beta` are ignored for this type.
 
-      .. var:: gsl_integration_fixed_chebyshev
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_chebyshev
 
          This specifies Chebyshev type 1 quadrature integration. The parameters :data:`alpha` and
          :data:`beta` are ignored for this type.
 
-      .. var:: gsl_integration_fixed_gegenbauer
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_gegenbauer
 
          This specifies Gegenbauer quadrature integration. The parameter :data:`beta` is ignored for this type.
 
-      .. var:: gsl_integration_fixed_jacobi
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_jacobi
 
          This specifies Jacobi quadrature integration.
 
-      .. var:: gsl_integration_fixed_laguerre
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_laguerre
 
          This specifies Laguerre quadrature integration. The parameter :data:`beta` is ignored for this type.
 
-      .. var:: gsl_integration_fixed_hermite
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_hermite
 
          This specifies Hermite quadrature integration. The parameter :data:`beta` is ignored for this type.
 
-      .. var:: gsl_integration_fixed_exponential
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_exponential
 
          This specifies exponential quadrature integration. The parameter :data:`beta` is ignored for this type.
 
-      .. var:: gsl_integration_fixed_rational
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_rational
 
          This specifies rational quadrature integration.
 
-      .. var:: gsl_integration_fixed_chebyshev2
+      .. var:: gsl_integration_fixed_type * gsl_integration_fixed_chebyshev2
 
          This specifies Chebyshev type 2 quadrature integration. The parameters :data:`alpha` and
          :data:`beta` are ignored for this type.

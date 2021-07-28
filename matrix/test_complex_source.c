@@ -713,6 +713,80 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
   }
 
   {
+    TYPE (gsl_vector) * v = FUNCTION (gsl_vector, alloc) (P);
+
+    for (i = 0; i < P; i++)
+      {
+        BASE s;
+        GSL_SET_COMPLEX(&s, (ATOMIC) (i + 1), (ATOMIC) (i + 2));
+        FUNCTION (gsl_vector, set) (v, i, s);
+      }
+
+    FUNCTION (gsl_matrix, memcpy) (m, a);
+    FUNCTION (gsl_matrix, scale_rows) (m, v);
+
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        BASE s;
+        GSL_SET_COMPLEX(&s, (ATOMIC) (i + 1), (ATOMIC) (i + 2));
+
+        for (j = 0; j < Q; j++)
+          {
+            BASE aij = FUNCTION (gsl_matrix, get) (a, i, j);
+            ATOMIC real = GSL_REAL(aij)*(i+1) - GSL_IMAG(aij)*(i+2);
+            ATOMIC imag = GSL_REAL(aij)*(i+2) + GSL_IMAG(aij)*(i+1);
+            BASE mij = FUNCTION (gsl_matrix, get) (m, i, j);
+            if (GSL_REAL (mij) != real || GSL_IMAG (mij) != imag)
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_scale_rows[%zu,%zu]", P, Q);
+  }
+
+  {
+    TYPE (gsl_vector) * v = FUNCTION (gsl_vector, alloc) (Q);
+
+    for (i = 0; i < Q; i++)
+      {
+        BASE s;
+        GSL_SET_COMPLEX(&s, (ATOMIC) (i + 1), (ATOMIC) (i + 2));
+        FUNCTION (gsl_vector, set) (v, i, s);
+      }
+
+    FUNCTION (gsl_matrix, memcpy) (m, a);
+    FUNCTION (gsl_matrix, scale_columns) (m, v);
+
+    status = 0;
+
+    for (j = 0; j < Q; j++)
+      {
+        BASE s;
+        GSL_SET_COMPLEX(&s, (ATOMIC) (i + 1), (ATOMIC) (i + 2));
+
+        for (i = 0; i < P; i++)
+          {
+            BASE aij = FUNCTION (gsl_matrix, get) (a, i, j);
+            ATOMIC real = GSL_REAL(aij)*(j+1) - GSL_IMAG(aij)*(j+2);
+            ATOMIC imag = GSL_REAL(aij)*(j+2) + GSL_IMAG(aij)*(j+1);
+            BASE mij = FUNCTION (gsl_matrix, get) (m, i, j);
+            if (GSL_REAL (mij) != real || GSL_IMAG (mij) != imag)
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_scale_columns[%zu,%zu]", P, Q);
+  }
+
+  {
     BASE s;
     GSL_SET_COMPLEX(&s, 2.0, 3.0);
 
@@ -810,6 +884,29 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
       }
 
     gsl_test (status, NAME (gsl_matrix) "_transpose_memcpy");
+  }
+
+  {
+    FUNCTION (gsl_matrix, conjtrans_memcpy) (c, a);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < Q; j++)
+          {
+            BASE x = FUNCTION (gsl_matrix, get) (a, i, j);
+            BASE y = FUNCTION (gsl_matrix, get) (c, j, i);
+            if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != -GSL_IMAG (y))
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_matrix) "_conjtrans_memcpy");
   }
 
   {

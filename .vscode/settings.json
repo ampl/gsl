@@ -1,0 +1,3 @@
+{
+    "cmake.configureSettings": {"NO_AMPL_BINDINGS":"1"}
+}

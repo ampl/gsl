@@ -1249,7 +1249,7 @@ TEST_F(GSLTest, RanGamma) {
   TEST_FUNC2(gsl_ran_gamma_pdf, NoDeriv());
 
   Function f = GetFunction("gsl_cdf_gamma_P");
-  auto x = MakeArgs(5, 1, 2);
+  Tuple x = MakeArgs(5, 1, 2);
   EXPECT_NEAR( 0.91791, f(x).value(), 1e-5);
   EXPECT_NEAR( 0.04104, f(x, DERIVS, BitSet("100")).deriv(), 1e-5);
   EXPECT_NEAR(-0.02052, f(x, HES, BitSet("100")).hes(), 1e-5);

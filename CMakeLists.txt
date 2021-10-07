@@ -858,14 +858,16 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}
       LIBRARY DESTINATION lib/$<CONFIG>
       RUNTIME DESTINATION bin/$<CONFIG>
-      ARCHIVE DESTINATION lib/$<CONFIG>)
+      ARCHIVE DESTINATION lib/$<CONFIG>
+      COMPONENT gsl)
     # For Debug under VS, also install the pdb files.
     install(
       FILES 
         ${PROJECT_BINARY_DIR}/bin/Debug/gsl.pdb
         ${PROJECT_BINARY_DIR}/bin/Debug/gslcblas.pdb
       CONFIGURATIONS Debug 
-      DESTINATION bin/$<CONFIG>)
+      DESTINATION bin/$<CONFIG>
+      COMPONENT gsl)
   else ()
     set(TOINSTALL gsl)
     if(TARGET gslcblas)
@@ -875,12 +877,13 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       EXPORT "gsl-targets"
       LIBRARY DESTINATION lib
       RUNTIME DESTINATION bin
-      ARCHIVE DESTINATION lib)
+      ARCHIVE DESTINATION lib
+      COMPONENT gsl)
   endif ()
-  install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl)
+  install(FILES ${GSL_HEADER_PATHS} DESTINATION include/gsl COMPONENT gsl)
   set(PC_FILE ${CMAKE_BINARY_DIR}/gsl.pc)
   configure_file("gsl.pc.cmake" ${PC_FILE} @ONLY)
-  install(FILES ${PC_FILE} DESTINATION lib/pkgconfig)
+  install(FILES ${PC_FILE} DESTINATION lib/pkgconfig COMPONENT gsl)
 
   # Read config file and replace placeholders.
   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/gsl-config.in" GSL_CONFIG_FILE)
@@ -902,14 +905,15 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
   file(WRITE ${CMAKE_BINARY_DIR}/gsl-config ${GSL_CONFIG_FILE})
 
   # Install gsl-config
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/gsl-config DESTINATION bin)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/gsl-config DESTINATION bin COMPONENT gsl)
   
   # Create cmake files that can be used to import GSL into another project. 
   include(CMakePackageConfigHelpers)
   install( 
     EXPORT gsl-targets
     DESTINATION lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION}
-    NAMESPACE GSL:: )
+    NAMESPACE GSL:: 
+    COMPONENT gsl)
   configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PACKAGE_NAME}-config.cmake.in
     ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config.cmake
@@ -923,7 +927,8 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config.cmake
       ${CMAKE_BINARY_DIR}/cmake/${PACKAGE_NAME}-config-version.cmake
     DESTINATION 
-      lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION} )
+      lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION} 
+    COMPONENT gsl)
 endif ()
 if(NOT MSVC)
     target_compile_options(gsl PRIVATE -fPIC)

@@ -24,7 +24,7 @@ elseif(APPLE)
 elseif(WIN32)
   set(SYSNAME "mswin")
 endif()
-set(PACKAGENAME "${SYSNAME}${ARCH}.${AMPLGSL_VERSION}")
+set(PACKAGENAME "amplgsl.${SYSNAME}${ARCH}.${AMPLGSL_VERSION}")
 
 # Macro to build an AMPL library (links with ASL and has dll extension)
 macro(add_ampl_library name)

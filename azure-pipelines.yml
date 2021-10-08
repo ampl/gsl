@@ -1,13 +1,10 @@
-#trigger:
-#- azure
-
 jobs:
-- template: support/azure/template-build.yml  
-  parameters:
-    name: Linux_32
-    vmImage: 'ubuntu-latest'
-    cmakeDefs: '-DARCH=32'
-    installGCC32: true
+#- template: support/azure/template-build.yml  
+  #parameters:
+    #name: Linux_32
+    #vmImage: 'ubuntu-latest'
+    #cmakeDefs: '-DARCH=32'
+    #installGCC32: true
 - template: support/azure/template-build.yml  
   parameters:
     name: Linux_64

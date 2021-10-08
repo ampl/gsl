@@ -12,9 +12,11 @@ parameters:
 - name: archiveExtension
   type: "string"
   displayName: "cpack archive generated files extension"
+- name: cpackParameters
+  type: "string"
 
 jobs:
-- job: ${{ parameters.name }}
+- job: ${{parameters.name}}
   pool:
     vmImage: ${{ parameters.vmImage }}
   steps:
@@ -28,15 +30,18 @@ jobs:
     inputs:
         workingDirectory: 'build' 
         cmakeArgs: .. ${{ parameters.cmakeDefs }}
-    displayName: 'Run cmake'
+    displayName: "Configure with cmake"
   - task: CMake@1
     inputs:
         workingDirectory: 'build' 
         cmakeArgs: --build . --config Release
-    displayName: 'Build with cmake'
+    displayName: "Build with cmake"
   - script: 'ctest -C Release'
     workingDirectory: 'build' 
     displayName: 'Running tests'
+  - bash: cpack %{{paremeters.cpackParameters}}
+    workingDirectory: 'build'
+    displayName: "Creating packages"
   - bash: |
         for file in amplgsl-amplgsl*; do mv "$file" "${file#amplgsl-}"; done;
     workingDirectory: 'build'
@@ -46,5 +51,5 @@ jobs:
       sourceFolder: 'build'
       contents: 'amplgsl.*.${{parameters.archiveExtension}}'
       targetFolder: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Copying amplgsl artifact to staging directory'
+    displayName: "Copying amplgsl artifact to staging directory"
     

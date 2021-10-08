@@ -52,4 +52,7 @@ jobs:
       contents: 'amplgsl.*.${{parameters.archiveExtension}}'
       targetFolder: '$(Build.ArtifactStagingDirectory)'
     displayName: "Copying amplgsl artifact to staging directory"
+  - publish: '$(Build.ArtifactStagingDirectory)'
+    artifact: amplgsl.${{parameters.name}}
+    displayName: "Publishing artifacts"
     

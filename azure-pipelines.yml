@@ -7,21 +7,21 @@ jobs:
     #installGCC32: true
 - template: support/azure/template-build.yml  
   parameters:
-    name: Linux_64
+    name: linux64
     vmImage: 'ubuntu-latest'
     cmakeDefs: '-DARCH=64'
     archiveExtension: 'tar.gz'
     cpackParameters: '-G TGZ'
 - template: support/azure/template-build.yml  
   parameters:
-    name: windows_32
+    name: windows32
     vmImage: 'windows-2019'
     cmakeDefs: '-A Win32'
     archiveExtension: 'zip'
     cpackParameters: '-G ZIP'
 - template: support/azure/template-build.yml  
   parameters:
-    name: windows_64
+    name: windows64
     vmImage: 'windows-2019'
     cmakeDefs: '-A x64'
     archiveExtension: 'zip'

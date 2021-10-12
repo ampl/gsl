@@ -46,7 +46,7 @@ macro(add_ampl_library name)
 endmacro()
 
 # Output GSL version number
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/version.txt "AMPLGSL version ${AMPLGSL_VERSION}\nGSL version ${VERSION}")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gsl-version.txt "AMPLGSL version ${AMPLGSL_VERSION}\nGSL version ${VERSION}")
 
 # Definition of AMPL-gsl interface
 set(SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -61,9 +61,11 @@ target_link_libraries(gsl-info amplgsl)
 add_custom_command(OUTPUT gsl.ampl COMMAND gsl-info DEPENDS amplgsl gsl-info)
 add_custom_target(gsl-ampl ALL DEPENDS gsl.ampl)
 # Install AMPL script
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gsl.ampl ${CMAKE_CURRENT_BINARY_DIR}/version.txt
-              ${CMAKE_CURRENT_SOURCE_DIR}/CHANGES.amplgsl.md
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gsl.ampl ${CMAKE_CURRENT_BINARY_DIR}/gsl-version.txt
     DESTINATION "."
+    COMPONENT ${PACKAGENAME})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CHANGES.amplgsl.md
+    DESTINATION "docs"
     COMPONENT ${PACKAGENAME})
 
  # Helper library from mp

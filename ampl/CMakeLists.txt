@@ -7,7 +7,7 @@ else()
 endif()
 add_subdirectory(thirdparty/asl)
 
-set(AMPLGSL_VERSION 20211007)
+set(AMPLGSL_VERSION 20211014)
 # Install location
 set(AMPL_LIBRARY_DIR gsl)
 
@@ -57,6 +57,7 @@ target_include_directories(amplgsl PUBLIC
 
 # Used to generate the ampl function definitions
 add_executable(gsl-info ${SRCDIR}/gsl-info.cc)
+target_compile_definitions(gsl-info PRIVATE LIBDATE=${AMPLGSL_VERSION})
 target_link_libraries(gsl-info amplgsl)
 add_custom_command(OUTPUT gsl.ampl COMMAND gsl-info DEPENDS amplgsl gsl-info)
 add_custom_target(gsl-ampl ALL DEPENDS gsl.ampl)
@@ -84,6 +85,10 @@ endif()
 target_compile_definitions(amplgsl-test PRIVATE
     AMPLGSL_DLL_NAME="$<TARGET_FILE:amplgsl>")
 add_test(NAME amplgsl-test COMMAND $<TARGET_FILE:amplgsl-test>)
+
+
+# Documentation
+add_subdirectory(doc)
 
 ######  Package creation settings ######
 # Packages definitions happens in the setSolverProperties function

@@ -34,7 +34,6 @@ static FILE *out;
 
 #define UNUSED(x) (void)(x)
 
-static const int LIBDATE = 20180604;
 
 /* See AddFunc in funcadd.h */
 static void declare_func(const char *name, rfunc f,
@@ -52,8 +51,11 @@ static void declare_func(const char *name, rfunc f,
   if (strcmp(name, "gsl_version") == 0) {
     typedef const char *(*Func)(arglist *al);
     Func get_version = (Func)f;
-    printf("amplgsl %s library(%d)\n", get_version(NULL), LIBDATE);
+    printf("AMPLGSL version %d, GSL version %s\n", LIBDATE, get_version(NULL));
+    fprintf(out, "# AMPLGSL version %d, GSL version %s\nload amplgsl.dll;\n", LIBDATE, get_version(NULL));
   }
+  if (strcmp(name, "gsl_sort") ==0)
+    return;
   fprintf(out, "function %s%s;\n", name, attr);
 }
 
@@ -73,8 +75,7 @@ int main() {
     return 1;
   }
   fprintf(out,
-      "# Automatically generated AMPL declarations for the GSL functions.\n"
-      "load amplgsl.dll;\n");
+      "# Automatically generated AMPL declarations for the GSL functions.\n");
   funcadd_ASL(&ae);
   fclose(out);
   remove("gsl.ampl");

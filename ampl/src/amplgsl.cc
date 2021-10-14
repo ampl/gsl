@@ -30,6 +30,7 @@
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf_trig.h>
+#include <gsl/gsl_statistics.h>
 #include <gsl/gsl_version.h>
 
 #include "funcadd.h"
@@ -57,6 +58,9 @@ static char* allocate_string(arglist *al, size_t size) {
   return static_cast<char*>(al->AE->Tempmem(al->TMI, size));
 }
 
+static double* allocate_double(arglist* al, size_t size) {
+  return static_cast<double*>(al->AE->Tempmem(al->TMI, size*sizeof(double)));
+}
 /* Formats the error message and stores it in al->Errmsg. */
 static void format_error(
     arglist *al, const char *format, va_list args, char prefix) {
@@ -264,6 +268,11 @@ static int check_bessel_args(arglist *al, int flags, const char *arg_name) {
 #define RNG_ARGS1 rng, ARGS1
 #define RNG_ARGS2 rng, ARGS2
 #define RNG_ARGS3 rng, ARGS3
+
+#define ARRAY_ARGS al->ra, 1, al->n
+#define ARRAY_ARGS_AND_LAST al->ra, 1, al->n-1, al->ra[al->n-1]
+#define ARRAY_ARGS_AND_LAST_TO_FIRST al->ra[al->n-1], al->ra, 1, al->n-1
+#define ARRAY_ARGS_AND_LASTTWO al->ra, 1, al->n-2, al->ra[al->n-2], al->ra[al->n-1]
 
 #define WRAP(func, args) \
   static double ampl##func(arglist *al) { \
@@ -2994,12 +3003,188 @@ WRAP_DISCRETE(gsl_ran_logarithmic_pdf, ARGS2, DEFAULT_ARGS)
     addfunc(#name, ampl##name, FUNCADD_RANDOM_VALUED, num_args, \
             const_cast<char*>(#name));
 
+
+// Mean, Standard Deviation and Variance
+WRAP(gsl_stats_mean, ARRAY_ARGS);
+WRAP(gsl_stats_variance, ARRAY_ARGS);
+WRAP(gsl_stats_variance_m, ARRAY_ARGS_AND_LAST);
+WRAP(gsl_stats_sd, ARRAY_ARGS);
+WRAP(gsl_stats_sd_m, ARRAY_ARGS_AND_LAST);
+WRAP(gsl_stats_tss, ARRAY_ARGS);
+WRAP(gsl_stats_tss_m, ARRAY_ARGS_AND_LAST);
+WRAP(gsl_stats_variance_with_fixed_mean, ARRAY_ARGS_AND_LAST);
+WRAP(gsl_stats_sd_with_fixed_mean, ARRAY_ARGS_AND_LAST);
+
+// Absolute deviation
+WRAP(gsl_stats_absdev, ARRAY_ARGS);
+WRAP(gsl_stats_absdev_m, ARRAY_ARGS_AND_LAST);
+
+// Higher moments (skewness and kurtosis)
+WRAP(gsl_stats_skew, ARRAY_ARGS);
+WRAP(gsl_stats_skew_m_sd, ARRAY_ARGS_AND_LASTTWO);
+WRAP(gsl_stats_kurtosis, ARRAY_ARGS);
+WRAP(gsl_stats_kurtosis_m_sd, ARRAY_ARGS_AND_LASTTWO);
+
+// Autocorrelation
+WRAP(gsl_stats_lag1_autocorrelation, ARRAY_ARGS);
+WRAP(gsl_stats_lag1_autocorrelation_m, ARRAY_ARGS_AND_LAST);
+
+
+// Covariance
+static double amplgsl_stats_covariance(arglist* al) {
+  if (!check_args(al)) 
+    return 0; 
+  if (al->derivs) 
+      deriv_error(al, DERIVS_NOT_PROVIDED); 
+  size_t n = al->n / 2;
+  double* p1 = al->ra;
+  double* p2 = &al->ra[n];
+  return check_result(al, gsl_stats_covariance(p1, 1, p2, 1, n));
+}
+static double amplgsl_stats_covariance_m(arglist* al) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  size_t n = (al->n - 2) / 2;
+  double* p1 = al->ra;
+  double* p2 = &al->ra[n];
+  double m1 = al->ra[n * 2];
+  double m2 = al->ra[n * 2 + 1];
+  return check_result(al, gsl_stats_covariance_m(p1, 1, p2, 1, n, m1, m2));
+}
+
+// Correlation
+static double amplgsl_stats_correlation(arglist* al) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  size_t n = al->n / 2;
+  double* p1 = al->ra;
+  double* p2 = &al->ra[n];
+  return check_result(al, gsl_stats_correlation(p1, 1, p2, 1, n));
+}
+
+static double amplgsl_stats_spearman(arglist* al) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  size_t n = al->n / 2;
+  double* p1 = al->ra;
+  double* p2 = &al->ra[n];
+  double* work = allocate_double(al, n * 2);
+  return check_result(al, gsl_stats_spearman(p1, 1, p2, 1, n, work));
+}
+
+// Maximum and minimum
+WRAP(gsl_stats_max, ARRAY_ARGS);
+WRAP(gsl_stats_min, ARRAY_ARGS);
+WRAP(gsl_stats_max_index, ARRAY_ARGS);
+WRAP(gsl_stats_min_index, ARRAY_ARGS);
+
+// Median and Percentiles
+WRAP(gsl_stats_median_from_sorted_data, ARRAY_ARGS);
+WRAP(gsl_stats_median, ARRAY_ARGS);
+WRAP(gsl_stats_quantile_from_sorted_data, ARRAY_ARGS_AND_LAST);
+
+// Order Statistics
+WRAP(gsl_stats_select, ARRAY_ARGS_AND_LAST);
+
+// Robust Location Estimates
+WRAP(gsl_stats_trmean_from_sorted_data, ARRAY_ARGS_AND_LAST_TO_FIRST);
+WRAP(gsl_stats_gastwirth_from_sorted_data, ARRAY_ARGS);
+
+
+
+typedef double (*funcWithWork)(const double[], size_t, size_t, double[]);
+static double impl_callWithAllocation(arglist* al, funcWithWork f) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  double* work = allocate_double(al, al->n);
+  return check_result(al, f(al->ra, 1, al->n, work));
+}
+
+static double amplgsl_stats_mad0(arglist* al) {
+  funcWithWork f = &gsl_stats_mad0;
+  return impl_callWithAllocation(al,f);
+}
+static double amplgsl_stats_mad(arglist* al) {
+  funcWithWork f = &gsl_stats_mad;
+  return impl_callWithAllocation(al, f);
+}
+static double amplgsl_stats_Sn0_from_sorted_data(arglist* al) {
+  funcWithWork f = &gsl_stats_Sn0_from_sorted_data;
+  return impl_callWithAllocation(al, f);
+}
+static double amplgsl_stats_Sn_from_sorted_data(arglist* al) {
+  funcWithWork f = &gsl_stats_Sn_from_sorted_data;
+  return impl_callWithAllocation(al, f);
+}
+typedef double (*funcWithTwoWorks)(const double[], size_t, size_t, double[], int[]);
+static double impl_callWithTwoAllocations(arglist* al, funcWithTwoWorks f) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  double* work = allocate_double(al, al->n);
+  int* work_int = new int[al->n];
+  double result = f(al->ra, 1, al->n, work, work_int);
+  delete[] work_int;
+  return check_result(al, result);
+}
+static double amplgsl_stats_Qn0_from_sorted_data(arglist* al) {
+  funcWithTwoWorks f = &gsl_stats_Qn0_from_sorted_data;
+  return impl_callWithTwoAllocations(al, f);
+}
+static double amplgsl_stats_Qn_from_sorted_data(arglist* al) {
+  funcWithTwoWorks f = &gsl_stats_Qn_from_sorted_data;
+  return impl_callWithTwoAllocations(al, f);
+}
+
+#include "gsl/gsl_sort.h"
+static double amplgsl_sort(arglist* al) {
+  if (!check_args(al))
+    return 0;
+  if (al->derivs)
+    deriv_error(al, DERIVS_NOT_PROVIDED);
+  gsl_sort(al->ra, 1, al->n);
+  return 0;
+}
+
 extern "C" void funcadd_ASL(AmplExports *ae) {
   /* Don't call abort on error. */
   gsl_set_error_handler_off();
-
+  
   addfunc("gsl_version", (rfunc)amplgsl_version,
       FUNCADD_STRING_VALUED, 0, const_cast<char*>("gsl_version"));
+  /**
+   * @file sorting
+   *
+   * Sorting Functions
+   * -----------------
+  */
+
+  /**
+  * .. function:: gsl_sort(x)
+  *
+  * This function sorts the input parameters.
+  * The function can be used in AMPL to sort a variable or a parameter,
+  * but it has one important limitation: it has to be declared on the 
+  * same indexing expression that defines the entity to be ordered.
+  * For example::
+  * 
+  *   set A;
+  *   param p{A};
+  *   function gsl_sort({a in A}(INOUT));
+  *   call gsl_sort({a in A} d[a]); 
+  * 
+  */
+  addfunc("gsl_sort", amplgsl_sort,
+    FUNCADD_OUTPUT_ARGS, -1, const_cast<char*>("gsl_sort"));
 
   /**
    * @file elementary
@@ -3250,7 +3435,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    * .. function:: gsl_sf_bessel_Y0(x)
    *
    *  This routine computes the irregular cylindrical Bessel function of
-   *  zeroth order, $Y_0(x)$, for $x > 0$.
+   *  zeroth order, $Y_0(x)$, for $x >0$.
    */
   ADDFUNC(gsl_sf_bessel_Y0, 1);
 
@@ -7251,5 +7436,521 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    *   W. Fraser, J.F. Hart. Numerische Mathematik 12, 242-251 (1968).
    * * *Rational Chebyshev Approximations for the Error Function*, W.J. Cody.
    *   Mathematics of Computation 23, n107, 631-637 (July 1969).
+   */
+
+  /**
+  * @file statistics
+  *
+  * Statistics
+  * ==========
+  *
+  * This chapter describes the statistical functions in the library. The basic
+  * statistical functions include routines to compute the mean, variance and
+  * standard deviation. More advanced functions allow you to calculate absolute
+  * deviations, skewness, and kurtosis as well as the median and arbitrary
+  * percentiles. The algorithms use recurrence relations to compute average
+  * quantities in a stable way, without large intermediate values that might 
+  * overflow.
+  *
+  * .. toctree::
+  *    :maxdepth: 2
+  *
+  *    stat-mean
+  *    stat-absolutedev
+  *    stat-moments
+  *    stat-autocorrelation
+  *    stat-covariance
+  *    stat-correlation
+  *    stat-maxmin
+  *    stat-median
+  *    stat-order
+  *    stat-robustlocation
+  *    stat-robustscale
+  *    stat-refs
+  */
+
+  /**
+  * @file stat-mean
+  *
+  * Mean, Standard Deviation and Variance
+  * =====================================
+  */
+
+  /**
+  * .. function:: gsl_stats_mean(data)
+  *
+  * This function returns the arithmetic mean of data, a dataset
+  * of length n with stride stride. The arithmetic mean, or sample mean,
+  * is denoted by :math:`\hat{\mu}` and defined as,
+  *
+  *  .. math::
+  *     \hat{\mu}= {1 \over N} \sum x_i
+  *
+  * where x_i are the elements of the dataset data. For samples drawn 
+  * from a gaussian distribution the variance of $\Hat\mu is $\sigma^2 / $N.
+  */
+  ADDFUNC(gsl_stats_mean, -1);
+  /**
+  * .. function:: gsl_stats_variance (data)
+  * This function returns the estimated, or *sample*, variance of
+  * data a dataset of length *n*`. The estimated variance is denoted by 
+  *:math:`\hat{\sigma^2}` and is defined by,
+  *
+  *  .. math::
+  *    {\hat{\sigma}}^2 = {1 \over (N-1)} \sum (x_i - {\hat{\mu}})^2
+  *
+  * where :math:`x_i` are the elements of the dataset *data*.  Note that
+  * the normalization factor of :math:`1/(N-1)` results from the derivation
+  * of :math:`\hat{\sigma}^2` as an unbiased estimator of the population
+  * variance :math:`\sigma^2`.  For samples drawn from a Gaussian distribution
+  * the variance of :math:`\hat{\sigma}^2` itself is :math:`2 \sigma^4 / N`.
+  *
+  * This function computes the mean via a call to :func:`gsl_stats_mean`.  If
+  * you have already computed the mean then you can pass it directly to
+  * :func:`gsl_stats_variance_m`.
+  */
+  ADDFUNC(gsl_stats_variance, -1);
+
+  /**
+  * .. function:: gsl_stats_variance_m (data, mean)
+  *
+  * This function returns the sample variance of *data* relative to the
+  * given value of *mean*.  The function is computed with :math:`\hat{\mu}`
+  * replaced by the value of *mean* that you supply,
+  * 
+  *.. math:: {\hat{\sigma}}^2 = {1 \over (N-1)} \sum (x_i - mean)^2
+  * 
+  */
+  ADDFUNC(gsl_stats_variance_m, -1);
+  /**
+  * 
+  * .. function:: gsl_stats_sd (data)
+  * .. function:: gsl_stats_sd_m(data, mean)
+  * 
+  * The standard deviation is defined as the square root of the variance.
+  * These functions return the square root of the corresponding variance
+  * functions above.
+  */
+  ADDFUNC(gsl_stats_sd, -1);
+  ADDFUNC(gsl_stats_sd_m, -1);
+  /**
+  * .. function:: gsl_stats_tss (data)
+  * .. function:: gsl_stats_tss_m (data, mean)
+  *
+  * These functions return the total sum of squares(TSS) of *data* about
+  * the mean.For :func:`gsl_stats_tss_m` the user - supplied value of
+  * *mean* is used, and for :func:`gsl_stats_tss` it is computed using
+  * :func:`gsl_stats_mean`.
+  * 
+  *.. math:: {\rm TSS} = \sum(x_i - mean) ^ 2
+  */
+  ADDFUNC(gsl_stats_tss, -1);
+  ADDFUNC(gsl_stats_tss_m, -1);
+  /**
+  * .. function:: gsl_stats_variance_with_fixed_mean(data, mean)
+  *
+  * This function computes an unbiased estimate of the variance of
+  * *data* when the population mean *mean* of the underlying
+  * distribution is known *a priori* .In this case the estimator for
+  * the variance uses the factor :math:`1/N` and the sample mean
+  * :math:`\hat{\mu}` is replaced by the known population mean :math:`\mu`,
+  * 
+  *.. math:: {\hat{\sigma}} ^ 2 = { 1 \over N } \sum(x_i - \mu) ^ 2
+  */
+  ADDFUNC(gsl_stats_variance_with_fixed_mean, -1);
+  /**
+  * .. function:: gsl_stats_sd_with_fixed_mean(data, mean)
+  *
+  * This function calculates the standard deviation of *data* for a
+  * fixed population mean *mean*.  The result is the square root of the
+  * corresponding variance function.
+  */
+  ADDFUNC(gsl_stats_sd_with_fixed_mean, -1);
+
+  // Absolute deviation
+  /**
+  * @file stat-absolutedev
+  *
+  * Absolute deviation
+  * ==================
+  */
+  /**
+  * .. function:: gsl_stats_absdev(data)
+  *
+  * This function computes the absolute deviation from the mean of
+  * *data*, a dataset of length *n*.  The
+  * absolute deviation from the mean is defined as,
+  * 
+  *.. math:: absdev  = {1 \over N} \sum |x_i - {\hat{\mu}}|
+  * 
+  * where :math:`x_i` are the elements of the dataset *data*.  The
+  * absolute deviation from the mean provides a more robust measure of the
+  * width of a distribution than the variance.  This function computes the
+  * mean of *data* via a call to :func:`gsl_stats_mean`.
+  */
+  ADDFUNC(gsl_stats_absdev, -1);
+  /**
+  * .. function:: gsl_stats_absdev_m(data)
+  *
+  * This function computes the absolute deviation of the dataset *data*
+  * relative to the given value of *mean*,
+  *
+  *.. math:: absdev  = {1 \over N} \sum |x_i - mean|
+  * 
+  * This function is useful if you have already computed the mean of
+  * *data* (and want to avoid recomputing it), or wish to calculate the
+  * absolute deviation relative to another value (such as zero, or the
+  * median).
+   */
+  ADDFUNC(gsl_stats_absdev_m, -1);
+
+  // Higher moments (skewness and kurtosis)
+  /**
+  * @file stat-moments
+  *
+  * Higher moments (skewness and kurtosis)
+  * ======================================
+  */
+  /**
+  * .. function:: gsl_stats_skew(data)
+  *
+  * This function computes the skewness of *data*, a dataset of length
+  * *n*. The skewness is defined as,
+  *
+  *  .. math::
+  *     skew = {1 \over N} \sum 
+  *       {\left( x_i - {\hat{\mu}} \over {\hat{\sigma}} \right)}^3
+  * 
+  * where :math:`x_i` are the elements of the dataset *data*.  The skewness
+  * measures the asymmetry of the tails of a distribution.
+  * 
+  * The function computes the mean and estimated standard deviation of
+  * *data* via calls to :func:`gsl_stats_mean` and :func:`gsl_stats_sd`.
+  */
+  ADDFUNC(gsl_stats_skew, -1);
+  /**
+  * .. function:: gsl_stats_skew_m_sd(data, mean, sd)
+  *
+  * This function computes the skewness of the dataset *data* using the
+  * given values of the mean *mean* and standard deviation *sd*,
+  *
+  *  .. math::
+  *     skew = {1 \over N} \sum {\left( x_i - mean \over sd \right)}^3
+  *
+  * where :math:`x_i` are the elements of the dataset *data*.  The skewness
+  * measures the asymmetry of the tails of a distribution.
+  *
+  * These functions are useful if you have already computed the mean and
+  * standard deviation of *data* and want to avoid recomputing them.
+  */
+  ADDFUNC(gsl_stats_skew_m_sd, -1);
+
+  /**
+  * .. function:: gsl_stats_kurtosis(data)
+  *
+  * This function computes the kurtosis of *data*. The kurtosis is defined as,
+  *
+  *  .. math::
+  *     kurtosis = {1 \over N}  \left( \sum
+  *       {\left(x_i - {\hat{\mu}} \over {\hat{\sigma}} \right)}^4 
+  *       \right) - 3
+  * The kurtosis measures how sharply peaked a distribution is, relative to
+  * its width.  The kurtosis is normalized to zero for a Gaussian
+  * distribution.
+   */
+  ADDFUNC(gsl_stats_kurtosis, -1);
+
+  /**
+  * .. function:: gsl_stats_kurtosis_m_sd(data, mean, sd)
+  *
+  * This function computes the kurtosis of the dataset *data* using the
+  * given values of the mean *mean* and standard deviation *sd*,
+  *
+  *  .. math::
+  *     kurtosis = {1 \over N}
+  *         \left( \sum {\left(x_i - mean \over sd \right)}^4 \right) - 3
+  * 
+  * This function is useful if you have already computed the mean and
+  * standard deviation of *data* and want to avoid recomputing them.
+   */
+  ADDFUNC(gsl_stats_kurtosis_m_sd, -1);
+
+  // Autocorrelation
+  /**
+  * @file stat-autocorrelation
+  *
+  * Autocorrelation
+  * ===============
+  */
+  /**
+  * .. function:: gsl_stats_lag1_autocorrelation(data)
+  *
+  * This function computes the lag-1 autocorrelation of the dataset *data*.
+  *
+  *  .. math::
+  *      a_1 = {\sum_{i = 2}^{n} (x_{i} - \hat{\mu}) (x_{i-1} - \hat{\mu})
+  *       \over
+  *       \sum_{i = 1}^{n} (x_{i} - \hat{\mu}) (x_{i} - \hat{\mu})}
+  * 
+  */
+  ADDFUNC(gsl_stats_lag1_autocorrelation, -1);
+
+  /**
+  * .. function:: gsl_stats_lag1_autocorrelation_m (data, mean)
+  *
+  * This function computes the lag-1 autocorrelation of the dataset
+  * *data* using the given value of the mean *mean*.
+  */
+  ADDFUNC(gsl_stats_lag1_autocorrelation_m, -1);
+
+
+  // Covariance
+  /**
+  * @file stat-covariance
+  *
+  * Covariance
+  * ==========
+  */
+
+  /**
+  * .. function:: gsl_stats_covariance (data1, data2)
+  *
+  * This function computes the covariance of the datasets *data1* and
+  * *data2* which must both be of the same length *n*.
+  *
+  *  .. math:: covar = {1 \over (n - 1)} \sum_{i = 1}^{n} (x_{i} - \hat{x}) (y_{i} - \hat{y})
+  *
+  * 
+  */
+  ADDFUNC(gsl_stats_covariance, -1);
+
+  /**
+  * .. function:: gsl_stats_covariance_m (data1, data2, mean1, mean2)
+  *
+  * This function computes the covariance of the datasets *data1* and
+  * *data2* which must both be of the same length *n*.
+  *
+  *  .. math:: covar = {1 \over (n - 1)} \sum_{i = 1}^{n} (x_{i} - \hat{x}) (y_{i} - \hat{y})
+  *
+  * This function computes the covariance of the datasets *data1* and
+  * *data2* using the given values of the means, *mean1* and
+  * *mean2*.  This is useful if you have already computed the means of
+  * *data1* and *data2* and want to avoid recomputing them.
+  */
+  ADDFUNC(gsl_stats_covariance_m, -1);
+
+  // Correlation
+  /**
+  * @file stat-correlation
+  *
+  * Correlation
+  * ===========
+  */
+
+  /**
+  * .. function:: gsl_stats_correlation (data1, data2)
+  *
+  * This function efficiently computes the Pearson correlation coefficient
+  * between the datasets *data1* and *data2* which must both be of
+  * the same length *n*.
+  *
+  *  .. math:: r = {cov(x, y) \over \hat{\sigma_x} \hat{\sigma_y}} =
+  *       {{1 \over n-1} \sum (x_i - \hat{x}) (y_i - \hat{y})
+  *       \over
+  *       \sqrt{{1 \over n-1} \sum (x_i - {\hat{x}})^2}
+  *       \sqrt{{1 \over n-1} \sum (y_i - {\hat{y}})^2}
+  *       }
+  */ 
+  ADDFUNC(gsl_stats_correlation, -1);
+
+  /**
+  * .. function:: gsl_stats_spearman (data1, data2)
+  *
+  *  This function computes the Spearman rank correlation coefficient between
+  * the datasets *data1* and *data2* which must both be of the same
+  * length *n*. The Spearman rank correlation between vectors :math:`x` and
+  * :math:`y` is equivalent to the Pearson correlation between the ranked
+  * vectors :math:`x_R` and :math:`y_R`, where ranks are defined to be the
+  * average of the positions of an element in the ascending order of the values.
+  */
+  ADDFUNC(gsl_stats_spearman, -1);
+
+  // Weighted Samples functions are not wrapped
+
+  // Maximum and Minimum values
+  /**
+  * @file stat-maxmin
+  *
+  * Maximum and Minimum values
+  * ==========================
+  */
+
+  /**
+  * .. function:: gsl_stats_max (data)
+  *
+  * This function returns the maximum value in *data*. The maximum value is defined
+  * as the value of the element :math:`x_i` which satisfies :math:`x_i \ge x_j`
+  * for all :math:`j`.
+  *
+  * If you want instead to find the element with the largest absolute
+  * magnitude you will need to apply :func:`fabs` or :func:`abs` to your data
+  * before calling this function.
+  */
+  ADDFUNC(gsl_stats_max, -1);
+
+  /**
+  * .. function:: gsl_stats_min (data)
+  *
+  * This function returns the minimum value in *data*.  The minimum value is defined
+  * as the value of the element :math:`x_i` which satisfies :math:`x_i \le x_j`
+  * for all :math:`j`.
+  *
+  * If you want instead to find the element with the smallest absolute
+  * magnitude you will need to apply :func:`fabs` or :func:`abs` to your data
+  * before calling this function.
+  */
+  ADDFUNC(gsl_stats_min, -1);
+
+  /**
+  * .. function:: gsl_stats_max_index (data)
+  *
+  * This function returns the index of the maximum value in *data*. The maximum value is
+  * defined as the value of the element :math:`x_i` which satisfies 
+  * :math:`x_i \ge x_j`
+  * for all :math:`j`.  When there are several equal maximum
+  * elements then the first one is chosen.
+  */
+  ADDFUNC(gsl_stats_max_index, -1);
+
+  /**
+  * .. function:: gsl_stats_max_index (data)
+  *
+  * This function returns the index of the minimum value in *data*. The minimum value is
+  * defined as the value of the element :math:`x_i` which satisfies
+   :math:`x_i \le x_j`
+  * for all :math:`j`.  When there are several equal maximum
+  * elements then the first one is chosen.
+  */
+  ADDFUNC(gsl_stats_min_index, -1);
+
+  // Median and Percentiles
+  /**
+  * @file stat-median
+  *
+  * Median and Percentiles
+  * ======================
+  * The median and percentile functions described in this section operate on
+  * sorted data in :math:`O(1)` time. There is also a routine for computing
+  * the median of an unsorted input array in average :math:`O(n)` time using
+  * the quickselect algorithm. For convenience we use *quantiles*, measured on a scale
+  * of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
+  */
+
+  /**
+  * .. function:: gsl_stats_median_from_sorted_data (data)
+  *
+  * This function returns the median value of :data:`sorted_data`.
+  * The elements of the array
+  * must be in ascending numerical order.  There are no checks to see
+  * whether the data are sorted, so the function :func:`gsl_sort` should
+  * always be used first.
+  *
+  * When the dataset has an odd number of elements the median is the value
+  * of element :math:`(n-1)/2`.  When the dataset has an even number of
+  * elements the median is the mean of the two nearest middle values,
+  * elements :math:`(n-1)/2` and :math:`n/2`.  Since the algorithm for
+  * computing the median involves interpolation this function always returns
+  * a floating-point number, even for integer data types.
+  */
+  ADDFUNC(gsl_stats_median_from_sorted_data, -1);
+
+  /**
+  * .. function:: gsl_stats_median (data)
+  *
+  * This function returns the median value of *data*, a dataset
+  * The median is found using the quickselect algorithm. The input array 
+  * does not need to be sorted.
+  */
+  ADDFUNC(gsl_stats_median, -1);
+
+  /**
+  * .. function:: gsl_stats_quantile_from_sorted_data (data, f)
+  * 
+  * This function returns a quantile value of *sorted_data*. The
+  * elements of the array must be in ascending numerical order.  The
+  * quantile is determined by the *f*, a fraction between 0 and 1.  For
+  * example, to compute the value of the 75th percentile *f* should have
+  * the value 0.75.
+  *
+  * There are no checks to see whether the data are sorted, so the function
+  * :func:`gsl_sort` should always be used first.
+  *
+  * The quantile is found by interpolation, using the formula
+  * 
+  *    .. math:: \hbox{quantile} = (1 - \delta) x_i + \delta x_{i+1}
+  *
+  * where :math:`i` is ``floor((n - 1)f)`` and :math:`\delta` is
+  * :math:`(n-1)f - i`.
+  *
+  * Thus the minimum value of the array (:code:`data[1]`) is given by
+  * *f* equal to zero, the maximum value (:code:`data[n]`) is
+  * given by *f* equal to one and the median value is given by *f*
+  * equal to 0.5.  Since the algorithm for computing quantiles involves
+  * interpolation this function always returns a floating-point number, even
+  * for integer data types.
+  */
+
+  ADDFUNC(gsl_stats_quantile_from_sorted_data, -1);
+
+  // Order Statistics
+  ADDFUNC(gsl_stats_select, -1);
+
+  // Robust Location Estimates
+  ADDFUNC(gsl_stats_trmean_from_sorted_data, -1);
+  ADDFUNC(gsl_stats_gastwirth_from_sorted_data, -1);
+
+  // Robust Scale  Estimates
+  ADDFUNC(gsl_stats_mad0, -1);
+  ADDFUNC(gsl_stats_mad, -1);
+  ADDFUNC(gsl_stats_Sn0_from_sorted_data, -1);
+  ADDFUNC(gsl_stats_Sn_from_sorted_data, -1);
+  ADDFUNC(gsl_stats_Qn0_from_sorted_data, -1);
+  ADDFUNC(gsl_stats_Qn_from_sorted_data, -1);
+
+/**
+   * @file ran-refs
+   *
+   * References and Further Reading
+   * ==============================
+   *
+   * The standard reference for almost any topic in statistics is the 
+   * multi-volume *Advanced Theory of Statistics* by Kendall and Stuart.
+   *
+   * * Maurice Kendall, Alan Stuart, and J. Keith Ord., 
+   *   *The Advanced Theory of Statistics* (multiple volumes), reprinted as
+   *   *Kendall’s Advanced Theory of Statistics*, Wiley, ISBN 047023380X.
+   *
+   * Many statistical concepts can be more easily understood by a Bayesian
+   * approach. The following book by Gelman, Carlin, Stern and Rubin gives
+   * a comprehensive coverage of the subject.
+   *
+   * * Andrew Gelman, John B. Carlin, Hal S. Stern, Donald B. Rubin. 
+   *   *Bayesian Data Analysis*. Chapman & Hall, ISBN 0412039915.
+   *
+   * For physicists the Particle Data Group provides useful reviews of
+   * Probability and Statistics in the “Mathematical Tools” section of
+   * its Annual Review of Particle Physics.
+   *
+   * * *Review of Particle Properties* R.M. Barnett et al., Physical Review
+   *   D54, 1 (1996) http://pdg.lbl.gov/.
+   *
+   * The Review of Particle Physics is available online in postscript and pdf
+   * format.
+   *
+   * The following papers describe robust scale estimation,
+   * * C. Croux and P. J. Rousseeuw, *Time-Efficient algorithms for two highly 
+       robust estimators of scale*, Comp. Stat., Physica, Heidelberg, 1992.
+   * * P. J. Rousseeuw and C. Croux, *Explicit scale estimators with high
+       breakdown point*, L1-Statistical Analysis and Related Methods, pp. 77-92, 1992.
    */
 }

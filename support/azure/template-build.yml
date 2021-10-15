@@ -31,6 +31,13 @@ jobs:
         workingDirectory: 'build' 
         cmakeArgs: .. ${{ parameters.cmakeDefs }}
     displayName: "Configure with cmake"
+  - task: UsePythonVersion@0
+    inputs:
+        name: pyTools
+  - script: |
+        $(pyTools.pythonLocation)/bin/pip install --upgrade pip
+        $(pyTools.pythonLocation)/bin/pip install sphinx
+        displayName: Install Python-based tools.
   - task: CMake@1
     inputs:
         workingDirectory: 'build' 

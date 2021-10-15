@@ -12,7 +12,9 @@ array using GSL sort:
   include gsl.ampl;
 
   set A := 1..5;
-  param data{a in A} := a^2;
+  # Note that the parameter cannot have values assigned in the declaration
+  # or the sorting below will not work, as its values will be const.
+  param data{a in A} default 6-a;
 
   display gsl_stats_mean({a in A} data[a]);
   display gsl_stats_variance({a in A} data[a]);

@@ -1,0 +1,8 @@
+version: 2
+
+python:
+  version: "3.8"
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+   configuration: ampl/doc/conf.py

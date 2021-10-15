@@ -1,6 +1,34 @@
 Examples
 ========
 
+Use statistics functions
+------------------------
+
+This example shows how to use statistics functions and how to sort an 
+array using GSL sort:
+
+.. code-block:: none
+
+  include gsl.ampl;
+
+  set A := 1..5;
+  param data{a in A} := a^2;
+
+  display gsl_stats_mean({a in A} data[a]);
+  display gsl_stats_variance({a in A} data[a]);
+  display gsl_stats_max({a in A} data[a]);
+  display gsl_stats_min({a in A} data[a]);
+
+  # The sort function must be declared on the indexing set
+  # to be compliant with AMPL syntax
+  function gsl_sort({a in A}(INOUT));
+  call gsl_sort({a in A} data[a]);
+
+  # Now the data array is sorted, can use functions that 
+  # expect sorted data
+  display gsl_stats_quantile_from_sorted_data({a in A} data[a], 0.66)
+
+
 Finding Minimum of the Gamma Function
 -------------------------------------
 

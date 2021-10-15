@@ -3,7 +3,7 @@
 Usage: extract-docs.py <sourcefile> [-o DIR  Output directory for generated rst files]
 """
 import os, re
-from docopt import docopt
+import argparse
 
 def extract_docs(filename, output_dir):
   "Extract the AMPLGSL documentation from the code."
@@ -25,10 +25,16 @@ def extract_docs(filename, output_dir):
       output.write(s.rstrip(' '))
 
 if __name__ == '__main__':
-  args = docopt(__doc__)
-  if(args['-o']):
-    outputdir = args['DIR']
+  parser = argparse.ArgumentParser(description='Extract documentation from source file')
+  parser.add_argument('sourceFile', metavar='source', type=str, nargs=1,
+                    help='source file to parse')
+  parser.add_argument('-o', dest='outputdir', type=str, nargs=1,
+                    help='destination directory')
+
+  args = parser.parse_args()
+  if args.outputdir:
+    outputdir= args.outputdir[0].strip()
   else:
     outputdir = './amplgsl'
-  print(f"Extracting {args['<sourcefile>']} to {outputdir}")
-  extract_docs(args['<sourcefile>'], outputdir)
+  print(f"Extracting {args.sourceFile[0]} to {outputdir}")
+  extract_docs(args.sourceFile[0], outputdir)

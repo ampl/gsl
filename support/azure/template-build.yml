@@ -26,18 +26,18 @@ jobs:
         sudo apt install -y g++-multilib gcc-multilib
   - checkout: self
     submodules: true
-  - task: CMake@1
-    inputs:
-        workingDirectory: 'build' 
-        cmakeArgs: .. ${{ parameters.cmakeDefs }}
-    displayName: "Configure with cmake"
   - task: UsePythonVersion@0
     inputs:
         name: pyTools
   - script: |
         $(pyTools.pythonLocation)/bin/pip install --upgrade pip
         $(pyTools.pythonLocation)/bin/pip install sphinx
-        displayName: Install Python-based tools.
+    displayName: Install Python tools for documentation building
+  - task: CMake@1
+    inputs:
+        workingDirectory: 'build' 
+        cmakeArgs: .. ${{ parameters.cmakeDefs }}
+    displayName: "Configure with cmake"
   - task: CMake@1
     inputs:
         workingDirectory: 'build' 

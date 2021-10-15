@@ -7,6 +7,7 @@ import argparse
 
 def extract_docs(filename, output_dir):
   "Extract the AMPLGSL documentation from the code."
+  print(f"Extracting {filename} to {output_dir}")
   output = None
   if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -36,5 +37,4 @@ if __name__ == '__main__':
     outputdir= args.outputdir[0].strip()
   else:
     outputdir = './amplgsl'
-  print(f"Extracting {args.sourceFile[0]} to {outputdir}")
   extract_docs(args.sourceFile[0], outputdir)

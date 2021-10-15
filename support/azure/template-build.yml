@@ -30,8 +30,8 @@ jobs:
     inputs:
         name: pyTools
   - script: |
-        $(pyTools.pythonLocation)/bin/pip install --upgrade pip
-        $(pyTools.pythonLocation)/bin/pip install sphinx
+        pip install --upgrade pip
+        pip install sphinx
     displayName: Install Python tools for documentation building
   - task: CMake@1
     inputs:

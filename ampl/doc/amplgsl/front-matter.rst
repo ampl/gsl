@@ -16,16 +16,14 @@ This documentation is based on the *GNU Scientiﬁc Library* reference manual by
 
 The current manual documents the AMPL Bindings for GNU Scientific Library (GSL),
 a collection of numerical routines for scientific computing. It corresponds to
-release 1.15 of the library. Please report any errors in this manual to
-viz@ampl.com.
+release 1.15 of the library. 
 
 More information about GSL can be found at the project homepage,
 http://www.gnu.org/software/gsl/.
 
-Copyright © 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-2006, 2007, 2008, 2009, 2010, 2011 The GSL Team.
+Copyright © 1996-2021 The GSL Team.
 
-Copyright of modifications © 2012 AMPL Optimization Inc.
+Copyright of modifications © 2012-2021 AMPL Optimization Inc.
 
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version

@@ -1,7 +1,7 @@
 /*
  AMPL bindings for GNU Scientific Library.
 
- Copyright (C) 2012 AMPL Optimization Inc
+ Copyright (C) 2021 AMPL Optimization Inc
 
  Permission to use, copy, modify, and distribute this software and its
  documentation for any purpose and without fee is hereby granted,
@@ -7480,20 +7480,21 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   * .. function:: gsl_stats_mean(data)
   *
   * This function returns the arithmetic mean of data, a dataset
-  * of length n with stride stride. The arithmetic mean, or sample mean,
-  * is denoted by :math:`\hat{\mu}` and defined as,
+  * of length *n* with stride stride. The arithmetic mean, or sample mean,
+  * is denoted by :math:{\hat{\mu}} and defined as,
   *
-  *  .. math::
+  * .. math::
   *     \hat{\mu}= {1 \over N} \sum x_i
   *
-  * where x_i are the elements of the dataset data. For samples drawn 
-  * from a gaussian distribution the variance of $\Hat\mu is $\sigma^2 / $N.
+  * where  :math:{x_i} are the elements of the dataset data. For samples drawn 
+  * from a gaussian distribution the variance of :math:{\hat{\mu}} is :math:{\sigma^2 / $N}.
   */
   ADDFUNC(gsl_stats_mean, -1);
   /**
   * .. function:: gsl_stats_variance (data)
+  * 
   * This function returns the estimated, or *sample*, variance of
-  * data a dataset of length *n*`. The estimated variance is denoted by 
+  * data a dataset of length *n*. The estimated variance is denoted by 
   *:math:`\hat{\sigma^2}` and is defined by,
   *
   *  .. math::
@@ -7654,6 +7655,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   *     kurtosis = {1 \over N}  \left( \sum
   *       {\left(x_i - {\hat{\mu}} \over {\hat{\sigma}} \right)}^4 
   *       \right) - 3
+  * 
   * The kurtosis measures how sharply peaked a distribution is, relative to
   * its width.  The kurtosis is normalized to zero for a Gaussian
   * distribution.
@@ -7766,7 +7768,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   /**
   * .. function:: gsl_stats_spearman (data1, data2)
   *
-  *  This function computes the Spearman rank correlation coefficient between
+  * This function computes the Spearman rank correlation coefficient between
   * the datasets *data1* and *data2* which must both be of the same
   * length *n*. The Spearman rank correlation between vectors :math:`x` and
   * :math:`y` is equivalent to the Pearson correlation between the ranked
@@ -7823,11 +7825,13 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   ADDFUNC(gsl_stats_max_index, -1);
 
   /**
-  * .. function:: gsl_stats_max_index (data)
+  * .. function:: gsl_stats_min_index (data)
   *
   * This function returns the index of the minimum value in *data*. The minimum value is
   * defined as the value of the element :math:`x_i` which satisfies
-   :math:`x_i \le x_j`
+  * 
+  * :math:`x_i \le x_j`
+  * 
   * for all :math:`j`.  When there are several equal maximum
   * elements then the first one is chosen.
   */
@@ -7849,7 +7853,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   /**
   * .. function:: gsl_stats_median_from_sorted_data (data)
   *
-  * This function returns the median value of :data:`sorted_data`.
+  * This function returns the median value of *sorted_data*.
   * The elements of the array
   * must be in ascending numerical order.  There are no checks to see
   * whether the data are sorted, so the function :func:`gsl_sort` should
@@ -7918,7 +7922,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   ADDFUNC(gsl_stats_Qn_from_sorted_data, -1);
 
 /**
-   * @file ran-refs
+   * @file stat-refs
    *
    * References and Further Reading
    * ==============================
@@ -7928,7 +7932,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    *
    * * Maurice Kendall, Alan Stuart, and J. Keith Ord., 
    *   *The Advanced Theory of Statistics* (multiple volumes), reprinted as
-   *   *Kendall’s Advanced Theory of Statistics*, Wiley, ISBN 047023380X.
+   *   *Kendall's Advanced Theory of Statistics*, Wiley, ISBN 047023380X.
    *
    * Many statistical concepts can be more easily understood by a Bayesian
    * approach. The following book by Gelman, Carlin, Stern and Rubin gives
@@ -7938,7 +7942,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    *   *Bayesian Data Analysis*. Chapman & Hall, ISBN 0412039915.
    *
    * For physicists the Particle Data Group provides useful reviews of
-   * Probability and Statistics in the “Mathematical Tools” section of
+   * Probability and Statistics in the "Mathematical Tools" section of
    * its Annual Review of Particle Physics.
    *
    * * *Review of Particle Properties* R.M. Barnett et al., Physical Review
@@ -7948,9 +7952,11 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    * format.
    *
    * The following papers describe robust scale estimation,
-   * * C. Croux and P. J. Rousseeuw, *Time-Efficient algorithms for two highly 
-       robust estimators of scale*, Comp. Stat., Physica, Heidelberg, 1992.
-   * * P. J. Rousseeuw and C. Croux, *Explicit scale estimators with high
-       breakdown point*, L1-Statistical Analysis and Related Methods, pp. 77-92, 1992.
+   * 
+   * * C. Croux and P. J. Rousseeuw, *Time-Efficient algorithms for two highly*
+   *   *robust estimators of scale*, Comp. Stat., Physica, Heidelberg, 1992.
+   * * P. J. Rousseeuw and C. Croux, *Explicit scale estimators with high*
+   *   *breakdown point*, L1-Statistical Analysis and Related Methods, pp. 77-92, 1992.
+   * 
    */
 }

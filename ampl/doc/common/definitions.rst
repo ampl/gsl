@@ -1,2 +1,0 @@
-.. |Product| replace:: *ampls*
-

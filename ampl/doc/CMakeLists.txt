@@ -6,7 +6,7 @@ if(NOT SPHINX_EXECUTABLE)
   message(STATUS "Documentation generation disabled (requires sphinx)")
 endif()
 
-set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/support/extract-docs.py)
+set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/support/extractdocs.py)
 
 # Get .rst file names from amplgsl.cc.
 set(docsStaticDir ${CMAKE_CURRENT_SOURCE_DIR}/amplgsl)
@@ -29,8 +29,7 @@ add_custom_command(OUTPUT ${amplgsl_docs}
 
 # Add static documents to amplgsl_docs to then add them as dependecies to the target
 # and ensure they get built
-set(staticDocs accuracy examples fdl  freedoc front-matter  gpl  history 
-      index  intro no-warranty  rng)
+set(staticDocs accuracy examples fdl  freedoc front-matter  gpl  history intro no-warranty  rng)
 foreach(f ${staticDocs})
     set(amplgsl_docs ${amplgsl_docs} ${docsStaticDir}/${f}.rst)
 endforeach()

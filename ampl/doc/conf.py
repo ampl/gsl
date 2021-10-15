@@ -263,10 +263,15 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
-from support import extractdocs
-import os
+
+
 
 def builder_inited_handler(app):
+    import os
+    import sys
+    sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+    from support import extractdocs
+
     me = os.path.dirname(os.path.realpath(__file__))
     src = os.path.join(me, "../src/amplgsl.cc")
     dest = os.path.join(me, "amplgsl/ref")

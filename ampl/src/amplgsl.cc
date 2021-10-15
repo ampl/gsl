@@ -3130,8 +3130,8 @@ static double impl_callWithTwoAllocations(arglist* al, funcWithTwoWorks f) {
     return 0;
   if (al->derivs)
     deriv_error(al, DERIVS_NOT_PROVIDED);
-  double* work = allocate_double(al, al->n);
-  int* work_int = new int[al->n];
+  double* work = allocate_double(al, al->n*3);
+  int* work_int = new int[al->n*5];
   double result = f(al->ra, 1, al->n, work, work_int);
   delete[] work_int;
   return check_result(al, result);
@@ -7481,13 +7481,13 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   *
   * This function returns the arithmetic mean of data, a dataset
   * of length *n* with stride stride. The arithmetic mean, or sample mean,
-  * is denoted by :math:{\hat{\mu}} and defined as,
+  * is denoted by :math:`\hat{\mu}` and defined as,
   *
   * .. math::
   *     \hat{\mu}= {1 \over N} \sum x_i
   *
-  * where  :math:{x_i} are the elements of the dataset data. For samples drawn 
-  * from a gaussian distribution the variance of :math:{\hat{\mu}} is :math:{\sigma^2 / $N}.
+  * where  :math:`x_i` are the elements of the dataset data. For samples drawn 
+  * from a gaussian distribution the variance of :math:`\hat{\mu}` is :math:`\sigma^2 / $N`.
   */
   ADDFUNC(gsl_stats_mean, -1);
   /**
@@ -7779,7 +7779,6 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
 
   // Weighted Samples functions are not wrapped
 
-  // Maximum and Minimum values
   /**
   * @file stat-maxmin
   *
@@ -7906,18 +7905,183 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
 
   ADDFUNC(gsl_stats_quantile_from_sorted_data, -1);
 
-  // Order Statistics
+  /**
+  * @file stat-order
+  *
+  * Order Statistics
+  * ================
+  * 
+  * The :math:`k`-th *order statistic* of a sample is equal to its :math:`k`-th smallest value.
+  * The :math:`k`-th order statistic of a set of :math:`n` values :math:`x = \left\{ x_i \right\}, 1 \le i \le n` is
+  * denoted :math:`x_{(k)}`. The median of the set :math:`x` is equal to :math:`x_{\left( \frac{n}{2} \right)}` if
+  * :math:`n` is odd, or the average of :math:`x_{\left( \frac{n}{2} \right)}` and :math:`x_{\left( \frac{n}{2} + 1 \right)}`
+  * if :math:`n` is even. The :math:`k`-th smallest element of a length :math:`n` vector can be found
+  * in average :math:`O(n)` time using the quickselect algorithm.
+  */
+
+  /**
+  * .. function:: gsl_stats_select (data, f)
+  *
+  * This function finds the *k*-th smallest element of the input array *data*.
+  */
   ADDFUNC(gsl_stats_select, -1);
 
-  // Robust Location Estimates
+  /**
+  * @file stat-robustlocation
+  *
+  * Robust Location Estimates
+  * =========================
+  * 
+  * A *location estimate* refers to a typical or central value which best describes a given
+  * dataset. The mean and median are both examples of location estimators. However, the
+  * mean has a severe sensitivity to data outliers and can give erroneous values when
+  * even a small number of outliers are present. The median on the other hand, has
+  * a strong insensitivity to data outliers, but due to its non-smoothness it can
+  * behave unexpectedly in certain situations. GSL offers the following alternative
+  * location estimators, which are robust to the presence of outliers.
+  */
+
+  /**
+  * Trimmed Mean
+  * ------------
+  * The trimmed mean, or *truncated mean*, discards a certain number of smallest and largest
+  * samples from the input vector before computing the mean of the remaining samples. The
+  * amount of trimming is specified by a factor :math:`\alpha \in [0,0.5]`. Then the
+  * number of samples discarded from both ends of the input vector is
+  * :math:`\left\lfloor \alpha n \right\rfloor`, where :math:`n` is the length of the input.
+  * So to discard 25% of the samples from each end, one would set :math:`\alpha = 0.25`.
+  *
+  * .. function:: gsl_stats_trmean_from_sorted_data (data, alpha)
+  *
+  *   This function returns the trimmed mean of *sorted_data*.
+  *   The elements of the array must be in ascending numerical order.  
+  *   There are no checks to see whether the data are sorted, so the function 
+  *   :func:`gsl_sort` should always be used first. 
+  *   The trimming factor :math:`\alpha` is given in *alpha*.
+  *   If :math:`\alpha \ge 0.5`, then the median of the input is returned.
+  */
   ADDFUNC(gsl_stats_trmean_from_sorted_data, -1);
+
+  /**
+  * Gastwirth Estimator
+  * -------------------
+  *
+  * Gastwirth's location estimator is a weighted sum of three order statistics,
+  *
+  *   .. math:: gastwirth = 0.3 \times Q_{\frac{1}{3}} + 0.4 \times Q_{\frac{1}{2}} + 0.3 \times Q_{\frac{2}{3}}
+  *
+  * where :math:`Q_{\frac{1}{3}}` is the one-third quantile, :math:`Q_{\frac{1}{2}}` is the one-half
+  * quantile (i.e. median), and :math:`Q_{\frac{2}{3}}` is the two-thirds quantile.
+  * 
+  * .. function:: gsl_stats_gastwirth_from_sorted_data (sorted_data)
+
+  *   This function returns the Gastwirth location estimator of *sorted_data*.
+  *   The elements of the array must be in ascending numerical order.
+  *   There are no checks to see whether the data are sorted, so the function
+  *   :func:`gsl_sort` should always be used first.
+  */
   ADDFUNC(gsl_stats_gastwirth_from_sorted_data, -1);
 
-  // Robust Scale  Estimates
+  /**
+  * @file stat-robustscale
+  *
+  * Robust Scale  Estimates
+  * =======================
+  * 
+  * A *robust scale estimate*, also known as a robust measure of scale, attempts to quantify
+  * the statistical dispersion (variability, scatter, spread) in a set of data which may contain outliers.
+  * In such datasets, the usual variance or standard deviation scale estimate can be rendered useless
+  * by even a single outlier.
+  */
+
+  /**
+  * Median Absolute Deviation (MAD)
+  * -------------------------------
+  * 
+  * The median absolute deviation (MAD) is defined as
+  * 
+  *.. math:: MAD = 1.4826 \times \textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}
+  * 
+  * In words, first the median of all samples is computed. Then the median
+  * is subtracted from all samples in the input to find the deviation of each sample
+  * from the median. The median of all absolute deviations is then the MAD.
+  * The factor :math:`1.4826` makes the MAD an unbiased estimator of the standard deviation for Gaussian data.
+  * The median absolute deviation has an asymptotic efficiency of 37%.
+  *
+  * .. function:: gsl_stats_mad0(data)
+  * .. function:: gsl_stats_mad(data)
+  *
+  *    These functions return the median absolute deviation of *data*.
+  *    The :code:`mad0` function calculates
+  * 
+  *      :math:`\textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}`
+  * 
+  *    (i.e. the :math:`MAD` statistic without the bias correction scale factor).
+  */
   ADDFUNC(gsl_stats_mad0, -1);
   ADDFUNC(gsl_stats_mad, -1);
+
+  /**
+  * :math:`S_n` Statistic
+  * ---------------------
+  *
+  * The :math:`S_n` statistic developed by Croux and Rousseeuw is defined as
+  *
+  *   .. math:: S_n = 1.1926 \times c_n \times \textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}
+  *
+  * For each sample :math:`x_i, 1 \le i \le n`, the median of the values :math:`\left| x_i - x_j \right|` is computed for all
+  * :math:`x_j, 1 \le j \le n`. This yields :math:`n` values, whose median then gives the final :math:`S_n`.
+  * The factor :math:`1.1926` makes :math:`S_n` an unbiased estimate of the standard deviation for Gaussian data.
+  * The factor :math:`c_n` is a correction factor to correct bias in small sample sizes. :math:`S_n` has an asymptotic
+  * efficiency of 58%.
+  *
+  * .. function:: gsl_stats_Sn0_from_sorted_data(sorted_data)
+  * .. function:: gsl_stats_Sn_from_sorted_data(sorted_data)
+  *
+  *    These functions return the :math:`S_n` statistic of *sorted_data*.
+  *    The elements of the array must be in ascending numerical order.  
+  *    There are no checks to see
+  *    whether the data are sorted, so the function :func:`gsl_sort` should
+  *    always be used first. The :code:`Sn0` function calculates
+  * 
+  *      :math:`\textrm{median}_i \left\{ \textrm{median}_j \left( \left| x_i - x_j \right| \right) \right\}`
+  * 
+  *    (i.e. the :math:`S_n` statistic without the bias correction scale factors).
+    */
   ADDFUNC(gsl_stats_Sn0_from_sorted_data, -1);
   ADDFUNC(gsl_stats_Sn_from_sorted_data, -1);
+  /**
+  * :math:`Q_n` Statistic
+  * ---------------------
+  *
+  * The :math:`Q_n` statistic developed by Croux and Rousseeuw is defined as
+  * 
+  *  :math:`Q_n = 2.21914 \times d_n \times \left\{ \left | x_i - x_j \right | , i < j \right\}_{ (k) }`
+  *
+  * The factor :math:`2.21914` makes :math:`Q_n` an unbiased estimate of the standard deviation for Gaussian data.
+  * The factor :math:`d_n` is a correction factor to correct bias in small sample sizes.The order statistic
+  * is
+  * 
+  * .. math:: k = \left(
+  *                 \begin{array}{c}
+  *                   \left\lfloor \frac{n}{2} \right\rfloor + 1 \\
+  *                   2
+  *                 \end{array}
+  *               \right)
+  *
+  * :math:`Q_n` has an asymptotic efficiency of 82%.
+  * 
+  * .. function:: gsl_stats_Qn0_from_sorted_data(sorted_data)
+  * .. function:: gsl_stats_Qn_from_sorted_data(sorted_data)
+  * 
+  *    These functions return the :math:`Q_n` statistic of *sorted_data*.
+  *    The elements of the array
+  *    must be in ascending numerical order.There are no checks to see
+  *    whether the data are sorted, so the function : func:`gsl_sort` should
+  *    always be used first.The :code:`Qn0` function calculates
+  *    :math:`\left\{ \left| x_i - x_j \right|, i < j \right\}_{(k)}`
+  *    (i.e. :math:`Q_n` without the bias correction scale factors).
+    */
   ADDFUNC(gsl_stats_Qn0_from_sorted_data, -1);
   ADDFUNC(gsl_stats_Qn_from_sorted_data, -1);
 

@@ -3172,14 +3172,11 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   * .. function:: gsl_sort(x)
   *
   * This function sorts the input parameters.
-  * The function can be used in AMPL to sort a variable or a parameter,
-  * but it has one important limitation: it has to be declared on the 
-  * same indexing expression that defines the entity to be ordered.
-  * For example::
+  * The function can be used in AMPL to sort a variable or a parameter
+  * Example::
   * 
   *   set A;
-  *   param p{A};
-  *   function gsl_sort({a in A}(INOUT));
+  *   param p{a in A} default 5-a;
   *   call gsl_sort({a in A} d[a]); 
   * 
   */

@@ -21,9 +21,7 @@ array using GSL sort:
   display gsl_stats_max({a in A} data[a]);
   display gsl_stats_min({a in A} data[a]);
 
-  # The sort function must be declared on the indexing set
-  # to be compliant with AMPL syntax
-  function gsl_sort({a in A}(INOUT));
+  function gsl_sort(INOUT ...);
   call gsl_sort({a in A} data[a]);
 
   # Now the data array is sorted, can use functions that 

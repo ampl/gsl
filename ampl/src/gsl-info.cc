@@ -48,14 +48,14 @@ static void declare_func(const char *name, rfunc f,
     attr = " random";
   else if ((type & FUNCADD_STRING_VALUED) != 0)
     attr = " symbolic";
+  else if ((type & FUNCADD_OUTPUT_ARGS) != 0)
+    attr = "(INOUT ...)";
   if (strcmp(name, "gsl_version") == 0) {
     typedef const char *(*Func)(arglist *al);
     Func get_version = (Func)f;
     printf("AMPLGSL version %d, GSL version %s\n", LIBDATE, get_version(NULL));
     fprintf(out, "# AMPLGSL version %d, GSL version %s\nload amplgsl.dll;\n", LIBDATE, get_version(NULL));
   }
-  if (strcmp(name, "gsl_sort") ==0)
-    return;
   fprintf(out, "function %s%s;\n", name, attr);
 }
 

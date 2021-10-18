@@ -16,7 +16,7 @@ jobs:
     - task: CopyFiles@2
       inputs:
         sourceFolder: 'build'
-        contents: 'amplgsl.*.${{parameters.archiveExtension}}'
+        contents: 'amplgsl.*.tar.gz'
         targetFolder: '$(Build.ArtifactStagingDirectory)'
       displayName: "Copying amplgsl artifact to staging directory"
     - publish: '$(Build.ArtifactStagingDirectory)'

@@ -5,7 +5,6 @@ jobs:
     - checkout: self
       submodules: recursive
     - bash: |
-        cd gsl/support/manylinux
         ./run.sh
       displayName: Compile on manylinux1
       workingDirectory: 'support/manylinux'

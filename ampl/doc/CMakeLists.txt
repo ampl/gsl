@@ -4,6 +4,7 @@ find_package(Python)
 find_package(Sphinx)
 if(NOT SPHINX_EXECUTABLE)
   message(STATUS "Documentation generation disabled (requires sphinx)")
+  return()
 endif()
 
 set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/support/extractdocs.py)

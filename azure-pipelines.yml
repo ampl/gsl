@@ -20,7 +20,7 @@ jobs:
         targetFolder: '$(Build.ArtifactStagingDirectory)'
       displayName: "Copying amplgsl artifact to staging directory"
     - publish: '$(Build.ArtifactStagingDirectory)'
-      artifact: amplgsl.${{parameters.name}}
+      artifact: amplgsl.linux64
       displayName: "Publishing artifacts"
 
 - template: support/azure/template-build.yml  

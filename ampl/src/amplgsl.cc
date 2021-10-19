@@ -34,6 +34,7 @@
 #include <gsl/gsl_version.h>
 
 #include "funcadd.h"
+#include <cstring>
 
 // Macros used for compatibility with GSL 1.x.
 #if GSL_MAJOR_VERSION < 2
@@ -2636,11 +2637,42 @@ rng_init(void *v, unsigned long x)
 {
 	UNUSED(v);
 	gsl_rng_default_seed = x;
-	if (rng)
-		gsl_rng_free(rng);
-	rng = gsl_rng_alloc(gsl_rng_env_setup());
+	if (!rng)
+    rng = gsl_rng_alloc(gsl_rng_env_setup());
+		//gsl_rng_free(rng);
+  gsl_rng_set(rng, x);
 	}
 #endif
+
+
+static const gsl_rng_type*
+   get_rng_byname(arglist* al, const char* name)
+ {
+   const gsl_rng_type** t, ** t0 = gsl_rng_types_setup();
+   const gsl_rng_type* rng = NULL;
+  /* check GSL_RNG_TYPE against the names of all the generators */
+  for (t = t0; *t != 0; t++)
+  {
+    al->AE->PrintF("%s\n", (*t)->name);
+    if (strcmp(name, (*t)->name) == 0)
+    {
+     // return *t;
+    }
+  }
+  error(al, "GSL_RNG_TYPE=%s not recognized", name);
+  return NULL;
+ }
+static void
+set_rng_type(arglist* al)
+{
+  const char* name = al->sa[0];
+  const gsl_rng_type** t, ** t0 = gsl_rng_types_setup();
+  const gsl_rng_type* rng2 = get_rng_byname(al, name);
+  if (!rng2)
+    return;
+  gsl_rng_free(rng);
+  rng = gsl_rng_alloc(rng2);
+}
 
 WRAP(gsl_ran_gaussian, RNG_ARGS1)
 
@@ -3161,6 +3193,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
   
   addfunc("gsl_version", (rfunc)amplgsl_version,
       FUNCADD_STRING_VALUED, 0, const_cast<char*>("gsl_version"));
+
   /**
    * @file sorting
    *
@@ -5788,7 +5821,42 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
 #endif
   rng = gsl_rng_alloc(gsl_rng_env_setup());
   at_reset(free_rng, &rng);
-
+  /**
+   * @file rng-init
+   *
+   * Initialization
+   * ==============
+   *
+   */
+  /**
+   * .. function:: gsl_ran_set_rng(name)
+   * 
+   * Set the random number generator used by all the random 
+   * functions. To set the random seed use the AMPL option
+   * `randseed`. E.g.::
+   * 
+   *    gsl_ran_set_rng('taus2');
+   *    option randseed 781206;
+   *    print gsl_ran_gaussian(1);
+   * 
+   * Must be a valid gsl generator name, listed here:
+   
+   * `borosh13, cmrg, coveyou, fishman18, fishman20, fishman2x, 
+   * gfsr4, knuthran, knuthran2, knuthran2002, lecuyer21, 
+   * minstd, mrg, mt19937, mt19937_1999, mt19937_1998,
+   * r250, ran0, ran1, ran2, ran3, rand,
+   * rand48, random128-bsd, random128-glibc2, random128-libc5
+   * random256-bsd, random256-glibc2, random256-libc5, 
+   * random32-bsd, random32-glibc2, random32-libc5, random64-bsd, 
+   * random64-glibc2, random64-libc5, random8-bsd, random8-glibc2, 
+   * random8-libc5, random-bsd, random-glibc2, random-libc5, 
+   * randu, ranf, ranlux, ranlux389, ranlxd1, ranlxd2, 
+   * ranlxs0, ranlxs1, ranlxs2, ranmar, slatec, taus, 
+   * taus2, taus113, transputer, tt800, uni, uni32
+   * vax, waterman14, zuf`
+   * */
+  addfunc("gsl_ran_set_rng", (rfunc)set_rng_type, FUNCADD_STRING_ARGS,
+    1, const_cast<char*>("gsl_ran_set_rng"));
   /**
    * @file ran-gaussian
    *

@@ -40,6 +40,6 @@ jobs:
   parameters:
     name: macOS
     vmImage: 'macOS-10.15'
-    cmakeDefs: '-DARCH=64'
+    cmakeDefs: '-DARCH=64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9'
     archiveExtension: 'tar.gz'
     cpackParameters: '-G TGZ'

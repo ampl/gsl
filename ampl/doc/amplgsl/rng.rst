@@ -5,7 +5,7 @@ AMPLGSL uses a global random number generator which is automatically
 initialized with the default seed. The seed is zero by default but
 can be changed by using the `randseed` option. 
 Similarly, the random number generator can be changed using the function
-:func:`gsl_ran_set_rng`.
+:func:`gsl_rng_set`.
 
 Random number generator algorithms
 ----------------------------------
@@ -232,7 +232,7 @@ initialize the seed.
 .. code-block:: none
 
  include gsl.ampl;
- gsl_ran_set_rng('taus');
+ call gsl_rng_set('taus');
  option randseed 781206;
  print gsl_ran_gaussian(1);
 

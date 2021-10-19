@@ -5829,13 +5829,13 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    *
    */
   /**
-   * .. function:: gsl_ran_set_rng(name)
+   * .. function:: gsl_rng_set(name)
    * 
    * Set the random number generator used by all the random 
    * functions. To set the random seed use the AMPL option
    * `randseed`. E.g.::
    * 
-   *    gsl_ran_set_rng('taus2');
+   *    call gsl_rng_set('taus2');
    *    option randseed 781206;
    *    print gsl_ran_gaussian(1);
    * 
@@ -5855,8 +5855,8 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    * taus2, taus113, transputer, tt800, uni, uni32
    * vax, waterman14, zuf`
    * */
-  addfunc("gsl_ran_set_rng", (rfunc)set_rng_type, FUNCADD_STRING_ARGS,
-    1, const_cast<char*>("gsl_ran_set_rng"));
+  addfunc("gsl_rng_set", (rfunc)set_rng_type, FUNCADD_STRING_ARGS,
+    1, const_cast<char*>("gsl_rng_set"));
   /**
    * @file ran-gaussian
    *

@@ -1,8 +1,8 @@
 Examples
 ========
 
-Use statistics functions
-------------------------
+Use statistics and sort functions
+---------------------------------
 
 This example shows how to use statistics functions and how to sort an 
 array using GSL sort:
@@ -21,7 +21,6 @@ array using GSL sort:
   display gsl_stats_max({a in A} data[a]);
   display gsl_stats_min({a in A} data[a]);
 
-  function gsl_sort(INOUT ...);
   call gsl_sort({a in A} data[a]);
 
   # Now the data array is sorted, can use functions that 

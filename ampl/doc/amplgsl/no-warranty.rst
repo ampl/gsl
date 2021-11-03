@@ -1,5 +1,5 @@
 No Warranty
-===========
+-----------
 
 The software described in this manual has no `warranty`:index:, it is
 provided "as is". It is your responsibility to validate the behavior of

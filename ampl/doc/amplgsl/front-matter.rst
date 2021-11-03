@@ -1,5 +1,5 @@
 Front Matter
-============
+------------
 
 This documentation is based on the *GNU Scientiﬁc Library* reference manual by
 

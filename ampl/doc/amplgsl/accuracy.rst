@@ -1,5 +1,5 @@
 Accuracy
-========
+--------
 
 AMPL wrappers of the GSL functions always use the highest accuracy
 available. A GSL function may take a ``mode`` argument that allows

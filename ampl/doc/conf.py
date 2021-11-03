@@ -78,9 +78,7 @@ html_theme_options = {
         {
             "name": "GitHub",
             "url": "https://github.com/ampl/gsl",
-            "icon": "fab fa-github-square",
-        }]
-
+            "icon": "fab fa-github-square"}],
 "collapse_navigation": True,
   "external_links": [
       {"name": "AMPL", "url": "https://ampl.com"}

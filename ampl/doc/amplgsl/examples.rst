@@ -1,9 +1,6 @@
 Examples
 ========
 
-.. toctree::
-   rng
-
 Use statistics and sort functions
 ---------------------------------
 

@@ -81,7 +81,7 @@ html_theme_options = {
             "icon": "fab fa-github-square"}],
 "collapse_navigation": True,
   "external_links": [
-      {"name": "AMPL", "url": "https://ampl.com"}
+      {"name": "Try AMPL", "url": "https://ampl.com"}
       ]
     }
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -94,6 +94,9 @@ html_title = "amplgsl {} documentation".format(release)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = "amplgsl"
+
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+html_show_sphinx = False
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

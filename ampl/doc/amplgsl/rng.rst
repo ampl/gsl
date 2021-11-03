@@ -221,7 +221,9 @@ Generator: **gfsr4**
  For more information see,
 
  * Robert M. Ziff, “Four-tap shift-register-sequence random-number
-   generators”, *Computers in Physics*, 12(4), Jul/Aug 1998, pp 385–392.
+   generators”, *Computers in Physics*, 12(4), Jul/Aug 1998, pp 385–392.#
+
+.. include:: ref/rng-init.rst
 
 Example
 -------

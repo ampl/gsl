@@ -11,16 +11,18 @@ The AMPLGSL library provides AMPL
 `bindings <http://en.wikipedia.org/wiki/Language_binding>`_ for the
 GNU Scientific Library and is distributed under the same license.
 
-.. toctree::
-   :maxdepth: 2
 
-   amplgsl/intro
+.. include:: amplgsl/front-matter.rst
+
+.. include:: amplgsl/no-warranty.rst
+
+.. include:: amplgsl/accuracy.rst
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
+   amplgsl/reference
    amplgsl/examples
    amplgsl/gnu
-   amplgsl/history
-   amplgsl/reference
+   

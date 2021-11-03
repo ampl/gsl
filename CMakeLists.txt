@@ -40,6 +40,8 @@ include(init)
 
 project(GSL)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if (POLICY CMP0054)
   # Only interpret `if` arguments as variables or keywords when unquoted.
   cmake_policy(SET CMP0054 NEW)
@@ -631,6 +633,7 @@ function(add_gsl_test exename)
   target_link_libraries(${exename} gsl)
   target_include_directories(${exename} PRIVATE .)
   add_test(${exename} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${exename})
+  set_property(TARGET ${exename} PROPERTY FOLDER test)
 endfunction()
 
 file(GLOB GSL_HEADER_PATHS_NE "${GSL_SOURCE_DIR}/gsl*.h")

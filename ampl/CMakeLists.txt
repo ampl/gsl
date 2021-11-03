@@ -6,6 +6,7 @@ else()
   set(asllib ${asl})
 endif()
 add_subdirectory(thirdparty/asl)
+add_to_folder(asl asl asl2 asl2-dynrt asl-dynrt arith-h)
 
 set(AMPLGSL_VERSION 20211014)
 # Install location
@@ -86,6 +87,7 @@ target_compile_definitions(amplgsl-test PRIVATE
     AMPLGSL_DLL_NAME="$<TARGET_FILE:amplgsl>")
 add_test(NAME amplgsl-test COMMAND $<TARGET_FILE:amplgsl-test>)
 
+add_to_folder(amplgsl amplgsl amplgsl-test copy-headers gsl-ampl gsl-info test-support)
 
 # Documentation
 add_subdirectory(doc)

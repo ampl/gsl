@@ -30,7 +30,7 @@ add_custom_command(OUTPUT ${amplgsl_docs}
   DEPENDS ${BUILD_DOCS} ${amplgsl_src})
 
 set(DOCSBASEDIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/output)
+set(SPHINX_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/output)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/html/index.html)
 
 file(GLOB DOC_SOURCES ${DOCSBASEDIR}/amplgsl/*.rst)
@@ -42,7 +42,7 @@ set(DOC_INDEX ${DOCSBASEDIR}/index.rst)
 add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                   COMMAND
                   ${SPHINX_EXECUTABLE} -b html
-                  ${DOCSBASEDIR} ${SPHINX_BUILD}
+                  ${DOCSBASEDIR} ${SPHINX_OUTPUT_DIR}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                   DEPENDS ${amplgsl_docs} ${DOC_SOURCES} ${DOC_INDEX}
                   MAIN_DEPENDENCY ${DOCSBASEDIR}/conf.py
@@ -51,9 +51,10 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
 # Nice named target so we can run the job easily
 add_custom_target(doc ALL DEPENDS ${SPHINX_INDEX_FILE}
 SOURCES ${REF_SOURCES} ${DOC_SOURCES}  ${DOC_INDEX})
-add_to_folder(docs doc doxygen)
+
+add_to_folder(docs doc)
 
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ampl.github.io/
-        DESTINATION amplgsl OPTIONAL
+install(DIRECTORY ${SPHINX_OUTPUT_DIR}/
+        DESTINATION amplgsl/doc OPTIONAL
         PATTERN .* EXCLUDE)

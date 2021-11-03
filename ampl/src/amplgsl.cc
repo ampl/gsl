@@ -5841,7 +5841,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    * 
    * Must be a valid gsl generator name, listed here:
    
-   * `borosh13, cmrg, coveyou, fishman18, fishman20, fishman2x, 
+   * *borosh13, cmrg, coveyou, fishman18, fishman20, fishman2x, 
    * gfsr4, knuthran, knuthran2, knuthran2002, lecuyer21, 
    * minstd, mrg, mt19937, mt19937_1999, mt19937_1998,
    * r250, ran0, ran1, ran2, ran3, rand,
@@ -5853,7 +5853,7 @@ extern "C" void funcadd_ASL(AmplExports *ae) {
    * randu, ranf, ranlux, ranlux389, ranlxd1, ranlxd2, 
    * ranlxs0, ranlxs1, ranlxs2, ranmar, slatec, taus, 
    * taus2, taus113, transputer, tt800, uni, uni32
-   * vax, waterman14, zuf`
+   * vax, waterman14, zuf*
    * */
   addfunc("gsl_rng_set", (rfunc)set_rng_type, FUNCADD_STRING_ARGS,
     1, const_cast<char*>("gsl_rng_set"));

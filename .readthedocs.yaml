@@ -6,3 +6,7 @@ python:
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
    configuration: ampl/doc/conf.py
+
+python:
+   install:
+   - requirements: ampl/doc/requirements.txt

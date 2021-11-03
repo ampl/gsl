@@ -10,7 +10,7 @@ Use statistics and sort functions
 This example shows how to use statistics functions and how to sort an 
 array using GSL sort:
 
-.. code-block:: none
+.. code-block:: ampl
 
   include gsl.ampl;
 
@@ -39,7 +39,7 @@ The following model (`gamma.mod
 minimum of the :ref:`gamma function <gamma-functions>` :math:`\Gamma(x)` for
 :math:`x > 0`:
 
-.. code-block:: none
+.. code-block:: ampl
 
   # Find minimum of the gamma function for x > 0.
 

@@ -7,6 +7,7 @@ if(NOT SPHINX_EXECUTABLE)
   return()
 endif()
 
+
 set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/support/extractdocs.py)
 
 # Get .rst file names from amplgsl.cc.
@@ -28,40 +29,30 @@ add_custom_command(OUTPUT ${amplgsl_docs}
   COMMAND ${Python_EXECUTABLE} ${BUILD_DOCS} ${amplgsl_src} -o ${docsDestinationDir}
   DEPENDS ${BUILD_DOCS} ${amplgsl_src})
 
-# Add static documents to amplgsl_docs to then add them as dependecies to the target
-# and ensure they get built
-set(staticDocs accuracy examples fdl  freedoc front-matter  gpl  history intro no-warranty  rng)
-foreach(f ${staticDocs})
-    set(amplgsl_docs ${amplgsl_docs} ${docsStaticDir}/${f}.rst)
-endforeach()
-
 set(DOCSBASEDIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(SPHINX_SOURCE  ${CMAKE_CURRENT_SOURCE_DIR}/amplgsl)
 set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/output)
-set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/xml/index.xml)
+set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/html/index.html)
 
-file(GLOB_RECURSE DOC_SOURCES ${SPHINX_SOURCE}/*.rst)
+file(GLOB DOC_SOURCES ${DOCSBASEDIR}/amplgsl/*.rst)
+
+add_to_source_group(REF_SOURCES ref "" ${amplgsl_docs})
+add_to_source_group(DOC_SOURCES docs "" ${DOC_SOURCES})
+set(DOC_INDEX ${DOCSBASEDIR}/index.rst)
 
 add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
                   COMMAND
                   ${SPHINX_EXECUTABLE} -b html
                   ${DOCSBASEDIR} ${SPHINX_BUILD}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                  DEPENDS ${amplgsl_docs}
+                  DEPENDS ${amplgsl_docs} ${DOC_SOURCES} ${DOC_INDEX}
                   MAIN_DEPENDENCY ${DOCSBASEDIR}/conf.py
                   COMMENT "Generating documentation with Sphinx")
 
 # Nice named target so we can run the job easily
-add_custom_target(sphinx ALL DEPENDS ${SPHINX_INDEX_FILE}
-SOURCES ${DOC_SOURCES} )
-add_to_folder(docs sphinx doxygen)
+add_custom_target(doc ALL DEPENDS ${SPHINX_INDEX_FILE}
+SOURCES ${REF_SOURCES} ${DOC_SOURCES}  ${DOC_INDEX})
+add_to_folder(docs doc doxygen)
 
-
-
-
-#add_custom_target(amplgsl-doc
-  #COMMAND ${Python_EXECUTABLE} ${BUILD_DOCS}
-  #DEPENDS conf.py ${amplgsl_docs})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ampl.github.io/
         DESTINATION amplgsl OPTIONAL

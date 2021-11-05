@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-import sys, os, re
+import sys
+import os
+import re
+import datetime
 
 # -- General configuration -----------------------------------------------------
 
@@ -15,7 +18,7 @@ extensions = ['sphinx.ext.mathjax']
 # When building with CMake, the path to doxyxml is passed via the command line.
 breathe_projects = {'mp': 'doxyxml'}
 breathe_default_project = 'mp'
-breathe_domain_by_extension = {'h' : 'cpp'}
+breathe_domain_by_extension = {'h': 'cpp'}
 
 highlight_language = 'c++'
 primary_domain = 'cpp'
@@ -31,7 +34,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'amplgsl'
-copyright = u'2021 AMPL Optimization, Inc'
+copyright = u'2016-{}, AMPL Optimization Inc'.format(
+    datetime.date.today().year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -73,17 +77,29 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 html_theme = 'pydata_sphinx_theme'
 html_theme_options = {
- "logo_link": "index",
- "icon_links": [
+    "logo_link": "index",
+    "icon_links": [
         {
             "name": "GitHub",
             "url": "https://github.com/ampl/gsl",
-            "icon": "fab fa-github-square"}],
-"collapse_navigation": True,
-  "external_links": [
-      {"name": "Try AMPL", "url": "https://ampl.com"}
-      ]
-    }
+            "icon": "fab fa-github"
+        },
+        {
+            "name": "AMPL",
+            "url": "https://ampl.github.io",
+            "icon": "fa fa-code"
+        },
+        {
+            "name": "AMPL",
+            "url": "https://ampl.com",
+            "icon": "fa fa-home"
+        },
+    ],
+    "collapse_navigation": True,
+    "external_links": [
+        # {"name": "Try AMPL", "url": "https://ampl.com"}
+    ]
+}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -160,21 +176,21 @@ htmlhelp_basename = 'AMPLdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'amplgsl.tex', u'AMPLGSL Documentation',
-   u'Victor Zverovich', 'manual'),
+    ('index', 'amplgsl.tex', u'AMPLGSL Documentation',
+     u'Victor Zverovich', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,9 +233,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'AMPL', u'AMPL Documentation',
-   u'Victor Zverovich', 'AMPL', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'AMPL', u'AMPL Documentation',
+     u'Victor Zverovich', 'AMPL', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -230,8 +246,6 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
-
-
 
 
 def builder_inited_handler(app):
@@ -245,5 +259,6 @@ def builder_inited_handler(app):
     dest = os.path.join(me, "amplgsl/ref")
     extractdocs.extract_docs(src, dest)
 
+
 def setup(app):
-     app.connect('builder-inited', builder_inited_handler)
+    app.connect('builder-inited', builder_inited_handler)

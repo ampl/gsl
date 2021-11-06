@@ -85,12 +85,13 @@ html_theme_options = {
             "icon": "fab fa-github"
         },
         {
-            "name": "AMPL",
+            "name": "ampl.github.io",
             "url": "https://ampl.github.io",
-            "icon": "fa fa-code"
+            "icon": "fa fa-code",
+            "target": "_self",
         },
         {
-            "name": "AMPL",
+            "name": "ampl.com",
             "url": "https://ampl.com",
             "icon": "fa fa-home"
         },
@@ -100,10 +101,16 @@ html_theme_options = {
         # {"name": "Try AMPL", "url": "https://ampl.com"}
     ]
 }
+html_context = {
+    "theme_logo_text": "GSL",
+}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = [
+    'css/custom.css',
+]
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 html_title = "amplgsl {} documentation".format(release)
@@ -116,12 +123,13 @@ html_show_sphinx = False
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "_static/logo.png"
+html_logo = "_static/logo-inline-web-v4.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #html_favicon = None
+html_favicon = "_static/cropped-favicon-raw-192x192.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

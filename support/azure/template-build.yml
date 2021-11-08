@@ -31,7 +31,7 @@ jobs:
         name: pyTools
   - script: |
         pip install --upgrade pip
-        pip install sphinx
+        pip install sphinx pydata_sphinx_theme
     displayName: Install Python tools for documentation building
   - task: CMake@1
     inputs:

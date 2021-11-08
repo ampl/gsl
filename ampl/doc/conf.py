@@ -85,7 +85,7 @@ html_theme_options = {
             "icon": "fab fa-github"
         },
         {
-            "name": "AMPL Dev",
+            "name": "AMPL Projects",
             "url": "https://ampl.github.io",
             "icon": "fas fa-project-diagram fa-fw",
             "target": "_self",

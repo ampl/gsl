@@ -8,7 +8,7 @@ endif()
 add_subdirectory(thirdparty/asl)
 add_to_folder(asl asl asl2 asl2-dynrt asl-dynrt arith-h)
 
-set(AMPLGSL_VERSION 20211014)
+set(AMPLGSL_VERSION 20211111)
 # Install location
 set(AMPL_LIBRARY_DIR gsl)
 

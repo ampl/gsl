@@ -94,6 +94,11 @@ Other build parameters
    cmake .. -DBUILDLIBS=ode-initval2,linalg -DNO_AMPL_BINDINGS=1 -DGSL_DISABLE_TESTS=1
    ```
 
+3) Turn off building of documentation via:
+   ```
+   cmake .. -DDOCUMENTATION=OFF
+   ```
+
 
 Availability
 ============

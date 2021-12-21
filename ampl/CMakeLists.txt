@@ -1,4 +1,8 @@
 # CMake build script for the GSL wrapper for AMPL.
+
+# Add options
+option(DOCUMENTATION "Builds sphinx documentation" ON)
+
 if(MSVC_RUNTIME_DYNAMIC)
   set(BUILD_DYNRT_LIBS)
   set(asllib ${asl-dynrt})
@@ -90,7 +94,9 @@ add_test(NAME amplgsl-test COMMAND $<TARGET_FILE:amplgsl-test>)
 add_to_folder(amplgsl amplgsl amplgsl-test copy-headers gsl-ampl gsl-info test-support)
 
 # Documentation
-add_subdirectory(doc)
+if(DOCUMENTATION)
+    add_subdirectory(doc)
+endif()
 
 ######  Package creation settings ######
 # Packages definitions happens in the setSolverProperties function

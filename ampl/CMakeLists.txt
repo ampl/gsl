@@ -3,16 +3,10 @@
 # Add options
 option(DOCUMENTATION "Builds sphinx documentation" ON)
 
-if(MSVC_RUNTIME_DYNAMIC)
-  set(BUILD_DYNRT_LIBS)
-  set(asllib ${asl-dynrt})
-else()
-  set(asllib ${asl})
-endif()
 add_subdirectory(thirdparty/asl)
 add_to_folder(asl asl asl2 asl2-dynrt asl-dynrt arith-h)
 
-set(AMPLGSL_VERSION 20211111)
+set(AMPLGSL_VERSION 20211221)
 # Install location
 set(AMPL_LIBRARY_DIR gsl)
 
@@ -31,14 +25,12 @@ elseif(WIN32)
 endif()
 set(PACKAGENAME "amplgsl.${SYSNAME}${ARCH}.${AMPLGSL_VERSION}")
 
-# Macro to build an AMPL library (links with ASL and has dll extension)
+# Macro to build an AMPL library
 macro(add_ampl_library name)
   cmake_parse_arguments(add_ampl_library PRIVATE "" "" ${ARGN})
   add_library(${name} SHARED ${add_ampl_library_UNPARSED_ARGUMENTS})
   set_target_properties(${name} PROPERTIES PREFIX "")
   set_target_properties(${name} PROPERTIES SUFFIX ".dll")
-  
-  #target_link_libraries(${name} ${asllib})
   if(WIN32)
     set(toInstall "RUNTIME")
   else()
@@ -46,8 +38,7 @@ macro(add_ampl_library name)
   endif()
   # We don't want to import libraries to be installed.
    install(TARGETS ${name} ${toInstall}
-   DESTINATION "."
-    COMPONENT ${PACKAGENAME})
+           DESTINATION "." COMPONENT ${PACKAGENAME})
 endmacro()
 
 # Output GSL version number
@@ -56,9 +47,12 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gsl-version.txt "AMPLGSL version ${AMPLGS
 # Definition of AMPL-gsl interface
 set(SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_ampl_library(amplgsl ${SRCDIR}/amplgsl.cc)
-target_link_libraries(amplgsl gsl gslcblas asl)
+target_link_libraries(amplgsl gsl gslcblas)
+# The following is for ASL headers, since we are not linking with it any longer
 target_include_directories(amplgsl PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/asl/src/solvers)
+  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/asl/src/solvers
+  ${CMAKE_BINARY_DIR}/include 
+)
 
 # Used to generate the ampl function definitions
 add_executable(gsl-info ${SRCDIR}/gsl-info.cc)

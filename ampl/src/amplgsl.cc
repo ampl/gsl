@@ -2653,13 +2653,14 @@ static const gsl_rng_type*
   /* check GSL_RNG_TYPE against the names of all the generators */
   for (t = t0; *t != 0; t++)
   {
-    al->AE->PrintF("%s\n", (*t)->name);
     if (strcmp(name, (*t)->name) == 0)
-    {
-     // return *t;
-    }
+      return *t;
   }
+  al->AE->PrintF("Available generators:\n");
+  for (t = t0; *t != 0; t++)
+    al->AE->PrintF("%s\n", (*t)->name);
   error(al, "GSL_RNG_TYPE=%s not recognized", name);
+
   return NULL;
  }
 static void

@@ -34,7 +34,7 @@ macro(add_ampl_library name)
   set_target_properties(${name} PROPERTIES PREFIX "")
   set_target_properties(${name} PROPERTIES SUFFIX ".dll")
   
-  target_link_libraries(${name} ${asllib})
+  #target_link_libraries(${name} ${asllib})
   if(WIN32)
     set(toInstall "RUNTIME")
   else()

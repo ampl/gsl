@@ -829,11 +829,7 @@ foreach (dir ${HAVETOBUILD})
 endforeach ()
 
 if (BUILD_SHARED_LIBS)
-  include(CheckCCompilerFlag)
-  check_c_compiler_flag(-fPIC HAVE_FPIC)
-  if (HAVE_FPIC)
-    add_definitions(-fPIC)
-  endif ()
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   if (WIN32)
     # only needed for global variables that must be exported.  Exporting of
     # all functions is done with target property WINDOWS_EXPORT_ALL_SYMBOLS.
@@ -937,10 +933,10 @@ if (GSL_INSTALL OR NOT DEFINED GSL_INSTALL)
       lib/cmake/${PACKAGE_NAME}-${PACKAGE_VERSION} 
     COMPONENT gsl)
 endif ()
-if(NOT MSVC)
-    target_compile_options(gsl PRIVATE -fPIC)
+if(NOT WIN32)
+    set_target_properties(gsl PROPERTIES POSITION_INDEPENDENT_CODE ON)
     if(TARGET gslcblas)
-      target_compile_options(gslcblas PRIVATE -fPIC)
+      set_target_properties(gslcblas PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 endif()
 

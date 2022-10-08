@@ -25,21 +25,21 @@ jobs:
 - template: support/azure/template-build.yml  
   parameters:
     name: windows32
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
     cmakeDefs: '-A Win32'
     archiveExtension: 'zip'
     cpackParameters: '-G ZIP'
 - template: support/azure/template-build.yml  
   parameters:
     name: windows64
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
     cmakeDefs: '-A x64'
     archiveExtension: 'zip'
     cpackParameters: '-G ZIP'
 - template: support/azure/template-build.yml  
   parameters:
     name: macOS
-    vmImage: 'macOS-10.15'
+    vmImage: 'macOS-latest'
     cmakeDefs: '-DARCH=64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9'
     archiveExtension: 'tar.gz'
     cpackParameters: '-G TGZ'

@@ -3,4 +3,6 @@ CMakeFiles
 build-*/
 gsl.def
 *.nupkg
+/.cache
+/.vscode
 /build

@@ -1,6 +1,8 @@
 #ifndef __GSL_SPMATRIX_H__
 #define __GSL_SPMATRIX_H__
 
+#include <stddef.h>
+
 enum
 {
   GSL_SPMATRIX_COO = 0, /* coordinate/triplet representation */

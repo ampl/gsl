@@ -828,19 +828,18 @@ foreach (dir ${HAVETOBUILD})
   endforeach ()
 endforeach ()
 
+add_library(gsl ${GSL_SOURCES})
 if (BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   if (WIN32)
     # only needed for global variables that must be exported.  Exporting of
     # all functions is done with target property WINDOWS_EXPORT_ALL_SYMBOLS.
-    add_definitions(-DGSL_DLL)
+    target_compile_definitions(gsl PUBLIC GSL_DLL)
+    target_compile_definitions(gsl PRIVATE DLL_EXPORT)
   endif()
 endif ()
-
-add_library(gsl ${GSL_SOURCES})
 set_target_properties(gsl
   PROPERTIES
-    COMPILE_DEFINITIONS DLL_EXPORT
     WINDOWS_EXPORT_ALL_SYMBOLS ON )
     target_include_directories(gsl PRIVATE .)
     target_link_libraries(gsl ${CMAKE_REQUIRED_LIBRARIES})

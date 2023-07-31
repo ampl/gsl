@@ -215,7 +215,6 @@ test_hstaxe_1(void) {
   double *flux = (&data_table)->y;
   result = gsl_interp_eval_integ(interp, wavelength, flux, wavelength[0],
                                  wavelength[npoints - 1], a);
-  printf("1 %f\n", result);
   if (fabs(result - expected) > 1.e-10) {
     s = s + 1;
   }

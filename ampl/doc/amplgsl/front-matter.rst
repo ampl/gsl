@@ -21,9 +21,9 @@ release 1.15 of the library.
 More information about GSL can be found at the project homepage,
 http://www.gnu.org/software/gsl/.
 
-Copyright © 1996-2021 The GSL Team.
+Copyright © 1996-2023 The GSL Team.
 
-Copyright of modifications © 2012-2021 AMPL Optimization Inc.
+Copyright of modifications © 2012-2023 AMPL Optimization Inc.
 
 Permission is granted to copy, distribute and/or modify this document under the
 terms of the GNU Free Documentation License, Version 1.3 or any later version

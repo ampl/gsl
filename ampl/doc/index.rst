@@ -11,6 +11,15 @@ The AMPLGSL library provides AMPL
 `bindings <http://en.wikipedia.org/wiki/Language_binding>`_ for the
 GNU Scientific Library and is distributed under the same license.
 
+--------------
+
+*This feature is freely available to all AMPL users. Simple instructions
+for download, installation, and use in AMPL modeling are given below. A
+detailed* 
+`library listing <https://amplgsl.readthedocs.io/en/latest/amplgsl/reference.html>`__ 
+*provides full documentation.*
+
+--------------
 
 .. include:: amplgsl/front-matter.rst
 
@@ -22,6 +31,7 @@ GNU Scientific Library and is distributed under the same license.
    :maxdepth: 1
    :hidden:
 
+   amplgsl/quick
    amplgsl/reference
    amplgsl/examples
    amplgsl/gnu

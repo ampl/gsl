@@ -1,5 +1,5 @@
 # Check requirements.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/support) # for FindSphinx
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/source/support) # for FindSphinx
 find_package(Python)
 find_package(Sphinx)
 if(NOT SPHINX_EXECUTABLE)
@@ -8,7 +8,7 @@ if(NOT SPHINX_EXECUTABLE)
 endif()
 
 
-set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/support/extractdocs.py)
+set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/source/support/extractdocs.py)
 
 # Get .rst file names from amplgsl.cc.
 set(docsStaticDir ${CMAKE_CURRENT_SOURCE_DIR}/amplgsl)

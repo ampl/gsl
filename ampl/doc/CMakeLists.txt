@@ -29,11 +29,11 @@ add_custom_command(OUTPUT ${amplgsl_docs}
   COMMAND ${Python_EXECUTABLE} ${BUILD_DOCS} ${amplgsl_src} -o ${docsDestinationDir}
   DEPENDS ${BUILD_DOCS} ${amplgsl_src})
 
-set(DOCSBASEDIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DOCSBASEDIR ${CMAKE_CURRENT_SOURCE_DIR}/source/)
 set(SPHINX_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/output)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/html/index.html)
 
-file(GLOB DOC_SOURCES ${DOCSBASEDIR}/amplgsl/*.rst)
+file(GLOB DOC_SOURCES ${DOCSBASEDIR}/*.rst)
 
 add_to_source_group(REF_SOURCES ref "" ${amplgsl_docs})
 add_to_source_group(DOC_SOURCES docs "" ${DOC_SOURCES})

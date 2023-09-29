@@ -21,18 +21,18 @@ detailed*
 
 --------------
 
-.. include:: amplgsl/front-matter.rst
+.. include:: front-matter.rst
 
-.. include:: amplgsl/no-warranty.rst
+.. include:: no-warranty.rst
 
-.. include:: amplgsl/accuracy.rst
+.. include:: accuracy.rst
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   amplgsl/quick
-   amplgsl/reference
-   amplgsl/examples
-   amplgsl/gnu
+   quick
+   reference
+   examples
+   gnu
    

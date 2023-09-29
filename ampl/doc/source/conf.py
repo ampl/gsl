@@ -186,7 +186,13 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "amplgsl.tex", "AMPLGSL Documentation", "Victor Zverovich", "manual"),
+    (
+        "index",
+        "amplgsl.tex",
+        "AMPLGSL Documentation",
+        "AMPL Optimization, Inc.",
+        "manual",
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,7 +220,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "ampl", "AMPL Documentation", ["Victor Zverovich"], 1)]
+man_pages = [("index", "ampl", "AMPLGSL Documentation", ["AMPL Optimization, Inc."], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -229,10 +235,10 @@ texinfo_documents = [
     (
         "index",
         "AMPL",
-        "AMPL Documentation",
-        "Victor Zverovich",
+        "AMPLGSL Documentation",
+        "AMPL Optimization, Inc.",
         "AMPL",
-        "One line description of project.",
+        "Documentation for AMPL GSL bindings.",
         "Miscellaneous",
     ),
 ]
@@ -255,8 +261,8 @@ def builder_inited_handler(app):
     from support import extractdocs
 
     me = os.path.dirname(os.path.realpath(__file__))
-    src = os.path.join(me, "../src/amplgsl.cc")
-    dest = os.path.join(me, "amplgsl/ref")
+    src = os.path.join(me, "../../src/amplgsl.cc")
+    dest = os.path.join(me, "ref")
     extractdocs.extract_docs(src, dest)
 
 

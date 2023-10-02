@@ -106,7 +106,8 @@ html_static_path = ["_static"]
 # ]
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "amplgsl {} documentation".format(release)
+# html_title = "amplgsl {} documentation".format(release)
+html_title = "amplgsl documentation"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = "amplgsl"

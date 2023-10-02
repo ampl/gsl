@@ -11,7 +11,7 @@ endif()
 set(BUILD_DOCS ${CMAKE_CURRENT_SOURCE_DIR}/source/support/extractdocs.py)
 
 # Get .rst file names from amplgsl.cc.
-set(docsStaticDir ${CMAKE_CURRENT_SOURCE_DIR}/amplgsl)
+set(docsStaticDir ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(docsDestinationDir ${docsStaticDir}/ref)
 
 set(amplgsl_docs )

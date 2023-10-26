@@ -357,8 +357,8 @@ static double amplgsl_hypot3(arglist *al) {
       double dz2 = derivs[2] * derivs[2];
       hes[0] =  (dy2 + dz2) / hypot;
       hes[1] = -derivs[0] * derivs[1] / hypot;
-      hes[2] =  (dx2 + dz2) / hypot;
-      hes[3] = -derivs[0] * derivs[2] / hypot;
+      hes[2] = -derivs[0] * derivs[2] / hypot;
+      hes[3] =  (dx2 + dz2) / hypot;
       hes[4] = -derivs[1] * derivs[2] / hypot;
       hes[5] =  (dx2 + dy2) / hypot;
     }

@@ -391,7 +391,7 @@ void GSLTest::CheckSecondDerivatives(F f, const Function &af,
         if (!gsl_isnan(d)) {
           unsigned ii = i, jj = j;
           if (ii > jj) std::swap(ii, jj);
-          unsigned hes_index = ii * (2 * num_args - ii - 1) / 2 + jj;
+          unsigned hes_index = ii + jj * (jj + 1) / 2;
           double actual_deriv = af(args, HES, use_deriv).hes(hes_index);
           if (!CheckDerivative(actual_deriv, d, error)) {
             std::cout << "Absolute tolerance of "

@@ -1,45 +1,77 @@
-jobs:
-- job: linux
-  pool: {vmImage: 'Ubuntu-20.04'}
-  steps:
-    - checkout: self
-      submodules: recursive
-    - bash: |
-        ./run.sh
-      displayName: Compile on manylinux1
-      workingDirectory: 'support/manylinux'
-    - bash: |
-        for file in amplgsl-amplgsl*; do mv "$file" "${file#amplgsl-}"; done;
-      workingDirectory: 'build'
-      displayName: "Rename artifact"
-    - task: CopyFiles@2
-      inputs:
-        sourceFolder: 'build'
-        contents: 'amplgsl.*.tar.gz'
-        targetFolder: '$(Build.ArtifactStagingDirectory)'
-      displayName: "Copying amplgsl artifact to staging directory"
-    - publish: '$(Build.ArtifactStagingDirectory)'
-      artifact: amplgsl.linux64
-      displayName: "Publishing artifacts"
 
-- template: support/azure/template-build.yml  
-  parameters:
-    name: windows32
-    vmImage: 'windows-latest'
-    cmakeDefs: '-A Win32'
-    archiveExtension: 'zip'
-    cpackParameters: '-G ZIP'
-- template: support/azure/template-build.yml  
-  parameters:
-    name: windows64
-    vmImage: 'windows-latest'
-    cmakeDefs: '-A x64'
-    archiveExtension: 'zip'
-    cpackParameters: '-G ZIP'
-- template: support/azure/template-build.yml  
-  parameters:
-    name: macOS
-    vmImage: 'macOS-latest'
-    cmakeDefs: '-DARCH=64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9'
-    archiveExtension: 'tar.gz'
-    cpackParameters: '-G TGZ'
+stages:
+- stage: Build
+  jobs:
+  - job: linux
+    pool: {vmImage: 'Ubuntu-20.04'}
+    steps:
+      - checkout: self
+        submodules: recursive
+      - bash: |
+          ./run.sh
+        displayName: Compile on manylinux1
+        workingDirectory: 'support/manylinux'
+      - bash: |
+          for file in amplgsl-amplgsl*; do mv "$file" "${file#amplgsl-}"; done;
+        workingDirectory: 'build'
+        displayName: "Rename artifact"
+      - task: CopyFiles@2
+        inputs:
+          sourceFolder: 'build'
+          contents: 'amplgsl.*.tar.gz'
+          targetFolder: '$(Build.ArtifactStagingDirectory)'
+        displayName: "Copying amplgsl artifact to staging directory"
+      - publish: '$(Build.ArtifactStagingDirectory)'
+        artifact: amplgsl.linux64
+        displayName: "Publishing artifacts"
+
+  # - template: support/azure/template-build.yml
+  #   parameters:
+  #     name: windows32
+  #     vmImage: 'windows-latest'
+  #     cmakeDefs: '-A Win32'
+  #     archiveExtension: 'zip'
+  #     cpackParameters: '-G ZIP'
+
+  - template: support/azure/template-build.yml
+    parameters:
+      name: windows64
+      vmImage: 'windows-latest'
+      cmakeDefs: '-A x64'
+      archiveExtension: 'zip'
+      cpackParameters: '-G ZIP'
+
+  - template: support/azure/template-build.yml
+    parameters:
+      name: macOS
+      vmImage: 'macOS-latest'
+      cmakeDefs: '-DARCH=64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9'
+      archiveExtension: 'tar.gz'
+      cpackParameters: '-G TGZ'
+
+- stage: Upload
+  jobs:
+    - job: upload
+      pool: {vmImage: 'Ubuntu-20.04'}
+      steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+              buildType: 'current'
+              downloadPath: 'release/gsl/'
+              artifactName: amplgsl.linux64
+        - task: DownloadPipelineArtifact@2
+          inputs:
+              buildType: 'current'
+              downloadPath: 'release/gsl/'
+              artifactName: amplgsl.windows64
+        - task: DownloadPipelineArtifact@2
+          inputs:
+              buildType: 'current'
+              downloadPath: 'release/gsl/'
+              artifactName: amplgsl.macOS
+        - task: PublishPipelineArtifact@1
+          condition: always()
+          inputs:
+            targetPath: 'release'
+            artifact: 'release'
+            artifactType: 'pipeline'

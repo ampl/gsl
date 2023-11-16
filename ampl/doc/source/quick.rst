@@ -26,21 +26,9 @@ Downloading and installing the library
 --------------------------------------
 
 The function library is packaged in a single file named ``amplgsl.dll``.
-This file is available in compressed form 
-(from `portal.ampl.com <https://portal.ampl.com/>`__) as follows:
-
-+-------------+-------------------------------------------------------+
-| Platform    | Download                                              |
-+=============+=======================================================+
-| Windows     | `amplgsl.mswin64.zip <https://port                    |
-|             | al.ampl.com/download/amplgsl.mswin64.20211221.zip>`__ |
-+-------------+-------------------------------------------------------+
-| macOS       | `amplgsl.macos64.tgz <https://port                    |
-|             | al.ampl.com/download/amplgsl.macos64.20211221.tgz>`__ |
-+-------------+-------------------------------------------------------+
-| Linux-Intel | `amplgsl.linux-intel64.tgz <https://portal.amp        |
-|             | l.com/download/amplgsl.linux-intel64.20211221.tgz>`__ |
-+-------------+-------------------------------------------------------+
+This file is available for Windows, Linux, and macOS 
+from `portal.ampl.com <https://portal.ampl.com/>`__ in 
+`My Downloads <https://portal.ampl.com/user/ampl/download/list>`__.
 
 To install, use one of the above links to download the appropriate
 ``tgz`` or ``zip`` file, and copy that file to the same folder or

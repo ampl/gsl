@@ -16,7 +16,7 @@ GNU Scientific Library and is distributed under the same license.
 *This feature is freely available to all AMPL users. Simple instructions
 for download, installation, and use in AMPL modeling are given below. A
 detailed* 
-`library listing <https://amplgsl.readthedocs.io/en/latest/amplgsl/reference.html>`__ 
+:ref:`library listing <reference>`
 *provides full documentation.*
 
 --------------

@@ -25,7 +25,6 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_cblas.h>
-#include <gsl/gsl_cblas.h>
 #include <gsl/gsl_blas_types.h>
 #include <gsl/gsl_blas.h>
 

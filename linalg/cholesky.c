@@ -150,7 +150,7 @@ gsl_linalg_cholesky_svx (const gsl_matrix * LLT,
       gsl_blas_dtrsv (CblasLower, CblasNoTrans, CblasNonUnit, LLT, x);
 
       /* perform back-substitution, L^T x = c */
-      // gsl_blas_dtrsv (CblasLower, CblasTrans, CblasNonUnit, LLT, x);
+      /* gsl_blas_dtrsv (CblasLower, CblasTrans, CblasNonUnit, LLT, x);*/
 
       return GSL_SUCCESS;
     }

@@ -1,2 +1,1 @@
-sphinx==4.2.0
-ampl-sphinx-theme @ git+https://github.com/ampl/ampl.github.io.git#subdirectory=ampl-sphinx-theme
+ampl-sphinx-theme @ git+https://github.com/ampl/ampl.github.io.git#subdirectory=themes/ampl_sphinx_theme

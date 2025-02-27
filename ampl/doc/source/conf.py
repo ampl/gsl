@@ -15,6 +15,7 @@ needs_sphinx = "3.2.0"
 extensions = [
     "sphinx.ext.mathjax",
     "sphinxcontrib.googleanalytics",
+    "sphinx_sitemap",
 ]
 
 # Configure Breathe.

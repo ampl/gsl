@@ -1,0 +1,9 @@
+# Note for Visual Studio
+
+When updating GSL from upstream, update and replace the following files with the
+copy in this directory:
+
+fp-win.c  	-> /ieee-utils/fp-win.c
+fp.c  		-> /ieee-utils/fp.c
+
+gsl_inline.h	-> /gsl_inline.h

@@ -134,7 +134,7 @@ gsl_filter_rmedian(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vec
       int wsize;
 
       /* find median of first window to initialize filter */
-      wsize = gsl_movstat_fill(endtype, x, 0, H, H, w->window);
+      wsize = gsl_movstat_fill((gsl_movstat_end_t) endtype, x, 0, H, H, w->window);
       yprev = gsl_stats_median(w->window, 1, wsize);
       gsl_vector_set(y, 0, yprev);
 
@@ -144,7 +144,7 @@ gsl_filter_rmedian(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vec
           gsl_vector_view yv = gsl_vector_subvector(y, 1, n - 1);
 
           /* apply recursive median filter to x[2:end] */
-          status = gsl_movstat_apply_accum(endtype, &xv.vector, &rmedian_accum_type, (void *) &yprev, &yv.vector,
+          status = gsl_movstat_apply_accum((gsl_movstat_end_t) endtype, &xv.vector, &rmedian_accum_type, (void *) &yprev, &yv.vector,
                                            NULL, w->movstat_workspace_p);
         }
 

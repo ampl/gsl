@@ -18,6 +18,7 @@
 #define ZERO {{0.0L,0.0L}}
 #define ONE {{1.0L,0.0L}}
 #define BASE_EPSILON GSL_DBL_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_GSL_COMPLEX)
 #if defined(_MSC_VER) && defined(complex)
@@ -35,6 +36,7 @@
 #define ZERO {{0.0,0.0}}
 #define ONE {{1.0,0.0}}
 #define BASE_EPSILON GSL_DBL_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_GSL_COMPLEX_FLOAT)
 #define BASE gsl_complex_float
@@ -49,6 +51,7 @@
 #define ZERO {{0.0F,0.0F}}
 #define ONE {{1.0F,0.0F}}
 #define BASE_EPSILON GSL_FLT_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_LONG_DOUBLE)
 #define BASE long double
@@ -63,6 +66,7 @@
 #define ZERO 0.0L
 #define ONE 1.0L
 #define BASE_EPSILON GSL_DBL_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_DOUBLE)
 #define BASE double
@@ -76,6 +80,7 @@
 #define ZERO 0.0
 #define ONE 1.0
 #define BASE_EPSILON GSL_DBL_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_FLOAT)
 #define BASE float
@@ -89,6 +94,7 @@
 #define ZERO 0.0F
 #define ONE 1.0F
 #define BASE_EPSILON GSL_FLT_EPSILON
+#define ABS(x)  ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_ULONG)
 #define BASE unsigned long
@@ -101,6 +107,7 @@
 #define ZERO 0UL
 #define ONE 1UL
 #define UNSIGNED 1
+#define ABS(x) (x)
 
 #elif defined(BASE_LONG)
 #define BASE long
@@ -112,6 +119,7 @@
 #define ATOMIC_IO ATOMIC
 #define ZERO 0L
 #define ONE 1L
+#define ABS(x) ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_UINT)
 #define BASE unsigned int
@@ -124,6 +132,7 @@
 #define ZERO 0U
 #define ONE 1U
 #define UNSIGNED 1
+#define ABS(x) (x)
 
 #elif defined(BASE_INT)
 #define BASE int
@@ -135,6 +144,7 @@
 #define ATOMIC_IO ATOMIC
 #define ZERO 0
 #define ONE 1
+#define ABS(x) ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_USHORT)
 #define BASE unsigned short
@@ -147,6 +157,7 @@
 #define ZERO 0U
 #define ONE 1U
 #define UNSIGNED 1
+#define ABS(x) (x)
 
 #elif defined(BASE_SHORT)
 #define BASE short
@@ -158,6 +169,7 @@
 #define ATOMIC_IO ATOMIC
 #define ZERO 0
 #define ONE 1
+#define ABS(x) ( (x) < 0 ? -(x) : (x) )
 
 #elif defined(BASE_UCHAR)
 #define BASE unsigned char
@@ -170,6 +182,7 @@
 #define ZERO 0U
 #define ONE 1U
 #define UNSIGNED 1
+#define ABS(x) (x)
 
 #elif defined(BASE_CHAR)
 #define BASE char
@@ -184,6 +197,7 @@
 #ifdef __CHAR_UNSIGNED__
 #define UNSIGNED 1
 #endif
+#define ABS(x) ( (x) < 0 ? -(x) : (x) )
 
 #else
 #error unknown BASE_ directive in source.h
@@ -215,11 +229,13 @@
 #define QUALIFIED_VIEW(dir,name) CONCAT4(dir,SHORT,QUALIFIER,name)
 #endif
 #if defined(BASE_GSL_COMPLEX)
+#define REAL_FUNCTION(dir,name) CONCAT3(dir,QUALIFIER,name)
 #define REAL_TYPE(dir) dir
 #define REAL_VIEW(dir,name) CONCAT2(dir,name)
 #define QUALIFIED_REAL_TYPE(dir) QUALIFIER dir
 #define QUALIFIED_REAL_VIEW(dir,name) CONCAT3(dir,QUALIFIER,name)
 #else
+#define REAL_FUNCTION(a,c) CONCAT4(a,SHORT_REAL,QUALIFIER,c)
 #define REAL_TYPE(dir) CONCAT2(dir,SHORT_REAL)
 #define REAL_VIEW(dir,name) CONCAT3(dir,SHORT_REAL,name)
 #define QUALIFIED_REAL_TYPE(dir) QUALIFIER CONCAT2(dir,SHORT_REAL)
@@ -240,11 +256,13 @@
 #define QUALIFIED_VIEW(dir,name) CONCAT3(dir,SHORT,name)
 #endif
 #if defined(BASE_GSL_COMPLEX)
+#define REAL_FUNCTION(dir,name) CONCAT2(dir,name)
 #define REAL_TYPE(dir) dir
 #define REAL_VIEW(dir,name) CONCAT2(dir,name)
 #define QUALIFIED_REAL_TYPE(dir) dir
 #define QUALIFIED_REAL_VIEW(dir,name) CONCAT2(dir,name)
 #else
+#define REAL_FUNCTION(a,c) CONCAT3(a,SHORT_REAL,c)
 #define REAL_TYPE(dir) CONCAT2(dir,SHORT_REAL)
 #define REAL_VIEW(dir,name) CONCAT3(dir,SHORT_REAL,name)
 #define QUALIFIED_REAL_TYPE(dir) CONCAT2(dir,SHORT_REAL)

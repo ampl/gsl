@@ -18,11 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#if HAVE_UNISTD_H
-  #include <unistd.h>
-#endif
-
 void FUNCTION (test, func) (const size_t M, const size_t N);
 void FUNCTION (test, ops) (const size_t P, const size_t Q);
 void FUNCTION (test, trap) (const size_t M, const size_t N);
@@ -635,8 +630,8 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
             ATOMIC real = -(ATOMIC) (25 * k + 200);
             ATOMIC imag = (ATOMIC) (2 * k * k + 35 * k + 50);
             BASE z = FUNCTION (gsl_matrix, get) (m, i, j);
-            if (fabs (GSL_REAL (z) - real) > 100 * BASE_EPSILON ||
-                fabs (GSL_IMAG (z) - imag) > 100 * BASE_EPSILON)
+            if (ABS (GSL_REAL (z) - real) > 100 * BASE_EPSILON ||
+                ABS (GSL_IMAG (z) - imag) > 100 * BASE_EPSILON)
               {
                 status = 1;
 #ifdef DEBUG
@@ -671,8 +666,8 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
             ATOMIC real = (ATOMIC) (2 * k * k + 35 * k + 200) / denom;
             ATOMIC imag = ((ATOMIC) (50) - (ATOMIC) (5 * k)) / denom;
             BASE z = FUNCTION (gsl_matrix, get) (m, i, j);
-            if (fabs (GSL_REAL (z) - real) > 100 * BASE_EPSILON ||
-                fabs (GSL_IMAG (z) - imag) > 100 * BASE_EPSILON)
+            if (ABS (GSL_REAL (z) - real) > 100 * BASE_EPSILON ||
+                ABS (GSL_IMAG (z) - imag) > 100 * BASE_EPSILON)
               {
 #ifdef DEBUG
                 printf (OUT_FORMAT "\t",
@@ -843,6 +838,30 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
           }
       }
     gsl_test (status, NAME (gsl_matrix) "_add_diagonal");
+  }
+
+  {
+    FUNCTION (gsl_matrix, memcpy) (m, a);
+    FUNCTION (gsl_matrix, conjugate) (m);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < Q; j++)
+          {
+            ATOMIC real = (ATOMIC) ((ATOMIC)k);
+            ATOMIC imag = (ATOMIC) (-((ATOMIC)k + 10));
+            BASE z = FUNCTION (gsl_matrix, get) (m, i, j);
+            if (GSL_REAL (z) != real || GSL_IMAG (z) != imag)
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+    gsl_test (status, NAME (gsl_matrix) "_conjugate");
   }
 
   {

@@ -309,6 +309,66 @@ gsl_linalg_QR_lssolve_r (const gsl_matrix * QR, const gsl_matrix * T, const gsl_
     }
 }
 
+/* Find the least squares solution to the overdetermined system 
+ *
+ *   A X = B 
+ *  
+ * for M >= N using the QR factorization A = Q R. 
+ *
+ * Inputs: QR   - [R; V] matrix, M-by-N
+ *         T    - upper triangular block reflector, N-by-N
+ *         B    - right hand side, size M-by-nrhs
+ *         X    - (output) solution, size M-by-nrhs
+ *                X(1:N,i) = least squares solution vector for rhs B(:,i)
+ *                X(N+1:M,i) = vector whose norm equals ||B(:,i) - A X(1:N,i)||
+ *         work - workspace, size N-by-nrhs
+ */
+
+int
+gsl_linalg_QR_lssolvem_r (const gsl_matrix * QR, const gsl_matrix * T,
+                          const gsl_matrix * B, gsl_matrix * X, gsl_matrix * work)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+  const size_t nrhs = B->size2;
+
+  if (M < N)
+    {
+      GSL_ERROR ("QR matrix must have M >= N", GSL_EBADLEN);
+    }
+  else if (T->size1 != N || T->size2 != N)
+    {
+      GSL_ERROR ("T matrix must be N-by-N", GSL_EBADLEN);
+    }
+  else if (M != B->size1)
+    {
+      GSL_ERROR ("matrix size must match B size1", GSL_EBADLEN);
+    }
+  else if (X->size1 != M || X->size2 != nrhs)
+    {
+      GSL_ERROR ("B and X matrices do not match", GSL_EBADLEN);
+    }
+  else if (work->size1 != N || work->size2 != nrhs)
+    {
+      GSL_ERROR ("work matrix has wrong dimensions", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_const_view R = gsl_matrix_const_submatrix (QR, 0, 0, N, N);
+      gsl_matrix_view X1 = gsl_matrix_submatrix(X, 0, 0, N, nrhs);
+
+      /* compute X = Q^T B */
+      gsl_matrix_memcpy(X, B);
+      gsl_linalg_QR_QTmat_r (QR, T, X, work);
+
+      /* Solve R X = Q^T B */
+      gsl_blas_dtrsm (CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
+                      1.0, &R.matrix, &X1.matrix);
+
+      return GSL_SUCCESS;
+    }
+}
+
 /*
 gsl_linalg_QR_unpack_r()
   Unpack matrices Q and R

@@ -98,4 +98,4 @@ gsl_spline_free(gsl_spline * spline);
 
 __END_DECLS
 
-#endif /* __GSL_INTERP_H__ */
+#endif /* __GSL_SPLINE_H__ */

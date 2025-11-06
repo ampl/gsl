@@ -72,6 +72,7 @@ double gsl_rstat_mean(const gsl_rstat_workspace *w);
 double gsl_rstat_variance(const gsl_rstat_workspace *w);
 double gsl_rstat_sd(const gsl_rstat_workspace *w);
 double gsl_rstat_rms(const gsl_rstat_workspace *w);
+double gsl_rstat_norm(const gsl_rstat_workspace *w);
 double gsl_rstat_sd_mean(const gsl_rstat_workspace *w);
 double gsl_rstat_median(gsl_rstat_workspace *w);
 double gsl_rstat_skew(const gsl_rstat_workspace *w);

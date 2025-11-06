@@ -385,6 +385,25 @@ double *gsl_integration_fixed_weights(const gsl_integration_fixed_workspace * w)
 int gsl_integration_fixed(const gsl_function * func, double * result,
                           const gsl_integration_fixed_workspace * w);
 
+/* Lebedev quadrature */
+
+typedef struct
+{
+  size_t n;        /* number of nodes/weights */
+  double *weights; /* quadrature weights */
+  double *x;       /* x quadrature nodes */
+  double *y;       /* y quadrature nodes */
+  double *z;       /* z quadrature nodes */
+  double *theta;   /* theta quadrature nodes */
+  double *phi;     /* phi quadrature nodes */
+} gsl_integration_lebedev_workspace;
+
+gsl_integration_lebedev_workspace * gsl_integration_lebedev_alloc(const size_t n);
+
+void gsl_integration_lebedev_free(gsl_integration_lebedev_workspace * w);
+
+size_t gsl_integration_lebedev_n(const gsl_integration_lebedev_workspace * w);
+
 __END_DECLS
 
 #endif /* __GSL_INTEGRATION_H__ */

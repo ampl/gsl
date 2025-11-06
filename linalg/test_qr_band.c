@@ -103,7 +103,7 @@ test_QR_band_decomp(gsl_rng * r)
               for (q = 0; q < GSL_MIN(N, 10); ++q)
                 {
                   create_band_matrix(p, q, A, r);
-                  s += test_QR_band_decomp_eps(p, q, A, 1.0e5 * GSL_MAX(M,N) * GSL_DBL_EPSILON, "QR_band_decomp random");
+                  s += test_QR_band_decomp_eps(p, q, A, 1.0e6 * GSL_MAX(M,N) * GSL_DBL_EPSILON, "QR_band_decomp random");
                 }
             }
 

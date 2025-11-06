@@ -648,6 +648,17 @@ squares problem are as follows:
    is equal to :math:`W^{1/2} X` and :data:`Wy` is equal to :math:`W^{1/2} y`. It is allowed
    for :data:`WX` = :data:`X` and :data:`Wy` = :data:`y` for an in-place transform.
 
+.. function:: int gsl_multifit_linear_lreg (const double smin, const double smax, gsl_vector * reg_param)
+
+   This function computes a set of possible regularization parameters for L-curve analysis
+   and stores them in the output vector :data:`reg_param` of length :math:`k`, where :math:`k` is
+   the number of desired points on the L-curve. The regularization parameters are equally logarithmically
+   distributed between the provided values :data:`smin` and :data:`smax`, which typically correspond to
+   the minimum and maximum singular value of the least squares matrix in standard form.
+   The regularization parameters are calculated as,
+
+   .. math:: \lambda_i = S_{min} \left( \frac{S_{max}}{S_{min}} \right)^{\frac{i-1}{k-1}}, \quad i = 1, \dots, k
+
 .. function:: int gsl_multifit_linear_lcurve (const gsl_vector * y, gsl_vector * reg_param, gsl_vector * rho, gsl_vector * eta, gsl_multifit_linear_workspace * work)
 
    This function computes the L-curve for a least squares system
@@ -668,18 +679,39 @@ squares problem are as follows:
 
 .. function:: int gsl_multifit_linear_lcurvature (const gsl_vector * y, const gsl_vector * reg_param, const gsl_vector * rho, const gsl_vector * eta, gsl_vector * kappa, gsl_multifit_linear_workspace * work)
 
-   This function computes the curvature of the L-curve as a function of the
-   regularization parameter :math:`\lambda`, using the right hand side
-   vector :data:`y`, the vector of regularization parameters, :data:`reg_param`,
+   This function computes the curvature of the L-curve
+   :math:`(\log{\hat{\rho}(\lambda)}, \log{\hat{\eta}(\lambda)})`, where
+   :math:`\hat{\rho}(\lambda) = \log{||y - X c_{\lambda}||}` and
+   :math:`\hat{\eta}(\lambda) = \log{|| L c_{\lambda} ||}`.
+   This function uses the right hand side vector :data:`y`,
+   the vector of regularization parameters, :data:`reg_param`,
    vector of residual norms, :data:`rho`, and vector of solution norms, :data:`eta`.
    The arrays :data:`reg_param`, :data:`rho`, and :data:`eta` can be computed by
    :func:`gsl_multifit_linear_lcurve`.  The curvature is defined as
 
    .. math:: \kappa(\lambda) = \frac{\hat{\rho}' \hat{\eta}'' - \hat{\rho}'' \hat{\eta}'}{\left( (\hat{\rho}')^2 + (\hat{\eta}')^2 \right)^{\frac{3}{2}}}
 
-   where :math:`\hat{\rho}(\lambda) = \log{||y - X c_{\lambda}||}` and
-   :math:`\hat{\eta}(\lambda) = \log{|| L c_{\lambda} ||}`. The curvature
-   values are stored in :data:`kappa` on output.
+   The curvature values are stored in :data:`kappa` on output. The function
+   :func:`gsl_multifit_linear_svd` must be called on the least squares matrix
+   :math:`X` prior to calling this function.
+
+.. function:: int gsl_multifit_linear_lcurvature_menger(const gsl_vector * rho, const gsl_vector * eta, gsl_vector * kappa)
+
+   This function computes the Menger curvature of the L-curve
+   :math:`(\log{\hat{\rho}(\lambda)}, \log{\hat{\eta}(\lambda)})`, where
+   :math:`\hat{\rho}(\lambda) = \log{||y - X c_{\lambda}||}` and
+   :math:`\hat{\eta}(\lambda) = \log{|| L c_{\lambda} ||}`.
+   The function computes the Menger curvature for each consecutive triplet of points,
+   :math:`\kappa_i = 1/R_i`, where :math:`R_i` is the radius of the unique
+   circle fitted to the points
+   :math:`(\hat{\rho}_{i-1}, \hat{\eta}_{i-1}), (\hat{\rho}_i, \hat{\eta}_i), (\hat{\rho}_{i+1}, \hat{\eta}_{i+1})`.
+
+   The vector of residual norms :math:`|| y - X c_{\lambda} ||` is provided in :data:`rho`,
+   the vector of solution norms :math:`|| L c_{\lambda} ||` is provided in :data:`eta`.
+   These arrays can be calculated by calling :func:`gsl_multifit_linear_lcurve`.
+   The Menger curvature output is stored in :data:`kappa`. The Menger curvature is
+   an approximation to the curvature calculated by :func:`gsl_multifit_linear_lcurvature` but
+   may be faster to calculate.
 
 .. function:: int gsl_multifit_linear_lcorner (const gsl_vector * rho, const gsl_vector * eta, size_t * idx)
 
@@ -1275,15 +1307,46 @@ Tall Skinny QR (TSQR) Approach
 
 An algorithm which has better numerical stability for ill-conditioned
 problems is known as the Tall Skinny QR (TSQR) method. This method
-is based on computing the thin QR decomposition of the least squares
-matrix :math:`X = Q R`, where :math:`Q` is an :math:`n`-by-:math:`p` matrix
-with orthogonal columns, and :math:`R` is a :math:`p`-by-:math:`p`
-upper triangular matrix. Once these factors are calculated, the
-residual becomes
+is based on computing the QR decomposition of the least squares
+matrix,
 
-.. math:: \chi^2 = || Q^T y - R c ||^2 + \lambda^2 || c ||^2
+.. only:: not texinfo
 
-which can be written as the matrix equation
+   .. math:: X = Q \begin{pmatrix} R \\ 0 \end{pmatrix}
+   
+.. only:: texinfo
+
+   ::
+
+      X = Q [ R; 0 ]
+
+where :math:`Q` is an :math:`n`-by-:math:`n` orthogonal matrix,
+and :math:`R` is a :math:`p`-by-:math:`p` upper triangular matrix.
+If we define,
+
+.. only:: not texinfo
+
+   .. math:: z = Q^T y = \begin{pmatrix} z_1 \\ z_2 \end{pmatrix}
+
+.. only:: texinfo
+
+   ::
+
+      z = Q^T y = [ z_1 ; z_2 ]
+
+where :math:`z_1` is :math:`p`-by-1 and :math:`z_2` is :math:`(n-p)`-by-1,
+then the residual becomes
+
+.. math::
+   
+   \chi^2 &= \left|\left| y - X c \right|\right|^2 + \lambda^2 ||c||^2 \\
+          &= \left|\left| Q^T y - \begin{pmatrix} R \\ 0 \end{pmatrix} c \right|\right|^2 + \lambda^2 || c ||^2 \\
+          &= \left|\left| \begin{pmatrix} z_1 \\ z_2 \end{pmatrix} - \begin{pmatrix} R \\ 0 \end{pmatrix} c \right|\right|^2 + \lambda^2 || c ||^2 \\
+          &= \left|\left| z_1 - R c \right|\right|^2 + || z_2 ||^2 + \lambda^2 || c ||^2 \\
+          &= \left|\left| \begin{pmatrix} z_1 \\ 0 \end{pmatrix} - \begin{pmatrix} R \\ \lambda I_p \end{pmatrix} c \right|\right|^2 + || z_2 ||^2
+
+Since :math:`z_2` does not depend on :math:`c`, :math:`\chi^2` is minimized
+by solving the least squares system,
 
 .. only:: not texinfo
 
@@ -1292,12 +1355,12 @@ which can be written as the matrix equation
       \left(
         \begin{array}{c}
           R \\
-          \lambda I
+          \lambda I_p
         \end{array}
       \right) c =
       \left(
         \begin{array}{c}
-          Q^T y \\
+          z_1 \\
           0
         \end{array}
       \right)
@@ -1311,11 +1374,11 @@ which can be written as the matrix equation
 The matrix on the left hand side is now a much
 smaller :math:`2p`-by-:math:`p` matrix which can
 be solved with a standard SVD approach. The
-:math:`Q` matrix is just as large as the original
-matrix :math:`X`, however it does not need to be
+:math:`Q` matrix is large, however it does not need to be
 explicitly constructed. The TSQR algorithm
 computes only the :math:`p`-by-:math:`p` matrix
-:math:`R` and the :math:`p`-by-1 vector :math:`Q^T y`,
+:math:`R`, the :math:`p`-by-1 vector :math:`z_1`,
+and the norm :math:`||z_2||`,
 and updates these quantities as new blocks
 are added to the system. Each time a new block of rows
 (:math:`X_i,y_i`) is added, the algorithm performs a QR decomposition
@@ -1542,13 +1605,16 @@ Large Dense Linear Least Squares Routines
 
 .. function:: const gsl_matrix * gsl_multilarge_linear_matrix_ptr (const gsl_multilarge_linear_workspace * work)
 
-   For the normal equations method, this function returns a pointer to the :math:`X^T X` matrix. For
-   the TSQR method, this function returns a pointer to the upper triangular :math:`R` matrix.
+   For the normal equations method, this function returns a pointer to the :math:`X^T X` matrix
+   of size :math:`p`-by-:math:`p`. For the TSQR method, this function returns a pointer to the
+   upper triangular :math:`R` matrix of size :math:`p`-by-:math:`p`.
 
 .. function:: const gsl_vector * gsl_multilarge_linear_rhs_ptr (const gsl_multilarge_linear_workspace * work)
 
-   For the normal equations method, this function returns a pointer to the :math:`X^T y` right hand side
-   vector. For the TSQR method, this function returns a pointer to the :math:`Q^T y` right hand side vector.
+   For the normal equations method, this function returns a pointer to the :math:`p`-by-1 right hand
+   side vector :math:`X^T y`. For the TSQR method, this function returns a pointer to a vector of length
+   :math:`p+1`. The first :math:`p` elements of this vector contain :math:`z_1`, while the last element
+   contains :math:`||z_2||`.
 
 .. function:: int gsl_multilarge_linear_rcond (double * rcond, gsl_multilarge_linear_workspace * work)
 

@@ -321,6 +321,66 @@ gsl_linalg_complex_QR_lssolve_r (const gsl_matrix_complex * QR, const gsl_matrix
     }
 }
 
+/* Find the least squares solution to the overdetermined system 
+ *
+ *   A x = B
+ *  
+ * for M >= N using the QR factorization A = Q R. 
+ *
+ * Inputs: QR   - [R; V] matrix, M-by-N
+ *         T    - upper triangular block reflector, N-by-N
+ *         B    - right hand sides, size M-by-nrhs
+ *         X    - (output) solution, size M-by-nrhs
+ *                x(1:N,k)   = least squares solution vector for B(:,k)
+ *                x(N+1:M,k) = vector whose norm equals || B(:,k) - A X(1:N,k) ||
+ *         work - workspace, size N-by-nrhs
+ */
+
+int
+gsl_linalg_complex_QR_lssolvem_r (const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                                  const gsl_matrix_complex * B, gsl_matrix_complex * X, gsl_matrix_complex * work)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+  const size_t nrhs = B->size2;
+
+  if (M < N)
+    {
+      GSL_ERROR ("QR matrix must have M >= N", GSL_EBADLEN);
+    }
+  else if (T->size1 != N || T->size2 != N)
+    {
+      GSL_ERROR ("T matrix must be N-by-N", GSL_EBADLEN);
+    }
+  else if (B->size1 != M)
+    {
+      GSL_ERROR ("matrix size must match B size", GSL_EBADLEN);
+    }
+  else if (X->size1 != M || X->size2 != nrhs)
+    {
+      GSL_ERROR ("solution matrix has wrong dimensions", GSL_EBADLEN);
+    }
+  else if (work->size1 != N || work->size2 != nrhs)
+    {
+      GSL_ERROR ("work matrix has wrong dimensions", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_complex_const_view R = gsl_matrix_complex_const_submatrix (QR, 0, 0, N, N);
+      gsl_matrix_complex_view X1 = gsl_matrix_complex_submatrix(X, 0, 0, N, nrhs);
+
+      /* compute X = Q^H B */
+      gsl_matrix_complex_memcpy(X, B);
+      gsl_linalg_complex_QR_QHmat_r (QR, T, X, work);
+
+      /* Solve R X = Q^H B */
+      gsl_blas_ztrsm (CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit,
+                      GSL_COMPLEX_ONE, &R.matrix, &X1.matrix);
+
+      return GSL_SUCCESS;
+    }
+}
+
 /*
 gsl_linalg_complex_QR_unpack_r()
   Unpack matrices Q and R
@@ -470,6 +530,83 @@ gsl_linalg_complex_QR_QHvec_r(const gsl_matrix_complex * QR, const gsl_matrix_co
       /* b1 = b1 - V1 * work */
       gsl_blas_ztrmv(CblasLower, CblasNoTrans, CblasUnit, &V1.matrix, work);
       gsl_vector_complex_sub(&b1.vector, work);
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_QR_QHmat_r()
+  Apply M-by-M Q^H to the M-by-K matrix B
+
+Inputs: QR   - [R; V] matrix encoded by gsl_linalg_complex_QR_decomp_r
+        T    - block reflector matrix
+        B    - M-by-K matrix replaced by Q^H B on output
+        work - N-by-K workspace
+
+Notes:
+1) Provided by Julien Langou
+*/
+
+int
+gsl_linalg_complex_QR_QHmat_r(const gsl_matrix_complex * QR, const gsl_matrix_complex * T,
+                              gsl_matrix_complex * B, gsl_matrix_complex * work)
+{
+  const size_t M = QR->size1;
+  const size_t N = QR->size2;
+  const size_t K = B->size2;
+
+  if (M < N)
+    {
+      GSL_ERROR ("M must be >= N", GSL_EBADLEN);
+    }
+  else if (T->size1 != N || T->size2 != N)
+    {
+      GSL_ERROR ("T matrix must be N-by-N", GSL_EBADLEN);
+    }
+  else if (B->size1 != M)
+    {
+      GSL_ERROR ("B matrix must have M rows", GSL_EBADLEN);
+    }
+  else if (work->size1 != N || work->size2 != K)
+    {
+      GSL_ERROR ("workspace must be N-by-K", GSL_EBADLEN);
+    }
+  else
+    {
+      gsl_matrix_complex_const_view V1 = gsl_matrix_complex_const_submatrix(QR, 0, 0, N, N);
+      gsl_matrix_complex_view B1 = gsl_matrix_complex_submatrix(B, 0, 0, N, K);
+      gsl_matrix_complex_view B2;
+
+      /* work := V1^H B1 */
+      gsl_matrix_complex_memcpy(work, &B1.matrix);
+      gsl_blas_ztrmm(CblasLeft, CblasLower, CblasConjTrans, CblasUnit,
+                     GSL_COMPLEX_ONE, &V1.matrix, work);
+
+      if (M > N)
+        {
+          gsl_matrix_complex_const_view V2 = gsl_matrix_complex_const_submatrix(QR, N, 0, M - N, N);
+
+          /* work = work + V2^H B2 */
+          B2 = gsl_matrix_complex_submatrix(B, N, 0, M - N, K);
+          gsl_blas_zgemm(CblasConjTrans, CblasNoTrans, GSL_COMPLEX_ONE,
+                         &V2.matrix, &B2.matrix, GSL_COMPLEX_ONE, work);
+        }
+
+      /* work = T^H * work */
+      gsl_blas_ztrmm(CblasLeft, CblasUpper, CblasConjTrans, CblasNonUnit, GSL_COMPLEX_ONE, T, work);
+
+      if (M > N)
+        {
+          /* B2 = B2 - V2 * work */
+          gsl_matrix_complex_const_view V2 = gsl_matrix_complex_const_submatrix(QR, N, 0, M - N, N);
+          gsl_blas_zgemm(CblasNoTrans, CblasNoTrans, GSL_COMPLEX_NEGONE,
+                         &V2.matrix, work, GSL_COMPLEX_ONE, &B2.matrix);
+        }
+
+      /* B1 = B1 - V1 * work */
+      gsl_blas_ztrmm(CblasLeft, CblasLower, CblasNoTrans, CblasUnit, GSL_COMPLEX_ONE, &V1.matrix, work);
+      gsl_matrix_complex_sub(&B1.matrix, work);
 
       return GSL_SUCCESS;
     }

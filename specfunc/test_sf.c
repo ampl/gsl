@@ -2749,6 +2749,7 @@ int main(int argc, char * argv[])
   gsl_set_error_handler_off ();
 
   gsl_test(test_airy(),        "Airy Functions");
+  gsl_test(test_alf(),         "Associated Legendre Functions");
   gsl_test(test_bessel(),      "Bessel Functions");
   gsl_test(test_clausen(),     "Clausen Integral");
   gsl_test(test_coulomb(),     "Coulomb Wave Functions");

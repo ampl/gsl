@@ -9,70 +9,70 @@
 /* Define to 1 if you have the <complex.h> header file. */
 #undef HAVE_COMPLEX_H
 
-/* Define to 1 if you have the declaration of `acosh', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'acosh', and to 0 if you don't.
    */
 #undef HAVE_DECL_ACOSH
 
-/* Define to 1 if you have the declaration of `asinh', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'asinh', and to 0 if you don't.
    */
 #undef HAVE_DECL_ASINH
 
-/* Define to 1 if you have the declaration of `atanh', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'atanh', and to 0 if you don't.
    */
 #undef HAVE_DECL_ATANH
 
-/* Define to 1 if you have the declaration of `expm1', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'expm1', and to 0 if you don't.
    */
 #undef HAVE_DECL_EXPM1
 
-/* Define to 1 if you have the declaration of `feenableexcept', and to 0 if
+/* Define to 1 if you have the declaration of 'feenableexcept', and to 0 if
    you don't. */
 #undef HAVE_DECL_FEENABLEEXCEPT
 
-/* Define to 1 if you have the declaration of `fesettrapenable', and to 0 if
+/* Define to 1 if you have the declaration of 'fesettrapenable', and to 0 if
    you don't. */
 #undef HAVE_DECL_FESETTRAPENABLE
 
-/* Define to 1 if you have the declaration of `finite', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'finite', and to 0 if you don't.
    */
 #undef HAVE_DECL_FINITE
 
-/* Define to 1 if you have the declaration of `fprnd_t', and to 0 if you
+/* Define to 1 if you have the declaration of 'fprnd_t', and to 0 if you
    don't. */
 #undef HAVE_DECL_FPRND_T
 
-/* Define to 1 if you have the declaration of `frexp', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'frexp', and to 0 if you don't.
    */
 #undef HAVE_DECL_FREXP
 
-/* Define to 1 if you have the declaration of `hypot', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'hypot', and to 0 if you don't.
    */
 #undef HAVE_DECL_HYPOT
 
-/* Define to 1 if you have the declaration of `isfinite', and to 0 if you
+/* Define to 1 if you have the declaration of 'isfinite', and to 0 if you
    don't. */
 #undef HAVE_DECL_ISFINITE
 
-/* Define to 1 if you have the declaration of `isinf', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'isinf', and to 0 if you don't.
    */
 #undef HAVE_DECL_ISINF
 
-/* Define to 1 if you have the declaration of `isnan', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'isnan', and to 0 if you don't.
    */
 #undef HAVE_DECL_ISNAN
 
-/* Define to 1 if you have the declaration of `ldexp', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'ldexp', and to 0 if you don't.
    */
 #undef HAVE_DECL_LDEXP
 
-/* Define to 1 if you have the declaration of `log1p', and to 0 if you don't.
+/* Define to 1 if you have the declaration of 'log1p', and to 0 if you don't.
    */
 #undef HAVE_DECL_LOG1P
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
+/* Define to 1 if you don't have 'vprintf' but do have '_doprnt.' */
 #undef HAVE_DOPRNT
 
 /* Defined if you have ansi EXIT_SUCCESS and EXIT_FAILURE in stdlib.h */
@@ -99,13 +99,13 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `m' library (-lm). */
+/* Define to 1 if you have the 'm' library (-lm). */
 #undef HAVE_LIBM
 
-/* Define to 1 if you have the `memcpy' function. */
+/* Define to 1 if you have the 'memcpy' function. */
 #undef HAVE_MEMCPY
 
-/* Define to 1 if you have the `memmove' function. */
+/* Define to 1 if you have the 'memmove' function. */
 #undef HAVE_MEMMOVE
 
 /* Define this if printf can handle %Lf for long double */
@@ -120,7 +120,7 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the `strdup' function. */
+/* Define to 1 if you have the 'strdup' function. */
 #undef HAVE_STRDUP
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -129,10 +129,10 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strtol' function. */
+/* Define to 1 if you have the 'strtol' function. */
 #undef HAVE_STRTOL
 
-/* Define to 1 if you have the `strtoul' function. */
+/* Define to 1 if you have the 'strtoul' function. */
 #undef HAVE_STRTOUL
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
@@ -144,7 +144,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the `vprintf' function. */
+/* Define to 1 if you have the 'vprintf' function. */
 #undef HAVE_VPRINTF
 
 /* Define if you need to hide the static definitions of inline functions */
@@ -177,7 +177,7 @@
 /* Defined if this is an official release */
 #undef RELEASED
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
@@ -185,23 +185,23 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define to 1 if type `char' is unsigned and your compiler does not
+/* Define to 1 if type 'char' is unsigned and your compiler does not
    predefine this macro.  */
 #ifndef __CHAR_UNSIGNED__
 # undef __CHAR_UNSIGNED__
 #endif
 
-/* Define to `__inline__' or `__inline' if that's what the C compiler
+/* Define to '__inline__' or '__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 #undef inline
 #endif
 
-/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* Define as 'unsigned int' if <stddef.h> doesn't define. */
 #undef size_t
 
-/* Define to empty if the keyword `volatile' does not work. Warning: valid
-   code using `volatile' can become incorrect without. Disable with care. */
+/* Define to empty if the keyword 'volatile' does not work. Warning: valid
+   code using 'volatile' can become incorrect without. Disable with care. */
 #undef volatile
 
 /* Use 0 and 1 for EXIT_SUCCESS and EXIT_FAILURE if we don't have them */

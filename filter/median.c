@@ -72,6 +72,6 @@ Inputs: endtype - end point handling
 int
 gsl_filter_median(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vector * y, gsl_filter_median_workspace * w)
 {
-  int status = gsl_movstat_median(endtype, x, y, w->movstat_workspace_p);
+  int status = gsl_movstat_median((gsl_movstat_end_t) endtype, x, y, w->movstat_workspace_p);
   return status;
 }

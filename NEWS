@@ -1,4 +1,45 @@
-* What is new in gsl-2.7:
+* What is new in gsl-2.8:
+
+** apply patch for bug #63679 (F. Weimer)
+
+** updated multilarge TSQR method to store ||z_2|| and
+   provide it to the user
+
+** add routines for Hermite B-spline interpolation
+
+** fix for bug #59624
+
+** fix for bug #59781 (M. Dunlap)
+
+** bug fix #61094 (reported by A. Cheylus)
+
+** add functions:
+   - gsl_matrix_complex_conjugate
+   - gsl_vector_complex_conj_memcpy
+   - gsl_vector_complex_div_real
+   - gsl_linalg_QR_lssolvem_r
+   - gsl_linalg_complex_QR_lssolvem_r
+   - gsl_linalg_complex_QR_QHmat_r
+   - gsl_linalg_QR_UR_lssolve
+   - gsl_linalg_QR_UR_lssvx
+   - gsl_linalg_QR_UR_QTvec
+   - gsl_linalg_QR_UU_lssvx
+   - gsl_linalg_QR_UD_lssvx
+   - gsl_linalg_QR_UD_QTvec
+   - gsl_linalg_complex_cholesky_{decomp2,svx2,solve2,scale,scale_apply}
+   - gsl_linalg_SV_{solve2,lssolve}
+   - gsl_rstat_norm
+
+** add Lebedev quadrature (gsl_integration_lebedev)
+
+** major overhaul to the B-spline module to add
+   new functionality
+
+* What was new in gsl-2.7.1:
+
+** update libtool version numbers
+
+* What was new in gsl-2.7:
 
 ** fixed doc bug for gsl_histogram_min_bin (lhcsky at 163.com)
 

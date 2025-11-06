@@ -1,7 +1,7 @@
 /* linalg/luc.c
  * 
  * Copyright (C) 2001, 2007, 2009 Brian Gough
- * Copyright (C) 2019 Patrick Alken
+ * Copyright (C) 2019, 2021 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,11 +126,16 @@ Inputs: A    - on input, matrix to be factored; on output, L and U factors
 
 Notes:
 1) Based on LAPACK ZGETF2
+
+Return: GSL_SUCCESS on success; otherwise an integer k in [1,GSL_MIN(M,N)]
+such that U(k,k) is zero and so the matrix is singular; in this case,
+the factorization is still completed
 */
 
 static int
 LU_decomp_L2 (gsl_matrix_complex * A, gsl_vector_uint * ipiv)
 {
+  int status = GSL_SUCCESS;
   const size_t M = A->size1;
   const size_t N = A->size2;
   const size_t minMN = GSL_MIN(M, N);
@@ -148,36 +153,44 @@ LU_decomp_L2 (gsl_matrix_complex * A, gsl_vector_uint * ipiv)
           /* find maximum in the j-th column */
           gsl_vector_complex_view v = gsl_matrix_complex_subcolumn(A, j, j, M - j);
           size_t j_pivot = j + gsl_blas_izamax(&v.vector);
+          gsl_complex Ajpj = gsl_matrix_complex_get(A, j_pivot, j);
           gsl_vector_complex_view v1, v2;
 
           gsl_vector_uint_set(ipiv, j, j_pivot);
 
-          if (j_pivot != j)
+          if (GSL_REAL(Ajpj) != 0.0 || GSL_IMAG(Ajpj) != 0.0)
             {
-              /* swap rows j and j_pivot */
-              v1 = gsl_matrix_complex_row(A, j);
-              v2 = gsl_matrix_complex_row(A, j_pivot);
-              gsl_blas_zswap(&v1.vector, &v2.vector);
-            }
-
-          if (j < M - 1)
-            {
-              gsl_complex Ajj = gsl_matrix_complex_get(A, j, j);
-              gsl_complex Ajjinv = gsl_complex_inverse(Ajj);
-
-              if (gsl_complex_abs(Ajj) >= GSL_DBL_MIN)
+              if (j_pivot != j)
                 {
-                  v1 = gsl_matrix_complex_subcolumn(A, j, j + 1, M - j - 1);
-                  gsl_blas_zscal(Ajjinv, &v1.vector);
+                  /* swap rows j and j_pivot */
+                  v1 = gsl_matrix_complex_row(A, j);
+                  v2 = gsl_matrix_complex_row(A, j_pivot);
+                  gsl_blas_zswap(&v1.vector, &v2.vector);
                 }
-              else
+
+              if (j < M - 1)
                 {
-                  for (i = 1; i < M - j; ++i)
+                  gsl_complex Ajj = gsl_matrix_complex_get(A, j, j);
+                  gsl_complex Ajjinv = gsl_complex_inverse(Ajj);
+
+                  if (gsl_complex_abs(Ajj) >= GSL_DBL_MIN)
                     {
-                      gsl_complex * ptr = gsl_matrix_complex_ptr(A, j + i, j);
-                      *ptr = gsl_complex_mul(*ptr, Ajjinv);
+                      v1 = gsl_matrix_complex_subcolumn(A, j, j + 1, M - j - 1);
+                      gsl_blas_zscal(Ajjinv, &v1.vector);
+                    }
+                  else
+                    {
+                      for (i = 1; i < M - j; ++i)
+                        {
+                          gsl_complex * ptr = gsl_matrix_complex_ptr(A, j + i, j);
+                          *ptr = gsl_complex_mul(*ptr, Ajjinv);
+                        }
                     }
                 }
+            }
+          else
+            {
+              status = (int) j + 1;
             }
 
           if (j < minMN - 1)
@@ -190,7 +203,7 @@ LU_decomp_L2 (gsl_matrix_complex * A, gsl_vector_uint * ipiv)
             }
         }
 
-      return GSL_SUCCESS;
+      return status;
     }
 }
 

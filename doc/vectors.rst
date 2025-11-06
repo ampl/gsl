@@ -615,6 +615,11 @@ functions fall into this category.
    This function copies the elements of the vector :data:`src` into the
    vector :data:`dest`.  The two vectors must have the same length.
 
+.. function:: int gsl_vector_complex_conj_memcpy (gsl_vector_complex * dest, const gsl_vector_complex * src)
+
+   This function copies the complex conjugate of the vector :data:`src` into the
+   vector :data:`dest`.  The two vectors must have the same length.
+
 .. function:: int gsl_vector_swap (gsl_vector * v, gsl_vector * w)
 
    This function exchanges the elements of the vectors :data:`v` and :data:`w`
@@ -686,6 +691,15 @@ Vector operations
 
    This function performs the operation :math:`y \leftarrow \alpha x + \beta y`. The
    vectors :data:`x` and :data:`y` must have the same length.
+
+The following additional functions are available for complex vector operations.
+
+.. function:: int gsl_vector_complex_div_real (gsl_vector_complex * a, const gsl_vector * b)
+
+   This function divides the elements of complex vector :data:`a` by the elements
+   of real vector :data:`b`.  The result :math:`a_i \leftarrow a_i / b_i` is
+   stored in :data:`a` and :data:`b` remains unchanged. The two vectors must
+   have the same length.
 
 Finding maximum and minimum elements of vectors
 -----------------------------------------------
@@ -1415,7 +1429,7 @@ a matrix.
    the elements of the matrix in-place.  The matrix must be square for this
    operation to be possible.
 
-.. function:: int gsl_matrix_complex_conjtrans_memcpy (gsl_matrix * dest, const gsl_matrix * src)
+.. function:: int gsl_matrix_complex_conjtrans_memcpy (gsl_matrix_complex * dest, const gsl_matrix_complex * src)
 
    This function makes the matrix :data:`dest` the conjugate transpose of the matrix
    :data:`src` by copying the complex conjugate elements of :data:`src` into :data:`dest`.  This
@@ -1488,6 +1502,12 @@ The following operations are defined for real and complex matrices.
    This function adds the constant value :data:`x` to the elements of the
    matrix :data:`a`.  The result :math:`a(i,j) \leftarrow a(i,j) + x` is
    stored in :data:`a`.
+
+.. function:: int gsl_matrix_complex_conjugate (gsl_matrix * a)
+
+   This function replaces each element of the matrix :data:`a` with its
+   complex conjugate value. The result :math:`a(i,j) \leftarrow a(i,j)^{*}`
+   is stored in :data:`a`.
 
 Finding maximum and minimum elements of matrices
 ------------------------------------------------

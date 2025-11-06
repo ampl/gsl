@@ -157,6 +157,14 @@ gsl_rstat_rms(const gsl_rstat_workspace *w)
   return rms;
 }
 
+double
+gsl_rstat_norm(const gsl_rstat_workspace *w)
+{
+  double rms = gsl_rstat_rms(w);
+  double norm = sqrt((double) w->n) * rms;
+  return norm;
+}
+
 /* standard deviation of the mean: sigma / sqrt(n) */
 double
 gsl_rstat_sd_mean(const gsl_rstat_workspace *w)

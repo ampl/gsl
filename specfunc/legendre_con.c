@@ -171,6 +171,7 @@ static double olver_U2(double beta2, double p)
   return (1.0-p)/(1152.0*(1.0+beta2)) * (poly1 + poly2 + poly3);
 }
 
+#if 0
 static const double U3c1[] = {   -1307.0,   -1647.0,    3375.0,    3675.0 };
 static const double U3c2[] = {   29366.0,   35835.0, -252360.0, -272630.0,
                                 276810.0,  290499.0 };
@@ -184,7 +185,6 @@ static const double U3c5[] = {       9136.0,      22480.0,     12760.0,
                                  92370135.0,   86244015.0, -263678415.0,
                                -260275015.0, 185910725.0,  185910725.0 };
 
-#if 0
 static double olver_U3(double beta2, double p)
 {
   double beta4 = beta2*beta2;

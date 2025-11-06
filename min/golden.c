@@ -46,18 +46,15 @@ static int goldensection_iterate (void * vstate, gsl_function * f, double * x_mi
 static int
 goldensection_init (void * vstate, gsl_function * f, double x_minimum, double f_minimum, double x_lower, double f_lower, double x_upper, double f_upper)
 {
-  goldensection_state_t * state = (goldensection_state_t *) vstate;
-
   /* no initialization required, prevent warnings about unused variables */
-
-  state = 0;
-  f = 0;
-  x_minimum = 0;
-  f_minimum = 0;
-  x_lower = 0;
-  f_lower = 0;
-  x_upper = 0;
-  f_upper = 0;
+  (void) vstate;
+  (void) f;
+  (void) x_minimum;
+  (void) f_minimum;
+  (void) x_lower;
+  (void) f_lower;
+  (void) x_upper;
+  (void) f_upper;
 
   return GSL_SUCCESS;
 }
@@ -65,8 +62,6 @@ goldensection_init (void * vstate, gsl_function * f, double x_minimum, double f_
 static int
 goldensection_iterate (void * vstate, gsl_function * f, double * x_minimum, double * f_minimum, double * x_lower, double * f_lower, double * x_upper, double * f_upper)
 {
-  goldensection_state_t * state = (goldensection_state_t *) vstate;
-
   const double x_center = *x_minimum ;
   const double x_left = *x_lower ;
   const double x_right = *x_upper ;
@@ -80,8 +75,6 @@ goldensection_iterate (void * vstate, gsl_function * f, double * x_minimum, doub
 
   double x_new, f_new;
 
-  state = 0 ; /* avoid warning about unused parameters */
-  
   x_new = x_center + golden * ((w_upper > w_lower) ? w_upper : -w_lower) ;
 
   SAFE_FUNC_CALL (f, x_new, &f_new);
@@ -108,6 +101,8 @@ goldensection_iterate (void * vstate, gsl_function * f, double * x_minimum, doub
     {
       return GSL_FAILURE;
     }
+
+  (void) vstate;
 }
 
 

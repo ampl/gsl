@@ -41,7 +41,7 @@
    The paper below has details of the algorithm.
 
    From: Makoto Matsumoto and Takuji Nishimura, "Mersenne Twister: A
-   623-dimensionally equidistributerd uniform pseudorandom number
+   623-dimensionally equidistributed uniform pseudorandom number
    generator". ACM Transactions on Modeling and Computer Simulation,
    Vol. 8, No. 1 (Jan. 1998), Pages 3-30
 

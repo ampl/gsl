@@ -1,5 +1,6 @@
 #include <config.h>
 #include <gsl/gsl_statistics.h>
+#include <gsl/gsl_errno.h>
 
 #define BASE_LONG_DOUBLE
 #include "templates_on.h"

@@ -38,6 +38,8 @@
 
 #include "linear_common.c"
 
+static int menger(const double a, const double b, const double c, double * kappa);
+
 int
 gsl_multifit_linear_solve (const double lambda,
                            const gsl_matrix * X,
@@ -706,6 +708,11 @@ Inputs: smin      - smallest singular value of LS system
                     derived from singular values
 
 Return: success/error
+
+Notes:
+1) reg_param is ordered in ascending order with:
+reg_param(1) = smin
+reg_param(N) = smax
 */
 
 int
@@ -726,16 +733,16 @@ gsl_multifit_linear_lreg (const double smin, const double smax,
       double ratio;
       size_t i;
 
-      gsl_vector_set(reg_param, N - 1, new_smin);
+      /* reg_param(1) = smin */
+      gsl_vector_set(reg_param, 0, new_smin);
 
-      /* ratio so that reg_param(1) = s(1) */
+      /* ratio so that reg_param(N) = smax */
       ratio = pow(smax / new_smin, 1.0 / ((double)N - 1.0));
 
-      /* calculate the regularization parameters */
-      for (i = N - 1; i > 0 && i--; )
+      for (i = 1; i < N; ++i)
         {
-          double rp1 = gsl_vector_get(reg_param, i + 1);
-          gsl_vector_set(reg_param, i, ratio * rp1);
+          double rm1 = gsl_vector_get(reg_param, i - 1);
+          gsl_vector_set(reg_param, i, ratio * rm1);
         }
 
       return GSL_SUCCESS;
@@ -970,6 +977,97 @@ gsl_multifit_linear_lcurvature (const gsl_vector * y,
 }
 
 /*
+gsl_multifit_linear_lcurvature_menger()
+  Determine Menger curvature of each point on L-curve. For each
+set of 3 points on the L-curve, the circle which passes through
+the 3 points is computed. The radius of the circle is then used
+as an estimate of the curvature at the middle point (Menger curvature).
+
+Inputs: rho   - vector of residual norms ||A x - b||
+        eta   - vector of solution norms ||L x||
+        kappa - (output) vector of Menger curvature values
+
+Return: success/error
+*/
+
+int
+gsl_multifit_linear_lcurvature_menger(const gsl_vector *rho,
+                                      const gsl_vector *eta,
+                                      gsl_vector *kappa)
+{
+  const size_t n = rho->size;
+
+  if (n < 3)
+    {
+      GSL_ERROR ("at least 3 points are needed for Menger curvature",
+                 GSL_EBADLEN);
+    }
+  else if (n != eta->size)
+    {
+      GSL_ERROR ("size of rho and eta vectors do not match",
+                 GSL_EBADLEN);
+    }
+  else if (n != kappa->size)
+    {
+      GSL_ERROR ("size of rho and kappa vectors do not match",
+                 GSL_EBADLEN);
+    }
+  else
+    {
+      double x1, y1;      /* first point of triangle on L-curve */
+      double x2, y2;      /* second point of triangle on L-curve */
+      size_t i;
+
+      /* initial values */
+      x1 = log(gsl_vector_get(rho, 0));
+      y1 = log(gsl_vector_get(eta, 0));
+
+      x2 = log(gsl_vector_get(rho, 1));
+      y2 = log(gsl_vector_get(eta, 1));
+
+      for (i = 1; i < n - 1; ++i)
+        {
+          /*
+           * The points (x1,y1), (x2,y2), (x3,y3) are the previous,
+           * current, and next point on the L-curve. We will find
+           * the circle which fits these 3 points and take its radius
+           * as an estimate of the curvature at this point.
+           */
+          double x3 = log(gsl_vector_get(rho, i + 1));
+          double y3 = log(gsl_vector_get(eta, i + 1));
+
+          double a = gsl_hypot(x1 - x2, y1 - y2); /* distances between each pair of points */
+          double b = gsl_hypot(x2 - x3, y2 - y3);
+          double c = gsl_hypot(x1 - x3, y1 - y3);
+
+          double kappa_i;
+
+          /*
+           * sometimes the triangle sides a,b,c do not
+           * form a valid triangle, but in that case
+           * menger() will set kappa to 0; ignore the
+           * error value in these cases
+           */
+          menger(a, b, c, &kappa_i);
+
+          gsl_vector_set(kappa, i, kappa_i);
+
+          /* update previous/current L-curve values */
+          x1 = x2;
+          y1 = y2;
+          x2 = x3;
+          y2 = y3;
+        }
+
+      /* duplicate the first and last points */
+      gsl_vector_set(kappa, 0, gsl_vector_get(kappa, 1));
+      gsl_vector_set(kappa, n - 1, gsl_vector_get(kappa, n - 2));
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
 gsl_multifit_linear_lcorner()
   Determine point on L-curve of maximum curvature. For each
 set of 3 points on the L-curve, the circle which passes through
@@ -1006,10 +1104,10 @@ gsl_multifit_linear_lcorner(const gsl_vector *rho,
   else
     {
       int s = GSL_SUCCESS;
-      size_t i;
       double x1, y1;      /* first point of triangle on L-curve */
       double x2, y2;      /* second point of triangle on L-curve */
-      double rmin = -1.0; /* minimum radius of curvature */
+      double kappa_max = -1.0;
+      size_t i;
 
       /* initial values */
       x1 = log(gsl_vector_get(rho, 0));
@@ -1029,24 +1127,20 @@ gsl_multifit_linear_lcorner(const gsl_vector *rho,
           double x3 = log(gsl_vector_get(rho, i + 1));
           double y3 = log(gsl_vector_get(eta, i + 1));
 
-          double x21 = x2 - x1;
-          double y21 = y2 - y1;
-          double x31 = x3 - x1;
-          double y31 = y3 - y1;
-          double h21 = x21*x21 + y21*y21;
-          double h31 = x31*x31 + y31*y31;
-          double d = fabs(2.0 * (x21*y31 - x31*y21));
-          double r = sqrt(h21*h31*((x3-x2)*(x3-x2)+(y3-y2)*(y3-y2))) / d;
+          double a = gsl_hypot(x1 - x2, y1 - y2); /* distances between each pair of points */
+          double b = gsl_hypot(x2 - x3, y2 - y3);
+          double c = gsl_hypot(x1 - x3, y1 - y3);
 
-          /* if d =~ 0 then there are nearly colinear points */
-          if (gsl_finite(r))
+          double kappa_i;
+
+          s = menger(a, b, c, &kappa_i);
+          if (s)
+            continue;
+
+          if (kappa_max < kappa_i)
             {
-              /* check for smallest radius of curvature */
-              if (r < rmin || rmin < 0.0)
-                {
-                  rmin = r;
-                  *idx = i;
-                }
+              kappa_max = kappa_i;
+              *idx = i;
             }
 
           /* update previous/current L-curve values */
@@ -1056,16 +1150,16 @@ gsl_multifit_linear_lcorner(const gsl_vector *rho,
           y2 = y3;
         }
 
-      /* check if a minimum radius was found */
-      if (rmin < 0.0)
+      /* check if a maximum curvature was found */
+      if (kappa_max <= 0.0)
         {
           /* possibly co-linear points */
-          GSL_ERROR("failed to find minimum radius", GSL_EINVAL);
+          GSL_ERROR("failed to find maximum curvature", GSL_EINVAL);
         }
 
       return s;
     }
-} /* gsl_multifit_linear_lcorner() */
+}
 
 /*
 gsl_multifit_linear_lcorner2()
@@ -1327,6 +1421,118 @@ gsl_multifit_linear_Lsobolev(const size_t p, const size_t kmax,
           for (k = 0; k < j; ++k)
             gsl_matrix_set(L, j, k, 0.0);
         }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+menger()
+  Calculate Menger curvature, which is the reciprocal radius
+of a circle fitted to three points in the plane (x,y,z)
+
+Inputs: a,b,c - Euclidean distance between the 3 points in the plane,
+                a = | x - y |
+                b = | x - z |
+                c = | y - z |
+        kappa - (output) Menger curvature
+
+Return: if (a,b,c) are negative or represent colinear points, GSL_EDOM is returned;
+otherwise GSL_SUCCESS
+
+Notes:
+1) See https://www.wikipedia.org/wiki/Menger_curvature for formula
+*/
+
+static int
+menger(const double a, const double b, const double c, double * kappa)
+{
+  if (a <= 0.0 || b <= 0.0 || c <= 0.0)
+    {
+      /* triangle sides must be positive;
+       * just set kappa to 0 and return */
+      *kappa = 0.0;
+      return GSL_EDOM;
+    }
+  else if (b + c < a || c + a < b || a + b < c)
+    {
+      /* the given sides do not form a valid triangle;
+       * just set kappa to 0 and return */
+      *kappa = 0.0;
+      return GSL_EDOM;
+    }
+  else
+    {
+      double min, middle, max;
+      double A;
+
+      /* sort a,b,c */
+      if (a < b)
+        {
+          if (a < c)
+            {
+              min = a;
+              if (b < c)
+                {
+                  middle = b;
+                  max = c;
+                }
+              else
+                {
+                  middle = c;
+                  max = b;
+                }
+            }
+          else
+            {
+              min = c;
+              middle = a;
+              max = b;
+            }
+        }
+      else
+        {
+          if (b < c)
+            {
+              min = b;
+              if (a < c)
+                {
+                  middle = a;
+                  max = c;
+                }
+              else
+                {
+                  middle = c;
+                  max = a;
+                }
+            }
+          else
+            {
+              min = c;
+              middle = b;
+              max = a;
+            }
+        }
+
+      /* check for quick return */
+      if (min + middle == max)
+        {
+          /* colinear points */
+          *kappa = 0.0;
+          return GSL_SUCCESS;
+        }
+
+      /*
+       * Compute area of triangle with sides a,b,c.
+       * see: http://www.cs.berkeley.edu/~wkahan/Triangle.pdf
+       * for a numerically stable formula
+       */
+      A = sqrt((max + (middle + min)) *
+               (min - (max - middle)) *
+               (min + (max - middle)) *
+               (max + (middle - min)));
+
+      *kappa = A / (a * b * c);
 
       return GSL_SUCCESS;
     }

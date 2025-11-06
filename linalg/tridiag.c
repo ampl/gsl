@@ -48,7 +48,11 @@ solve_tridiag(
   double *c = (double *) malloc (N * sizeof (double));
   double *z = (double *) malloc (N * sizeof (double));
 
-  if (gamma == 0 || alpha == 0 || c == 0 || z == 0)
+  if (N == 0)
+    {
+      GSL_ERROR ("matrix size must be positive", GSL_EBADLEN);
+    }
+  else if (gamma == 0 || alpha == 0 || c == 0 || z == 0)
     {
       GSL_ERROR("failed to allocate working space", GSL_ENOMEM);
     }

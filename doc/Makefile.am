@@ -8,7 +8,16 @@ noinst_TEXINFOS = gsl-design.texi
 man_MANS = gsl.3 gsl-config.1 gsl-randist.1 gsl-histogram.1
 
 figures =                              \
-  images/bspline.png                   \
+  images/bspline_deriv.png             \
+  images/bspline_gram1.png             \
+  images/bspline_gram2.png             \
+  images/bspline_interp.png            \
+  images/bspline_knots.png             \
+  images/bspline_lsbreak.png           \
+  images/bspline_lsend.png             \
+  images/bspline_lsorder.png           \
+  images/bspline_per.png               \
+  images/bspline_proj.png              \
   images/cheb.png                      \
   images/dwt.png                       \
   images/fft-complex-radix2.png        \

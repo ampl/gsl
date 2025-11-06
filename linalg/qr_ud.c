@@ -263,6 +263,109 @@ gsl_linalg_QR_UD_lssolve (const gsl_matrix * R, const gsl_matrix * Y, const gsl_
     }
 }
 
+/* Find the least squares solution to the overdetermined system 
+ *
+ *   [ U ] x = b
+ *   [ D ]
+ *  
+ * using the QR factorization [ U; D ] = Q R. 
+ *
+ * Inputs: R    - upper triangular R matrix, N-by-N
+ *         Y    - upper triangular Y matrix, N-by-N
+ *         T    - upper triangular block reflector, N-by-N
+ *         x    - (input/output) solution, size 2*N
+ *                on input, right hand side vector b, length 2*N;
+ *                on output,
+ *                  x(1:N) = least squares solution vector
+ *                  x(N+1:2*N) = vector whose norm equals ||b - Ax||
+ *         work - workspace, size N
+ */
+
+int
+gsl_linalg_QR_UD_lssvx (const gsl_matrix * R, const gsl_matrix * Y, const gsl_matrix * T,
+                        gsl_vector * x, gsl_vector * work)
+{
+  const size_t N = R->size1;
+  const size_t M = 2 * N;
+
+  if (R->size2 != N)
+    {
+      GSL_ERROR ("R matrix must be square", GSL_ENOTSQR);
+    }
+  else if (Y->size1 != Y->size2)
+    {
+      GSL_ERROR ("Y matrix must be square", GSL_ENOTSQR);
+    }
+  else if (Y->size1 != N)
+    {
+      GSL_ERROR ("Y and R must have same dimensions", GSL_EBADLEN);
+    }
+  else if (T->size1 != N || T->size2 != N)
+    {
+      GSL_ERROR ("T matrix must be N-by-N", GSL_EBADLEN);
+    }
+  else if (M != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else if (N != work->size)
+    {
+      GSL_ERROR ("workspace must be length N", GSL_EBADLEN);
+    }
+  else
+    {
+      return gsl_linalg_QR_UU_lssvx(R, Y, T, x, work);
+    }
+}
+
+/*
+gsl_linalg_QR_UD_QTvec()
+  Apply 2N-by-2N Q^T to the 2N-by-1 vector b
+
+Inputs: Y    - upper triangular Y matrix encoded by gsl_linalg_QR_UD_decomp, N-by-N
+        T    - block reflector matrix, N-by-N
+        b    - 2N-by-1 vector replaced by Q^T b on output
+        work - workspace, length N
+
+Notes:
+1) Q^T b = (I - V T^T V^T) b
+         = b - V T^T [ I Y^T ] [ b1 ]
+                                   [ b2 ]
+         = b - V T^T [ b1 + Y^T b2 ]
+         = [ b1 ] - [  w  ]
+           [ b2 ]   [ Y w ]
+
+where w = T^T ( b1 + Y^T b2 )
+*/
+
+int
+gsl_linalg_QR_UD_QTvec(const gsl_matrix * Y, const gsl_matrix * T, gsl_vector * b, gsl_vector * work)
+{
+  const size_t N = Y->size1;
+  const size_t M = 2 * N;
+
+  if (Y->size2 != N)
+    {
+      GSL_ERROR ("Y matrix must be square", GSL_ENOTSQR);
+    }
+  else if (T->size1 != N || T->size2 != N)
+    {
+      GSL_ERROR ("T matrix must be N-by-N", GSL_EBADLEN);
+    }
+  else if (b->size != M)
+    {
+      GSL_ERROR ("b vector must have length M", GSL_EBADLEN);
+    }
+  else if (work->size != N)
+    {
+      GSL_ERROR ("workspace must be length N", GSL_EBADLEN);
+    }
+  else
+    {
+      return gsl_linalg_QR_UU_QTvec(Y, T, b, work);
+    }
+}
+
 /*
 aux_QR_TRD_decomp()
   Compute the QR decomposition of the "triangle on top of rectangle on top of diagonal" matrix

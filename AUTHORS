@@ -1,6 +1,6 @@
-Mark Galassi (rosalia@lanl.gov) - overall design, simulated annealing
+Mark Galassi (mark@galassi.org) - co-founder, overall design, simulated annealing
 Jim Davies (jimmyd@nis.lanl.gov) - statistics library
-James Theiler (jt@lanl.gov) - random number generators
+James Theiler (j.theiler@gmail.com) - co-founder, overall design, random number generators
 Brian Gough (bjg@network-theory.co.uk) -
   FFTs, numerical integration, random number generators and distributions,
   root finding, minimization and fitting, polynomial solvers, complex

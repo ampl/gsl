@@ -41,7 +41,7 @@ slow_gaussian(const gsl_filter_end_t etype, const double alpha, const size_t ord
 
   for (i = 0; i < n; ++i)
     {
-      size_t wsize = gsl_movstat_fill(etype, x, i, H, H, window);
+      size_t wsize = gsl_movstat_fill((gsl_movstat_end_t) etype, x, i, H, H, window);
       double sum = 0.0;
       size_t j;
 
@@ -137,10 +137,10 @@ test_gaussian_proc(const double tol, const double alpha, const size_t order, con
   gsl_vector_free(z);
 }
 
+#if 0
 static void
 test_gaussian_deriv(const double alpha, const size_t n, const size_t K)
 {
-#if 0
   const double f_low = 1.0;
   const double f_high = 50.0;
   const double gamma = 2.0 * M_PI / (n - 1.0);
@@ -184,8 +184,8 @@ test_gaussian_deriv(const double alpha, const size_t n, const size_t K)
   gsl_vector_free(y1);
   gsl_vector_free(y2);
   gsl_filter_gaussian_free(w);
-#endif
 }
+#endif
 
 static void
 test_gaussian(gsl_rng * r)

@@ -35,32 +35,6 @@ static int test_COD_lssolve(void);
 static int test_COD_lssolve2_eps(const double lambda, const gsl_matrix * A, const gsl_vector * b, const double eps, const char *desc);
 static int test_COD_lssolve2(gsl_rng * r);
 
-/* create a matrix of a given rank */
-static int
-create_rank_matrix(const size_t rank, gsl_matrix * m, gsl_rng * r)
-{
-  const size_t M = m->size1;
-  const size_t N = m->size2;
-  size_t i;
-  gsl_vector *u = gsl_vector_alloc(M);
-  gsl_vector *v = gsl_vector_alloc(N);
-
-  gsl_matrix_set_zero(m);
-
-  /* add several rank-1 matrices together */
-  for (i = 0; i < rank; ++i)
-    {
-      create_random_vector(u, r);
-      create_random_vector(v, r);
-      gsl_blas_dger(1.0, u, v, m);
-    }
-
-  gsl_vector_free(u);
-  gsl_vector_free(v);
-
-  return GSL_SUCCESS;
-}
-
 static int
 test_COD_decomp_eps(const gsl_matrix * m, const double eps, const char *desc)
 {

@@ -150,8 +150,8 @@ gsl_linalg_symmtd_unpack (const gsl_matrix * A,
   else
     {
       const size_t N = A->size1;
-      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);
-      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);
+      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);;
+      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);;
       size_t i;
 
       /* Initialize Q to the identity */
@@ -201,8 +201,8 @@ gsl_linalg_symmtd_unpack_T (const gsl_matrix * A,
     }
   else
     {
-      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);
-      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);
+      gsl_vector_const_view d = gsl_matrix_const_diagonal(A);;
+      gsl_vector_const_view sd = gsl_matrix_const_subdiagonal(A, 1);;
 
       /* copy diagonal into diag */
       gsl_vector_memcpy(diag, &d.vector);

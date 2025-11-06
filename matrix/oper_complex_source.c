@@ -247,7 +247,8 @@ FUNCTION(gsl_matrix, scale_columns) (TYPE(gsl_matrix) * a, const TYPE(gsl_vector
     }
 }
 
-int FUNCTION (gsl_matrix, add_constant) (TYPE (gsl_matrix) * a, const BASE x)
+int
+FUNCTION (gsl_matrix, add_constant) (TYPE (gsl_matrix) * a, const BASE x)
 {
   const size_t M = a->size1;
   const size_t N = a->size2;
@@ -268,7 +269,8 @@ int FUNCTION (gsl_matrix, add_constant) (TYPE (gsl_matrix) * a, const BASE x)
 }
 
 
-int FUNCTION (gsl_matrix, add_diagonal) (TYPE (gsl_matrix) * a, const BASE x)
+int
+FUNCTION (gsl_matrix, add_diagonal) (TYPE (gsl_matrix) * a, const BASE x)
 {
   const size_t M = a->size1;
   const size_t N = a->size2;
@@ -279,6 +281,26 @@ int FUNCTION (gsl_matrix, add_diagonal) (TYPE (gsl_matrix) * a, const BASE x)
     {
       a->data[2 * (i * tda + i)] += GSL_REAL (x);
       a->data[2 * (i * tda + i) + 1] += GSL_IMAG (x);
+    }
+
+  return GSL_SUCCESS;
+}
+
+int
+FUNCTION (gsl_matrix, conjugate) (TYPE (gsl_matrix) * a)
+{
+  const size_t M = a->size1;
+  const size_t N = a->size2;
+  const size_t tda = a->tda;
+  size_t i, j;
+
+  for (i = 0; i < M; i++)
+    {
+      for (j = 0; j < N; j++)
+        {
+          size_t k = 2 * (i * tda + j) + 1;
+          a->data[k] = -(a->data[k]);
+        }
     }
 
   return GSL_SUCCESS;

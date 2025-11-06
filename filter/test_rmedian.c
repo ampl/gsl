@@ -36,7 +36,7 @@ slow_rmedian(const gsl_filter_end_t endtype, const gsl_vector * x, gsl_vector * 
 
   for (i = 0; i < n; ++i)
     {
-      size_t wsize = gsl_movstat_fill(endtype, x, i, H, H, window);
+      size_t wsize = gsl_movstat_fill((gsl_movstat_end_t) endtype, x, i, H, H, window);
       double yi;
       int j;
 

@@ -45,8 +45,6 @@
 #endif
 #elif HAVE_DECL_FEENABLEEXCEPT || HAVE_DECL_FESETTRAPENABLE
 #include "fp-gnuc99.c"
-#elif _MSC_VER
-#include "fp-win.c"
 #else
 #include "fp-unknown.c" 
 #endif

@@ -20,9 +20,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
-#if HAVE_UNISTD_H
-  #include <unistd.h>
-#endif
+#include <unistd.h>
 #include <math.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_test.h>

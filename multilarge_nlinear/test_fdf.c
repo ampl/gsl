@@ -269,7 +269,7 @@ test_fdf(const gsl_multilarge_nlinear_type * T,
   gsl_multilarge_nlinear_workspace *w =
     gsl_multilarge_nlinear_alloc (T, params, n, p);
   const char *pname = problem->name;
-  char buf[2048];
+  char buf[1024];
   char sname[2048];
   int status, info;
 

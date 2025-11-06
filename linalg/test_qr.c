@@ -448,6 +448,114 @@ test_QR_lssolve_r(gsl_rng * r)
 }
 
 static int
+test_QR_lssolvem_r_eps(const gsl_matrix * A, const gsl_matrix * B, const double eps, const char * desc)
+{
+  int s = 0;
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+  const size_t nrhs = B->size2;
+  size_t k;
+
+  gsl_matrix * QR = gsl_matrix_alloc(M, N);
+  gsl_matrix * T = gsl_matrix_alloc(N, N);
+  gsl_matrix * X = gsl_matrix_alloc(M, nrhs);
+  gsl_matrix * work  = gsl_matrix_alloc(N, nrhs);
+  gsl_vector * workn  = gsl_vector_alloc(N);
+
+  gsl_matrix * U = gsl_matrix_alloc(M, N);
+  gsl_matrix * V = gsl_matrix_alloc(N, N);
+  gsl_vector * S = gsl_vector_alloc(N);
+  gsl_vector * x_svd = gsl_vector_alloc(N);
+
+  gsl_vector * residual = gsl_vector_alloc(M);
+
+  gsl_matrix_memcpy(QR, A);
+  s += gsl_linalg_QR_decomp_r(QR, T);
+  s += gsl_linalg_QR_lssolvem_r(QR, T, B, X, work);
+
+  gsl_matrix_memcpy(U, A);
+  gsl_linalg_SV_decomp(U, V, S, workn);
+
+  for (k = 0; k < nrhs; ++k)
+    {
+      gsl_vector_const_view bk = gsl_matrix_const_column(B, k);
+      size_t i;
+
+      gsl_linalg_SV_solve(U, V, S, &bk.vector, x_svd);
+
+      /* compare QR with SVD solution */
+      for (i = 0; i < N; i++)
+        {
+          double xi = gsl_matrix_get(X, i, k);
+          double yi = gsl_vector_get(x_svd, i);
+
+          gsl_test_rel(xi, yi, eps, "%s nrhs=%zu (%3lu,%3lu)[%lu]: %22.18g   %22.18g\n",
+                       desc, k, M, N, i, xi, yi);
+        }
+    }
+
+  if (M > N)
+    {
+      for (k = 0; k < nrhs; ++k)
+        {
+          gsl_vector_const_view bk = gsl_matrix_const_column(B, k);
+          gsl_vector_view x1 = gsl_matrix_subcolumn(X, k, 0, N);
+          gsl_vector_view x2 = gsl_matrix_subcolumn(X, k, N, M - N);
+          double norm = gsl_blas_dnrm2(&x2.vector);
+          double norm_expected;
+
+          /* compute residual and check || x(N+1:end) || = || b - A x || */
+          gsl_vector_memcpy(residual, &bk.vector);
+          gsl_blas_dgemv(CblasNoTrans, -1.0, A, &x1.vector, 1.0, residual);
+          norm_expected = gsl_blas_dnrm2(residual);
+
+          gsl_test_rel(norm, norm_expected, eps, "%s rnorm (%3lu,%3lu): %22.18g   %22.18g\n",
+                       desc, M, N, norm, norm_expected);
+        }
+    }
+
+  gsl_matrix_free(QR);
+  gsl_matrix_free(T);
+  gsl_matrix_free(X);
+  gsl_matrix_free(U);
+  gsl_matrix_free(V);
+  gsl_vector_free(x_svd);
+  gsl_matrix_free(work);
+  gsl_vector_free(S);
+  gsl_vector_free(workn);
+  gsl_vector_free(residual);
+
+  return s;
+}
+
+static int
+test_QR_lssolvem_r(gsl_rng * r)
+{
+  int s = 0;
+  size_t nrhs = 10;
+  size_t M, N;
+
+  for (M = 1; M <= 30; ++M)
+    {
+      for (N = 1; N <= M; ++N)
+        {
+          gsl_matrix * A = gsl_matrix_alloc(M, N);
+          gsl_matrix * B = gsl_matrix_alloc(M, nrhs);
+
+          create_random_matrix(A, r);
+          create_random_matrix(B, r);
+
+          s += test_QR_lssolvem_r_eps(A, B, 1.0e5 * M * GSL_DBL_EPSILON, "QR_lssolvem_r random");
+
+          gsl_matrix_free(A);
+          gsl_matrix_free(B);
+        }
+    }
+
+  return s;
+}
+
+static int
 test_QR_UR_decomp_eps(const gsl_matrix * S, const gsl_matrix * A, const double eps, const char * desc)
 {
   int s = 0;
@@ -535,6 +643,130 @@ test_QR_UR_decomp(gsl_rng * r)
           gsl_matrix_free(A);
         }
     }
+
+  return s;
+}
+
+static int
+test_QR_UR_lssolve_eps(const gsl_matrix * U, const gsl_matrix * A, const gsl_vector * b,
+                       const double eps, const char * desc)
+{
+  int s = 0;
+  const size_t N = U->size1;
+  const size_t M = A->size1;
+  size_t i;
+
+  gsl_matrix * R = gsl_matrix_calloc(N, N);
+  gsl_matrix * Y = gsl_matrix_alloc(M, N);
+  gsl_matrix * T = gsl_matrix_alloc(N, N);
+  gsl_vector * x = gsl_vector_alloc(M + N);
+  gsl_vector * work  = gsl_vector_alloc(N);
+
+  gsl_matrix * B = gsl_matrix_calloc(M + N, N);
+  gsl_matrix * U_svd = gsl_matrix_alloc(M + N, N);
+  gsl_matrix * V_svd = gsl_matrix_alloc(N, N);
+  gsl_vector * S_svd = gsl_vector_alloc(N);
+  gsl_vector * x_svd = gsl_vector_alloc(N);
+
+  gsl_vector * residual = gsl_vector_alloc(M + N);
+
+  gsl_matrix_view tmp;
+
+  gsl_matrix_tricpy(CblasUpper, CblasNonUnit, R, U);
+  gsl_matrix_memcpy(Y, A);
+
+  s += gsl_linalg_QR_UR_decomp(R, Y, T);
+  s += gsl_linalg_QR_UR_lssolve(R, Y, T, b, x, work);
+
+  tmp = gsl_matrix_submatrix(B, 0, 0, N, N);
+  gsl_matrix_tricpy(CblasUpper, CblasNonUnit, &tmp.matrix, U);
+
+  tmp = gsl_matrix_submatrix(B, N, 0, M, N);
+  gsl_matrix_memcpy(&tmp.matrix, A);
+
+  gsl_matrix_memcpy(U_svd, B);
+  gsl_linalg_SV_decomp(U_svd, V_svd, S_svd, work);
+  gsl_linalg_SV_solve(U_svd, V_svd, S_svd, b, x_svd);
+
+  /* compare QR with SVD solution */
+  for (i = 0; i < N; i++)
+    {
+      double xi = gsl_vector_get(x, i);
+      double yi = gsl_vector_get(x_svd, i);
+
+      gsl_test_rel(xi, yi, eps, "%s (%3lu,%3lu)[%lu]: %22.18g   %22.18g\n",
+                   desc, M, N, i, xi, yi);
+    }
+
+  if (M > N)
+    {
+      gsl_vector_view x1 = gsl_vector_subvector(x, 0, N);
+      gsl_vector_view x2 = gsl_vector_subvector(x, N, M);
+      double norm = gsl_blas_dnrm2(&x2.vector);
+      double norm_expected;
+
+      /* compute residual and check || x(N+1:end) || = || b - A x || */
+      gsl_vector_memcpy(residual, b);
+      gsl_blas_dgemv(CblasNoTrans, -1.0, B, &x1.vector, 1.0, residual);
+      norm_expected = gsl_blas_dnrm2(residual);
+
+      gsl_test_rel(norm, norm_expected, eps, "%s rnorm (%3lu,%3lu): %22.18g   %22.18g\n",
+                   desc, M, N, norm, norm_expected);
+    }
+
+  gsl_matrix_free(B);
+  gsl_matrix_free(R);
+  gsl_matrix_free(Y);
+  gsl_matrix_free(T);
+  gsl_vector_free(x);
+  gsl_matrix_free(U_svd);
+  gsl_matrix_free(V_svd);
+  gsl_vector_free(x_svd);
+  gsl_vector_free(work);
+  gsl_vector_free(S_svd);
+  gsl_vector_free(residual);
+
+  return s;
+}
+
+static int
+test_QR_UR_lssolve(gsl_rng * r)
+{
+  int s = 0;
+  const size_t N_max = 30;
+  const size_t M_max = 30;
+  gsl_matrix * U = gsl_matrix_alloc(N_max, N_max);
+  gsl_matrix * A = gsl_matrix_alloc(M_max, N_max);
+  gsl_matrix * T = gsl_matrix_alloc(N_max, N_max);
+  gsl_vector * rhs = gsl_vector_alloc(M_max + N_max);
+  size_t N, M;
+
+  for (N = 1; N <= N_max; ++N)
+    {
+      for (M = 1; M <= M_max; ++M)
+        {
+          gsl_matrix_view a = gsl_matrix_submatrix(U, 0, 0, N, N);
+          gsl_matrix_view b = gsl_matrix_submatrix(A, 0, 0, M, N);
+          gsl_matrix_view c = gsl_matrix_submatrix(T, 0, 0, N, N);
+          gsl_vector_view rhsv = gsl_vector_subvector(rhs, 0, M + N);
+
+          create_random_vector(&rhsv.vector, r);
+
+          create_random_matrix(&c.matrix, r);
+          gsl_matrix_set_zero(&a.matrix);
+          gsl_matrix_tricpy(CblasUpper, CblasNonUnit, &a.matrix, &c.matrix);
+
+          create_random_matrix(&b.matrix, r);
+
+          s += test_QR_UR_lssolve_eps(&a.matrix, &b.matrix, &rhsv.vector, 2.0e5 * GSL_MAX(N,M) * GSL_DBL_EPSILON,
+                                      "QR_UR_lssolve random");
+        }
+    }
+
+  gsl_matrix_free(U);
+  gsl_matrix_free(A);
+  gsl_matrix_free(T);
+  gsl_vector_free(rhs);
 
   return s;
 }

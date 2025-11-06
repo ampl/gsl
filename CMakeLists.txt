@@ -49,6 +49,9 @@ endif ()
 if (POLICY CMP0053)
   cmake_policy(SET CMP0053 NEW)
 endif( )
+if(POLICY CMP0075)
+  cmake_policy(SET CMP0075 NEW)
+endif()
 
 # Advertise user-settable parameters (and defaults) in cmake-gui
 option(BUILD_SHARED_LIBS "Export symbols to library." OFF)

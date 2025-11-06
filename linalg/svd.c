@@ -472,6 +472,232 @@ gsl_linalg_SV_solve (const gsl_matrix * U,
     }
 }
 
+/*  Solves the system A x = b using the SVD factorization
+ *
+ *  A = U S V^T
+ *
+ *  to obtain x. For M x N systems it finds the solution in the least
+ *  squares sense.  
+ *
+ * Inputs: tol  - tolerance for singular values
+ *         U    - M-by-N matrix U
+ *         V    - N-by-N matrix V
+ *         S    - singular values, length N
+ *         b    - right hand side vector, length M
+ *         x    - (output) solution vector, length N
+ *         work - workspace, length N
+ */
+
+int
+gsl_linalg_SV_solve2 (const double tol,
+                      const gsl_matrix * U,
+                      const gsl_matrix * V,
+                      const gsl_vector * S,
+                      const gsl_vector * b,
+                      gsl_vector * x,
+                      gsl_vector * work)
+{
+  const size_t M = U->size1;
+  const size_t N = U->size2;
+
+  if (tol < 0.0)
+    {
+      GSL_ERROR ("tolerance must be non-negative", GSL_EDOM);
+    }
+  else if (b->size != M)
+    {
+      GSL_ERROR ("first dimension of matrix U must size of vector b",
+                 GSL_EBADLEN);
+    }
+  else if (S->size != N)
+    {
+      GSL_ERROR ("length of vector S must match second dimension of matrix U",
+                 GSL_EBADLEN);
+    }
+  else if (V->size1 != V->size2)
+    {
+      GSL_ERROR ("matrix V must be square", GSL_ENOTSQR);
+    }
+  else if (S->size != V->size1)
+    {
+      GSL_ERROR ("length of vector S must match size of matrix V",
+                 GSL_EBADLEN);
+    }
+  else if (V->size2 != x->size)
+    {
+      GSL_ERROR ("size of matrix V must match size of vector x", GSL_EBADLEN);
+    }
+  else if (work->size != N)
+    {
+      GSL_ERROR ("workspace must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      const double s0 = gsl_vector_get(S, 0);
+      size_t i;
+
+      /* work := U^T b */
+      gsl_blas_dgemv (CblasTrans, 1.0, U, b, 0.0, work);
+
+      /* work_i = (U^T b)_i / sigma_i */
+      for (i = 0; i < N; i++)
+        {
+          double * wi = gsl_vector_ptr (work, i);
+          double si = gsl_vector_get (S, i);
+
+          if (si <= tol * s0)
+            *wi = 0.0;
+          else
+            *wi /= si;
+        }
+
+      gsl_blas_dgemv (CblasNoTrans, 1.0, V, work, 0.0, x);
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+ * Solves the least squares problem in Tikhonov standard form,
+ *
+ * x = argmin_x || b - A x ||^2 + lambda^2 || x ||^2
+ *
+ * using the SVD factorization
+ *
+ * A = U S V^T
+ *
+ * Inputs: lambda - regularization parameter, >= 0
+ *         U      - U matrix, M-by-N
+ *         V      - V matrix, N-by-N
+ *         S      - singular values, length N
+ *         b      - right hand side vector, length M
+ *         x      - (output) solution vector, length N
+ *         rnorm  - (output) residual norm || b - A x ||
+ *         work   - workspace, length M+N
+ *
+ * Notes:
+ *
+ * 1) References:
+ *
+ *     [1] P. C. Hansen & D. P. O'Leary, "The use of the L-curve in
+ *     the regularization of discrete ill-posed problems",  SIAM J. Sci.
+ *     Comput. 14 (1993), pp. 1487-1503.
+ *
+ *     [2] P. C. Hansen, "Discrete Inverse Problems: Insight and Algorithms,"
+ *     SIAM Press, 2010.
+ */
+
+int
+gsl_linalg_SV_lssolve (const double lambda,
+                       const gsl_matrix * U,
+                       const gsl_matrix * V,
+                       const gsl_vector * S,
+                       const gsl_vector * b,
+                       gsl_vector * x,
+                       double * rnorm,
+                       gsl_vector * work)
+{
+  const size_t M = U->size1;
+  const size_t N = U->size2;
+
+  if (b->size != M)
+    {
+      GSL_ERROR ("first dimension of matrix U must size of vector b",
+                 GSL_EBADLEN);
+    }
+  else if (S->size != N)
+    {
+      GSL_ERROR ("length of vector S must match second dimension of matrix U",
+                 GSL_EBADLEN);
+    }
+  else if (V->size1 != V->size2)
+    {
+      GSL_ERROR ("matrix V must be square", GSL_ENOTSQR);
+    }
+  else if (V->size1 != N)
+    {
+      GSL_ERROR ("length of vector S must match size of matrix V",
+                 GSL_EBADLEN);
+    }
+  else if (x->size != N)
+    {
+      GSL_ERROR ("size of matrix V must match size of vector x", GSL_EBADLEN);
+    }
+  else if (lambda < 0.0)
+    {
+      GSL_ERROR ("regularization parameter must be non-negative", GSL_EDOM);
+    }
+  else if (work->size != M+N)
+    {
+      GSL_ERROR ("workspace must have size M+N", GSL_EBADLEN);
+    }
+  else
+    {
+      const double s0 = gsl_vector_get(S, 0);
+      const double tol = GSL_DBL_EPSILON;
+      double rho = 0.0;
+      gsl_vector_view workM = gsl_vector_subvector(work, 0, M);
+      gsl_vector_view workN = gsl_vector_subvector(work, M, N);
+      size_t i;
+
+      /* workN := U^T b */
+      gsl_blas_dgemv (CblasTrans, 1.0, U, b, 0.0, &workN.vector);
+
+      if (M > N)
+        {
+          /*
+           * compute OLS residual norm = || b - U U^T b ||;
+           * for M = N, U U^T = I, so no need to calculate norm
+           */
+          gsl_vector_memcpy(&workM.vector, b);
+          gsl_blas_dgemv(CblasNoTrans, -1.0, U, &workN.vector, 1.0, &workM.vector);
+          rho = gsl_blas_dnrm2(&workM.vector);
+        }
+
+      *rnorm = rho;
+
+      if (lambda > 0.0)
+        {
+          const double lambda_sq = lambda * lambda;
+
+          /* workN <- [ s(i) / (s(i)^2 + lambda^2) ] .* U^T y */
+          for (i = 0; i < N; ++i)
+            {
+              double si = gsl_vector_get(S, i);
+              double f = (si * si) / (si * si + lambda_sq);
+              double *wi = gsl_vector_ptr(&workN.vector, i);
+              double ri = (1.0 - f) * (*wi);
+
+              *rnorm = gsl_hypot(*rnorm, ri);
+              *wi *= si / (si*si + lambda_sq);
+            }
+
+          /* compute regularized solution vector */
+          gsl_blas_dgemv (CblasNoTrans, 1.0, V, &workN.vector, 0.0, x);
+        }
+      else
+        {
+          /* unregularized problem */
+
+          /* workN_i = (U^T b)_i / sigma_i */
+          for (i = 0; i < N; i++)
+            {
+              double * wi = gsl_vector_ptr (&workN.vector, i);
+              double si = gsl_vector_get (S, i);
+
+              if (si <= tol * s0)
+                *wi = 0.0;
+              else
+                *wi /= si;
+            }
+
+          gsl_blas_dgemv (CblasNoTrans, 1.0, V, &workN.vector, 0.0, x);
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
 /*
 gsl_linalg_SV_leverage()
   Compute statistical leverage values of a matrix:

@@ -49,7 +49,8 @@ test_basic(const size_t n, const double data[], const double tol, const char * d
   const double expected_skew = gsl_stats_skew(data, 1, n);
   const double expected_kurtosis = gsl_stats_kurtosis(data, 1, n);
   double expected_rms = 0.0;
-  double mean, var, sd, sd_mean, rms, skew, kurtosis;
+  double expected_norm;
+  double mean, var, sd, sd_mean, rms, skew, kurtosis, norm;
   size_t i, num;
   int status;
 
@@ -57,6 +58,7 @@ test_basic(const size_t n, const double data[], const double tol, const char * d
   for (i = 0; i < n; ++i)
     expected_rms += data[i] * data[i];
 
+  expected_norm = sqrt(expected_rms);
   expected_rms = sqrt(expected_rms / n);
 
   /* add data to rstat workspace */
@@ -65,6 +67,7 @@ test_basic(const size_t n, const double data[], const double tol, const char * d
 
   mean     = gsl_rstat_mean(rstat_workspace_p);
   rms      = gsl_rstat_rms(rstat_workspace_p);
+  norm     = gsl_rstat_norm(rstat_workspace_p);
   skew     = gsl_rstat_skew(rstat_workspace_p);
   kurtosis = gsl_rstat_kurtosis(rstat_workspace_p);
   num      = gsl_rstat_n(rstat_workspace_p);
@@ -72,6 +75,7 @@ test_basic(const size_t n, const double data[], const double tol, const char * d
   gsl_test_int(num, n, "%s n n=%zu", desc, n);
   gsl_test_rel(mean, expected_mean, tol, "%s mean n=%zu", desc, n);
   gsl_test_rel(rms, expected_rms, tol, "%s rms n=%zu", desc, n);
+  gsl_test_rel(norm, expected_norm, tol, "%s norm n=%zu", desc, n);
   gsl_test_rel(skew, expected_skew, tol, "%s skew n=%zu", desc, n);
   gsl_test_rel(kurtosis, expected_kurtosis, tol, "%s kurtosis n=%zu", desc, n);
   

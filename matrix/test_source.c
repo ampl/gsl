@@ -18,11 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#if HAVE_UNISTD_H
-  #include <unistd.h>
-#endif
-
 void FUNCTION (test, func) (const size_t M, const size_t N);
 void FUNCTION (test, ops) (const size_t M, const size_t N);
 void FUNCTION (test, trap) (const size_t M, const size_t N);
@@ -537,7 +532,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
             BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
             BASE y = FUNCTION(gsl_matrix,get) (b,i,j);
             BASE z = x / y;
-            if (fabs(r - z) > 2 * GSL_FLT_EPSILON * fabs(z))
+            if (ABS(r - z) > 2 * GSL_FLT_EPSILON * ABS(z))
               status = 1;
           }
       }
@@ -631,7 +626,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
             BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
             BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
             BASE y = x + (ATOMIC) 3;
-            if (fabs(r - y) > 2 * GSL_FLT_EPSILON * fabs(y))
+            if (ABS(r - y) > 2 * GSL_FLT_EPSILON * ABS(y))
               status = 1;
           }
       }
@@ -651,7 +646,7 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
             BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
             BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
             BASE y = (i == j) ? (x + (ATOMIC) 5) : x;
-            if (fabs(r - y) > 2 * GSL_FLT_EPSILON * fabs(y))
+            if (ABS(r - y) > 2 * GSL_FLT_EPSILON * ABS(y))
               status = 1;
           }
       }

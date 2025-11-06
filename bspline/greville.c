@@ -19,8 +19,9 @@
  */
 
 #include <config.h>
-#include <gsl/gsl_bspline.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_bspline.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_statistics.h>
@@ -28,13 +29,14 @@
 
 /* Return the location of the i-th Greville abscissa */
 double
-gsl_bspline_greville_abscissa (size_t i, gsl_bspline_workspace *w)
+gsl_bspline_greville_abscissa (const size_t i, const gsl_bspline_workspace *w)
 {
   const size_t stride = w->knots->stride;
-  size_t km1 = w->km1;
+  size_t km1 = w->spline_order - 1;
   double * data = w->knots->data + (i+1)*stride;
+
 #if GSL_RANGE_CHECK
-  if (GSL_RANGE_COND(i >= gsl_bspline_ncoeffs(w)))
+  if (GSL_RANGE_COND(i >= w->ncontrol))
     {
       GSL_ERROR_VAL ("Greville abscissa index out of range", GSL_EINVAL, 0);
     }
@@ -42,7 +44,7 @@ gsl_bspline_greville_abscissa (size_t i, gsl_bspline_workspace *w)
 
   if (km1 == 0)
     {
-      /* Return interval midpoints in degenerate k = 1 case*/
+      /* Return interval midpoints in degenerate k = 1 case */
       km1   = 2;
       data -= stride;
     }
@@ -51,26 +53,26 @@ gsl_bspline_greville_abscissa (size_t i, gsl_bspline_workspace *w)
 }
 
 int
-gsl_bspline_knots_greville (const gsl_vector *abscissae,
-                            gsl_bspline_workspace *w,
-                            double *abserr)
+gsl_bspline_init_greville (const gsl_vector *abscissae,
+                           gsl_bspline_workspace *w,
+                           double *abserr)
 {
   /* Limited function: see https://savannah.gnu.org/bugs/index.php?34361 */
 
   int s;
 
   /* Check incoming arguments satisfy mandatory algorithmic assumptions */
-  if (w->k < 2)
-    GSL_ERROR ("w->k must be at least 2", GSL_EINVAL);
+  if (w->spline_order < 2)
+    GSL_ERROR ("spline order must be at least 2", GSL_EINVAL);
   else if (abscissae->size < 2)
     GSL_ERROR ("abscissae->size must be at least 2", GSL_EINVAL);
-  else if (w->nbreak != abscissae->size - w->k + 2)
-    GSL_ERROR ("w->nbreak must equal abscissae->size - w->k + 2", GSL_EINVAL);
+  else if (w->nbreak != abscissae->size - w->spline_order + 2)
+    GSL_ERROR ("w->nbreak must equal abscissae->size - spline_order + 2", GSL_EINVAL);
 
   if (w->nbreak == 2)
     {
       /* No flexibility in abscissae values possible in this degenerate case */
-      s = gsl_bspline_knots_uniform (
+      s = gsl_bspline_init_uniform (
               gsl_vector_get (abscissae, 0),
               gsl_vector_get (abscissae, abscissae->size - 1), w);
     }
@@ -82,10 +84,10 @@ gsl_bspline_knots_greville (const gsl_vector *abscissae,
       size_t i, j;
 
       /* Constants derived from the B-spline workspace and abscissae details */
-      const size_t km2    = w->k - 2;
+      const size_t km2    = w->spline_order - 2;
       const size_t M      = abscissae->size - 2;
       const size_t N      = w->nbreak - 2;
-      const double invkm1 = 1.0 / w->km1;
+      const double invkm1 = 1.0 / (w->spline_order - 1);
 
       /* Allocate working storage and prepare multiple, zero-filled views */
       storage = (double *) calloc (M*N + 2*N + 2*M, sizeof (double));
@@ -98,7 +100,7 @@ gsl_bspline_knots_greville (const gsl_vector *abscissae,
       r   = gsl_vector_view_array (storage + M*N + N + M + N, M);
 
       /* Build matrix from interior breakpoints to interior Greville abscissae.
-       * For example, when w->k = 4 and w->nbreak = 7 the matrix is
+       * For example, when spline_order = 4 and nbreak = 7 the matrix is
        *   [   1,      0,      0,      0,      0;
        *     2/3,    1/3,      0,      0,      0;
        *     1/3,    1/3,    1/3,      0,      0;
@@ -147,7 +149,7 @@ gsl_bspline_knots_greville (const gsl_vector *abscissae,
                       gsl_vector_get (abscissae, abscissae->size - 1));
 
       /* Finally, initialize workspace knots using the now-known breakpoints */
-      s = gsl_bspline_knots (&x.vector, w);
+      s = gsl_bspline_init_augment (&x.vector, w);
       free (storage);
     }
 

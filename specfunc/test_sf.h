@@ -97,6 +97,7 @@ int test_sf_return (int status, int expect_return, const char * desc);
 #define TEST_SF_RETURN(stat, func, args, expect_return) { int status = func args; stat += test_sf_return(status, expect_return, #func #args); }
 
 int test_airy(void);
+int test_alf(void);
 int test_bessel(void);
 int test_coulomb(void);
 int test_dilog(void);

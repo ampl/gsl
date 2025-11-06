@@ -36,20 +36,20 @@ Mean, Standard Deviation and Variance
 
 .. function:: double gsl_stats_mean (const double data[], size_t stride, size_t n)
 
-   This function returns the arithmetic mean of *data*, a dataset of
-   length *n* with stride :data:`stride`.  The arithmetic mean, or
+   This function returns the arithmetic mean of :data:`data`, a dataset of
+   length :data:`n` with stride :data:`stride`.  The arithmetic mean, or
    *sample mean*, is denoted by :math:`\Hat\mu` and defined as,
 
    .. math:: \Hat\mu = {1 \over N} \sum x_i
 
-   where :math:`x_i` are the elements of the dataset *data*.  For
+   where :math:`x_i` are the elements of the dataset :data:`data`.  For
    samples drawn from a gaussian distribution the variance of
    :math:`\Hat\mu` is :math:`\sigma^2 / N`.
 
 .. function:: double gsl_stats_variance (const double data[], size_t stride, size_t n)
 
    This function returns the estimated, or *sample*, variance of
-   *data*, a dataset of length *n* with stride :data:`stride`.  The
+   :data:`data`, a dataset of length :data:`n` with stride :data:`stride`.  The
    estimated variance is denoted by :math:`\Hat\sigma^2` and is defined by,
 
    .. only:: not texinfo
@@ -62,7 +62,7 @@ Mean, Standard Deviation and Variance
 
          \Hat\sigma^2 = (1/(N-1)) \sum (x_i - \Hat\mu)^2
 
-   where :math:`x_i` are the elements of the dataset *data*.  Note that
+   where :math:`x_i` are the elements of the dataset :data:`data`.  Note that
    the normalization factor of :math:`1/(N-1)` results from the derivation
    of :math:`\Hat\sigma^2` as an unbiased estimator of the population
    variance :math:`\sigma^2`.  For samples drawn from a Gaussian distribution
@@ -74,9 +74,9 @@ Mean, Standard Deviation and Variance
 
 .. function:: double gsl_stats_variance_m (const double data[], size_t stride, size_t n, double mean)
 
-   This function returns the sample variance of *data* relative to the
-   given value of *mean*.  The function is computed with :math:`\Hat\mu`
-   replaced by the value of *mean* that you supply,
+   This function returns the sample variance of :data:`data` relative to the
+   given value of :data:`mean`.  The function is computed with :math:`\Hat\mu`
+   replaced by the value of :data:`mean` that you supply,
 
    .. only:: not texinfo
 
@@ -98,9 +98,9 @@ Mean, Standard Deviation and Variance
 .. function:: double gsl_stats_tss (const double data[], size_t stride, size_t n)
               double gsl_stats_tss_m (const double data[], size_t stride, size_t n, double mean)
 
-   These functions return the total sum of squares (TSS) of *data* about
+   These functions return the total sum of squares (TSS) of :data:`data` about
    the mean.  For :func:`gsl_stats_tss_m` the user-supplied value of
-   *mean* is used, and for :func:`gsl_stats_tss` it is computed using
+   :data:`mean` is used, and for :func:`gsl_stats_tss` it is computed using
    :func:`gsl_stats_mean`.
 
    .. only:: not texinfo
@@ -116,7 +116,7 @@ Mean, Standard Deviation and Variance
 .. function:: double gsl_stats_variance_with_fixed_mean (const double data[], size_t stride, size_t n, double mean)
 
    This function computes an unbiased estimate of the variance of
-   *data* when the population mean *mean* of the underlying
+   :data:`data` when the population mean :data:`mean` of the underlying
    distribution is known *a priori*.  In this case the estimator for
    the variance uses the factor :math:`1/N` and the sample mean
    :math:`\Hat\mu` is replaced by the known population mean :math:`\mu`,
@@ -133,8 +133,8 @@ Mean, Standard Deviation and Variance
 
 .. function:: double gsl_stats_sd_with_fixed_mean (const double data[], size_t stride, size_t n, double mean)
 
-   This function calculates the standard deviation of *data* for a
-   fixed population mean *mean*.  The result is the square root of the
+   This function calculates the standard deviation of :data:`data` for a
+   fixed population mean :data:`mean`.  The result is the square root of the
    corresponding variance function.
 
 Absolute deviation
@@ -143,7 +143,7 @@ Absolute deviation
 .. function:: double gsl_stats_absdev (const double data[], size_t stride, size_t n)
 
    This function computes the absolute deviation from the mean of
-   *data*, a dataset of length *n* with stride :data:`stride`.  The
+   :data:`data`, a dataset of length :data:`n` with stride :data:`stride`.  The
    absolute deviation from the mean is defined as,
 
    .. only:: not texinfo
@@ -156,15 +156,15 @@ Absolute deviation
 
          absdev  = (1/N) \sum |x_i - \Hat\mu|
 
-   where :math:`x_i` are the elements of the dataset *data*.  The
+   where :math:`x_i` are the elements of the dataset :data:`data`.  The
    absolute deviation from the mean provides a more robust measure of the
    width of a distribution than the variance.  This function computes the
-   mean of *data* via a call to :func:`gsl_stats_mean`.
+   mean of :data:`data` via a call to :func:`gsl_stats_mean`.
 
 .. function:: double gsl_stats_absdev_m (const double data[], size_t stride, size_t n, double mean)
 
-   This function computes the absolute deviation of the dataset *data*
-   relative to the given value of *mean*,
+   This function computes the absolute deviation of the dataset :data:`data`
+   relative to the given value of :data:`mean`,
 
    .. only:: not texinfo
 
@@ -177,7 +177,7 @@ Absolute deviation
          absdev  = (1/N) \sum |x_i - mean|
 
    This function is useful if you have already computed the mean of
-   *data* (and want to avoid recomputing it), or wish to calculate the
+   :data:`data` (and want to avoid recomputing it), or wish to calculate the
    absolute deviation relative to another value (such as zero, or the
    median).
 
@@ -188,8 +188,8 @@ Higher moments (skewness and kurtosis)
 
 .. function:: double gsl_stats_skew (const double data[], size_t stride, size_t n)
 
-   This function computes the skewness of *data*, a dataset of length
-   *n* with stride :data:`stride`.  The skewness is defined as,
+   This function computes the skewness of :data:`data`, a dataset of length
+   :data:`n` with stride :data:`stride`.  The skewness is defined as,
 
    .. only:: not texinfo
 
@@ -204,16 +204,16 @@ Higher moments (skewness and kurtosis)
 
          skew = (1/N) \sum ((x_i - \Hat\mu)/\Hat\sigma)^3
 
-   where :math:`x_i` are the elements of the dataset *data*.  The skewness
+   where :math:`x_i` are the elements of the dataset :data:`data`.  The skewness
    measures the asymmetry of the tails of a distribution.
 
    The function computes the mean and estimated standard deviation of
-   *data* via calls to :func:`gsl_stats_mean` and :func:`gsl_stats_sd`.
+   :data:`data` via calls to :func:`gsl_stats_mean` and :func:`gsl_stats_sd`.
 
 .. function:: double gsl_stats_skew_m_sd (const double data[], size_t stride, size_t n, double mean, double sd)
 
-   This function computes the skewness of the dataset *data* using the
-   given values of the mean *mean* and standard deviation *sd*,
+   This function computes the skewness of the dataset :data:`data` using the
+   given values of the mean :data:`mean` and standard deviation :data:`sd`,
 
    .. only:: not texinfo
 
@@ -226,12 +226,12 @@ Higher moments (skewness and kurtosis)
          skew = (1/N) \sum ((x_i - mean)/sd)^3
 
    These functions are useful if you have already computed the mean and
-   standard deviation of *data* and want to avoid recomputing them.
+   standard deviation of :data:`data` and want to avoid recomputing them.
 
 .. function:: double gsl_stats_kurtosis (const double data[], size_t stride, size_t n)
 
-   This function computes the kurtosis of *data*, a dataset of length
-   *n* with stride :data:`stride`.  The kurtosis is defined as,
+   This function computes the kurtosis of :data:`data`, a dataset of length
+   :data:`n` with stride :data:`stride`.  The kurtosis is defined as,
 
    .. only:: not texinfo
 
@@ -254,8 +254,8 @@ Higher moments (skewness and kurtosis)
 
 .. function:: double gsl_stats_kurtosis_m_sd (const double data[], size_t stride, size_t n, double mean, double sd)
 
-   This function computes the kurtosis of the dataset *data* using the
-   given values of the mean *mean* and standard deviation *sd*,
+   This function computes the kurtosis of the dataset :data:`data` using the
+   given values of the mean :data:`mean` and standard deviation :data:`sd`,
 
    .. only:: not texinfo
 
@@ -272,14 +272,14 @@ Higher moments (skewness and kurtosis)
          kurtosis = ((1/N) \sum ((x_i - mean)/sd)^4) - 3
 
    This function is useful if you have already computed the mean and
-   standard deviation of *data* and want to avoid recomputing them.
+   standard deviation of :data:`data` and want to avoid recomputing them.
 
 Autocorrelation
 ===============
 
 .. function:: double gsl_stats_lag1_autocorrelation (const double data[], const size_t stride, const size_t n)
 
-   This function computes the lag-1 autocorrelation of the dataset *data*.
+   This function computes the lag-1 autocorrelation of the dataset :data:`data`.
 
    .. only:: not texinfo
 
@@ -300,7 +300,7 @@ Autocorrelation
 .. function:: double gsl_stats_lag1_autocorrelation_m (const double data[], const size_t stride, const size_t n, const double mean)
 
    This function computes the lag-1 autocorrelation of the dataset
-   *data* using the given value of the mean *mean*.
+   :data:`data` using the given value of the mean :data:`mean`.
 
 .. index::
    single: covariance, of two datasets
@@ -310,8 +310,8 @@ Covariance
 
 .. function:: double gsl_stats_covariance (const double data1[], const size_t stride1, const double data2[], const size_t stride2, const size_t n)
 
-   This function computes the covariance of the datasets *data1* and
-   *data2* which must both be of the same length *n*.
+   This function computes the covariance of the datasets :data:`data1` and
+   :data:`data2` which must both be of the same length :data:`n`.
 
    .. only:: not texinfo
 
@@ -325,10 +325,10 @@ Covariance
 
 .. function:: double gsl_stats_covariance_m (const double data1[], const size_t stride1, const double data2[], const size_t stride2, const size_t n, const double mean1, const double mean2)
 
-   This function computes the covariance of the datasets *data1* and
-   *data2* using the given values of the means, :data:`mean1` and
+   This function computes the covariance of the datasets :data:`data1` and
+   :data:`data2` using the given values of the means, :data:`mean1` and
    :data:`mean2`.  This is useful if you have already computed the means of
-   *data1* and *data2* and want to avoid recomputing them.
+   :data:`data1` and :data:`data2` and want to avoid recomputing them.
 
 .. index::
    single: correlation, of two datasets
@@ -339,8 +339,8 @@ Correlation
 .. function:: double gsl_stats_correlation (const double data1[], const size_t stride1, const double data2[], const size_t stride2, const size_t n)
 
    This function efficiently computes the Pearson correlation coefficient
-   between the datasets *data1* and *data2* which must both be of
-   the same length *n*.
+   between the datasets :data:`data1` and :data:`data2` which must both be of
+   the same length :data:`n`.
 
    .. only:: not texinfo
 
@@ -366,8 +366,8 @@ Correlation
 .. function:: double gsl_stats_spearman (const double data1[], const size_t stride1, const double data2[], const size_t stride2, const size_t n, double work[])
 
    This function computes the Spearman rank correlation coefficient between
-   the datasets *data1* and *data2* which must both be of the same
-   length *n*. Additional workspace of size 2 * *n* is required in
+   the datasets :data:`data1` and :data:`data2` which must both be of the same
+   length :data:`n`. Additional workspace of size 2 * :data:`n` is required in
    :data:`work`. The Spearman rank correlation between vectors :math:`x` and
    :math:`y` is equivalent to the Pearson correlation between the ranked
    vectors :math:`x_R` and :math:`y_R`, where ranks are defined to be the
@@ -386,9 +386,9 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 
 .. function:: double gsl_stats_wmean (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
-   This function returns the weighted mean of the dataset *data* with
-   stride :data:`stride` and length *n*, using the set of weights :data:`w`
-   with stride :data:`wstride` and length *n*.  The weighted mean is defined as,
+   This function returns the weighted mean of the dataset :data:`data` with
+   stride :data:`stride` and length :data:`n`, using the set of weights :data:`w`
+   with stride :data:`wstride` and length :data:`n`.  The weighted mean is defined as,
 
    .. only:: not texinfo
 
@@ -402,9 +402,9 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 
 .. function:: double gsl_stats_wvariance (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
-   This function returns the estimated variance of the dataset *data*
-   with stride :data:`stride` and length *n*, using the set of weights
-   :data:`w` with stride :data:`wstride` and length *n*.  The estimated
+   This function returns the estimated variance of the dataset :data:`data`
+   with stride :data:`stride` and length :data:`n`, using the set of weights
+   :data:`w` with stride :data:`wstride` and length :data:`n`.  The estimated
    variance of a weighted dataset is calculated as,
 
    .. only:: not texinfo
@@ -428,7 +428,7 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 .. function:: double gsl_stats_wvariance_m (const double w[], size_t wstride, const double data[], size_t stride, size_t n, double wmean)
 
    This function returns the estimated variance of the weighted dataset
-   *data* using the given weighted mean :data:`wmean`.
+   :data:`data` using the given weighted mean :data:`wmean`.
 
 .. function:: double gsl_stats_wsd (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
@@ -444,7 +444,7 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 .. function:: double gsl_stats_wvariance_with_fixed_mean (const double w[], size_t wstride, const double data[], size_t stride, size_t n, const double mean)
 
    This function computes an unbiased estimate of the variance of the weighted
-   dataset *data* when the population mean *mean* of the underlying
+   dataset :data:`data` when the population mean :data:`mean` of the underlying
    distribution is known *a priori*.  In this case the estimator for
    the variance replaces the sample mean :math:`\Hat\mu` by the known
    population mean :math:`\mu`,
@@ -469,7 +469,7 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
               double gsl_stats_wtss_m (const double w[], const size_t wstride, const double data[], size_t stride, size_t n, double wmean)
 
    These functions return the weighted total sum of squares (TSS) of
-   *data* about the weighted mean.  For :func:`gsl_stats_wtss_m` the
+   :data:`data` about the weighted mean.  For :func:`gsl_stats_wtss_m` the
    user-supplied value of :data:`wmean` is used, and for :func:`gsl_stats_wtss`
    it is computed using :func:`gsl_stats_wmean`.
 
@@ -486,7 +486,7 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 .. function:: double gsl_stats_wabsdev (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
    This function computes the weighted absolute deviation from the weighted
-   mean of *data*.  The absolute deviation from the mean is defined as,
+   mean of :data:`data`.  The absolute deviation from the mean is defined as,
 
    .. only:: not texinfo
 
@@ -501,11 +501,11 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 .. function:: double gsl_stats_wabsdev_m (const double w[], size_t wstride, const double data[], size_t stride, size_t n, double wmean)
 
    This function computes the absolute deviation of the weighted dataset
-   *data* about the given weighted mean :data:`wmean`.
+   :data:`data` about the given weighted mean :data:`wmean`.
 
 .. function:: double gsl_stats_wskew (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
-   This function computes the weighted skewness of the dataset *data*.
+   This function computes the weighted skewness of the dataset :data:`data`.
 
    .. only:: not texinfo
 
@@ -519,13 +519,13 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 
 .. function:: double gsl_stats_wskew_m_sd (const double w[], size_t wstride, const double data[], size_t stride, size_t n, double wmean, double wsd)
 
-   This function computes the weighted skewness of the dataset *data*
+   This function computes the weighted skewness of the dataset :data:`data`
    using the given values of the weighted mean and weighted standard
    deviation, :data:`wmean` and :data:`wsd`.
 
 .. function:: double gsl_stats_wkurtosis (const double w[], size_t wstride, const double data[], size_t stride, size_t n)
 
-   This function computes the weighted kurtosis of the dataset *data*.
+   This function computes the weighted kurtosis of the dataset :data:`data`.
 
    .. only:: not texinfo
 
@@ -539,7 +539,7 @@ Setting a weight to zero corresponds to removing a sample from a dataset.
 
 .. function:: double gsl_stats_wkurtosis_m_sd (const double w[], size_t wstride, const double data[], size_t stride, size_t n, double wmean, double wsd)
 
-   This function computes the weighted kurtosis of the dataset *data*
+   This function computes the weighted kurtosis of the dataset :data:`data`
    using the given values of the weighted mean and weighted standard
    deviation, :data:`wmean` and :data:`wsd`.
 
@@ -554,8 +554,8 @@ first :code:`NaN` in the array is returned.
 
 .. function:: double gsl_stats_max (const double data[], size_t stride, size_t n)
 
-   This function returns the maximum value in *data*, a dataset of
-   length *n* with stride :data:`stride`.  The maximum value is defined
+   This function returns the maximum value in :data:`data`, a dataset of
+   length :data:`n` with stride :data:`stride`.  The maximum value is defined
    as the value of the element :math:`x_i` which satisfies :math:`x_i \ge x_j`
    for all :math:`j`.
 
@@ -565,8 +565,8 @@ first :code:`NaN` in the array is returned.
 
 .. function:: double gsl_stats_min (const double data[], size_t stride, size_t n)
 
-   This function returns the minimum value in *data*, a dataset of
-   length *n* with stride :data:`stride`.  The minimum value is defined
+   This function returns the minimum value in :data:`data`, a dataset of
+   length :data:`n` with stride :data:`stride`.  The minimum value is defined
    as the value of the element :math:`x_i` which satisfies :math:`x_i \le x_j`
    for all :math:`j`.
 
@@ -577,12 +577,12 @@ first :code:`NaN` in the array is returned.
 .. function:: void gsl_stats_minmax (double * min, double * max, const double data[], size_t stride, size_t n)
 
    This function finds both the minimum and maximum values :data:`min`,
-   :data:`max` in *data* in a single pass.
+   :data:`max` in :data:`data` in a single pass.
 
 .. function:: size_t gsl_stats_max_index (const double data[], size_t stride, size_t n)
 
-   This function returns the index of the maximum value in *data*, a
-   dataset of length *n* with stride :data:`stride`.  The maximum value is
+   This function returns the index of the maximum value in :data:`data`, a
+   dataset of length :data:`n` with stride :data:`stride`.  The maximum value is
    defined as the value of the element :math:`x_i` which satisfies 
    :math:`x_i \ge x_j`
    for all :math:`j`.  When there are several equal maximum
@@ -590,8 +590,8 @@ first :code:`NaN` in the array is returned.
 
 .. function:: size_t gsl_stats_min_index (const double data[], size_t stride, size_t n)
 
-   This function returns the index of the minimum value in *data*, a
-   dataset of length *n* with stride :data:`stride`.  The minimum value
+   This function returns the index of the minimum value in :data:`data`, a
+   dataset of length :data:`n` with stride :data:`stride`.  The minimum value
    is defined as the value of the element :math:`x_i` which satisfies
    :math:`x_i \ge x_j`
    for all :math:`j`.  When there are several equal
@@ -600,7 +600,7 @@ first :code:`NaN` in the array is returned.
 .. function:: void gsl_stats_minmax_index (size_t * min_index, size_t * max_index, const double data[], size_t stride, size_t n)
 
    This function returns the indexes :data:`min_index`, :data:`max_index` of
-   the minimum and maximum values in *data* in a single pass.
+   the minimum and maximum values in :data:`data` in a single pass.
 
 Median and Percentiles
 ======================
@@ -614,7 +614,7 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 .. function:: double gsl_stats_median_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
 
    This function returns the median value of :data:`sorted_data`, a dataset
-   of length *n* with stride :data:`stride`.  The elements of the array
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
    always be used first.
@@ -628,8 +628,8 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 
 .. function:: double gsl_stats_median (double data[], const size_t stride, const size_t n)
 
-   This function returns the median value of *data*, a dataset
-   of length *n* with stride :data:`stride`. The median is found
+   This function returns the median value of :data:`data`, a dataset
+   of length :data:`n` with stride :data:`stride`. The median is found
    using the quickselect algorithm. The input array does not need to be
    sorted, but note that the algorithm rearranges the array and so the input
    is not preserved on output.
@@ -637,7 +637,7 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 .. function:: double gsl_stats_quantile_from_sorted_data (const double sorted_data[], size_t stride, size_t n, double f)
 
    This function returns a quantile value of :data:`sorted_data`, a
-   double-precision array of length *n* with stride :data:`stride`.  The
+   double-precision array of length :data:`n` with stride :data:`stride`.  The
    elements of the array must be in ascending numerical order.  The
    quantile is determined by the :data:`f`, a fraction between 0 and 1.  For
    example, to compute the value of the 75th percentile :data:`f` should have
@@ -677,7 +677,7 @@ of 0 to 1, instead of percentiles (which use a scale of 0 to 100).
 .. -@deftypefunx Statistics double gsl_stats_int_ttest (const double data1[], double data2[], size_t n1, size_t n2)
 
 .. The function :func:`gsl_stats_ttest` computes the t-test statistic for
-.. the two arrays *data1*[] and *data2*[], of lengths :data:`n1` and
+.. the two arrays :data:`data1`[] and :data:`data2`[], of lengths :data:`n1` and
 .. -:data:`n2` respectively.
 
 .. The t-test statistic measures the difference between the means of two
@@ -695,9 +695,9 @@ in average :math:`O(n)` time using the quickselect algorithm.
 
 .. function:: double gsl_stats_select(double data[], const size_t stride, const size_t n, const size_t k)
 
-   This function finds the :data:`k`-th smallest element of the input array *data*
-   of length *n* and stride :data:`stride` using the quickselect method. The
-   algorithm rearranges the elements of *data* and so the input array is not preserved
+   This function finds the :data:`k`-th smallest element of the input array :data:`data`
+   of length :data:`n` and stride :data:`stride` using the quickselect method. The
+   algorithm rearranges the elements of :data:`data` and so the input array is not preserved
    on output.
 
 .. index::
@@ -735,7 +735,7 @@ So to discard 25% of the samples from each end, one would set :math:`\alpha = 0.
 .. function:: double gsl_stats_trmean_from_sorted_data (const double alpha, const double sorted_data[], const size_t stride, const size_t n)
 
    This function returns the trimmed mean of :data:`sorted_data`, a dataset
-   of length *n* with stride :data:`stride`. The elements of the array
+   of length :data:`n` with stride :data:`stride`. The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
    always be used first. The trimming factor :math:`\alpha` is given in :data:`alpha`.
@@ -765,7 +765,7 @@ quantile (i.e. median), and :math:`Q_{\frac{2}{3}}` is the two-thirds quantile.
 .. function:: double gsl_stats_gastwirth_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n)
 
    This function returns the Gastwirth location estimator of :data:`sorted_data`, a dataset
-   of length *n* with stride :data:`stride`.  The elements of the array
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
    always be used first.
@@ -812,8 +812,8 @@ The median absolute deviation has an asymptotic efficiency of 37%.
 .. function:: double gsl_stats_mad0 (const double data[], const size_t stride, const size_t n, double work[])
 .. function:: double gsl_stats_mad (const double data[], const size_t stride, const size_t n, double work[])
 
-   These functions return the median absolute deviation of *data*, a dataset
-   of length *n* and stride :data:`stride`.
+   These functions return the median absolute deviation of :data:`data`, a dataset
+   of length :data:`n` and stride :data:`stride`.
    The :code:`mad0` function calculates
    :math:`\textrm{median} \left\{ \left| x_i - \textrm{median} \left( x \right) \right| \right\}`
    (i.e. the :math:`MAD` statistic without the bias correction scale factor).
@@ -849,7 +849,7 @@ efficiency of 58%.
 .. function:: double gsl_stats_Sn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[])
 
    These functions return the :math:`S_n` statistic of :data:`sorted_data`, a dataset
-   of length *n* with stride :data:`stride`.  The elements of the array
+   of length :data:`n` with stride :data:`stride`.  The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
    always be used first. The :code:`Sn0` function calculates
@@ -904,7 +904,7 @@ is
               double gsl_stats_Qn_from_sorted_data (const double sorted_data[], const size_t stride, const size_t n, double work[], int work_int[])
 
    These functions return the :math:`Q_n` statistic of :data:`sorted_data`, a dataset
-   of length *n* with stride :data:`stride`. The elements of the array
+   of length :data:`n` with stride :data:`stride`. The elements of the array
    must be in ascending numerical order.  There are no checks to see
    whether the data are sorted, so the function :func:`gsl_sort` should
    always be used first. The :code:`Qn0` function calculates

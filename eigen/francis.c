@@ -695,12 +695,12 @@ francis_search_subdiag_small_elements(gsl_matrix * A)
 {
   const size_t N = A->size1;
   size_t i;
-  double dpel = gsl_matrix_get(A, N - 2, N - 2);
 
   for (i = N - 1; i > 0; --i)
     {
       double sel = gsl_matrix_get(A, i, i - 1);
       double del = gsl_matrix_get(A, i, i);
+      double dpel = gsl_matrix_get(A, i - 1, i - 1);
 
       if ((sel == 0.0) ||
           (fabs(sel) < GSL_DBL_EPSILON * (fabs(del) + fabs(dpel))))
@@ -708,8 +708,6 @@ francis_search_subdiag_small_elements(gsl_matrix * A)
           gsl_matrix_set(A, i, i - 1, 0.0);
           return (i);
         }
-
-      dpel = del;
     }
 
   return (0);

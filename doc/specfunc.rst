@@ -210,6 +210,10 @@ Legendre Functions and Spherical Harmonics
 ==========================================
 .. include:: specfunc-legendre.rst
 
+.. Associated Legendre Functions and Spherical Harmonics
+.. =====================================================
+.. .. include:: specfunc-alf.rst
+
 Logarithm and Related Functions
 ===============================
 .. include:: specfunc-log.rst
@@ -245,6 +249,9 @@ Zeta Functions
 Examples
 ========
 
+Example 1: Bessel function :math:`J_0`
+--------------------------------------
+
 The following example demonstrates the use of the error handling form of
 the special functions, in this case to compute the Bessel function
 :math:`J_0(5.0)`,
@@ -269,6 +276,32 @@ The results of the function are the same,
 .. include:: examples/specfun.txt
    :code:
 
+Example 2: Associated Legendre Functions
+----------------------------------------
+
+The following example program outputs the spherical harmonic
+normalized ALF :math:`Y_2^1(\cos{\theta})` and its first and second
+derivatives with respect to :math:`\theta`. The analytic
+expressions are,
+
+.. math::
+   
+   Y_2^1(\cos{\theta}) &= -\frac{1}{2} \sqrt{\frac{15}{2 \pi}} \sin{\theta} \cos{\theta} \\
+   \frac{d}{d\theta} Y_2^1(\cos{\theta}) &= -\frac{1}{2} \sqrt{\frac{15}{2 \pi}} \left( \cos^2{\theta} - \sin^2{\theta} \right) \\
+   \frac{d^2}{d\theta^2} Y_2^1(\cos{\theta}) &= 2 \sqrt{\frac{15}{2 \pi}} \sin{\theta} \cos{\theta}
+
+.. _fig_specfun2:
+
+.. figure:: /images/specfun2.png
+
+   Spherical harmonic normalized ALF :math:`Y_2^1` and its first and
+   second derivatives with respect to :math:`\theta`.
+
+The source code is given below.
+
+.. include:: examples/specfun2.c
+   :code:
+
 References and Further Reading
 ==============================
 
@@ -286,8 +319,13 @@ to compute the special functions,
   special functions.  ACM Trans. Math. Soft., vol.: 22,
   1996, 288--301
 
+* Bosch, W., On the computation of derivatives of Legendre functions,
+  Phys. Chem. Earth, 25 (9-11), pg. 655--659, 2000.
+
 * Bunck, B. F., A fast algorithm for evaluation of normalized Hermite
   functions, BIT Numer. Math, 49: 281-295, 2009.
+
+* B. Hofmann-Wellenhof and H. Moritz, Physical Geodesy, Springer, 2006.
 
 * G.N. Watson, A Treatise on the Theory of Bessel Functions,
   2nd Edition (Cambridge University Press, 1944).
@@ -310,3 +348,6 @@ to compute the special functions,
   summation and the recursive computation of very high degree and order
   normalised associated Legendre functions, Journal of Geodesy, 76,
   pg. 279-299, 2002.
+
+* D. E. Winch, D. J. Ivers, J. P. R. Turner and R. J. Stening, Geomagnetism
+  and Schmidt quasi-normalization, Geophys. J. Int., 160, 487-504, 2005.

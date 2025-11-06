@@ -92,13 +92,31 @@ test_LUc_decomp_eps(const gsl_matrix_complex * m, const double eps, const char *
           gsl_complex aij = gsl_matrix_complex_get(PLU, i, j);
           gsl_complex mij = gsl_matrix_complex_get(m, i, j);
 
-          gsl_test_rel(GSL_REAL(aij), GSL_REAL(mij), eps,
-                       "%s real: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
-                       desc, M, N, i, j, GSL_REAL(aij), GSL_REAL(mij));
+          if (GSL_REAL(mij) == 0.0 || fabs(GSL_REAL(mij)) > GSL_DBL_MIN)
+            {
+              gsl_test_rel(GSL_REAL(aij), GSL_REAL(mij), eps,
+                           "%s real: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                           desc, M, N, i, j, GSL_REAL(aij), GSL_REAL(mij));
+            }
+          else
+            {
+              gsl_test_rel(GSL_REAL(aij) / GSL_DBL_MIN, GSL_REAL(mij) / GSL_DBL_MIN, eps,
+                           "%s real: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                           desc, M, N, i, j, GSL_REAL(aij), GSL_REAL(mij));
+            }
 
-          gsl_test_rel(GSL_IMAG(aij), GSL_IMAG(mij), eps,
-                       "%s imag: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
-                       desc, M, N, i, j, GSL_IMAG(aij), GSL_IMAG(mij));
+          if (GSL_IMAG(mij) == 0.0 || fabs(GSL_IMAG(mij)) > GSL_DBL_MIN)
+            {
+              gsl_test_rel(GSL_IMAG(aij), GSL_IMAG(mij), eps,
+                           "%s imag: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                           desc, M, N, i, j, GSL_IMAG(aij), GSL_IMAG(mij));
+            }
+          else
+            {
+              gsl_test_rel(GSL_IMAG(aij) / GSL_DBL_MIN, GSL_IMAG(mij) / GSL_DBL_MIN, eps,
+                           "%s imag: (%3lu,%3lu)[%lu,%lu]: %22.18g   %22.18g\n",
+                           desc, M, N, i, j, GSL_IMAG(aij), GSL_IMAG(mij));
+            }
         }
     }
 
@@ -125,6 +143,25 @@ test_LUc_decomp(gsl_rng * r)
 
       gsl_matrix_complex_free(m);
     }
+
+  /* bug #61094 */
+  {
+    double m_data[] = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 
+                        0.0, 0.0, 1.0, 0.0, 2.0, 0.0 };
+    gsl_matrix_complex_view m = gsl_matrix_complex_view_array(m_data, 3, 3);
+
+    test_LUc_decomp_eps(&m.matrix, 10.0 * GSL_DBL_EPSILON, "complex_LU_decomp bug #61094");
+  }
+
+  {
+    double m_data[] = { 0.98*GSL_DBL_MIN, 0.0, 0.2, 0.0, 1.0, 0.0,
+                        0.97*GSL_DBL_MIN, 0.0, 1.0, 0.0, 1.0, 0.0,
+                        0.96*GSL_DBL_MIN, 0.0, 1.0, 0.0, 2.0, 0.0 };
+    gsl_matrix_complex_view m = gsl_matrix_complex_view_array(m_data, 3, 3);
+
+    test_LUc_decomp_eps(&m.matrix, 10.0 * GSL_DBL_EPSILON, "complex_LU_decomp GSL_DBL_MIN");
+  }
 
   {
     gsl_matrix_complex * m = gsl_matrix_complex_alloc(100, 50);

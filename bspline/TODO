@@ -1,10 +1,26 @@
 # -*- org -*-
 #+CATEGORY: bspline
 
-Add functions:
+1. Add functions:
 
 gsl_bspline_smooth to fit smoothing splines to data more efficiently
 than the standard least squares inversion (see pppack l2appr and
 smooth.spline() from GNU R)
 
 + any other useful functions from pppack
+
+2. Constrained fits - matching first derivatives?
+
+3. Tests: more tests for gsl_bspline_proj_rhs
+
+4. spline integration - currently implemented with GL quadrature
+
+A more efficient algorithm may be given in:
+
+Gaffney 1976, The calculation of indefinite integrals of B-splines
+
+and also the Dierckx book. An implementation is given in fpintb.f and splint.f of DIERCKX package
+
+5. Greville gsl_bspline_init_greville - is linked to a savannah bug
+
+https://savannah.gnu.org/bugs/index.php?34361

@@ -11,3 +11,5 @@
 
 3. add akima splines without the Wodicka modification, so that the spline
 is a smooth curve without corners.
+
+4. Fix cspline to work with n=2 nodes -- some code in cspline.c.1 and test.c.1, but the tests currently fail

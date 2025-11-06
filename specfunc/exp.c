@@ -20,6 +20,7 @@
 /* Author:  G. Jungman */
 
 #include <config.h>
+#include <stdlib.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_gamma.h>
@@ -213,7 +214,7 @@ int gsl_sf_exp_mult_e10_e(const double x, const double y, gsl_sf_result_e10 * re
       const double sy  = GSL_SIGN(y);
       const int    N   = (int) floor(l10_val);
       const double arg_val = (l10_val - N) * M_LN10;
-      const double arg_err = 2.0 * GSL_DBL_EPSILON * (fabs(x) + fabs(ly) + M_LN10*fabs(N));
+      const double arg_err = 2.0 * GSL_DBL_EPSILON * (fabs(x) + fabs(ly) + M_LN10*abs(N));
 
       result->val  = sy * exp(arg_val);
       result->err  = arg_err * fabs(result->val);

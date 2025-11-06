@@ -36,16 +36,25 @@
  *
  * 1. Initialize
  *    a. [Q_1,R_1] = qr(A_1)
- *    b. z_1 = Q_1^T b_1
+ *    b. y_1 = Q_1^T b_1
  * 2. Loop i = 2:k
  *    a. [Q_i,R_i] = qr( [ R_{i-1} ; A_i ] )
- *    b. z_i = Q_i^T [ z_{i-1} ; b_i ]
+ *    b. y_i = Q_i^T [ y_{i-1} ; b_i ]
  * 3. Output:
  *    a. R = R_k
- *    b. Q^T b = z_k
+ *    b. Q^T b = y_k
  *
  * Step 2(a) is optimized to take advantage
- * of the sparse structure of the matrix
+ * of the sparse structure of the matrix.
+ *
+ * We can write the full n-by-1 vector,
+ *
+ * Q^T b = [ z_1 ] p
+ *         [ z_2 ] n - p
+ *
+ * The first p elements z_1 are stored on each accumulation,
+ * while only the norm ||z_2|| is stored on each accumulation.
+ * The norm ||z_2|| is required to calculate the final residual norm.
  */
 
 #include <config.h>
@@ -62,12 +71,11 @@ typedef struct
 {
   size_t p;             /* number of columns of LS matrix */
   int nblocks;          /* number of blocks processed */
-  double rnorm;         /* || b - A x || residual norm */
   int svd;              /* SVD of R factor has been computed */
 
   gsl_matrix *T;        /* block reflector matrix, p-by-p */
   gsl_matrix *R;        /* R factor, p-by-p */
-  gsl_vector *QTb;      /* [ Q^T b ; b_i ], size p-by-1 */
+  gsl_vector *QTb;      /* [ (Q^T b)(1:p) ; ||z_2|| ], size (p+1)-by-1 */
   gsl_vector *work;     /* workspace, size p */
   gsl_vector *work3;    /* workspace, size 3*p */
 
@@ -118,7 +126,6 @@ tsqr_alloc(const size_t p)
 
   state->p = p;
   state->nblocks = 0;
-  state->rnorm = 0.0;
 
   state->R = gsl_matrix_alloc(p, p);
   if (state->R == NULL)
@@ -127,7 +134,7 @@ tsqr_alloc(const size_t p)
       GSL_ERROR_NULL("failed to allocate R matrix", GSL_ENOMEM);
     }
 
-  state->QTb = gsl_vector_alloc(p);
+  state->QTb = gsl_vector_calloc(p + 1);
   if (state->QTb == NULL)
     {
       tsqr_free(state);
@@ -199,7 +206,6 @@ tsqr_reset(void *vstate)
   gsl_matrix_set_zero(state->R);
   gsl_vector_set_zero(state->QTb);
   state->nblocks = 0;
-  state->rnorm = 0.0;
   state->svd = 0;
 
   return GSL_SUCCESS;
@@ -219,9 +225,11 @@ Notes:
 1) On output, the upper triangular portion of state->R(1:p,1:p)
 contains current R matrix
 
-2) state->QTb(1:p) contains current Q^T b vector
+2) state->QTb(1:p) contains the first p elements of Q^T b
 
-3) A and b are destroyed
+3) state->QTb(p+1) contains ||z_2||
+
+4) A and b are destroyed
 */
 
 static int
@@ -247,7 +255,8 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
     {
       int status;
       gsl_matrix_view R = gsl_matrix_submatrix(A, 0, 0, p, p);
-      gsl_vector_view QTb = gsl_vector_subvector(state->QTb, 0, p);
+      gsl_vector_view QTb0 = gsl_vector_subvector(state->QTb, 0, p);
+      double * norm_z2 = gsl_vector_ptr(state->QTb, p);
       gsl_vector_view b1 = gsl_vector_subvector(b, 0, p);
 
       /* this is the first matrix block A_1, compute its (dense) QR decomposition */
@@ -262,15 +271,15 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
 
       /* compute Q^T b and keep the first p elements */
       gsl_linalg_QR_QTvec_r(A, state->T, b, state->work);
-      gsl_vector_memcpy(&QTb.vector, &b1.vector);
+      gsl_vector_memcpy(&QTb0.vector, &b1.vector);
 
       if (n > p)
         {
           gsl_vector_view b2 = gsl_vector_subvector(b, p, n - p);
-          state->rnorm = gsl_blas_dnrm2(&b2.vector);
+          *norm_z2 = gsl_blas_dnrm2(&b2.vector);
         }
       else
-        state->rnorm = 0.0;
+        *norm_z2 = 0.0;
 
       state->nblocks = 1;
 
@@ -279,6 +288,8 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
   else
     {
       int status;
+      gsl_vector_view QTb0 = gsl_vector_subvector(state->QTb, 0, p);
+      double * norm_z2 = gsl_vector_ptr(state->QTb, p);
 
       /* compute QR decomposition of [ R_{i-1} ; A_i ], accounting for
        * sparse structure */
@@ -300,14 +311,14 @@ tsqr_accumulate(gsl_matrix * A, gsl_vector * b, void * vstate)
        * V = [ I  ] p
        *     [ V~ ] n
        */
-      gsl_vector_memcpy(state->work, state->QTb);
+      gsl_vector_memcpy(state->work, &QTb0.vector);
       gsl_blas_dgemv(CblasTrans, 1.0, A, b, 1.0, state->work);                     /* w := w + V~^T b */
       gsl_blas_dtrmv(CblasUpper, CblasTrans, CblasNonUnit, state->T, state->work); /* w := T^T w */
-      gsl_vector_sub(state->QTb, state->work);                                     /* QTb := QTb - w */
+      gsl_vector_sub(&QTb0.vector, state->work);                                   /* QTb := QTb - w */
 
       /* update residual norm */
       gsl_blas_dgemv(CblasNoTrans, -1.0, A, state->work, 1.0, b);                  /* b := b - V~ w */
-      state->rnorm = gsl_hypot(state->rnorm, gsl_blas_dnrm2(b));
+      *norm_z2 = gsl_hypot(*norm_z2, gsl_blas_dnrm2(b));
 
       return GSL_SUCCESS;
     }
@@ -347,12 +358,15 @@ tsqr_solve(const double lambda, gsl_vector * x,
     }
   else
     {
+      gsl_vector_view QTb0 = gsl_vector_subvector(state->QTb, 0, state->p);
+      double norm_z2 = gsl_vector_get(state->QTb, state->p); /* || z_2 || */
+
       if (lambda == 0.0)
         {
           /* solve: R x = Q^T b */
-          gsl_vector_memcpy(x, state->QTb);
+          gsl_vector_memcpy(x, &QTb0.vector);
           gsl_blas_dtrsv(CblasUpper, CblasNoTrans, CblasNonUnit, state->R, x);
-          *rnorm = state->rnorm;
+          *rnorm = norm_z2;
           *snorm = gsl_blas_dnrm2(x);
         }
       else
@@ -367,12 +381,12 @@ tsqr_solve(const double lambda, gsl_vector * x,
                 return status;
             }
 
-          status = gsl_multifit_linear_solve(lambda, state->R, state->QTb, x, rnorm, snorm,
+          status = gsl_multifit_linear_solve(lambda, state->R, &QTb0.vector, x, rnorm, snorm,
                                              state->multifit_workspace_p);
           if (status)
             return status;
 
-          *rnorm = gsl_hypot(*rnorm, state->rnorm);
+          *rnorm = gsl_hypot(*rnorm, norm_z2);
         }
 
       return GSL_SUCCESS;
@@ -396,6 +410,8 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
             gsl_vector * eta, void * vstate)
 {
   tsqr_state_t *state = (tsqr_state_t *) vstate;
+  gsl_vector_view QTb0 = gsl_vector_subvector(state->QTb, 0, state->p);
+  double norm_z2 = gsl_vector_get(state->QTb, state->p);
   int status;
   size_t i;
 
@@ -407,14 +423,14 @@ tsqr_lcurve(gsl_vector * reg_param, gsl_vector * rho,
         return status;
     }
 
-  status = gsl_multifit_linear_lcurve(state->QTb, reg_param, rho, eta,
+  status = gsl_multifit_linear_lcurve(&QTb0.vector, reg_param, rho, eta,
                                       state->multifit_workspace_p);
 
-  /* now add contribution to rnorm from Q2 factor */
+  /* now add contribution to rnorm from Q2 factor ||z_2|| */
   for (i = 0; i < rho->size; ++i)
     {
       double *rhoi = gsl_vector_ptr(rho, i);
-      *rhoi = gsl_hypot(*rhoi, state->rnorm);
+      *rhoi = gsl_hypot(*rhoi, norm_z2);
     }
 
   return status;

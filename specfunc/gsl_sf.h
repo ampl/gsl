@@ -6,6 +6,7 @@
 #include <gsl/gsl_sf_result.h>
 
 #include <gsl/gsl_sf_airy.h>
+#include <gsl/gsl_sf_alf.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_clausen.h>
 #include <gsl/gsl_sf_coupling.h>

@@ -17,17 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include <config.h>
-#if HAVE_UNISTD_H
-  #include <unistd.h>
-#endif
-
 void FUNCTION (test, func) (size_t stride, size_t N);
 void FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N);
 void FUNCTION (test, file) (size_t stride, size_t N);
 void FUNCTION (test, text) (size_t stride, size_t N);
 void FUNCTION (test, trap) (size_t stride, size_t N);
 TYPE (gsl_vector) * FUNCTION(create, vector) (size_t stride, size_t N);
+REAL_TYPE (gsl_vector) * FUNCTION(create_real, vector) (const size_t stride, const size_t N);
 
 #define TEST(expr,desc) gsl_test((expr), NAME(gsl_vector) desc " stride=%d, N=%d", stride, N)
 #define TEST2(expr,desc) gsl_test((expr), NAME(gsl_vector) desc " stride1=%d, stride2=%d, N=%d", stride1, stride2, N)
@@ -36,6 +32,15 @@ TYPE (gsl_vector) *
 FUNCTION(create, vector) (size_t stride, size_t N)
 {
   TYPE (gsl_vector) * v = FUNCTION (gsl_vector, calloc) (N*stride);
+  v->stride = stride;
+  v->size = N;
+  return v;
+}
+
+REAL_TYPE (gsl_vector) *
+FUNCTION(create_real, vector) (const size_t stride, const size_t N)
+{
+  REAL_TYPE (gsl_vector) * v = REAL_FUNCTION (gsl_vector, calloc) (N*stride);
   v->stride = stride;
   v->size = N;
   return v;
@@ -493,6 +498,7 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
   TYPE (gsl_vector) * a = FUNCTION (create, vector) (stride1, N);
   TYPE (gsl_vector) * b = FUNCTION (create, vector) (stride2, N);
   TYPE (gsl_vector) * v = FUNCTION (create, vector) (stride1, N);
+  REAL_TYPE (gsl_vector) * c = FUNCTION (create_real, vector) (stride2, N);
   
   for (i = 0; i < N; i++)
     {
@@ -504,6 +510,7 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
 
       FUNCTION (gsl_vector, set) (a, i, z);
       FUNCTION (gsl_vector, set) (b, i, z1);
+      REAL_FUNCTION (gsl_vector, set) (c, i, GSL_REAL(z1));
     }
   
   {
@@ -602,8 +609,8 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
         BASE r = FUNCTION(gsl_vector,get) (v,i);
         ATOMIC real = (-35*(ATOMIC)i-275);
         ATOMIC imag = (173+((ATOMIC)i)*(63+4*(ATOMIC)i));
-        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
-            fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+        if (ABS(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
+            ABS(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
           status = 1;
       }
 
@@ -622,12 +629,32 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
         ATOMIC denom = 593 + ((ATOMIC)i)*(124+((ATOMIC)i)*8);
         ATOMIC real = (323+((ATOMIC)i)*(63+4*((ATOMIC)i))) / denom;
         ATOMIC imag = (35 +((ATOMIC)i)*5) / denom;
-        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON)
+        if (ABS(GSL_REAL(r) - real) > 100 * BASE_EPSILON)
           status = 1;
-        if (fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+        if (ABS(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
           status = 1;
       }
     TEST2 (status, "_div division");
+  }
+
+  FUNCTION(gsl_vector, memcpy) (v, a);
+  FUNCTION(gsl_vector, div_real) (v, c);
+  
+  {
+    int status = 0;
+    
+    for (i = 0; i < N; i++)
+      {
+        BASE r = FUNCTION(gsl_vector,get) (v,i);
+        ATOMIC denom = 8 + 2*((ATOMIC)i);
+        ATOMIC real = (3+(ATOMIC)i) / denom;
+        ATOMIC imag = (13 +(ATOMIC)i) / denom;
+        if (ABS(GSL_REAL(r) - real) > 100 * BASE_EPSILON)
+          status = 1;
+        if (ABS(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+          status = 1;
+      }
+    TEST2 (status, "_div_real division");
   }
 
   {
@@ -649,8 +676,8 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
         BASE r = FUNCTION(gsl_vector,get) (v, i);
         ATOMIC real = (-3*(ATOMIC)i-81);
         ATOMIC imag = (90+13*(ATOMIC)i);
-        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
-            fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+        if (ABS(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
+            ABS(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
           status = 1;
       }
 
@@ -676,12 +703,29 @@ FUNCTION (test, ops) (size_t stride1, size_t stride2, size_t N)
         BASE r = FUNCTION(gsl_vector,get) (v, i);
         ATOMIC real = (-2*(ATOMIC)i-38);
         ATOMIC imag = (39+6*(ATOMIC)i);
-        if (fabs(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
-            fabs(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
+        if (ABS(GSL_REAL(r) - real) > 100 * BASE_EPSILON ||
+            ABS(GSL_IMAG(r) - imag) > 100 * BASE_EPSILON)
           status = 1;
       }
 
     TEST2 (status, "_axpby second");
+  }
+
+  {
+    FUNCTION (gsl_vector, conj_memcpy) (v, a);
+    int status = 0;
+
+    for (i = 0; i < N; i++)
+      {
+        BASE x = FUNCTION (gsl_vector, get) (a, i);
+        BASE y = FUNCTION (gsl_vector, get) (v, i);
+        if (GSL_REAL (x) != GSL_REAL (y) || GSL_IMAG (x) != -GSL_IMAG (y))
+          {
+            status = 1;
+          }
+      }
+
+    gsl_test (status, NAME (gsl_vector) "_conj_memcpy");
   }
 
   FUNCTION(gsl_vector, free) (a);

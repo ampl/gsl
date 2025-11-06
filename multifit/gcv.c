@@ -207,8 +207,8 @@ gsl_multifit_linear_gcv_min(const gsl_vector * reg_param,
       gsl_vector_view workp = gsl_matrix_subcolumn(work->QSI, 0, 0, p);
       gcv_params params;
       int idxG = (int) gsl_vector_min_index(G);
-      double a = gsl_vector_get(reg_param, GSL_MIN(idxG + 1, (int) npts - 1));
-      double b = gsl_vector_get(reg_param, GSL_MAX(idxG - 1, 0));
+      double a = gsl_vector_get(reg_param, GSL_MAX(idxG - 1, 0));
+      double b = gsl_vector_get(reg_param, GSL_MIN(idxG + 1, (int) npts - 1));
       double m = gsl_vector_get(reg_param, idxG);
       size_t iter = 0;
       gsl_function F;

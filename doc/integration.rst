@@ -901,6 +901,130 @@ as well as additional variables for intermediate calculations:
    where :math:`w_i` are the quadrature weights and :math:`x_i` are the quadrature nodes computed
    previously by :func:`gsl_integration_fixed_alloc`. The sum is stored in :data:`result` on output.
 
+Integrating on the unit sphere
+==============================
+
+.. index::
+   single: quadrature, on unit sphere
+   single: quadrature, Lebedev
+
+This section contains routines to calculate the surface integral of a
+function over the unit sphere,
+
+.. math:: I[f] = \int d\Omega f(\Omega) = \int_0^{\pi} \sin{\theta} d\theta \int_0^{2\pi} d\phi f(\theta,\phi)
+
+Lebedev developed a quadrature scheme to approximate this integral using a
+single sum,
+
+.. math:: I[f] \approx 4 \pi \sum_{i=1}^n w_i f(\theta_i, \phi_i)
+
+for appropriately chosen weights :math:`w_i` and nodes :math:`(\theta_i,\phi_i)`.
+The Lebedev nodes are chosen to lie on the unit sphere and be invariant
+under the octahedral rotation group with inversion.
+
+The number of quadrature nodes :math:`n` is often chosen in order to exactly
+integrate a certain degree spherical harmonic function :math:`Y_l^m`.
+A general rule of thumb for integrating spherical harmonics up to degree
+and order :math:`L` is to choose the number of nodes as,
+
+.. math:: n \approx \frac{(L+1)^2}{3}
+
+Calculating the Lebedev weights and nodes requires solving a set of nonlinear
+equations. These equations have been solved, and the nodes and weights have
+been tabulated for integrating spherical harmonics up to degree and order 131.
+GSL offers a smaller subset of 32 quadrature rules, which are listed in
+the table below.
+
+=================================== ======================================
+Spherical Harmonic degree :math:`L` Quadrature weights and nodes :math:`n`
+=================================== ======================================
+3                                   6
+5                                   14
+7                                   26
+9                                   38
+11                                  50
+13                                  74
+15                                  86
+17                                  110
+19                                  146
+21                                  170
+23                                  194
+25                                  230
+27                                  266
+29                                  302
+31                                  350
+35                                  434
+41                                  590
+47                                  770
+53                                  974
+59                                  1202
+65                                  1454
+71                                  1730
+77                                  2030
+83                                  2354
+89                                  2702
+95                                  3074
+101                                 3470
+107                                 3890
+113                                 4334
+119                                 4802
+125                                 5294
+131                                 5810
+=================================== ======================================
+
+.. type:: gsl_integration_lebedev_workspace
+
+   This workspace is used for Lebedev quadrature rules and looks like this::
+
+     typedef struct
+     {
+       size_t n;        /* number of nodes/weights */
+       double *weights; /* quadrature weights */
+       double *x;       /* x quadrature nodes */
+       double *y;       /* y quadrature nodes */
+       double *z;       /* z quadrature nodes */
+       double *theta;   /* theta quadrature nodes */
+       double *phi;     /* phi quadrature nodes */
+     } gsl_integration_lebedev_workspace;
+
+   The arrays :data:`x`, :data:`y`, :data:`z` of length :math:`n`
+   contain the Cartesian coordinates :math:`(x_i,y_i,z_i)` of the
+   Lebedev nodes which lie on the unit sphere. The arrays
+   :data:`theta`, :data:`phi` contain the spherical coordinates
+   :math:`(\theta_i,\phi_i)` of the same nodes on the unit sphere.
+
+.. function:: gsl_integration_lebedev_workspace * gsl_integration_lebedev_alloc(const size_t n)
+
+   This function allocates a workspace for a Lebedev quadrature
+   rule of size :data:`n` and computes the nodes and weights.
+   The size of the workspace is :math:`O(6n)`.
+
+   If the input :data:`n` does not match one of the rules in the
+   table above, the error code :macro:`GSL_EDOM` is returned.
+
+   Here is some example code for integrating a function :math:`f(\theta,\phi)`
+   with Lebedev quadrature::
+
+     const size_t n = 230; /* integrate exactly up to spherical harmonic degree 25 */
+     gsl_integration_lebedev_workspace * w = gsl_integration_lebedev_alloc(n);
+     double result = 0.0;
+     size_t i;
+
+     for (i = 0; i < n; ++i)
+       result += w->weights[i] * f(w->theta[i], w->phi[i]);
+
+     result *= 4.0 * M_PI;
+     gsl_integration_lebedev_free(w);
+
+.. function:: void gsl_integration_lebedev_free(gsl_integration_lebedev_workspace * w)
+
+   This function frees the memory associated with the workspace :data:`w`.
+
+.. function:: size_t gsl_integration_lebedev_n(const gsl_integration_lebedev_workspace * w)
+
+   This function returns the number of quadrature nodes associated
+   with the workspace :data:`w`.
+
 Error codes
 ===========
 
@@ -1019,3 +1143,8 @@ following papers:
 
 * J. Kautsky, S. Elhay, Calculation of the Weights of Interpolatory Quadratures,
   Numerische Mathematik, Volume 40, Number 3, October 1982, pages 407-422.
+
+The Lebedev quadrature routines are based on the paper:
+
+* Lebedev, V. I. and Laikov, D. N. (1999). A quadrature formula for the sphere of
+  the 131st algebraic order of accuracy. In Doklady Mathematics (Vol. 59, No. 3, pp. 477-481).

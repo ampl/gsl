@@ -770,8 +770,30 @@ test_eigen_nonsymm(void)
                       1, 1, 1, 1,
                       1, 1, 1, 1,
                       0, 1, 0, 0 };
+    double dat_59781[] = { /* bug #59781 */
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 6, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 3, 0, 0, 0, 6, 0, 3,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 2, 0, 0, 0,
+      0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 6, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      6, 0, 3, 0, 0, 0, 6, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 4, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
     gsl_matrix_view v;
-    gsl_eigen_nonsymmv_workspace * w = gsl_eigen_nonsymmv_alloc(4);
+    gsl_eigen_nonsymmv_workspace * w;
+    
+    w = gsl_eigen_nonsymmv_alloc(4);
     
     v = gsl_matrix_view_array (dat1, 4, 4);
     test_eigen_nonsymm_matrix(&v.matrix, 0, "integer", w);
@@ -779,6 +801,12 @@ test_eigen_nonsymm(void)
     v = gsl_matrix_view_array (dat2, 4, 4);
     test_eigen_nonsymm_matrix(&v.matrix, 1, "integer", w);
 
+    gsl_eigen_nonsymmv_free(w);
+
+    w = gsl_eigen_nonsymmv_alloc(18);
+    v = gsl_matrix_view_array (dat_59781, 18, 18);
+    gsl_matrix_transpose(&v.matrix);
+    test_eigen_nonsymm_matrix(&v.matrix, 2, "bug #59781", w);
     gsl_eigen_nonsymmv_free(w);
   }
 } /* test_eigen_nonsymm() */

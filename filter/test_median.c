@@ -36,7 +36,7 @@ slow_movmedian(const gsl_filter_end_t etype, const gsl_vector * x, gsl_vector * 
 
   for (i = 0; i < n; ++i)
     {
-      size_t wsize = gsl_movstat_fill(etype, x, i, H, H, window);
+      size_t wsize = gsl_movstat_fill((gsl_movstat_end_t) etype, x, i, H, H, window);
       double yi = gsl_stats_median(window, 1, wsize);
 
       gsl_vector_set(y, i, yi);
@@ -86,30 +86,30 @@ test_median_proc(const double tol, const size_t n, const size_t K,
 static void
 test_median(gsl_rng * rng_p)
 {
-  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_MOVSTAT_END_PADZERO, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_MOVSTAT_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_FILTER_END_PADZERO, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_FILTER_END_PADZERO, rng_p);
 
-  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_MOVSTAT_END_PADVALUE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_MOVSTAT_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_FILTER_END_PADVALUE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_FILTER_END_PADVALUE, rng_p);
 
-  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_MOVSTAT_END_TRUNCATE, rng_p);
-  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_MOVSTAT_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 1, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 3, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 1000, 5, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 100, 301, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 17, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 5000, 9, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 901, GSL_FILTER_END_TRUNCATE, rng_p);
+  test_median_proc(GSL_DBL_EPSILON, 50, 201, GSL_FILTER_END_TRUNCATE, rng_p);
 }

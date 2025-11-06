@@ -167,6 +167,13 @@ Current Statistics
    This function returns an estimate of the median of the data added to
    the accumulator.
 
+.. function:: double gsl_rstat_norm (const gsl_rstat_workspace * w)
+
+   This function returns the Euclidean norm of all data added to the
+   accumulator, defined as
+
+   .. math:: \left|\left| x \right|\right| = \sqrt{\sum x_i^2}
+
 Quantiles
 =========
 

@@ -143,7 +143,7 @@ gsl_filter_gaussian(const gsl_filter_end_t endtype, const double alpha, const si
       /* construct Gaussian kernel of length K */
       gsl_filter_gaussian_kernel(alpha, order, 1, &kernel.vector);
 
-      status = gsl_movstat_apply_accum(endtype, x, &gaussian_accum_type, (void *) w->kernel, y,
+      status = gsl_movstat_apply_accum((gsl_movstat_end_t) endtype, x, &gaussian_accum_type, (void *) w->kernel, y,
                                        NULL, w->movstat_workspace_p);
 
       return status;

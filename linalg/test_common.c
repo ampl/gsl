@@ -252,6 +252,32 @@ create_hilbert_matrix2(gsl_matrix * m)
   return GSL_SUCCESS;
 }
 
+/* create a matrix of a given rank */
+static int
+create_rank_matrix(const size_t rank, gsl_matrix * m, gsl_rng * r)
+{
+  const size_t M = m->size1;
+  const size_t N = m->size2;
+  size_t i;
+  gsl_vector *u = gsl_vector_alloc(M);
+  gsl_vector *v = gsl_vector_alloc(N);
+
+  gsl_matrix_set_zero(m);
+
+  /* add several rank-1 matrices together */
+  for (i = 0; i < rank; ++i)
+    {
+      create_random_vector(u, r);
+      create_random_vector(v, r);
+      gsl_blas_dger(1.0, u, v, m);
+    }
+
+  gsl_vector_free(u);
+  gsl_vector_free(v);
+
+  return GSL_SUCCESS;
+}
+
 static int
 create_posdef_band_matrix(const size_t p, gsl_matrix * m, gsl_rng * r)
 {

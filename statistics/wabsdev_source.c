@@ -40,7 +40,7 @@ FUNCTION(gsl_stats,wabsdev_m) (const BASE w[], const size_t wstride, const BASE 
       BASE wi = w[i * wstride];
       
       if (wi > 0) {
-        const long double delta = fabs(data[i * stride] - wmean);
+        const long double delta = fabs((double) data[i * stride] - wmean);
         W += wi ;
         wabsdev += (delta - wabsdev) * (wi / W);
       }

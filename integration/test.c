@@ -30,6 +30,7 @@
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_sf_hyperg.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_vector.h>
 
 #include "tests.h"
 
@@ -2627,6 +2628,81 @@ main (void)
       {
         test_fixed_quadrature(gsl_integration_fixed_rational, n, aarray[k], barray[k], alphaarray[k], betaarray[k],
                               1.0e-12, exactarray[k], &f, "rational monomial");
+      }
+  }
+
+  /* test Lebedev quadrature */
+  {
+    int status;
+    const double eps = 1.0e-12;
+    const size_t norder = 32;
+    const size_t order_array[] = {    6,   14,   26,   38,   50,   74,   86,  110,  146,  170,
+                                    194,  230,  266,  302,  350,  434,  590,  770,  974, 1202,
+                                   1454, 1730, 2030, 2354, 2702, 3074, 3470, 3890, 4334, 4802,
+                                   5294, 5810 };
+    const double alpha = 5.7;
+    size_t i;
+
+    for (i = 0; i < norder; ++i)
+      {
+        size_t order = order_array[i];
+        gsl_integration_lebedev_workspace * work =
+          gsl_integration_lebedev_alloc(order);
+        gsl_vector_view wts = gsl_vector_view_array(work->weights, order);
+        double sum = gsl_vector_sum(&wts.vector);
+        double result1 = 0.0;
+        double result2 = 0.0;
+        double result3 = 0.0;
+        size_t j;
+
+        /* test sum(weights) = 1 */
+        gsl_test_rel(sum, 1.0, eps, "lebedev n=%zu sum(w)", order);
+
+        status = (order != gsl_integration_lebedev_n(work));
+        gsl_test(status, "lebedev_n n=%zu(%zu)", order, gsl_integration_lebedev_n(work));
+
+        /*
+         * Compute test integrals:
+         *
+         * f1(x,y,z) = 1 + x + y^2 + x^2*y + x^4 + y^5 + (xyz)^2
+         * f2(x,y,z) = (1 + tanh(-alpha*(x+y-z)) / alpha
+         *
+         * I[f1] = 216 pi / 35
+         * I[f2] = 4 pi / alpha
+         *
+         * These test integrals are from:
+         *
+         * Fornberg and Martel, On spherical harmonics based numerical
+         * quadrature over the surface of a sphere, Adv. Comput. Math.
+         * 40, 1169-1184, 2014.
+         */
+
+        for (j = 0; j < order; ++j)
+          {
+            double x = work->x[j];
+            double y = work->y[j];
+            double z = work->z[j];
+            double f1 = 1.0 + x + y*y + x*x*y + x*x*x*x +
+                        y*y*y*y*y + (x*y*z)*(x*y*z);
+            double f2 = (1.0 + tanh(-alpha * (x + y - z))) / alpha;
+            double ct = cos(work->theta[j]);
+
+            result1 += work->weights[j] * f1;
+            result2 += work->weights[j] * f2;
+            result3 += work->weights[j] * ct * ct;
+          }
+
+        result1 *= 4.0 * M_PI;
+        result2 *= 4.0 * M_PI;
+        result3 *= 4.0 * M_PI;
+
+        if (order > 14)
+          gsl_test_rel(result1, 216.0 * M_PI / 35.0, eps, "lebedev n=%zu int1", order);
+
+        gsl_test_rel(result2, 4.0 * M_PI / alpha, eps, "lebedev n=%zu int2", order);
+        gsl_test_rel(result3, 4.0 * M_PI / 3.0, eps, "lebedev n=%zu int3", order);
+
+        gsl_integration_lebedev_free(work);
       }
   }
 

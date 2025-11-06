@@ -38,7 +38,7 @@ FUNCTION(gsl_stats,absdev_m) (const BASE data[],
   /* find the sum of the absolute deviations */
   for (i = 0; i < n; i++)
     {
-      const double delta = fabs(data[i * stride] - mean);
+      const double delta = fabs((double) data[i * stride] - mean);
       sum += delta;
     }
 

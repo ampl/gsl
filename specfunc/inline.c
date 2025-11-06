@@ -24,5 +24,6 @@
 
 #define COMPILE_INLINE_STATIC
 #include "build.h"
+#include <gsl/gsl_sf_alf.h>
 #include <gsl/gsl_sf_legendre.h>
 

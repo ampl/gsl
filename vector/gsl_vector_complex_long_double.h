@@ -158,6 +158,7 @@ int gsl_vector_complex_long_double_fprintf (FILE * stream,
                                       const char *format);
 
 int gsl_vector_complex_long_double_memcpy (gsl_vector_complex_long_double * dest, const gsl_vector_complex_long_double * src);
+int gsl_vector_complex_long_double_conj_memcpy (gsl_vector_complex_long_double * dest, const gsl_vector_complex_long_double * src);
 
 int gsl_vector_complex_long_double_reverse (gsl_vector_complex_long_double * v);
 
@@ -179,6 +180,8 @@ int gsl_vector_complex_long_double_div (gsl_vector_complex_long_double * a, cons
 int gsl_vector_complex_long_double_scale (gsl_vector_complex_long_double * a, const gsl_complex_long_double x);
 int gsl_vector_complex_long_double_add_constant (gsl_vector_complex_long_double * a, const gsl_complex_long_double x);
 int gsl_vector_complex_long_double_axpby (const gsl_complex_long_double alpha, const gsl_vector_complex_long_double * x, const gsl_complex_long_double beta, gsl_vector_complex_long_double * y);
+
+int gsl_vector_complex_long_double_div_real (gsl_vector_complex_long_double * a, const gsl_vector_long_double * b);
 
 INLINE_DECL gsl_complex_long_double gsl_vector_complex_long_double_get (const gsl_vector_complex_long_double * v, const size_t i);
 INLINE_DECL void gsl_vector_complex_long_double_set (gsl_vector_complex_long_double * v, const size_t i, gsl_complex_long_double z);

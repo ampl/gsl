@@ -139,6 +139,34 @@ FUNCTION(gsl_vector, div) (TYPE(gsl_vector) * a, const TYPE(gsl_vector) * b)
 }
 
 int 
+FUNCTION(gsl_vector, div_real) (TYPE(gsl_vector) * a, const REAL_TYPE(gsl_vector) * b)
+{
+  const size_t N = a->size;
+
+  if (b->size != N)
+    {
+      GSL_ERROR ("vectors must have same length", GSL_EBADLEN);
+    }
+  else 
+    {
+      const size_t stride_a = a->stride;
+      const size_t stride_b = b->stride;
+
+      size_t j;
+
+      for (j = 0; j < N; j++)
+        {
+          ATOMIC bj = b->data[j * stride_b];
+
+          a->data[2 * j * stride_a] /= bj;
+          a->data[2 * j * stride_a + 1] /= bj;
+        }
+      
+      return GSL_SUCCESS;
+    }
+}
+
+int 
 FUNCTION(gsl_vector, scale) (TYPE(gsl_vector) * a, const BASE x)
 {
 #if defined(BASE_GSL_COMPLEX)

@@ -1,6 +1,6 @@
 /* linalg/choleskyc.c
  * 
- * Copyright (C) 2007, 2019 Patrick Alken
+ * Copyright (C) 2007, 2019, 2022 Patrick Alken
  * Copyright (C) 2010 Huan Wu
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 static void cholesky_complex_conj_vector(gsl_vector_complex *v);
 static int complex_cholesky_decomp_L2(gsl_matrix_complex * A);
 static int complex_cholesky_decomp_L3(gsl_matrix_complex * A);
+static int vector_complex_mul_real (gsl_vector_complex * a, const gsl_vector * b);
 
 /*
 gsl_linalg_complex_cholesky_decomp()
@@ -175,6 +176,210 @@ gsl_linalg_complex_cholesky_invert(gsl_matrix_complex * LLT)
     }
 }
 
+/*
+gsl_linalg_complex_cholesky_scale()
+  This function computes scale factors diag(S), such that
+
+diag(S) A diag(S)
+
+has a condition number within a factor N of the matrix
+with the smallest condition number over all possible
+diagonal scalings. See Corollary 7.6 of:
+
+N. J. Higham, Accuracy and Stability of Numerical Algorithms (2nd Edition),
+SIAM, 2002.
+
+Inputs: A - Hermitian positive definite matrix
+        S - (output) scale factors, S_i = 1 / sqrt(A_ii)
+*/
+
+int
+gsl_linalg_complex_cholesky_scale(const gsl_matrix_complex * A, gsl_vector * S)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR("A is not a square matrix", GSL_ENOTSQR);
+    }
+  else if (N != S->size)
+    {
+      GSL_ERROR("S must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      /* compute S_i = 1/sqrt(A_{ii}) */
+      for (i = 0; i < N; ++i)
+        {
+          gsl_complex Aii = gsl_matrix_complex_get(A, i, i);
+          double Aii_re = GSL_REAL(Aii);
+
+          if (Aii_re <= 0.0)
+            gsl_vector_set(S, i, 1.0); /* matrix not positive definite */
+          else
+            gsl_vector_set(S, i, 1.0 / sqrt(Aii_re));
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
+gsl_linalg_complex_cholesky_scale_apply()
+  This function applies scale transformation to A:
+
+A <- diag(S) A diag(S)
+
+Inputs: A     - (input/output)
+                on input, symmetric positive definite matrix
+                on output, diag(S) * A * diag(S) in lower triangle
+        S     - (input) scale factors
+*/
+
+int
+gsl_linalg_complex_cholesky_scale_apply(gsl_matrix_complex * A, const gsl_vector * S)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR("A is not a square matrix", GSL_ENOTSQR);
+    }
+  else if (N != S->size)
+    {
+      GSL_ERROR("S must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i, j;
+
+      /* compute: A <- diag(S) A diag(S) using lower triangle */
+      for (j = 0; j < N; ++j)
+        {
+          double sj = gsl_vector_get(S, j);
+
+          for (i = j; i < N; ++i)
+            {
+              double si = gsl_vector_get(S, i);
+              gsl_complex *Aij = gsl_matrix_complex_ptr(A, i, j);
+              *Aij = gsl_complex_mul_real(*Aij, si * sj);
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
+gsl_linalg_complex_cholesky_decomp2(gsl_matrix_complex * A, gsl_vector * S)
+{
+  const size_t M = A->size1;
+  const size_t N = A->size2;
+
+  if (M != N)
+    {
+      GSL_ERROR("cholesky decomposition requires square matrix", GSL_ENOTSQR);
+    }
+  else if (N != S->size)
+    {
+      GSL_ERROR("S must have length N", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+
+      /* compute scaling factors to reduce cond(A) */
+      status = gsl_linalg_complex_cholesky_scale(A, S);
+      if (status)
+        return status;
+
+      /* apply scaling factors */
+      status = gsl_linalg_complex_cholesky_scale_apply(A, S);
+      if (status)
+        return status;
+
+      /* compute Cholesky decomposition of diag(S) A diag(S) */
+      status = gsl_linalg_complex_cholesky_decomp(A);
+      if (status)
+        return status;
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
+gsl_linalg_complex_cholesky_svx2 (const gsl_matrix_complex * LLT,
+                                  const gsl_vector * S,
+                                  gsl_vector_complex * x)
+{
+  if (LLT->size1 != LLT->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (LLT->size2 != S->size)
+    {
+      GSL_ERROR ("matrix size must match S", GSL_EBADLEN);
+    }
+  else if (LLT->size2 != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      /* b~ = diag(S) b */
+      vector_complex_mul_real(x, S);
+
+      /* Solve for c using forward-substitution, L c = b~ */
+      gsl_blas_ztrsv (CblasLower, CblasNoTrans, CblasNonUnit, LLT, x);
+
+      /* Perform back-substitution, L^H x~ = c */
+      gsl_blas_ztrsv (CblasLower, CblasConjTrans, CblasNonUnit, LLT, x);
+
+      /* compute original solution vector x = S x~ */
+      vector_complex_mul_real(x, S);
+
+      return GSL_SUCCESS;
+    }
+}
+
+int
+gsl_linalg_complex_cholesky_solve2 (const gsl_matrix_complex * LLT,
+                                    const gsl_vector * S,
+                                    const gsl_vector_complex * b,
+                                    gsl_vector_complex * x)
+{
+  if (LLT->size1 != LLT->size2)
+    {
+      GSL_ERROR ("cholesky matrix must be square", GSL_ENOTSQR);
+    }
+  else if (LLT->size1 != S->size)
+    {
+      GSL_ERROR ("matrix size must match S size", GSL_EBADLEN);
+    }
+  else if (LLT->size1 != b->size)
+    {
+      GSL_ERROR ("matrix size must match b size", GSL_EBADLEN);
+    }
+  else if (LLT->size2 != x->size)
+    {
+      GSL_ERROR ("matrix size must match solution size", GSL_EBADLEN);
+    }
+  else
+    {
+      int status;
+
+      /* Copy x <- b */
+      gsl_vector_complex_memcpy (x, b);
+
+      status = gsl_linalg_complex_cholesky_svx2(LLT, S, x);
+
+      return status;
+    }
+}
 
 /********************************************
  *           INTERNAL ROUTINES              *
@@ -342,3 +547,31 @@ complex_cholesky_decomp_L3(gsl_matrix_complex * A)
     }
 }
 
+/* a := a .* b */
+static int 
+vector_complex_mul_real (gsl_vector_complex * a, const gsl_vector * b)
+{
+  const size_t N = a->size;
+
+  if (b->size != N)
+    {
+      GSL_ERROR ("vectors must have same length", GSL_EBADLEN);
+    }
+  else 
+    {
+      const size_t stride_a = a->stride;
+      const size_t stride_b = b->stride;
+
+      size_t i;
+
+      for (i = 0; i < N; i++)
+        {
+          double br = b->data[i * stride_b];
+
+          a->data[2 * i * stride_a]     *= br;
+          a->data[2 * i * stride_a + 1] *= br;
+        }
+      
+      return GSL_SUCCESS;
+    }
+}

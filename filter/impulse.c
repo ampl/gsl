@@ -133,7 +133,7 @@ gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scal
           case GSL_FILTER_SCALE_MAD:
             {
               /* compute window medians and MADs */
-              gsl_movstat_mad(endtype, x, xmedian, xsigma, w->movstat_workspace_p);
+              gsl_movstat_mad((gsl_movstat_end_t) endtype, x, xmedian, xsigma, w->movstat_workspace_p);
 
               break;
             }
@@ -144,10 +144,10 @@ gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scal
               scale = 0.741301109252801;
 
               /* calculate the window medians */
-              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+              gsl_movstat_median((gsl_movstat_end_t) endtype, x, xmedian, w->movstat_workspace_p);
       
               /* calculate window IQRs */
-              gsl_movstat_qqr(endtype, x, 0.25, xsigma, w->movstat_workspace_p);
+              gsl_movstat_qqr((gsl_movstat_end_t) endtype, x, 0.25, xsigma, w->movstat_workspace_p);
 
               break;
             }
@@ -155,10 +155,10 @@ gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scal
           case GSL_FILTER_SCALE_SN:
             {
               /* calculate the window medians */
-              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+              gsl_movstat_median((gsl_movstat_end_t) endtype, x, xmedian, w->movstat_workspace_p);
       
               /* calculate window S_n values */
-              gsl_movstat_Sn(endtype, x, xsigma, w->movstat_workspace_p);
+              gsl_movstat_Sn((gsl_movstat_end_t) endtype, x, xsigma, w->movstat_workspace_p);
 
               break;
             }
@@ -166,10 +166,10 @@ gsl_filter_impulse(const gsl_filter_end_t endtype, const gsl_filter_scale_t scal
           case GSL_FILTER_SCALE_QN:
             {
               /* calculate the window medians */
-              gsl_movstat_median(endtype, x, xmedian, w->movstat_workspace_p);
+              gsl_movstat_median((gsl_movstat_end_t) endtype, x, xmedian, w->movstat_workspace_p);
       
               /* calculate window Q_n values */
-              gsl_movstat_Qn(endtype, x, xsigma, w->movstat_workspace_p);
+              gsl_movstat_Qn((gsl_movstat_end_t) endtype, x, xsigma, w->movstat_workspace_p);
 
               break;
             }

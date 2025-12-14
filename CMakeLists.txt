@@ -342,7 +342,7 @@ endif ()
 
 include(CheckLibraryExists)
 check_library_exists(m cos "" HAVE_LIBM)
-if (HAVE_LIBM)
+if (NOT MSVC AND HAVE_LIBM)
   set(CMAKE_REQUIRED_LIBRARIES m)
 endif ()
 

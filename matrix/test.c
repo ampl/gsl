@@ -30,7 +30,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef  _WIN32
 #include <unistd.h>
+#endif
 #include <math.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>

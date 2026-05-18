@@ -602,6 +602,10 @@ if (GSL_DISABLE_WARNINGS)
   endif ()
 endif ()
 
+if(APPLE)
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-shift-negative-value>)
+endif()
+
 if (MSVC_RUNTIME_DYNAMIC)
   set(CMAKE_COMPILER_FLAGS_VARIABLES
     CMAKE_C_FLAGS_DEBUG

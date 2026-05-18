@@ -32,7 +32,8 @@ jobs:
   - script: |
         pip install --upgrade pip
         pip install wheel
-        pip install sphinx ampl_sphinx_theme 
+        pip install sphinx
+        pip install ampl-sphinx-theme @ git+https://github.com/ampl/ampl.github.io.git#subdirectory=themes/ampl_sphinx_theme 
     displayName: Install Python tools for documentation building
   - task: CMake@1
     inputs:

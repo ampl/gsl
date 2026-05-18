@@ -45,7 +45,7 @@ stages:
     parameters:
       name: macOS
       vmImage: 'macOS-latest'
-      cmakeDefs: '-DARCH=64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9'
+      cmakeDefs: '-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0'
       archiveExtension: 'tar.gz'
       cpackParameters: '-G TGZ'
 

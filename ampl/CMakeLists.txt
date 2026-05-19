@@ -5,8 +5,13 @@ option(DOCUMENTATION "Builds sphinx documentation" ON)
 
 add_subdirectory(thirdparty/asl)
 add_to_folder(asl asl asl2 asl2-dynrt asl-dynrt arith-h)
+foreach(target asl asl2)
+  if(TARGET ${target})
+    set_target_properties(${target} PROPERTIES INTERPROCEDURAL_OPTIMIZATION FALSE)
+  endif()
+endforeach()
 
-set(AMPLGSL_VERSION 20231107)
+set(AMPLGSL_VERSION 20260519)
 # Install location
 set(AMPL_LIBRARY_DIR gsl)
 
